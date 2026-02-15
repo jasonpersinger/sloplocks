@@ -302,6 +302,40 @@ def run_pipeline(output_dir=None):
     slop_locks = lock_candidates[:5]
 
     # ------------------------------------------------------------------
+    # 5c. Compute LONGSLOP — best longshot pick (+500 or better)
+    # ------------------------------------------------------------------
+    longslop_candidates = []
+    for rec in prediction_records:
+        edges = rec.get("edges", {})
+        best_odds = rec.get("best_odds", {})
+        for outcome in ("home", "draw", "away"):
+            e = edges.get(outcome)
+            if not e or e["edge"] <= 0:
+                continue
+            american = best_odds.get(outcome, e.get("american_odds"))
+            if american is None:
+                continue
+            # Longshots only: +500 or better
+            if american < 500:
+                continue
+            longslop_candidates.append({
+                "home_team": rec["home_team"],
+                "away_team": rec["away_team"],
+                "date": rec["date"],
+                "matchday": rec.get("matchday"),
+                "pick": outcome,
+                "model_prob": round(e["model_prob"], 4),
+                "implied_prob": round(e["implied_prob"], 4),
+                "edge": round(e["edge"], 4),
+                "american_odds": american,
+                "decimal_odds": e["decimal_odds"],
+            })
+
+    # Sort by edge (highest first), take the best one
+    longslop_candidates.sort(key=lambda x: x["edge"], reverse=True)
+    longslop = longslop_candidates[0] if longslop_candidates else None
+
+    # ------------------------------------------------------------------
     # 6. Evaluate past predictions against new results
     # ------------------------------------------------------------------
     history = _load_json(history_path)
@@ -368,6 +402,7 @@ def run_pipeline(output_dir=None):
     predictions_output = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "slop_locks": slop_locks,
+        "longslop": longslop,
         "matches": prediction_records,
         "season_stats": season_stats,
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},

@@ -4,15 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SLOP LOCKS — EPL Predictions</title>
-  <meta name="description" content="EPL match predictions and betting edge finder powered by Dixon-Coles, xG, and Elo ensemble models.">
-  <meta name="theme-color" content="#00ff88">
+  <meta name="description" content="Degenerate EPL match predictions powered by Dixon-Coles and Elo ensemble models. Find betting edges or lose your shirt trying.">
+  <meta name="theme-color" content="#39FF14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     /* ========================================
-       RESET & BASE
+       RESET & VARIABLES
        ======================================== */
     *, *::before, *::after {
       margin: 0;
@@ -21,23 +23,26 @@
     }
 
     :root {
-      --bg: #0a0a0a;
-      --bg-card: #0f0f0f;
-      --bg-card-hover: #141414;
-      --border: #1a1a1a;
-      --border-bright: #2a2a2a;
-      --neon: #00ff88;
-      --neon-dim: rgba(0, 255, 136, 0.15);
-      --neon-glow: rgba(0, 255, 136, 0.3);
-      --white: #ffffff;
-      --text: #cccccc;
+      --slime: #39FF14;
+      --slime-dim: rgba(57, 255, 20, 0.12);
+      --slime-glow: rgba(57, 255, 20, 0.35);
+      --black: #0D0D0D;
+      --panel: #1C1C1C;
+      --panel-hover: #242424;
+      --border: #2A2A2A;
+      --border-bright: #3A3A3A;
+      --text: #EAEAEA;
       --text-dim: #888888;
       --text-muted: #555555;
-      --danger: #ff4444;
-      --danger-dim: rgba(255, 68, 68, 0.15);
-      --home-color: #4a9eff;
+      --pink: #FF2D95;
+      --pink-dim: rgba(255, 45, 149, 0.12);
+      --yellow: #FFD60A;
+      --yellow-dim: rgba(255, 214, 10, 0.12);
+      --blue: #2E86FF;
+      --blue-dim: rgba(46, 134, 255, 0.12);
+      --home-color: #2E86FF;
       --draw-color: #888888;
-      --away-color: #ff6b4a;
+      --away-color: #FF2D95;
       --font-heading: 'Oswald', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -48,7 +53,7 @@
     }
 
     body {
-      background: var(--bg);
+      background: var(--black);
       color: var(--text);
       font-family: var(--font-mono);
       font-size: 0.875rem;
@@ -59,7 +64,7 @@
 
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-track { background: var(--black); }
     ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
 
@@ -79,8 +84,8 @@
         0deg,
         transparent,
         transparent 2px,
-        rgba(0, 0, 0, 0.03) 2px,
-        rgba(0, 0, 0, 0.03) 4px
+        rgba(0, 0, 0, 0.04) 2px,
+        rgba(0, 0, 0, 0.04) 4px
       );
     }
 
@@ -109,10 +114,10 @@
       bottom: -1px;
       left: 50%;
       transform: translateX(-50%);
-      width: 120px;
-      height: 1px;
-      background: var(--neon);
-      box-shadow: 0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+      width: 140px;
+      height: 2px;
+      background: var(--slime);
+      box-shadow: 0 0 10px var(--slime-glow), 0 0 25px var(--slime-glow);
     }
 
     .logo {
@@ -123,9 +128,8 @@
       margin-bottom: 0.5rem;
     }
 
-    .logo-icon {
-      font-size: 1.5rem;
-      filter: drop-shadow(0 0 4px var(--neon-glow));
+    .logo-svg {
+      filter: drop-shadow(0 0 6px var(--slime-glow));
     }
 
     .wordmark {
@@ -133,17 +137,17 @@
       font-weight: 700;
       font-size: 2.5rem;
       letter-spacing: 0.15em;
-      color: var(--neon);
-      text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(0, 255, 136, 0.1);
+      color: var(--slime);
+      text-shadow: 0 0 20px var(--slime-glow), 0 0 40px rgba(57, 255, 20, 0.1);
       line-height: 1;
     }
 
     .subtitle {
       font-family: var(--font-heading);
       font-weight: 400;
-      font-size: 0.8rem;
-      letter-spacing: 0.3em;
-      color: var(--text-dim);
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      color: var(--text-muted);
       text-transform: uppercase;
     }
 
@@ -166,10 +170,10 @@
     .pulse-dot {
       width: 6px;
       height: 6px;
-      background: var(--neon);
+      background: var(--slime);
       border-radius: 50%;
       animation: pulse 2s ease-in-out infinite;
-      box-shadow: 0 0 4px var(--neon-glow);
+      box-shadow: 0 0 4px var(--slime-glow);
     }
 
     @keyframes pulse {
@@ -191,12 +195,12 @@
 
     .nav-tab {
       flex: 1;
-      padding: 0.7rem 1rem;
+      padding: 0.7rem 0.5rem;
       text-align: center;
       font-family: var(--font-heading);
       font-weight: 600;
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       color: var(--text-dim);
       background: transparent;
@@ -204,6 +208,7 @@
       border-right: 1px solid var(--border);
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .nav-tab:last-child {
@@ -211,13 +216,13 @@
     }
 
     .nav-tab:hover {
-      color: var(--white);
+      color: var(--text);
       background: rgba(255, 255, 255, 0.03);
     }
 
     .nav-tab.active {
-      color: var(--neon);
-      background: var(--neon-dim);
+      color: var(--slime);
+      background: var(--slime-dim);
     }
 
     .tab-panel {
@@ -245,18 +250,348 @@
       font-weight: 700;
       font-size: 1.1rem;
       letter-spacing: 0.1em;
-      color: var(--white);
+      color: var(--text);
       text-transform: uppercase;
     }
 
     .section-header .count {
       font-family: var(--font-mono);
       font-size: 0.7rem;
-      color: var(--neon);
-      background: var(--neon-dim);
+      color: var(--slime);
+      background: var(--slime-dim);
       padding: 0.15rem 0.5rem;
       border-radius: 2px;
-      border: 1px solid rgba(0, 255, 136, 0.2);
+      border: 1px solid rgba(57, 255, 20, 0.2);
+    }
+
+    /* ========================================
+       SLOP LOCKS TAB — HERO CARDS
+       ======================================== */
+    .locks-hero {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .locks-hero-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--slime);
+      text-shadow: 0 0 15px var(--slime-glow);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .locks-hero-sub {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .locks-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .lock-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--slime);
+      border-radius: 6px;
+      padding: 1.25rem;
+      position: relative;
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .lock-card:nth-child(1) { animation-delay: 0.05s; }
+    .lock-card:nth-child(2) { animation-delay: 0.1s; }
+    .lock-card:nth-child(3) { animation-delay: 0.15s; }
+    .lock-card:nth-child(4) { animation-delay: 0.2s; }
+    .lock-card:nth-child(5) { animation-delay: 0.25s; }
+
+    .lock-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .lock-rank {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .lock-card:first-child .lock-rank {
+      color: var(--slime);
+    }
+
+    .lock-meta-date {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+    }
+
+    .lock-match {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.03em;
+      color: var(--text);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .lock-pick-row {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .lock-pick {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.3rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      line-height: 1.2;
+    }
+
+    .lock-pick.pick-home { color: var(--blue); }
+    .lock-pick.pick-draw { color: var(--yellow); }
+    .lock-pick.pick-away { color: var(--pink); }
+
+    .lock-odds {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1.5rem;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .lock-stats {
+      display: flex;
+      gap: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    .lock-stat-label {
+      color: var(--text-muted);
+    }
+
+    .lock-stat-value {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .lock-stat-value.slime {
+      color: var(--slime);
+    }
+
+    .locks-empty {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+    }
+
+    .locks-empty-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .locks-empty h3 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .locks-empty p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========================================
+       LONGSLOP TAB
+       ======================================== */
+    .longslop-hero {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .longslop-hero-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--yellow);
+      text-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .longslop-card {
+      background: var(--panel);
+      border: 2px solid var(--yellow);
+      border-radius: 8px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
+    }
+
+    .longslop-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--yellow), transparent);
+      box-shadow: 0 0 15px rgba(255, 214, 10, 0.3);
+    }
+
+    .longslop-match {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .longslop-pick {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .longslop-pick.pick-home { color: var(--blue); }
+    .longslop-pick.pick-draw { color: var(--yellow); }
+    .longslop-pick.pick-away { color: var(--pink); }
+
+    .longslop-odds {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 3rem;
+      color: var(--yellow);
+      text-shadow: 0 0 20px rgba(255, 214, 10, 0.3);
+      margin-bottom: 1rem;
+      line-height: 1;
+    }
+
+    .longslop-breakdown {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .longslop-breakdown-item {
+      text-align: center;
+    }
+
+    .longslop-breakdown-label {
+      color: var(--text-muted);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+
+    .longslop-breakdown-value {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.85rem;
+    }
+
+    .longslop-breakdown-value.slime {
+      color: var(--slime);
+    }
+
+    .longslop-case {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+      text-align: left;
+    }
+
+    .longslop-case-label {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--yellow);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .longslop-meta {
+      margin-top: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+    }
+
+    .longslop-empty {
+      text-align: center;
+      padding: 3rem 1.5rem;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+    }
+
+    .longslop-empty-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .longslop-empty h3 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .longslop-empty p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
     }
 
     /* ========================================
@@ -270,21 +605,34 @@
     }
 
     .match-card {
-      background: var(--bg-card);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 1.25rem;
       transition: all 0.2s ease;
       position: relative;
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
     }
 
+    .match-card:nth-child(1) { animation-delay: 0.05s; }
+    .match-card:nth-child(2) { animation-delay: 0.1s; }
+    .match-card:nth-child(3) { animation-delay: 0.15s; }
+    .match-card:nth-child(4) { animation-delay: 0.2s; }
+    .match-card:nth-child(5) { animation-delay: 0.25s; }
+    .match-card:nth-child(6) { animation-delay: 0.3s; }
+    .match-card:nth-child(7) { animation-delay: 0.35s; }
+    .match-card:nth-child(8) { animation-delay: 0.4s; }
+    .match-card:nth-child(9) { animation-delay: 0.45s; }
+    .match-card:nth-child(10) { animation-delay: 0.5s; }
+
     .match-card:hover {
-      background: var(--bg-card-hover);
+      background: var(--panel-hover);
       border-color: var(--border-bright);
     }
 
     .match-card.has-value {
-      border-color: rgba(0, 255, 136, 0.25);
+      border-color: rgba(57, 255, 20, 0.25);
     }
 
     .match-card.has-value::before {
@@ -294,10 +642,9 @@
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      background: linear-gradient(90deg, transparent, var(--slime), transparent);
     }
 
-    /* Match header */
     .match-header {
       display: flex;
       justify-content: space-between;
@@ -325,9 +672,9 @@
       font-weight: 700;
       font-size: 0.65rem;
       letter-spacing: 0.15em;
-      color: var(--neon);
-      background: var(--neon-dim);
-      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: var(--slime);
+      background: var(--slime-dim);
+      border: 1px solid rgba(57, 255, 20, 0.3);
       padding: 0.2rem 0.5rem;
       border-radius: 2px;
       text-transform: uppercase;
@@ -335,11 +682,10 @@
     }
 
     @keyframes glow-pulse {
-      0%, 100% { box-shadow: 0 0 4px var(--neon-dim); }
-      50% { box-shadow: 0 0 12px var(--neon-glow); }
+      0%, 100% { box-shadow: 0 0 4px var(--slime-dim); }
+      50% { box-shadow: 0 0 12px var(--slime-glow); }
     }
 
-    /* Teams */
     .match-teams {
       display: flex;
       align-items: center;
@@ -354,17 +700,12 @@
       font-weight: 700;
       font-size: 1.2rem;
       letter-spacing: 0.05em;
-      color: var(--white);
+      color: var(--text);
       text-transform: uppercase;
     }
 
-    .team.home {
-      text-align: right;
-    }
-
-    .team.away {
-      text-align: left;
-    }
+    .team.home { text-align: right; }
+    .team.away { text-align: left; }
 
     .vs {
       font-family: var(--font-mono);
@@ -377,9 +718,7 @@
     }
 
     /* Probability bar */
-    .prob-bar-container {
-      margin-bottom: 1rem;
-    }
+    .prob-bar-container { margin-bottom: 1rem; }
 
     .prob-bar-labels {
       display: flex;
@@ -389,9 +728,7 @@
       font-family: var(--font-mono);
     }
 
-    .prob-bar-labels span {
-      color: var(--text-dim);
-    }
+    .prob-bar-labels span { color: var(--text-dim); }
 
     .prob-bar {
       display: flex;
@@ -401,24 +738,10 @@
       background: #1a1a1a;
     }
 
-    .prob-segment {
-      transition: width 0.5s ease;
-      position: relative;
-    }
-
-    .prob-segment.home {
-      background: var(--home-color);
-      border-radius: 3px 0 0 3px;
-    }
-
-    .prob-segment.draw {
-      background: var(--draw-color);
-    }
-
-    .prob-segment.away {
-      background: var(--away-color);
-      border-radius: 0 3px 3px 0;
-    }
+    .prob-segment { transition: width 0.5s ease; }
+    .prob-segment.home { background: var(--home-color); border-radius: 3px 0 0 3px; }
+    .prob-segment.draw { background: var(--draw-color); }
+    .prob-segment.away { background: var(--away-color); border-radius: 0 3px 3px 0; }
 
     .prob-percentages {
       display: flex;
@@ -433,7 +756,7 @@
     .prob-pct.draw { color: var(--draw-color); }
     .prob-pct.away { color: var(--away-color); }
 
-    /* Odds & Edges grid */
+    /* Odds grid */
     .odds-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -451,17 +774,12 @@
     }
 
     .odds-cell.value {
-      border-color: rgba(0, 255, 136, 0.35);
-      background: var(--neon-dim);
+      border-color: rgba(57, 255, 20, 0.35);
+      background: var(--slime-dim);
     }
 
-    .odds-cell.value .edge-value {
-      color: var(--neon);
-    }
-
-    .odds-cell.negative .edge-value {
-      color: var(--danger);
-    }
+    .odds-cell.value .edge-value { color: var(--slime); }
+    .odds-cell.negative .edge-value { color: var(--pink); }
 
     .odds-label {
       font-family: var(--font-heading);
@@ -477,7 +795,7 @@
       font-family: var(--font-mono);
       font-weight: 600;
       font-size: 1.1rem;
-      color: var(--white);
+      color: var(--text);
       margin-bottom: 0.25rem;
     }
 
@@ -494,7 +812,7 @@
       font-weight: 700;
       font-size: 0.55rem;
       letter-spacing: 0.15em;
-      color: var(--neon);
+      color: var(--slime);
       margin-top: 0.3rem;
       text-transform: uppercase;
     }
@@ -506,9 +824,7 @@
       display: none;
     }
 
-    .match-card.expanded .model-breakdown {
-      display: block;
-    }
+    .match-card.expanded .model-breakdown { display: block; }
 
     .model-toggle {
       display: flex;
@@ -528,9 +844,7 @@
       transition: color 0.2s;
     }
 
-    .model-toggle:hover {
-      color: var(--text-dim);
-    }
+    .model-toggle:hover { color: var(--text-dim); }
 
     .model-toggle .arrow {
       transition: transform 0.2s;
@@ -567,7 +881,7 @@
       font-weight: 600;
     }
 
-    .model-header {
+    .model-header-row {
       display: grid;
       grid-template-columns: 120px repeat(3, 1fr);
       gap: 0.5rem;
@@ -576,7 +890,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .model-header span {
+    .model-header-row span {
       font-family: var(--font-heading);
       font-size: 0.55rem;
       font-weight: 600;
@@ -586,8 +900,47 @@
       text-align: center;
     }
 
-    .model-header span:first-child {
-      text-align: left;
+    .model-header-row span:first-child { text-align: left; }
+
+    /* ========================================
+       FILTER BAR
+       ======================================== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-bright);
+      color: var(--text);
+    }
+
+    .filter-btn.active {
+      border-color: var(--slime);
+      color: var(--slime);
+      background: var(--slime-dim);
+    }
+
+    .sort-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-left: auto;
     }
 
     /* ========================================
@@ -601,7 +954,7 @@
     }
 
     .stat-card {
-      background: var(--bg-card);
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 6px;
       padding: 1.25rem;
@@ -621,14 +974,14 @@
       font-family: var(--font-mono);
       font-weight: 600;
       font-size: 1.8rem;
-      color: var(--white);
+      color: var(--text);
       line-height: 1;
       margin-bottom: 0.25rem;
     }
 
-    .stat-value.neon {
-      color: var(--neon);
-      text-shadow: 0 0 10px var(--neon-glow);
+    .stat-value.slime {
+      color: var(--slime);
+      text-shadow: 0 0 10px var(--slime-glow);
     }
 
     .stat-label {
@@ -637,10 +990,8 @@
       color: var(--text-muted);
     }
 
-    /* Season distribution bar */
-    .dist-bar-container {
-      margin-top: 1rem;
-    }
+    /* Distribution bar */
+    .dist-bar-container { margin-top: 1rem; }
 
     .dist-bar {
       display: flex;
@@ -657,7 +1008,7 @@
       font-family: var(--font-mono);
       font-size: 0.6rem;
       font-weight: 600;
-      color: var(--white);
+      color: var(--text);
       transition: width 0.5s ease;
     }
 
@@ -689,7 +1040,9 @@
     .dist-dot.draw { background: var(--draw-color); }
     .dist-dot.away { background: var(--away-color); }
 
-    /* Model weights */
+    /* ========================================
+       MODEL WEIGHTS
+       ======================================== */
     .weights-list {
       display: flex;
       flex-direction: column;
@@ -720,24 +1073,24 @@
 
     .weight-bar-fill {
       height: 100%;
-      background: var(--neon);
+      background: var(--slime);
       border-radius: 3px;
       transition: width 0.5s ease;
-      box-shadow: 0 0 6px var(--neon-glow);
+      box-shadow: 0 0 6px var(--slime-glow);
     }
 
     .weight-pct {
       font-family: var(--font-mono);
       font-size: 0.7rem;
       font-weight: 600;
-      color: var(--neon);
+      color: var(--slime);
       width: 40px;
       text-align: right;
       flex-shrink: 0;
     }
 
     /* ========================================
-       LOADING / EMPTY STATES
+       LOADING / EMPTY / ERROR
        ======================================== */
     .loading-state {
       text-align: center;
@@ -749,15 +1102,13 @@
       width: 32px;
       height: 32px;
       border: 2px solid var(--border);
-      border-top-color: var(--neon);
+      border-top-color: var(--slime);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       margin-bottom: 1rem;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .loading-text {
       font-family: var(--font-mono);
@@ -798,8 +1149,8 @@
     .error-state {
       text-align: center;
       padding: 3rem 2rem;
-      border: 1px solid rgba(255, 68, 68, 0.2);
-      background: var(--danger-dim);
+      border: 1px solid rgba(255, 45, 149, 0.2);
+      background: var(--pink-dim);
       border-radius: 6px;
       margin: 2rem 0;
     }
@@ -808,7 +1159,7 @@
       font-family: var(--font-heading);
       font-weight: 600;
       font-size: 1rem;
-      color: var(--danger);
+      color: var(--pink);
       letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-bottom: 0.5rem;
@@ -842,351 +1193,32 @@
       text-decoration: none;
     }
 
-    .footer-line a:hover {
-      color: var(--neon);
-    }
+    .footer-line a:hover { color: var(--slime); }
 
     .footer-brand {
       font-family: var(--font-heading);
       font-weight: 700;
       font-size: 0.7rem;
       letter-spacing: 0.2em;
-      color: var(--neon);
+      color: var(--slime);
       margin-top: 1rem;
       opacity: 0.5;
     }
 
     /* ========================================
-       TERMINAL CURSOR BLINK
+       CURSOR BLINK
        ======================================== */
     .cursor {
       display: inline-block;
       width: 8px;
       height: 1em;
-      background: var(--neon);
+      background: var(--slime);
       margin-left: 2px;
       animation: blink 1s step-end infinite;
       vertical-align: text-bottom;
     }
 
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
-
-    /* ========================================
-       VALUE MATCHES FILTER
-       ======================================== */
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      padding: 0.4rem 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 3px;
-      background: transparent;
-      color: var(--text-dim);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .filter-btn:hover {
-      border-color: var(--border-bright);
-      color: var(--white);
-    }
-
-    .filter-btn.active {
-      border-color: var(--neon);
-      color: var(--neon);
-      background: var(--neon-dim);
-    }
-
-    .sort-label {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      margin-left: auto;
-    }
-
-    /* ========================================
-       SLOP LOCKS HERO SECTION
-       ======================================== */
-    .locks-section {
-      margin: 2rem 0 1.5rem;
-      padding: 1.5rem;
-      border: 1px solid rgba(0, 255, 136, 0.25);
-      border-radius: 8px;
-      background: linear-gradient(135deg, rgba(0, 255, 136, 0.03) 0%, transparent 60%);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .locks-section::before {
-      content: '';
-      position: absolute;
-      top: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--neon), transparent);
-      box-shadow: 0 0 15px var(--neon-glow), 0 0 30px rgba(0, 255, 136, 0.15);
-    }
-
-    .locks-section::after {
-      content: '';
-      position: absolute;
-      bottom: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--neon), transparent);
-      box-shadow: 0 0 15px var(--neon-glow), 0 0 30px rgba(0, 255, 136, 0.15);
-    }
-
-    .locks-title {
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 2rem;
-      letter-spacing: 0.1em;
-      color: var(--neon);
-      text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(0, 255, 136, 0.15);
-      text-align: center;
-      text-transform: uppercase;
-      margin-bottom: 0.35rem;
-      line-height: 1.2;
-    }
-
-    .locks-subtitle {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      color: var(--text-muted);
-      text-align: center;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-
-    .locks-grid {
-      display: flex;
-      gap: 0.75rem;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 0.5rem;
-    }
-
-    .locks-grid::-webkit-scrollbar { height: 4px; }
-    .locks-grid::-webkit-scrollbar-track { background: transparent; }
-    .locks-grid::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
-
-    .lock-card {
-      flex: 0 0 200px;
-      min-width: 200px;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--neon);
-      border-radius: 6px;
-      padding: 1rem;
-      scroll-snap-align: start;
-      position: relative;
-      animation: fadeIn 0.4s ease forwards;
-      opacity: 0;
-    }
-
-    .lock-card:nth-child(1) { animation-delay: 0.1s; }
-    .lock-card:nth-child(2) { animation-delay: 0.2s; }
-    .lock-card:nth-child(3) { animation-delay: 0.3s; }
-    .lock-card:nth-child(4) { animation-delay: 0.4s; }
-    .lock-card:nth-child(5) { animation-delay: 0.5s; }
-
-    .lock-card.lock-featured {
-      flex: 0 0 230px;
-      min-width: 230px;
-      border-left-width: 4px;
-      box-shadow: 0 0 20px rgba(0, 255, 136, 0.08);
-      background: linear-gradient(135deg, rgba(0, 255, 136, 0.04) 0%, var(--bg-card) 50%);
-    }
-
-    .lock-rank {
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .lock-featured .lock-rank {
-      color: var(--neon);
-      font-size: 0.8rem;
-    }
-
-    .lock-match {
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 0.85rem;
-      letter-spacing: 0.03em;
-      color: var(--white);
-      text-transform: uppercase;
-      margin-bottom: 0.6rem;
-      line-height: 1.3;
-    }
-
-    .lock-featured .lock-match {
-      font-size: 0.95rem;
-    }
-
-    .lock-pick {
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      margin-bottom: 0.6rem;
-      line-height: 1.2;
-    }
-
-    .lock-pick.pick-home { color: var(--home-color); }
-    .lock-pick.pick-draw { color: var(--draw-color); }
-    .lock-pick.pick-away { color: var(--away-color); }
-
-    .lock-featured .lock-pick {
-      font-size: 1.15rem;
-    }
-
-    .lock-odds {
-      font-family: var(--font-mono);
-      font-weight: 600;
-      font-size: 1.4rem;
-      color: var(--white);
-      margin-bottom: 0.4rem;
-      line-height: 1;
-    }
-
-    .lock-featured .lock-odds {
-      font-size: 1.6rem;
-    }
-
-    .lock-stats {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-    }
-
-    .lock-stat-label {
-      color: var(--text-muted);
-    }
-
-    .lock-stat-value {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .lock-stat-value.neon {
-      color: var(--neon);
-    }
-
-    .lock-meta {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      border-top: 1px solid var(--border);
-      padding-top: 0.5rem;
-      margin-top: 0.25rem;
-    }
-
-    .locks-empty {
-      text-align: center;
-      padding: 2rem 1rem;
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    @media (max-width: 600px) {
-      .locks-title {
-        font-size: 1.5rem;
-      }
-
-      .locks-grid {
-        flex-direction: column;
-      }
-
-      .lock-card,
-      .lock-card.lock-featured {
-        flex: none;
-        min-width: unset;
-        width: 100%;
-      }
-    }
-
-    /* ========================================
-       RESPONSIVE
-       ======================================== */
-    @media (max-width: 600px) {
-      .wordmark {
-        font-size: 2rem;
-      }
-
-      .team {
-        font-size: 0.95rem;
-      }
-
-      .match-header {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .header-meta {
-        gap: 1rem;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      .odds-grid {
-        gap: 0.35rem;
-      }
-
-      .odds-value {
-        font-size: 0.95rem;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .model-row,
-      .model-header {
-        grid-template-columns: 90px repeat(3, 1fr);
-        gap: 0.25rem;
-      }
-
-      .model-name {
-        font-size: 0.6rem;
-      }
-
-      .weight-name {
-        width: 80px;
-        font-size: 0.65rem;
-      }
-
-      .nav-tab {
-        font-size: 0.7rem;
-        padding: 0.6rem 0.5rem;
-      }
-    }
+    @keyframes blink { 50% { opacity: 0; } }
 
     /* ========================================
        ANIMATIONS
@@ -1200,21 +1232,40 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .match-card {
-      animation: fadeIn 0.4s ease forwards;
-      opacity: 0;
-    }
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 600px) {
+      .wordmark { font-size: 2rem; }
+      .team { font-size: 0.95rem; }
 
-    .match-card:nth-child(1) { animation-delay: 0.05s; }
-    .match-card:nth-child(2) { animation-delay: 0.1s; }
-    .match-card:nth-child(3) { animation-delay: 0.15s; }
-    .match-card:nth-child(4) { animation-delay: 0.2s; }
-    .match-card:nth-child(5) { animation-delay: 0.25s; }
-    .match-card:nth-child(6) { animation-delay: 0.3s; }
-    .match-card:nth-child(7) { animation-delay: 0.35s; }
-    .match-card:nth-child(8) { animation-delay: 0.4s; }
-    .match-card:nth-child(9) { animation-delay: 0.45s; }
-    .match-card:nth-child(10) { animation-delay: 0.5s; }
+      .match-header {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .header-meta {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .odds-grid { gap: 0.35rem; }
+      .odds-value { font-size: 0.95rem; }
+      .stats-grid { grid-template-columns: 1fr; }
+
+      .model-row,
+      .model-header-row {
+        grid-template-columns: 90px repeat(3, 1fr);
+        gap: 0.25rem;
+      }
+
+      .model-name { font-size: 0.6rem; }
+      .weight-name { width: 80px; font-size: 0.65rem; }
+      .nav-tab { font-size: 0.65rem; padding: 0.6rem 0.3rem; letter-spacing: 0.03em; }
+      .longslop-odds { font-size: 2.2rem; }
+      .longslop-breakdown { gap: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -1222,10 +1273,29 @@
   <header>
     <div class="container">
       <div class="logo">
-        <span class="logo-icon">&#x1F512;</span>
+        <!-- Inline SVG: Slimy padlock -->
+        <svg class="logo-svg" width="44" height="50" viewBox="0 0 44 50" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Lock shackle -->
+          <path d="M11 18V14C11 7.37 16.37 2 23 2h-2C14.37 2 9 7.37 9 14v4" stroke="#39FF14" stroke-width="3" stroke-linecap="round"/>
+          <path d="M33 18V14C33 7.37 27.63 2 21 2h2C29.63 2 35 7.37 35 14v4" stroke="#39FF14" stroke-width="3" stroke-linecap="round"/>
+          <!-- Lock body -->
+          <rect x="5" y="18" width="34" height="24" rx="4" fill="#39FF14"/>
+          <!-- Keyhole -->
+          <circle cx="22" cy="28" r="4" fill="#0D0D0D"/>
+          <rect x="20" y="30" width="4" height="6" rx="1" fill="#0D0D0D"/>
+          <!-- Slime drips -->
+          <ellipse cx="10" cy="42" rx="2.5" ry="1" fill="#39FF14" opacity="0.7"/>
+          <path d="M10 42 Q10 47, 10 48" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+          <ellipse cx="10" cy="48" rx="1.5" ry="1.5" fill="#39FF14" opacity="0.5"/>
+          <ellipse cx="28" cy="42" rx="2" ry="1" fill="#39FF14" opacity="0.7"/>
+          <path d="M28 42 Q28 44, 28.5 45.5" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+          <ellipse cx="28.5" cy="45.5" rx="1.2" ry="1.2" fill="#39FF14" opacity="0.5"/>
+          <ellipse cx="18" cy="42" rx="1.5" ry="0.8" fill="#39FF14" opacity="0.5"/>
+          <path d="M18 42 Q18.2 43.5, 17.8 44.5" stroke="#39FF14" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+        </svg>
         <h1 class="wordmark">SLOP LOCKS</h1>
       </div>
-      <p class="subtitle">EPL PREDICTIONS &amp; EDGE DETECTION</p>
+      <p class="subtitle">POWERED BY MATH AND QUESTIONABLE JUDGMENT</p>
       <div class="header-meta">
         <span><span class="pulse-dot"></span> LIVE MODEL</span>
         <span id="header-updated">LOADING...</span>
@@ -1236,18 +1306,11 @@
 
   <!-- ============ MAIN ============ -->
   <main class="container">
-    <!-- Slop Locks Hero Section -->
-    <section class="locks-section" id="locks-section" style="display:none;">
-      <h2 class="locks-title">\u{1F512} SLOP LOCKS OF THE WEEK</h2>
-      <p class="locks-subtitle" id="locks-subtitle">TOP 5 PICKS \u2022 ODDS -200 TO +200 \u2022 RANKED BY EDGE</p>
-      <div class="locks-grid" id="locks-grid">
-        <!-- Lock cards rendered by JS -->
-      </div>
-    </section>
-
     <!-- Nav Tabs -->
     <nav class="nav-tabs" role="tablist">
-      <button class="nav-tab active" data-tab="matches" role="tab" aria-selected="true">MATCHES</button>
+      <button class="nav-tab active" data-tab="locks" role="tab" aria-selected="true">SLOP LOCKS</button>
+      <button class="nav-tab" data-tab="longslops" role="tab" aria-selected="false">LONGSLOPS</button>
+      <button class="nav-tab" data-tab="matches" role="tab" aria-selected="false">MATCHES</button>
       <button class="nav-tab" data-tab="stats" role="tab" aria-selected="false">STATS</button>
       <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">MODELS</button>
     </nav>
@@ -1255,11 +1318,28 @@
     <!-- Loading State -->
     <div id="loading-state" class="loading-state">
       <div class="loading-spinner"></div>
-      <p class="loading-text">FETCHING PREDICTIONS<span class="cursor"></span></p>
+      <p class="loading-text">CRUNCHING NUMBERS<span class="cursor"></span></p>
+    </div>
+
+    <!-- ============ SLOP LOCKS TAB ============ -->
+    <div id="tab-locks" class="tab-panel active">
+      <div class="locks-hero">
+        <h2 class="locks-hero-title">SLOP LOCKS OF THE WEEK</h2>
+        <p class="locks-hero-sub">TOP PICKS &bull; RANKED BY EDGE &bull; NOT FINANCIAL ADVICE</p>
+      </div>
+      <div class="locks-grid" id="locks-grid"></div>
+    </div>
+
+    <!-- ============ LONGSLOPS TAB ============ -->
+    <div id="tab-longslops" class="tab-panel">
+      <div class="longslop-hero">
+        <h2 class="longslop-hero-title">LONGSLOP OF THE WEEK</h2>
+      </div>
+      <div id="longslop-container"></div>
     </div>
 
     <!-- ============ MATCHES TAB ============ -->
-    <div id="tab-matches" class="tab-panel active">
+    <div id="tab-matches" class="tab-panel">
       <div class="section-header">
         <h2>UPCOMING MATCHES</h2>
         <span class="count" id="match-count">0</span>
@@ -1271,21 +1351,17 @@
         <span class="sort-label" id="sort-label"></span>
       </div>
 
-      <div class="matches-grid" id="matches-grid">
-        <!-- Match cards rendered by JS -->
-      </div>
+      <div class="matches-grid" id="matches-grid"></div>
     </div>
 
     <!-- ============ STATS TAB ============ -->
     <div id="tab-stats" class="tab-panel">
       <div class="section-header">
         <h2>SEASON STATS</h2>
-        <span class="count">2024-25</span>
+        <span class="count">2025-26</span>
       </div>
 
-      <div class="stats-grid" id="stats-grid">
-        <!-- Stats rendered by JS -->
-      </div>
+      <div class="stats-grid" id="stats-grid"></div>
 
       <div class="stat-card" id="season-dist" style="display:none;">
         <h3>OUTCOME DISTRIBUTION</h3>
@@ -1300,25 +1376,17 @@
     <div id="tab-models" class="tab-panel">
       <div class="section-header">
         <h2>ENSEMBLE WEIGHTS</h2>
-        <span class="count">3 MODELS</span>
+        <span class="count" id="model-count">-- MODELS</span>
       </div>
 
       <div class="stat-card" id="weights-card" style="display:none;">
         <h3>MODEL CONTRIBUTION</h3>
-        <div class="weights-list" id="weights-list">
-          <!-- Weights rendered by JS -->
-        </div>
+        <div class="weights-list" id="weights-list"></div>
       </div>
 
       <div class="stat-card" style="margin-top: 1rem;">
         <h3>METHODOLOGY</h3>
-        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.8;">
-          <p style="margin-bottom: 0.75rem;">Three independent models generate match probabilities, then blended via optimized weights:</p>
-          <p><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Dixon-Coles</strong> &#8212; Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.</p>
-          <p style="margin-top: 0.5rem;"><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Expected Goals (xG)</strong> &#8212; Uses underlying shot quality data from Understat. More predictive than raw results for future performance.</p>
-          <p style="margin-top: 0.5rem;"><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Elo Ratings</strong> &#8212; Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.</p>
-          <p style="margin-top: 0.75rem; color: var(--text-muted);">Edge = Model Probability - Implied Probability from odds. Positive edge = potential value bet.</p>
-        </div>
+        <div id="methodology-text" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.8;"></div>
       </div>
     </div>
   </main>
@@ -1326,9 +1394,10 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="container">
-      <p class="footer-line">Powered by Dixon-Coles + xG + Elo ensemble</p>
-      <p class="footer-line">Data: <a href="https://www.football-data.org" target="_blank" rel="noopener">football-data.org</a> &#183; <a href="https://understat.com" target="_blank" rel="noopener">Understat</a> &#183; <a href="https://the-odds-api.com" target="_blank" rel="noopener">The Odds API</a></p>
+      <p class="footer-line">POWERED BY DIXON-COLES + ELO ENSEMBLE</p>
+      <p class="footer-line" id="footer-data-sources"></p>
       <p class="footer-line" id="footer-updated"></p>
+      <p class="footer-line" style="color: var(--pink); margin-top: 0.5rem;">NOT FINANCIAL ADVICE. OBVIOUSLY.</p>
       <p class="footer-brand">SLOP LOCKS</p>
     </div>
   </footer>
@@ -1339,7 +1408,7 @@
       'use strict';
 
       /* -----------------------------------
-         SERVICE WORKER REGISTRATION
+         SERVICE WORKER
          ----------------------------------- */
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/sw.js').catch(function () {});
@@ -1352,15 +1421,24 @@
       var currentFilter = 'all';
 
       /* -----------------------------------
-         DOM REFS
+         DOM HELPERS
          ----------------------------------- */
       function $(sel) { return document.querySelector(sel); }
       function $$(sel) { return document.querySelectorAll(sel); }
 
+      function createEl(tag, className, textContent) {
+        var el = document.createElement(tag);
+        if (className) el.className = className;
+        if (textContent !== undefined) el.textContent = textContent;
+        return el;
+      }
+
+      /* -----------------------------------
+         DOM REFS
+         ----------------------------------- */
       var loadingState = $('#loading-state');
-      var locksSection = $('#locks-section');
       var locksGrid = $('#locks-grid');
-      var locksSubtitle = $('#locks-subtitle');
+      var longslopContainer = $('#longslop-container');
       var matchesGrid = $('#matches-grid');
       var matchCount = $('#match-count');
       var headerUpdated = $('#header-updated');
@@ -1373,6 +1451,9 @@
       var weightsList = $('#weights-list');
       var footerUpdated = $('#footer-updated');
       var sortLabel = $('#sort-label');
+      var modelCount = $('#model-count');
+      var methodologyText = $('#methodology-text');
+      var footerDataSources = $('#footer-data-sources');
 
       /* -----------------------------------
          TAB SWITCHING
@@ -1447,6 +1528,10 @@
         return (p * 100).toFixed(0) + '%';
       }
 
+      function formatPctDecimal(p) {
+        return (p * 100).toFixed(1) + '%';
+      }
+
       function hasValue(match) {
         if (!match.edges) return false;
         return (match.edges.home && match.edges.home.is_value) ||
@@ -1463,22 +1548,144 @@
         return c;
       }
 
-      function escapeHtml(str) {
-        var div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+      function getPickLabel(item) {
+        if (item.pick === 'home') return item.home_team.toUpperCase() + ' WIN';
+        if (item.pick === 'away') return item.away_team.toUpperCase() + ' WIN';
+        return 'DRAW';
       }
 
       /* -----------------------------------
-         RENDER MATCH CARD (safe DOM building)
+         RENDER SLOP LOCKS
          ----------------------------------- */
-      function createEl(tag, className, textContent) {
-        var el = document.createElement(tag);
-        if (className) el.className = className;
-        if (textContent !== undefined) el.textContent = textContent;
-        return el;
+      function renderLocks(locks) {
+        locksGrid.textContent = '';
+
+        if (!locks || locks.length === 0) {
+          var empty = createEl('div', 'locks-empty');
+          empty.appendChild(createEl('div', 'locks-empty-icon', '\uD83D\uDE24'));
+          empty.appendChild(createEl('h3', null, 'NO LOCKS THIS WEEK. SORRY DEGENS.'));
+          empty.appendChild(createEl('p', null, 'Check back when odds drop. The books are hiding.'));
+          locksGrid.appendChild(empty);
+          return;
+        }
+
+        for (var i = 0; i < locks.length; i++) {
+          var lock = locks[i];
+          var card = createEl('div', 'lock-card');
+
+          /* Top row: rank + date */
+          var top = createEl('div', 'lock-card-top');
+          var rankText = '\uD83D\uDD12 #' + (i + 1) + (i === 0 ? ' TOP LOCK' : ' LOCK');
+          top.appendChild(createEl('span', 'lock-rank', rankText));
+          var metaText = formatDate(lock.date) + ' \u00B7 MD ' + lock.matchday;
+          top.appendChild(createEl('span', 'lock-meta-date', metaText));
+          card.appendChild(top);
+
+          /* Match name */
+          card.appendChild(createEl('div', 'lock-match', lock.home_team + ' vs ' + lock.away_team));
+
+          /* Pick + odds row */
+          var pickRow = createEl('div', 'lock-pick-row');
+          var pickEl = createEl('span', 'lock-pick pick-' + lock.pick, getPickLabel(lock));
+          pickRow.appendChild(pickEl);
+          pickRow.appendChild(createEl('span', 'lock-odds', formatOdds(lock.american_odds)));
+          card.appendChild(pickRow);
+
+          /* Stats: confidence + edge */
+          var stats = createEl('div', 'lock-stats');
+
+          var confBlock = createEl('span');
+          confBlock.appendChild(createEl('span', 'lock-stat-label', 'CONF '));
+          confBlock.appendChild(createEl('span', 'lock-stat-value', formatPctDecimal(lock.model_prob)));
+          stats.appendChild(confBlock);
+
+          var edgeBlock = createEl('span');
+          edgeBlock.appendChild(createEl('span', 'lock-stat-label', 'EDGE '));
+          var edgePct = (lock.edge * 100).toFixed(1);
+          edgeBlock.appendChild(createEl('span', 'lock-stat-value slime', '+' + edgePct + '%'));
+          stats.appendChild(edgeBlock);
+
+          card.appendChild(stats);
+          locksGrid.appendChild(card);
+        }
       }
 
+      /* -----------------------------------
+         RENDER LONGSLOP
+         ----------------------------------- */
+      function renderLongslop(longslop) {
+        longslopContainer.textContent = '';
+
+        if (!longslop) {
+          var empty = createEl('div', 'longslop-empty');
+          empty.appendChild(createEl('div', 'longslop-empty-icon', '\uD83E\uDDE0'));
+          empty.appendChild(createEl('h3', null, 'NO LONGSLOPS THIS WEEK'));
+          empty.appendChild(createEl('p', null, 'The books are too smart. No +500 edges found.'));
+          longslopContainer.appendChild(empty);
+          return;
+        }
+
+        var card = createEl('div', 'longslop-card');
+
+        /* Match */
+        card.appendChild(createEl('div', 'longslop-match', longslop.home_team + ' vs ' + longslop.away_team));
+
+        /* Pick */
+        var pickEl = createEl('div', 'longslop-pick pick-' + longslop.pick, getPickLabel(longslop));
+        card.appendChild(pickEl);
+
+        /* Giant odds */
+        card.appendChild(createEl('div', 'longslop-odds', formatOdds(longslop.american_odds)));
+
+        /* Breakdown: model prob vs implied prob vs edge */
+        var breakdown = createEl('div', 'longslop-breakdown');
+
+        var modelItem = createEl('div', 'longslop-breakdown-item');
+        modelItem.appendChild(createEl('div', 'longslop-breakdown-label', 'OUR MODEL'));
+        modelItem.appendChild(createEl('div', 'longslop-breakdown-value', formatPctDecimal(longslop.model_prob)));
+        breakdown.appendChild(modelItem);
+
+        var impliedItem = createEl('div', 'longslop-breakdown-item');
+        impliedItem.appendChild(createEl('div', 'longslop-breakdown-label', 'BOOKS SAY'));
+        impliedItem.appendChild(createEl('div', 'longslop-breakdown-value', formatPctDecimal(longslop.implied_prob)));
+        breakdown.appendChild(impliedItem);
+
+        var edgeItem = createEl('div', 'longslop-breakdown-item');
+        edgeItem.appendChild(createEl('div', 'longslop-breakdown-label', 'EDGE'));
+        edgeItem.appendChild(createEl('div', 'longslop-breakdown-value slime', '+' + (longslop.edge * 100).toFixed(1) + '%'));
+        breakdown.appendChild(edgeItem);
+
+        card.appendChild(breakdown);
+
+        /* The Case For */
+        var caseDiv = createEl('div', 'longslop-case');
+        caseDiv.appendChild(createEl('div', 'longslop-case-label', 'THE CASE FOR THIS MADNESS'));
+
+        var teamName = longslop.pick === 'home' ? longslop.home_team : (longslop.pick === 'away' ? longslop.away_team : 'a draw');
+        var outcome = longslop.pick === 'draw' ? 'draw' : (teamName + ' to win');
+        var modelPctStr = formatPctDecimal(longslop.model_prob);
+        var impliedPctStr = formatPctDecimal(longslop.implied_prob);
+        var edgePctStr = (longslop.edge * 100).toFixed(1) + '%';
+        var oddsStr = formatOdds(longslop.american_odds);
+
+        var caseText = 'Our model gives ' + outcome + ' a ' + modelPctStr +
+          ' chance, but the books are only pricing it at ' + impliedPctStr +
+          '. That\'s a ' + edgePctStr + ' edge on a ' + oddsStr + ' longshot.';
+
+        var caseP = createEl('p', null, caseText);
+        caseDiv.appendChild(caseP);
+        card.appendChild(caseDiv);
+
+        /* Date meta */
+        var metaText = formatDate(longslop.date) + ' \u00B7 MD ' + longslop.matchday;
+        card.appendChild(createEl('div', 'longslop-meta', metaText));
+
+        longslopContainer.appendChild(card);
+      }
+
+      /* -----------------------------------
+         RENDER MATCH CARD
+         ----------------------------------- */
       function createMatchCard(match, index) {
         var card = createEl('div', 'match-card' + (hasValue(match) ? ' has-value' : ''));
         card.style.animationDelay = (index * 0.05) + 's';
@@ -1489,33 +1696,27 @@
         var models = match.individual_models || {};
         var valueCount = countValues(match);
 
-        /* ---- Match Header ---- */
+        /* Match Header */
         var header = createEl('div', 'match-header');
 
         var meta = createEl('div', 'match-meta');
-        var mdSpan = createEl('span', 'matchday', 'MD ' + (match.matchday || '--'));
-        var dateSpan = createEl('span', null, formatDate(match.date) + ' \u00B7 ' + formatTime(match.date));
-        meta.appendChild(mdSpan);
-        meta.appendChild(dateSpan);
+        meta.appendChild(createEl('span', 'matchday', 'MD ' + (match.matchday || '--')));
+        meta.appendChild(createEl('span', null, formatDate(match.date) + ' \u00B7 ' + formatTime(match.date)));
         header.appendChild(meta);
 
         if (valueCount > 0) {
-          var badge = createEl('span', 'value-badge', valueCount + ' VALUE BET' + (valueCount > 1 ? 'S' : ''));
-          header.appendChild(badge);
+          header.appendChild(createEl('span', 'value-badge', valueCount + ' VALUE BET' + (valueCount > 1 ? 'S' : '')));
         }
         card.appendChild(header);
 
-        /* ---- Teams ---- */
+        /* Teams */
         var teamsRow = createEl('div', 'match-teams');
-        var homeTeam = createEl('span', 'team home', match.home_team);
-        var vsSpan = createEl('span', 'vs', 'VS');
-        var awayTeam = createEl('span', 'team away', match.away_team);
-        teamsRow.appendChild(homeTeam);
-        teamsRow.appendChild(vsSpan);
-        teamsRow.appendChild(awayTeam);
+        teamsRow.appendChild(createEl('span', 'team home', match.home_team));
+        teamsRow.appendChild(createEl('span', 'vs', 'VS'));
+        teamsRow.appendChild(createEl('span', 'team away', match.away_team));
         card.appendChild(teamsRow);
 
-        /* ---- Probability Bar ---- */
+        /* Probability bar */
         var hPct = Math.round(probs.home * 100);
         var dPct = Math.round(probs.draw * 100);
         var aPct = 100 - hPct - dPct;
@@ -1545,10 +1746,9 @@
         pcts.appendChild(createEl('span', 'prob-pct draw', dPct + '%'));
         pcts.appendChild(createEl('span', 'prob-pct away', aPct + '%'));
         probContainer.appendChild(pcts);
-
         card.appendChild(probContainer);
 
-        /* ---- Odds Grid ---- */
+        /* Odds grid */
         var oddsGrid = createEl('div', 'odds-grid');
         var outcomes = ['home', 'draw', 'away'];
         var outcomeLabels = ['HOME', 'DRAW', 'AWAY'];
@@ -1569,32 +1769,31 @@
           cell.appendChild(createEl('div', 'edge-value', formatEdge(edgeVal)));
 
           if (isValue) {
-            cell.appendChild(createEl('div', 'edge-tag', '\u{1F512} VALUE'));
+            cell.appendChild(createEl('div', 'edge-tag', '\uD83D\uDD12 VALUE'));
           }
 
           oddsGrid.appendChild(cell);
         }
         card.appendChild(oddsGrid);
 
-        /* ---- Model Toggle ---- */
+        /* Model toggle */
         var toggleBtn = createEl('button', 'model-toggle');
-        var arrow = createEl('span', 'arrow', '\u25BC');
-        toggleBtn.appendChild(arrow);
+        toggleBtn.appendChild(createEl('span', 'arrow', '\u25BC'));
         toggleBtn.appendChild(document.createTextNode(' MODEL BREAKDOWN'));
         toggleBtn.addEventListener('click', function () {
           this.closest('.match-card').classList.toggle('expanded');
         });
         card.appendChild(toggleBtn);
 
-        /* ---- Model Breakdown ---- */
-        var breakdown = createEl('div', 'model-breakdown');
+        /* Model breakdown */
+        var breakdownDiv = createEl('div', 'model-breakdown');
 
-        var mHeader = createEl('div', 'model-header');
+        var mHeader = createEl('div', 'model-header-row');
         mHeader.appendChild(createEl('span', null, 'MODEL'));
         mHeader.appendChild(createEl('span', null, 'HOME'));
         mHeader.appendChild(createEl('span', null, 'DRAW'));
         mHeader.appendChild(createEl('span', null, 'AWAY'));
-        breakdown.appendChild(mHeader);
+        breakdownDiv.appendChild(mHeader);
 
         var modelNames = {
           'dixon_coles': 'Dixon-Coles',
@@ -1611,103 +1810,28 @@
           row.appendChild(createEl('span', 'model-prob', formatPct(mp.home)));
           row.appendChild(createEl('span', 'model-prob', formatPct(mp.draw)));
           row.appendChild(createEl('span', 'model-prob', formatPct(mp.away)));
-          breakdown.appendChild(row);
+          breakdownDiv.appendChild(row);
         }
 
-        // Ensemble row
+        /* Ensemble row */
         var ensRow = createEl('div', 'model-row');
         ensRow.style.borderTop = '1px solid var(--border)';
         ensRow.style.paddingTop = '0.5rem';
         ensRow.style.marginTop = '0.25rem';
         var ensName = createEl('span', 'model-name', 'Ensemble');
-        ensName.style.color = 'var(--neon)';
+        ensName.style.color = 'var(--slime)';
         ensName.style.fontWeight = '600';
         ensRow.appendChild(ensName);
         var ensProbs = [probs.home, probs.draw, probs.away];
         for (var ep = 0; ep < ensProbs.length; ep++) {
           var ensP = createEl('span', 'model-prob', formatPct(ensProbs[ep]));
-          ensP.style.color = 'var(--neon)';
+          ensP.style.color = 'var(--slime)';
           ensRow.appendChild(ensP);
         }
-        breakdown.appendChild(ensRow);
+        breakdownDiv.appendChild(ensRow);
 
-        card.appendChild(breakdown);
+        card.appendChild(breakdownDiv);
         return card;
-      }
-
-      /* -----------------------------------
-         RENDER SLOP LOCKS
-         ----------------------------------- */
-      function getPickLabel(lock) {
-        if (lock.pick === 'home') return lock.home_team.toUpperCase() + ' WIN';
-        if (lock.pick === 'away') return lock.away_team.toUpperCase() + ' WIN';
-        return 'DRAW';
-      }
-
-      function renderLocks(locks) {
-        locksGrid.textContent = '';
-
-        if (!locks || locks.length === 0) {
-          locksSection.style.display = 'block';
-          var emptyMsg = createEl('div', 'locks-empty', 'NO LOCKS THIS WEEK \u2014 check back when odds are posted');
-          locksGrid.appendChild(emptyMsg);
-          locksSubtitle.textContent = '';
-          return;
-        }
-
-        locksSection.style.display = 'block';
-        locksSubtitle.textContent = 'TOP ' + locks.length + ' PICK' + (locks.length !== 1 ? 'S' : '') + ' \u2022 ODDS -200 TO +200 \u2022 RANKED BY EDGE';
-
-        for (var i = 0; i < locks.length; i++) {
-          var lock = locks[i];
-          var isFeatured = (i === 0);
-          var card = createEl('div', 'lock-card' + (isFeatured ? ' lock-featured' : ''));
-
-          /* Rank */
-          var rank = createEl('div', 'lock-rank', '\u{1F512} #' + (i + 1) + (isFeatured ? ' TOP LOCK' : ' LOCK'));
-          card.appendChild(rank);
-
-          /* Match */
-          var matchName = createEl('div', 'lock-match', lock.home_team + ' vs ' + lock.away_team);
-          card.appendChild(matchName);
-
-          /* Pick */
-          var pickClass = 'lock-pick pick-' + lock.pick;
-          var pick = createEl('div', pickClass, getPickLabel(lock));
-          card.appendChild(pick);
-
-          /* American odds */
-          var odds = createEl('div', 'lock-odds', formatOdds(lock.american_odds));
-          card.appendChild(odds);
-
-          /* Stats row: confidence + edge */
-          var stats = createEl('div', 'lock-stats');
-
-          var confBlock = createEl('span');
-          var confLabel = createEl('span', 'lock-stat-label', 'CONF ');
-          var confValue = createEl('span', 'lock-stat-value', (lock.model_prob * 100).toFixed(1) + '%');
-          confBlock.appendChild(confLabel);
-          confBlock.appendChild(confValue);
-          stats.appendChild(confBlock);
-
-          var edgeBlock = createEl('span');
-          var edgeLabel = createEl('span', 'lock-stat-label', 'EDGE ');
-          var edgePct = (lock.edge * 100).toFixed(1);
-          var edgeText = '+' + edgePct + '%';
-          var edgeValue = createEl('span', 'lock-stat-value neon', edgeText);
-          edgeBlock.appendChild(edgeLabel);
-          edgeBlock.appendChild(edgeValue);
-          stats.appendChild(edgeBlock);
-
-          card.appendChild(stats);
-
-          /* Meta: date + matchday */
-          var metaText = formatDate(lock.date) + ' \u00B7 MD ' + lock.matchday;
-          var meta = createEl('div', 'lock-meta', metaText);
-          card.appendChild(meta);
-
-          locksGrid.appendChild(card);
-        }
       }
 
       /* -----------------------------------
@@ -1733,15 +1857,14 @@
 
         if (filtered.length === 0) {
           var noValue = createEl('div', 'empty-state');
-          noValue.appendChild(createEl('div', 'empty-icon', '\u{1F50D}'));
+          noValue.appendChild(createEl('div', 'empty-icon', '\uD83D\uDD0D'));
           noValue.appendChild(createEl('h3', null, 'NO VALUE BETS FOUND'));
-          noValue.appendChild(createEl('p', null, 'No edges detected in current odds. The market may be efficient for these matches.'));
+          noValue.appendChild(createEl('p', null, 'No edges detected in current odds. The market is efficient. For now.'));
           matchesGrid.appendChild(noValue);
           matchCount.textContent = '0';
           return;
         }
 
-        // Sort: value bets first, then by date
         filtered.sort(function (a, b) {
           var av = countValues(a);
           var bv = countValues(b);
@@ -1768,13 +1891,12 @@
         seasonDist.style.display = 'block';
 
         var cards = [
-          { label: 'TOTAL MATCHES', value: String(stats.total_matches || 0), sub: 'PLAYED THIS SEASON', neon: false },
-          { label: 'HOME WIN RATE', value: formatPct(stats.home_win_pct || 0), sub: (stats.home_wins || 0) + ' HOME WINS', neon: false },
-          { label: 'DRAW RATE', value: formatPct(stats.draw_pct || 0), sub: (stats.draws || 0) + ' DRAWS', neon: false },
-          { label: 'AWAY WIN RATE', value: formatPct(stats.away_win_pct || 0), sub: (stats.away_wins || 0) + ' AWAY WINS', neon: false }
+          { label: 'TOTAL MATCHES', value: String(stats.total_matches || 0), sub: 'PLAYED THIS SEASON', isSlime: false },
+          { label: 'HOME WIN RATE', value: formatPct(stats.home_win_pct || 0), sub: (stats.home_wins || 0) + ' HOME WINS', isSlime: false },
+          { label: 'DRAW RATE', value: formatPct(stats.draw_pct || 0), sub: (stats.draws || 0) + ' DRAWS', isSlime: false },
+          { label: 'AWAY WIN RATE', value: formatPct(stats.away_win_pct || 0), sub: (stats.away_wins || 0) + ' AWAY WINS', isSlime: false }
         ];
 
-        // Count value bets in current predictions
         if (data.matches) {
           var totalValue = 0;
           for (var i = 0; i < data.matches.length; i++) {
@@ -1784,7 +1906,7 @@
             label: 'VALUE BETS FOUND',
             value: String(totalValue),
             sub: 'IN ' + data.matches.length + ' UPCOMING MATCHES',
-            neon: true
+            isSlime: true
           });
         }
 
@@ -1792,12 +1914,12 @@
           var sc = createEl('div', 'stat-card fade-in');
           sc.style.animationDelay = (c * 0.05) + 's';
           sc.appendChild(createEl('h3', null, cards[c].label));
-          sc.appendChild(createEl('div', 'stat-value' + (cards[c].neon ? ' neon' : ''), cards[c].value));
+          sc.appendChild(createEl('div', 'stat-value' + (cards[c].isSlime ? ' slime' : ''), cards[c].value));
           sc.appendChild(createEl('div', 'stat-label', cards[c].sub));
           statsGrid.appendChild(sc);
         }
 
-        // Distribution bar
+        /* Distribution bar */
         var hPct = Math.round((stats.home_win_pct || 0) * 100);
         var dPct = Math.round((stats.draw_pct || 0) * 100);
         var aPct = 100 - hPct - dPct;
@@ -1842,6 +1964,8 @@
         };
 
         var keys = Object.keys(weights);
+        modelCount.textContent = keys.length + ' MODEL' + (keys.length !== 1 ? 'S' : '');
+
         for (var i = 0; i < keys.length; i++) {
           var k = keys[i];
           var w = weights[k];
@@ -1859,12 +1983,84 @@
           item.appendChild(createEl('span', 'weight-pct', pct + '%'));
           weightsList.appendChild(item);
 
-          // Animate bar fill
           (function (fillEl, target) {
             setTimeout(function () {
               fillEl.style.width = target + '%';
             }, 100 + i * 100);
           })(fill, pct);
+        }
+      }
+
+      /* -----------------------------------
+         RENDER METHODOLOGY TEXT
+         ----------------------------------- */
+      function renderMethodology() {
+        methodologyText.textContent = '';
+
+        var intro = createEl('p', null, 'Our model says these things. Whether you should listen is another matter entirely.');
+        intro.style.marginBottom = '0.75rem';
+        methodologyText.appendChild(intro);
+
+        var models = [
+          {
+            name: 'Dixon-Coles',
+            desc: 'Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.'
+          },
+          {
+            name: 'Elo Ratings',
+            desc: 'Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.'
+          }
+        ];
+
+        for (var i = 0; i < models.length; i++) {
+          var p = createEl('p');
+          p.style.marginTop = '0.5rem';
+
+          var arrow = createEl('span');
+          arrow.style.color = 'var(--slime)';
+          arrow.textContent = '> ';
+          p.appendChild(arrow);
+
+          var strong = createEl('strong');
+          strong.style.color = 'var(--text)';
+          strong.textContent = models[i].name;
+          p.appendChild(strong);
+
+          p.appendChild(document.createTextNode(' \u2014 ' + models[i].desc));
+          methodologyText.appendChild(p);
+        }
+
+        var edgeNote = createEl('p', null, 'Edge = Model Probability - Implied Probability from odds. Positive edge = potential value bet. Or potential bad idea. Hard to say.');
+        edgeNote.style.marginTop = '0.75rem';
+        edgeNote.style.color = 'var(--text-muted)';
+        methodologyText.appendChild(edgeNote);
+      }
+
+      /* -----------------------------------
+         RENDER FOOTER DATA SOURCES
+         ----------------------------------- */
+      function renderFooterDataSources() {
+        footerDataSources.textContent = '';
+
+        var text1 = document.createTextNode('Data: ');
+        footerDataSources.appendChild(text1);
+
+        var sources = [
+          { name: 'football-data.org', url: 'https://www.football-data.org' },
+          { name: 'Understat', url: 'https://understat.com' },
+          { name: 'The Odds API', url: 'https://the-odds-api.com' }
+        ];
+
+        for (var i = 0; i < sources.length; i++) {
+          if (i > 0) {
+            footerDataSources.appendChild(document.createTextNode(' \u00B7 '));
+          }
+          var a = createEl('a');
+          a.href = sources[i].url;
+          a.target = '_blank';
+          a.rel = 'noopener';
+          a.textContent = sources[i].name;
+          footerDataSources.appendChild(a);
         }
       }
 
@@ -1875,15 +2071,24 @@
         loadingState.style.display = 'none';
         matchesGrid.textContent = '';
         var errDiv = createEl('div', 'error-state');
-        errDiv.appendChild(createEl('h3', null, 'CONNECTION ERROR'));
+        errDiv.appendChild(createEl('h3', null, 'SOMETHING BROKE'));
         errDiv.appendChild(createEl('p', null, msg));
-        matchesGrid.appendChild(errDiv);
+
+        /* Show error in the active tab */
+        var activePanel = $('.tab-panel.active');
+        if (activePanel) {
+          activePanel.textContent = '';
+          activePanel.appendChild(errDiv);
+        }
       }
 
       /* -----------------------------------
          FETCH & INIT
          ----------------------------------- */
       function init() {
+        renderMethodology();
+        renderFooterDataSources();
+
         fetch('data/predictions.json')
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -1893,7 +2098,7 @@
             predictionData = data;
             loadingState.style.display = 'none';
 
-            // Update header
+            /* Header meta */
             if (data.generated_at) {
               headerUpdated.textContent = 'UPDATED ' + formatTimestamp(data.generated_at).toUpperCase();
               footerUpdated.textContent = 'Last updated: ' + formatTimestamp(data.generated_at);
@@ -1902,8 +2107,9 @@
             var matchList = data.matches || [];
             headerMatches.textContent = matchList.length + ' MATCH' + (matchList.length !== 1 ? 'ES' : '');
 
-            // Render all sections
+            /* Render all sections */
             renderLocks(data.slop_locks || []);
+            renderLongslop(data.longslop || null);
             renderMatches(matchList);
             renderStats(data);
             renderWeights(data.model_weights);
