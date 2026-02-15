@@ -349,3 +349,7 @@ def run_pipeline(output_dir=None):
     _save_json(accuracy_path, accuracy_log)
 
     return predictions_output
+
+
+if __name__ == "__main__":
+    run_pipeline()
