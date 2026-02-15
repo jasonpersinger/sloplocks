@@ -915,6 +915,224 @@
     }
 
     /* ========================================
+       SLOP LOCKS HERO SECTION
+       ======================================== */
+    .locks-section {
+      margin: 2rem 0 1.5rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(0, 255, 136, 0.25);
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.03) 0%, transparent 60%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .locks-section::before {
+      content: '';
+      position: absolute;
+      top: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      box-shadow: 0 0 15px var(--neon-glow), 0 0 30px rgba(0, 255, 136, 0.15);
+    }
+
+    .locks-section::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+      box-shadow: 0 0 15px var(--neon-glow), 0 0 30px rgba(0, 255, 136, 0.15);
+    }
+
+    .locks-title {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 2rem;
+      letter-spacing: 0.1em;
+      color: var(--neon);
+      text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(0, 255, 136, 0.15);
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+      line-height: 1.2;
+    }
+
+    .locks-subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .locks-grid {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 0.5rem;
+    }
+
+    .locks-grid::-webkit-scrollbar { height: 4px; }
+    .locks-grid::-webkit-scrollbar-track { background: transparent; }
+    .locks-grid::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
+
+    .lock-card {
+      flex: 0 0 200px;
+      min-width: 200px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--neon);
+      border-radius: 6px;
+      padding: 1rem;
+      scroll-snap-align: start;
+      position: relative;
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .lock-card:nth-child(1) { animation-delay: 0.1s; }
+    .lock-card:nth-child(2) { animation-delay: 0.2s; }
+    .lock-card:nth-child(3) { animation-delay: 0.3s; }
+    .lock-card:nth-child(4) { animation-delay: 0.4s; }
+    .lock-card:nth-child(5) { animation-delay: 0.5s; }
+
+    .lock-card.lock-featured {
+      flex: 0 0 230px;
+      min-width: 230px;
+      border-left-width: 4px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.08);
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.04) 0%, var(--bg-card) 50%);
+    }
+
+    .lock-rank {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .lock-featured .lock-rank {
+      color: var(--neon);
+      font-size: 0.8rem;
+    }
+
+    .lock-match {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.85rem;
+      letter-spacing: 0.03em;
+      color: var(--white);
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      line-height: 1.3;
+    }
+
+    .lock-featured .lock-match {
+      font-size: 0.95rem;
+    }
+
+    .lock-pick {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      line-height: 1.2;
+    }
+
+    .lock-pick.pick-home { color: var(--home-color); }
+    .lock-pick.pick-draw { color: var(--draw-color); }
+    .lock-pick.pick-away { color: var(--away-color); }
+
+    .lock-featured .lock-pick {
+      font-size: 1.15rem;
+    }
+
+    .lock-odds {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+      line-height: 1;
+    }
+
+    .lock-featured .lock-odds {
+      font-size: 1.6rem;
+    }
+
+    .lock-stats {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+    }
+
+    .lock-stat-label {
+      color: var(--text-muted);
+    }
+
+    .lock-stat-value {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .lock-stat-value.neon {
+      color: var(--neon);
+    }
+
+    .lock-meta {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .locks-empty {
+      text-align: center;
+      padding: 2rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 600px) {
+      .locks-title {
+        font-size: 1.5rem;
+      }
+
+      .locks-grid {
+        flex-direction: column;
+      }
+
+      .lock-card,
+      .lock-card.lock-featured {
+        flex: none;
+        min-width: unset;
+        width: 100%;
+      }
+    }
+
+    /* ========================================
        RESPONSIVE
        ======================================== */
     @media (max-width: 600px) {
@@ -1018,6 +1236,15 @@
 
   <!-- ============ MAIN ============ -->
   <main class="container">
+    <!-- Slop Locks Hero Section -->
+    <section class="locks-section" id="locks-section" style="display:none;">
+      <h2 class="locks-title">\u{1F512} SLOP LOCKS OF THE WEEK</h2>
+      <p class="locks-subtitle" id="locks-subtitle">TOP 5 PICKS \u2022 ODDS -200 TO +200 \u2022 RANKED BY EDGE</p>
+      <div class="locks-grid" id="locks-grid">
+        <!-- Lock cards rendered by JS -->
+      </div>
+    </section>
+
     <!-- Nav Tabs -->
     <nav class="nav-tabs" role="tablist">
       <button class="nav-tab active" data-tab="matches" role="tab" aria-selected="true">MATCHES</button>
@@ -1131,6 +1358,9 @@
       function $$(sel) { return document.querySelectorAll(sel); }
 
       var loadingState = $('#loading-state');
+      var locksSection = $('#locks-section');
+      var locksGrid = $('#locks-grid');
+      var locksSubtitle = $('#locks-subtitle');
       var matchesGrid = $('#matches-grid');
       var matchCount = $('#match-count');
       var headerUpdated = $('#header-updated');
@@ -1406,6 +1636,81 @@
       }
 
       /* -----------------------------------
+         RENDER SLOP LOCKS
+         ----------------------------------- */
+      function getPickLabel(lock) {
+        if (lock.pick === 'home') return lock.home_team.toUpperCase() + ' WIN';
+        if (lock.pick === 'away') return lock.away_team.toUpperCase() + ' WIN';
+        return 'DRAW';
+      }
+
+      function renderLocks(locks) {
+        locksGrid.textContent = '';
+
+        if (!locks || locks.length === 0) {
+          locksSection.style.display = 'block';
+          var emptyMsg = createEl('div', 'locks-empty', 'NO LOCKS THIS WEEK \u2014 check back when odds are posted');
+          locksGrid.appendChild(emptyMsg);
+          locksSubtitle.textContent = '';
+          return;
+        }
+
+        locksSection.style.display = 'block';
+        locksSubtitle.textContent = 'TOP ' + locks.length + ' PICK' + (locks.length !== 1 ? 'S' : '') + ' \u2022 ODDS -200 TO +200 \u2022 RANKED BY EDGE';
+
+        for (var i = 0; i < locks.length; i++) {
+          var lock = locks[i];
+          var isFeatured = (i === 0);
+          var card = createEl('div', 'lock-card' + (isFeatured ? ' lock-featured' : ''));
+
+          /* Rank */
+          var rank = createEl('div', 'lock-rank', '\u{1F512} #' + (i + 1) + (isFeatured ? ' TOP LOCK' : ' LOCK'));
+          card.appendChild(rank);
+
+          /* Match */
+          var matchName = createEl('div', 'lock-match', lock.home_team + ' vs ' + lock.away_team);
+          card.appendChild(matchName);
+
+          /* Pick */
+          var pickClass = 'lock-pick pick-' + lock.pick;
+          var pick = createEl('div', pickClass, getPickLabel(lock));
+          card.appendChild(pick);
+
+          /* American odds */
+          var odds = createEl('div', 'lock-odds', formatOdds(lock.american_odds));
+          card.appendChild(odds);
+
+          /* Stats row: confidence + edge */
+          var stats = createEl('div', 'lock-stats');
+
+          var confBlock = createEl('span');
+          var confLabel = createEl('span', 'lock-stat-label', 'CONF ');
+          var confValue = createEl('span', 'lock-stat-value', (lock.model_prob * 100).toFixed(1) + '%');
+          confBlock.appendChild(confLabel);
+          confBlock.appendChild(confValue);
+          stats.appendChild(confBlock);
+
+          var edgeBlock = createEl('span');
+          var edgeLabel = createEl('span', 'lock-stat-label', 'EDGE ');
+          var edgePct = (lock.edge * 100).toFixed(1);
+          var edgeText = '+' + edgePct + '%';
+          var edgeValue = createEl('span', 'lock-stat-value neon', edgeText);
+          edgeBlock.appendChild(edgeLabel);
+          edgeBlock.appendChild(edgeValue);
+          stats.appendChild(edgeBlock);
+
+          card.appendChild(stats);
+
+          /* Meta: date + matchday */
+          var metaText = formatDate(lock.date) + ' \u00B7 MD ' + lock.matchday;
+          var meta = createEl('div', 'lock-meta', metaText);
+          card.appendChild(meta);
+
+          locksGrid.appendChild(card);
+        }
+      }
+
+      /* -----------------------------------
          RENDER MATCHES
          ----------------------------------- */
       function renderMatches(matches) {
@@ -1598,6 +1903,7 @@
             headerMatches.textContent = matchList.length + ' MATCH' + (matchList.length !== 1 ? 'ES' : '');
 
             // Render all sections
+            renderLocks(data.slop_locks || []);
             renderMatches(matchList);
             renderStats(data);
             renderWeights(data.model_weights);

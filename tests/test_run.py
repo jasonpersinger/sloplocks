@@ -57,3 +57,12 @@ class TestRunPipeline:
         assert "model_probs" in match
         assert "edges" in match
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
+
+        # Slop Locks of the Week
+        assert "slop_locks" in data
+        assert isinstance(data["slop_locks"], list)
+        assert len(data["slop_locks"]) <= 5
+        for lock in data["slop_locks"]:
+            assert lock["pick"] in ("home", "draw", "away")
+            assert lock["edge"] > 0
+            assert -200 <= lock["american_odds"] <= 200
