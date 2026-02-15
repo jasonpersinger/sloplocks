@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLOP LOCKS — EPL Predictions</title>
+  <meta name="description" content="EPL match predictions and betting edge finder powered by Dixon-Coles, xG, and Elo ensemble models.">
+  <meta name="theme-color" content="#00ff88">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* ========================================
+       RESET & BASE
+       ======================================== */
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0a0a;
+      --bg-card: #0f0f0f;
+      --bg-card-hover: #141414;
+      --border: #1a1a1a;
+      --border-bright: #2a2a2a;
+      --neon: #00ff88;
+      --neon-dim: rgba(0, 255, 136, 0.15);
+      --neon-glow: rgba(0, 255, 136, 0.3);
+      --white: #ffffff;
+      --text: #cccccc;
+      --text-dim: #888888;
+      --text-muted: #555555;
+      --danger: #ff4444;
+      --danger-dim: rgba(255, 68, 68, 0.15);
+      --home-color: #4a9eff;
+      --draw-color: #888888;
+      --away-color: #ff6b4a;
+      --font-heading: 'Oswald', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+    /* ========================================
+       SCANLINES OVERLAY
+       ======================================== */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0, 0, 0, 0.03) 2px,
+        rgba(0, 0, 0, 0.03) 4px
+      );
+    }
+
+    /* ========================================
+       LAYOUT
+       ======================================== */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    /* ========================================
+       HEADER
+       ======================================== */
+    header {
+      padding: 2rem 0 1rem;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 1px;
+      background: var(--neon);
+      box-shadow: 0 0 10px var(--neon-glow), 0 0 20px var(--neon-glow);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .logo-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 4px var(--neon-glow));
+    }
+
+    .wordmark {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 2.5rem;
+      letter-spacing: 0.15em;
+      color: var(--neon);
+      text-shadow: 0 0 20px var(--neon-glow), 0 0 40px rgba(0, 255, 136, 0.1);
+      line-height: 1;
+    }
+
+    .subtitle {
+      font-family: var(--font-heading);
+      font-weight: 400;
+      font-size: 0.8rem;
+      letter-spacing: 0.3em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+
+    .header-meta {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+
+    .header-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--neon);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+      box-shadow: 0 0 4px var(--neon-glow);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ========================================
+       NAVIGATION TABS
+       ======================================== */
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      margin: 1.5rem 0;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .nav-tab {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      text-align: center;
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: transparent;
+      border: none;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .nav-tab:last-child {
+      border-right: none;
+    }
+
+    .nav-tab:hover {
+      color: var(--white);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .nav-tab.active {
+      color: var(--neon);
+      background: var(--neon-dim);
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ========================================
+       SECTION HEADERS
+       ======================================== */
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-header h2 {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .section-header .count {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--neon);
+      background: var(--neon-dim);
+      padding: 0.15rem 0.5rem;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 255, 136, 0.2);
+    }
+
+    /* ========================================
+       MATCH CARDS
+       ======================================== */
+    .matches-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .match-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .match-card:hover {
+      background: var(--bg-card-hover);
+      border-color: var(--border-bright);
+    }
+
+    .match-card.has-value {
+      border-color: rgba(0, 255, 136, 0.25);
+    }
+
+    .match-card.has-value::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--neon), transparent);
+    }
+
+    /* Match header */
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .match-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .match-meta .matchday {
+      color: var(--text-dim);
+      font-family: var(--font-heading);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .value-badge {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--neon);
+      background: var(--neon-dim);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      padding: 0.2rem 0.5rem;
+      border-radius: 2px;
+      text-transform: uppercase;
+      animation: glow-pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes glow-pulse {
+      0%, 100% { box-shadow: 0 0 4px var(--neon-dim); }
+      50% { box-shadow: 0 0 12px var(--neon-glow); }
+    }
+
+    /* Teams */
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .team {
+      flex: 1;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+      color: var(--white);
+      text-transform: uppercase;
+    }
+
+    .team.home {
+      text-align: right;
+    }
+
+    .team.away {
+      text-align: left;
+    }
+
+    .vs {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* Probability bar */
+    .prob-bar-container {
+      margin-bottom: 1rem;
+    }
+
+    .prob-bar-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.35rem;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+    }
+
+    .prob-bar-labels span {
+      color: var(--text-dim);
+    }
+
+    .prob-bar {
+      display: flex;
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      background: #1a1a1a;
+    }
+
+    .prob-segment {
+      transition: width 0.5s ease;
+      position: relative;
+    }
+
+    .prob-segment.home {
+      background: var(--home-color);
+      border-radius: 3px 0 0 3px;
+    }
+
+    .prob-segment.draw {
+      background: var(--draw-color);
+    }
+
+    .prob-segment.away {
+      background: var(--away-color);
+      border-radius: 0 3px 3px 0;
+    }
+
+    .prob-percentages {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 0.35rem;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    .prob-pct.home { color: var(--home-color); }
+    .prob-pct.draw { color: var(--draw-color); }
+    .prob-pct.away { color: var(--away-color); }
+
+    /* Odds & Edges grid */
+    .odds-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .odds-cell {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem 0.5rem;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .odds-cell.value {
+      border-color: rgba(0, 255, 136, 0.35);
+      background: var(--neon-dim);
+    }
+
+    .odds-cell.value .edge-value {
+      color: var(--neon);
+    }
+
+    .odds-cell.negative .edge-value {
+      color: var(--danger);
+    }
+
+    .odds-label {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .odds-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+
+    .edge-value {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .edge-tag {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      color: var(--neon);
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+    }
+
+    /* Model breakdown */
+    .model-breakdown {
+      border-top: 1px solid var(--border);
+      padding-top: 0.75rem;
+      display: none;
+    }
+
+    .match-card.expanded .model-breakdown {
+      display: block;
+    }
+
+    .model-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      width: 100%;
+      background: none;
+      border: none;
+      border-top: 1px solid var(--border);
+      padding: 0.6rem 0 0;
+      margin-top: 0.75rem;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .model-toggle:hover {
+      color: var(--text-dim);
+    }
+
+    .model-toggle .arrow {
+      transition: transform 0.2s;
+      display: inline-block;
+    }
+
+    .match-card.expanded .model-toggle .arrow {
+      transform: rotate(180deg);
+    }
+
+    .model-row {
+      display: grid;
+      grid-template-columns: 120px repeat(3, 1fr);
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.4rem 0;
+      font-size: 0.7rem;
+    }
+
+    .model-row + .model-row {
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .model-name {
+      font-family: var(--font-mono);
+      color: var(--text-dim);
+      font-size: 0.65rem;
+    }
+
+    .model-prob {
+      text-align: center;
+      font-family: var(--font-mono);
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .model-header {
+      display: grid;
+      grid-template-columns: 120px repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .model-header span {
+      font-family: var(--font-heading);
+      font-size: 0.55rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    .model-header span:first-child {
+      text-align: left;
+    }
+
+    /* ========================================
+       STATS PANEL
+       ======================================== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1.25rem;
+    }
+
+    .stat-card h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: 1.8rem;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value.neon {
+      color: var(--neon);
+      text-shadow: 0 0 10px var(--neon-glow);
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* Season distribution bar */
+    .dist-bar-container {
+      margin-top: 1rem;
+    }
+
+    .dist-bar {
+      display: flex;
+      height: 24px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 0.5rem;
+    }
+
+    .dist-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 600;
+      color: var(--white);
+      transition: width 0.5s ease;
+    }
+
+    .dist-segment.home { background: var(--home-color); }
+    .dist-segment.draw { background: var(--draw-color); }
+    .dist-segment.away { background: var(--away-color); }
+
+    .dist-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      font-family: var(--font-mono);
+    }
+
+    .dist-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: var(--text-dim);
+    }
+
+    .dist-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+    }
+
+    .dist-dot.home { background: var(--home-color); }
+    .dist-dot.draw { background: var(--draw-color); }
+    .dist-dot.away { background: var(--away-color); }
+
+    /* Model weights */
+    .weights-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .weight-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .weight-name {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      width: 100px;
+      flex-shrink: 0;
+    }
+
+    .weight-bar-track {
+      flex: 1;
+      height: 6px;
+      background: #1a1a1a;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .weight-bar-fill {
+      height: 100%;
+      background: var(--neon);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      box-shadow: 0 0 6px var(--neon-glow);
+    }
+
+    .weight-pct {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--neon);
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ========================================
+       LOADING / EMPTY STATES
+       ======================================== */
+    .loading-state {
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--neon);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      margin: 2rem 0;
+    }
+
+    .empty-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .error-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      border: 1px solid rgba(255, 68, 68, 0.2);
+      background: var(--danger-dim);
+      border-radius: 6px;
+      margin: 2rem 0;
+    }
+
+    .error-state h3 {
+      font-family: var(--font-heading);
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--danger);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .error-state p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+
+    /* ========================================
+       FOOTER
+       ======================================== */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 0;
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .footer-line {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .footer-line a {
+      color: var(--text-dim);
+      text-decoration: none;
+    }
+
+    .footer-line a:hover {
+      color: var(--neon);
+    }
+
+    .footer-brand {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--neon);
+      margin-top: 1rem;
+      opacity: 0.5;
+    }
+
+    /* ========================================
+       TERMINAL CURSOR BLINK
+       ======================================== */
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: var(--neon);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* ========================================
+       VALUE MATCHES FILTER
+       ======================================== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      padding: 0.4rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      background: transparent;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-bright);
+      color: var(--white);
+    }
+
+    .filter-btn.active {
+      border-color: var(--neon);
+      color: var(--neon);
+      background: var(--neon-dim);
+    }
+
+    .sort-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 600px) {
+      .wordmark {
+        font-size: 2rem;
+      }
+
+      .team {
+        font-size: 0.95rem;
+      }
+
+      .match-header {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .header-meta {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .odds-grid {
+        gap: 0.35rem;
+      }
+
+      .odds-value {
+        font-size: 0.95rem;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .model-row,
+      .model-header {
+        grid-template-columns: 90px repeat(3, 1fr);
+        gap: 0.25rem;
+      }
+
+      .model-name {
+        font-size: 0.6rem;
+      }
+
+      .weight-name {
+        width: 80px;
+        font-size: 0.65rem;
+      }
+
+      .nav-tab {
+        font-size: 0.7rem;
+        padding: 0.6rem 0.5rem;
+      }
+    }
+
+    /* ========================================
+       ANIMATIONS
+       ======================================== */
+    .fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .match-card {
+      animation: fadeIn 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .match-card:nth-child(1) { animation-delay: 0.05s; }
+    .match-card:nth-child(2) { animation-delay: 0.1s; }
+    .match-card:nth-child(3) { animation-delay: 0.15s; }
+    .match-card:nth-child(4) { animation-delay: 0.2s; }
+    .match-card:nth-child(5) { animation-delay: 0.25s; }
+    .match-card:nth-child(6) { animation-delay: 0.3s; }
+    .match-card:nth-child(7) { animation-delay: 0.35s; }
+    .match-card:nth-child(8) { animation-delay: 0.4s; }
+    .match-card:nth-child(9) { animation-delay: 0.45s; }
+    .match-card:nth-child(10) { animation-delay: 0.5s; }
+  </style>
+</head>
+<body>
+  <!-- ============ HEADER ============ -->
+  <header>
+    <div class="container">
+      <div class="logo">
+        <span class="logo-icon">&#x1F512;</span>
+        <h1 class="wordmark">SLOP LOCKS</h1>
+      </div>
+      <p class="subtitle">EPL PREDICTIONS &amp; EDGE DETECTION</p>
+      <div class="header-meta">
+        <span><span class="pulse-dot"></span> LIVE MODEL</span>
+        <span id="header-updated">LOADING...</span>
+        <span id="header-matches">-- MATCHES</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="container">
+    <!-- Nav Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="nav-tab active" data-tab="matches" role="tab" aria-selected="true">MATCHES</button>
+      <button class="nav-tab" data-tab="stats" role="tab" aria-selected="false">STATS</button>
+      <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">MODELS</button>
+    </nav>
+
+    <!-- Loading State -->
+    <div id="loading-state" class="loading-state">
+      <div class="loading-spinner"></div>
+      <p class="loading-text">FETCHING PREDICTIONS<span class="cursor"></span></p>
+    </div>
+
+    <!-- ============ MATCHES TAB ============ -->
+    <div id="tab-matches" class="tab-panel active">
+      <div class="section-header">
+        <h2>UPCOMING MATCHES</h2>
+        <span class="count" id="match-count">0</span>
+      </div>
+
+      <div class="filter-bar" id="filter-bar">
+        <button class="filter-btn active" data-filter="all">ALL</button>
+        <button class="filter-btn" data-filter="value">VALUE BETS ONLY</button>
+        <span class="sort-label" id="sort-label"></span>
+      </div>
+
+      <div class="matches-grid" id="matches-grid">
+        <!-- Match cards rendered by JS -->
+      </div>
+    </div>
+
+    <!-- ============ STATS TAB ============ -->
+    <div id="tab-stats" class="tab-panel">
+      <div class="section-header">
+        <h2>SEASON STATS</h2>
+        <span class="count">2024-25</span>
+      </div>
+
+      <div class="stats-grid" id="stats-grid">
+        <!-- Stats rendered by JS -->
+      </div>
+
+      <div class="stat-card" id="season-dist" style="display:none;">
+        <h3>OUTCOME DISTRIBUTION</h3>
+        <div class="dist-bar-container">
+          <div class="dist-bar" id="dist-bar"></div>
+          <div class="dist-legend" id="dist-legend"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ MODELS TAB ============ -->
+    <div id="tab-models" class="tab-panel">
+      <div class="section-header">
+        <h2>ENSEMBLE WEIGHTS</h2>
+        <span class="count">3 MODELS</span>
+      </div>
+
+      <div class="stat-card" id="weights-card" style="display:none;">
+        <h3>MODEL CONTRIBUTION</h3>
+        <div class="weights-list" id="weights-list">
+          <!-- Weights rendered by JS -->
+        </div>
+      </div>
+
+      <div class="stat-card" style="margin-top: 1rem;">
+        <h3>METHODOLOGY</h3>
+        <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.8;">
+          <p style="margin-bottom: 0.75rem;">Three independent models generate match probabilities, then blended via optimized weights:</p>
+          <p><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Dixon-Coles</strong> &#8212; Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.</p>
+          <p style="margin-top: 0.5rem;"><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Expected Goals (xG)</strong> &#8212; Uses underlying shot quality data from Understat. More predictive than raw results for future performance.</p>
+          <p style="margin-top: 0.5rem;"><span style="color: var(--neon);">&gt;</span> <strong style="color: var(--white);">Elo Ratings</strong> &#8212; Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.</p>
+          <p style="margin-top: 0.75rem; color: var(--text-muted);">Edge = Model Probability - Implied Probability from odds. Positive edge = potential value bet.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer>
+    <div class="container">
+      <p class="footer-line">Powered by Dixon-Coles + xG + Elo ensemble</p>
+      <p class="footer-line">Data: <a href="https://www.football-data.org" target="_blank" rel="noopener">football-data.org</a> &#183; <a href="https://understat.com" target="_blank" rel="noopener">Understat</a> &#183; <a href="https://the-odds-api.com" target="_blank" rel="noopener">The Odds API</a></p>
+      <p class="footer-line" id="footer-updated"></p>
+      <p class="footer-brand">SLOP LOCKS</p>
+    </div>
+  </footer>
+
+  <!-- ============ JAVASCRIPT ============ -->
+  <script>
+    (function () {
+      'use strict';
+
+      /* -----------------------------------
+         SERVICE WORKER REGISTRATION
+         ----------------------------------- */
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      }
+
+      /* -----------------------------------
+         STATE
+         ----------------------------------- */
+      var predictionData = null;
+      var currentFilter = 'all';
+
+      /* -----------------------------------
+         DOM REFS
+         ----------------------------------- */
+      function $(sel) { return document.querySelector(sel); }
+      function $$(sel) { return document.querySelectorAll(sel); }
+
+      var loadingState = $('#loading-state');
+      var matchesGrid = $('#matches-grid');
+      var matchCount = $('#match-count');
+      var headerUpdated = $('#header-updated');
+      var headerMatches = $('#header-matches');
+      var statsGrid = $('#stats-grid');
+      var seasonDist = $('#season-dist');
+      var distBar = $('#dist-bar');
+      var distLegend = $('#dist-legend');
+      var weightsCard = $('#weights-card');
+      var weightsList = $('#weights-list');
+      var footerUpdated = $('#footer-updated');
+      var sortLabel = $('#sort-label');
+
+      /* -----------------------------------
+         TAB SWITCHING
+         ----------------------------------- */
+      $$('.nav-tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          $$('.nav-tab').forEach(function (t) {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          $$('.tab-panel').forEach(function (p) { p.classList.remove('active'); });
+
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+          var target = tab.getAttribute('data-tab');
+          $('#tab-' + target).classList.add('active');
+        });
+      });
+
+      /* -----------------------------------
+         FILTER BUTTONS
+         ----------------------------------- */
+      $$('.filter-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          $$('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          currentFilter = btn.getAttribute('data-filter');
+          if (predictionData) renderMatches(predictionData.matches);
+        });
+      });
+
+      /* -----------------------------------
+         HELPERS
+         ----------------------------------- */
+      function formatDate(isoStr) {
+        var d = new Date(isoStr);
+        var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();
+      }
+
+      function formatTime(isoStr) {
+        var d = new Date(isoStr);
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12 || 12;
+        return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+      }
+
+      function formatTimestamp(isoStr) {
+        var d = new Date(isoStr);
+        return d.toLocaleDateString('en-US', {
+          month: 'short', day: 'numeric', year: 'numeric',
+          hour: 'numeric', minute: '2-digit'
+        });
+      }
+
+      function formatOdds(american) {
+        if (american === null || american === undefined) return '--';
+        var n = Math.round(american);
+        return n >= 0 ? '+' + n : '' + n;
+      }
+
+      function formatEdge(edge) {
+        if (edge === null || edge === undefined) return '--';
+        var pct = (edge * 100).toFixed(1);
+        return (edge >= 0 ? '+' : '') + pct + '%';
+      }
+
+      function formatPct(p) {
+        return (p * 100).toFixed(0) + '%';
+      }
+
+      function hasValue(match) {
+        if (!match.edges) return false;
+        return (match.edges.home && match.edges.home.is_value) ||
+               (match.edges.draw && match.edges.draw.is_value) ||
+               (match.edges.away && match.edges.away.is_value);
+      }
+
+      function countValues(match) {
+        if (!match.edges) return 0;
+        var c = 0;
+        if (match.edges.home && match.edges.home.is_value) c++;
+        if (match.edges.draw && match.edges.draw.is_value) c++;
+        if (match.edges.away && match.edges.away.is_value) c++;
+        return c;
+      }
+
+      function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+      }
+
+      /* -----------------------------------
+         RENDER MATCH CARD (safe DOM building)
+         ----------------------------------- */
+      function createEl(tag, className, textContent) {
+        var el = document.createElement(tag);
+        if (className) el.className = className;
+        if (textContent !== undefined) el.textContent = textContent;
+        return el;
+      }
+
+      function createMatchCard(match, index) {
+        var card = createEl('div', 'match-card' + (hasValue(match) ? ' has-value' : ''));
+        card.style.animationDelay = (index * 0.05) + 's';
+
+        var probs = match.model_probs || { home: 0.33, draw: 0.34, away: 0.33 };
+        var edges = match.edges || {};
+        var bestOdds = match.best_odds || {};
+        var models = match.individual_models || {};
+        var valueCount = countValues(match);
+
+        /* ---- Match Header ---- */
+        var header = createEl('div', 'match-header');
+
+        var meta = createEl('div', 'match-meta');
+        var mdSpan = createEl('span', 'matchday', 'MD ' + (match.matchday || '--'));
+        var dateSpan = createEl('span', null, formatDate(match.date) + ' \u00B7 ' + formatTime(match.date));
+        meta.appendChild(mdSpan);
+        meta.appendChild(dateSpan);
+        header.appendChild(meta);
+
+        if (valueCount > 0) {
+          var badge = createEl('span', 'value-badge', valueCount + ' VALUE BET' + (valueCount > 1 ? 'S' : ''));
+          header.appendChild(badge);
+        }
+        card.appendChild(header);
+
+        /* ---- Teams ---- */
+        var teamsRow = createEl('div', 'match-teams');
+        var homeTeam = createEl('span', 'team home', match.home_team);
+        var vsSpan = createEl('span', 'vs', 'VS');
+        var awayTeam = createEl('span', 'team away', match.away_team);
+        teamsRow.appendChild(homeTeam);
+        teamsRow.appendChild(vsSpan);
+        teamsRow.appendChild(awayTeam);
+        card.appendChild(teamsRow);
+
+        /* ---- Probability Bar ---- */
+        var hPct = Math.round(probs.home * 100);
+        var dPct = Math.round(probs.draw * 100);
+        var aPct = 100 - hPct - dPct;
+
+        var probContainer = createEl('div', 'prob-bar-container');
+
+        var labels = createEl('div', 'prob-bar-labels');
+        labels.appendChild(createEl('span', null, 'HOME'));
+        labels.appendChild(createEl('span', null, 'DRAW'));
+        labels.appendChild(createEl('span', null, 'AWAY'));
+        probContainer.appendChild(labels);
+
+        var bar = createEl('div', 'prob-bar');
+        var segH = createEl('div', 'prob-segment home');
+        segH.style.width = hPct + '%';
+        var segD = createEl('div', 'prob-segment draw');
+        segD.style.width = dPct + '%';
+        var segA = createEl('div', 'prob-segment away');
+        segA.style.width = aPct + '%';
+        bar.appendChild(segH);
+        bar.appendChild(segD);
+        bar.appendChild(segA);
+        probContainer.appendChild(bar);
+
+        var pcts = createEl('div', 'prob-percentages');
+        pcts.appendChild(createEl('span', 'prob-pct home', hPct + '%'));
+        pcts.appendChild(createEl('span', 'prob-pct draw', dPct + '%'));
+        pcts.appendChild(createEl('span', 'prob-pct away', aPct + '%'));
+        probContainer.appendChild(pcts);
+
+        card.appendChild(probContainer);
+
+        /* ---- Odds Grid ---- */
+        var oddsGrid = createEl('div', 'odds-grid');
+        var outcomes = ['home', 'draw', 'away'];
+        var outcomeLabels = ['HOME', 'DRAW', 'AWAY'];
+
+        for (var i = 0; i < outcomes.length; i++) {
+          var key = outcomes[i];
+          var e = edges[key] || {};
+          var isValue = e.is_value || false;
+          var edgeVal = e.edge;
+          var isNeg = edgeVal !== undefined && edgeVal !== null && edgeVal < 0;
+          var cellClass = 'odds-cell' + (isValue ? ' value' : (isNeg ? ' negative' : ''));
+
+          var cell = createEl('div', cellClass);
+          cell.appendChild(createEl('div', 'odds-label', outcomeLabels[i]));
+
+          var oddsDisplay = bestOdds[key] !== undefined ? bestOdds[key] : (e.american_odds !== undefined ? e.american_odds : null);
+          cell.appendChild(createEl('div', 'odds-value', formatOdds(oddsDisplay)));
+          cell.appendChild(createEl('div', 'edge-value', formatEdge(edgeVal)));
+
+          if (isValue) {
+            cell.appendChild(createEl('div', 'edge-tag', '\u{1F512} VALUE'));
+          }
+
+          oddsGrid.appendChild(cell);
+        }
+        card.appendChild(oddsGrid);
+
+        /* ---- Model Toggle ---- */
+        var toggleBtn = createEl('button', 'model-toggle');
+        var arrow = createEl('span', 'arrow', '\u25BC');
+        toggleBtn.appendChild(arrow);
+        toggleBtn.appendChild(document.createTextNode(' MODEL BREAKDOWN'));
+        toggleBtn.addEventListener('click', function () {
+          this.closest('.match-card').classList.toggle('expanded');
+        });
+        card.appendChild(toggleBtn);
+
+        /* ---- Model Breakdown ---- */
+        var breakdown = createEl('div', 'model-breakdown');
+
+        var mHeader = createEl('div', 'model-header');
+        mHeader.appendChild(createEl('span', null, 'MODEL'));
+        mHeader.appendChild(createEl('span', null, 'HOME'));
+        mHeader.appendChild(createEl('span', null, 'DRAW'));
+        mHeader.appendChild(createEl('span', null, 'AWAY'));
+        breakdown.appendChild(mHeader);
+
+        var modelNames = {
+          'dixon_coles': 'Dixon-Coles',
+          'xg': 'xG Model',
+          'elo': 'Elo Rating'
+        };
+
+        var modelKeys = Object.keys(models);
+        for (var m = 0; m < modelKeys.length; m++) {
+          var mk = modelKeys[m];
+          var mp = models[mk];
+          var row = createEl('div', 'model-row');
+          row.appendChild(createEl('span', 'model-name', modelNames[mk] || mk));
+          row.appendChild(createEl('span', 'model-prob', formatPct(mp.home)));
+          row.appendChild(createEl('span', 'model-prob', formatPct(mp.draw)));
+          row.appendChild(createEl('span', 'model-prob', formatPct(mp.away)));
+          breakdown.appendChild(row);
+        }
+
+        // Ensemble row
+        var ensRow = createEl('div', 'model-row');
+        ensRow.style.borderTop = '1px solid var(--border)';
+        ensRow.style.paddingTop = '0.5rem';
+        ensRow.style.marginTop = '0.25rem';
+        var ensName = createEl('span', 'model-name', 'Ensemble');
+        ensName.style.color = 'var(--neon)';
+        ensName.style.fontWeight = '600';
+        ensRow.appendChild(ensName);
+        var ensProbs = [probs.home, probs.draw, probs.away];
+        for (var ep = 0; ep < ensProbs.length; ep++) {
+          var ensP = createEl('span', 'model-prob', formatPct(ensProbs[ep]));
+          ensP.style.color = 'var(--neon)';
+          ensRow.appendChild(ensP);
+        }
+        breakdown.appendChild(ensRow);
+
+        card.appendChild(breakdown);
+        return card;
+      }
+
+      /* -----------------------------------
+         RENDER MATCHES
+         ----------------------------------- */
+      function renderMatches(matches) {
+        matchesGrid.textContent = '';
+
+        if (!matches || matches.length === 0) {
+          var empty = createEl('div', 'empty-state');
+          empty.appendChild(createEl('div', 'empty-icon', '\u26BD'));
+          empty.appendChild(createEl('h3', null, 'NO MATCHES SCHEDULED'));
+          empty.appendChild(createEl('p', null, 'Check back when the next matchday approaches.'));
+          matchesGrid.appendChild(empty);
+          matchCount.textContent = '0';
+          return;
+        }
+
+        var filtered = matches;
+        if (currentFilter === 'value') {
+          filtered = matches.filter(hasValue);
+        }
+
+        if (filtered.length === 0) {
+          var noValue = createEl('div', 'empty-state');
+          noValue.appendChild(createEl('div', 'empty-icon', '\u{1F50D}'));
+          noValue.appendChild(createEl('h3', null, 'NO VALUE BETS FOUND'));
+          noValue.appendChild(createEl('p', null, 'No edges detected in current odds. The market may be efficient for these matches.'));
+          matchesGrid.appendChild(noValue);
+          matchCount.textContent = '0';
+          return;
+        }
+
+        // Sort: value bets first, then by date
+        filtered.sort(function (a, b) {
+          var av = countValues(a);
+          var bv = countValues(b);
+          if (bv !== av) return bv - av;
+          return new Date(a.date) - new Date(b.date);
+        });
+
+        matchCount.textContent = filtered.length;
+        sortLabel.textContent = currentFilter === 'value' ? 'SHOWING VALUE BETS' : 'SORTED BY EDGE';
+
+        for (var i = 0; i < filtered.length; i++) {
+          matchesGrid.appendChild(createMatchCard(filtered[i], i));
+        }
+      }
+
+      /* -----------------------------------
+         RENDER STATS
+         ----------------------------------- */
+      function renderStats(data) {
+        var stats = data.season_stats;
+        if (!stats) return;
+
+        statsGrid.textContent = '';
+        seasonDist.style.display = 'block';
+
+        var cards = [
+          { label: 'TOTAL MATCHES', value: String(stats.total_matches || 0), sub: 'PLAYED THIS SEASON', neon: false },
+          { label: 'HOME WIN RATE', value: formatPct(stats.home_win_pct || 0), sub: (stats.home_wins || 0) + ' HOME WINS', neon: false },
+          { label: 'DRAW RATE', value: formatPct(stats.draw_pct || 0), sub: (stats.draws || 0) + ' DRAWS', neon: false },
+          { label: 'AWAY WIN RATE', value: formatPct(stats.away_win_pct || 0), sub: (stats.away_wins || 0) + ' AWAY WINS', neon: false }
+        ];
+
+        // Count value bets in current predictions
+        if (data.matches) {
+          var totalValue = 0;
+          for (var i = 0; i < data.matches.length; i++) {
+            totalValue += countValues(data.matches[i]);
+          }
+          cards.push({
+            label: 'VALUE BETS FOUND',
+            value: String(totalValue),
+            sub: 'IN ' + data.matches.length + ' UPCOMING MATCHES',
+            neon: true
+          });
+        }
+
+        for (var c = 0; c < cards.length; c++) {
+          var sc = createEl('div', 'stat-card fade-in');
+          sc.style.animationDelay = (c * 0.05) + 's';
+          sc.appendChild(createEl('h3', null, cards[c].label));
+          sc.appendChild(createEl('div', 'stat-value' + (cards[c].neon ? ' neon' : ''), cards[c].value));
+          sc.appendChild(createEl('div', 'stat-label', cards[c].sub));
+          statsGrid.appendChild(sc);
+        }
+
+        // Distribution bar
+        var hPct = Math.round((stats.home_win_pct || 0) * 100);
+        var dPct = Math.round((stats.draw_pct || 0) * 100);
+        var aPct = 100 - hPct - dPct;
+
+        distBar.textContent = '';
+        var segHome = createEl('div', 'dist-segment home', hPct + '%');
+        segHome.style.width = hPct + '%';
+        var segDraw = createEl('div', 'dist-segment draw', dPct + '%');
+        segDraw.style.width = dPct + '%';
+        var segAway = createEl('div', 'dist-segment away', aPct + '%');
+        segAway.style.width = aPct + '%';
+        distBar.appendChild(segHome);
+        distBar.appendChild(segDraw);
+        distBar.appendChild(segAway);
+
+        distLegend.textContent = '';
+        var legends = [
+          { cls: 'home', text: 'Home (' + (stats.home_wins || 0) + ')' },
+          { cls: 'draw', text: 'Draw (' + (stats.draws || 0) + ')' },
+          { cls: 'away', text: 'Away (' + (stats.away_wins || 0) + ')' }
+        ];
+        for (var li = 0; li < legends.length; li++) {
+          var item = createEl('span', 'dist-legend-item');
+          item.appendChild(createEl('span', 'dist-dot ' + legends[li].cls));
+          item.appendChild(document.createTextNode(legends[li].text));
+          distLegend.appendChild(item);
+        }
+      }
+
+      /* -----------------------------------
+         RENDER MODEL WEIGHTS
+         ----------------------------------- */
+      function renderWeights(weights) {
+        if (!weights) return;
+        weightsCard.style.display = 'block';
+        weightsList.textContent = '';
+
+        var names = {
+          'dixon_coles': 'Dixon-Coles',
+          'xg': 'xG Model',
+          'elo': 'Elo Rating'
+        };
+
+        var keys = Object.keys(weights);
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          var w = weights[k];
+          var pct = Math.round(w * 100);
+
+          var item = createEl('div', 'weight-item');
+          item.appendChild(createEl('span', 'weight-name', names[k] || k));
+
+          var track = createEl('div', 'weight-bar-track');
+          var fill = createEl('div', 'weight-bar-fill');
+          fill.style.width = '0%';
+          track.appendChild(fill);
+          item.appendChild(track);
+
+          item.appendChild(createEl('span', 'weight-pct', pct + '%'));
+          weightsList.appendChild(item);
+
+          // Animate bar fill
+          (function (fillEl, target) {
+            setTimeout(function () {
+              fillEl.style.width = target + '%';
+            }, 100 + i * 100);
+          })(fill, pct);
+        }
+      }
+
+      /* -----------------------------------
+         SHOW ERROR
+         ----------------------------------- */
+      function showError(msg) {
+        loadingState.style.display = 'none';
+        matchesGrid.textContent = '';
+        var errDiv = createEl('div', 'error-state');
+        errDiv.appendChild(createEl('h3', null, 'CONNECTION ERROR'));
+        errDiv.appendChild(createEl('p', null, msg));
+        matchesGrid.appendChild(errDiv);
+      }
+
+      /* -----------------------------------
+         FETCH & INIT
+         ----------------------------------- */
+      function init() {
+        fetch('data/predictions.json')
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            predictionData = data;
+            loadingState.style.display = 'none';
+
+            // Update header
+            if (data.generated_at) {
+              headerUpdated.textContent = 'UPDATED ' + formatTimestamp(data.generated_at).toUpperCase();
+              footerUpdated.textContent = 'Last updated: ' + formatTimestamp(data.generated_at);
+            }
+
+            var matchList = data.matches || [];
+            headerMatches.textContent = matchList.length + ' MATCH' + (matchList.length !== 1 ? 'ES' : '');
+
+            // Render all sections
+            renderMatches(matchList);
+            renderStats(data);
+            renderWeights(data.model_weights);
+          })
+          .catch(function (err) {
+            console.error('Failed to load predictions:', err);
+            showError('No predictions available. The pipeline may not have run yet, or data could not be fetched.');
+          });
+      }
+
+      /* -----------------------------------
+         BOOT
+         ----------------------------------- */
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
