@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SLOP LOCKS — EPL Predictions</title>
-  <meta name="description" content="Degenerate EPL match predictions powered by Dixon-Coles and Elo ensemble models. Find betting edges or lose your shirt trying.">
+  <meta name="description" content="Big Slime's EPL match predictions. Dixon-Coles + Elo ensemble model with betting edge detection.">
   <meta name="theme-color" content="#39FF14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1273,29 +1273,35 @@
   <header>
     <div class="container">
       <div class="logo">
-        <!-- Inline SVG: Slimy padlock -->
+        <!-- Inline SVG: Toxic waste slime dude -->
         <svg class="logo-svg" width="44" height="50" viewBox="0 0 44 50" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Lock shackle -->
-          <path d="M11 18V14C11 7.37 16.37 2 23 2h-2C14.37 2 9 7.37 9 14v4" stroke="#39FF14" stroke-width="3" stroke-linecap="round"/>
-          <path d="M33 18V14C33 7.37 27.63 2 21 2h2C29.63 2 35 7.37 35 14v4" stroke="#39FF14" stroke-width="3" stroke-linecap="round"/>
-          <!-- Lock body -->
-          <rect x="5" y="18" width="34" height="24" rx="4" fill="#39FF14"/>
-          <!-- Keyhole -->
-          <circle cx="22" cy="28" r="4" fill="#0D0D0D"/>
-          <rect x="20" y="30" width="4" height="6" rx="1" fill="#0D0D0D"/>
-          <!-- Slime drips -->
-          <ellipse cx="10" cy="42" rx="2.5" ry="1" fill="#39FF14" opacity="0.7"/>
-          <path d="M10 42 Q10 47, 10 48" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
-          <ellipse cx="10" cy="48" rx="1.5" ry="1.5" fill="#39FF14" opacity="0.5"/>
-          <ellipse cx="28" cy="42" rx="2" ry="1" fill="#39FF14" opacity="0.7"/>
-          <path d="M28 42 Q28 44, 28.5 45.5" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-          <ellipse cx="28.5" cy="45.5" rx="1.2" ry="1.2" fill="#39FF14" opacity="0.5"/>
-          <ellipse cx="18" cy="42" rx="1.5" ry="0.8" fill="#39FF14" opacity="0.5"/>
-          <path d="M18 42 Q18.2 43.5, 17.8 44.5" stroke="#39FF14" stroke-width="1.8" stroke-linecap="round" opacity="0.4"/>
+          <!-- Body: blobby toxic waste shape -->
+          <ellipse cx="22" cy="32" rx="16" ry="14" fill="#39FF14"/>
+          <!-- Dripping slime blobs on body -->
+          <ellipse cx="10" cy="40" rx="3" ry="2" fill="#39FF14" opacity="0.7"/>
+          <path d="M10 42 Q9.5 46, 10.5 48" stroke="#39FF14" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+          <ellipse cx="34" cy="38" rx="2.5" ry="1.5" fill="#39FF14" opacity="0.6"/>
+          <path d="M34 39.5 Q34.5 43, 33.5 45" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+          <ellipse cx="22" cy="44" rx="2" ry="1.5" fill="#39FF14" opacity="0.6"/>
+          <path d="M22 45.5 Q22 48, 21.5 50" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <!-- Eyes: big goofy mismatched -->
+          <ellipse cx="16" cy="28" rx="5" ry="5.5" fill="#0D0D0D"/>
+          <ellipse cx="28" cy="27" rx="4.5" ry="5" fill="#0D0D0D"/>
+          <ellipse cx="17" cy="27" rx="2.5" ry="2.5" fill="#EAEAEA"/>
+          <ellipse cx="29" cy="26" rx="2" ry="2" fill="#EAEAEA"/>
+          <ellipse cx="17.5" cy="27.5" rx="1.2" ry="1.2" fill="#0D0D0D"/>
+          <ellipse cx="29.5" cy="26.5" rx="1" ry="1" fill="#0D0D0D"/>
+          <!-- Mouth: big crooked grin -->
+          <path d="M14 35 Q18 40, 22 38 Q26 36, 30 38" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <!-- Toxic waste drops from head -->
+          <path d="M15 19 Q14 16, 16 14" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
+          <ellipse cx="16" cy="13" rx="2" ry="2" fill="#39FF14" opacity="0.6"/>
+          <path d="M28 18 Q29 14, 27 11" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+          <ellipse cx="27" cy="10" rx="1.8" ry="1.8" fill="#39FF14" opacity="0.5"/>
         </svg>
         <h1 class="wordmark">SLOP LOCKS</h1>
       </div>
-      <p class="subtitle">POWERED BY MATH AND QUESTIONABLE JUDGMENT</p>
+      <p class="subtitle">BIG SLIME'S EPL PICKS</p>
       <div class="header-meta">
         <span><span class="pulse-dot"></span> LIVE MODEL</span>
         <span id="header-updated">LOADING...</span>
@@ -1325,7 +1331,7 @@
     <div id="tab-locks" class="tab-panel active">
       <div class="locks-hero">
         <h2 class="locks-hero-title">SLOP LOCKS OF THE WEEK</h2>
-        <p class="locks-hero-sub">TOP PICKS &bull; RANKED BY EDGE &bull; NOT FINANCIAL ADVICE</p>
+        <p class="locks-hero-sub">TOP 5 PICKS &bull; RANKED BY EDGE</p>
       </div>
       <div class="locks-grid" id="locks-grid"></div>
     </div>
@@ -1394,10 +1400,10 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="container">
-      <p class="footer-line">POWERED BY DIXON-COLES + ELO ENSEMBLE</p>
+      <p class="footer-line">DIXON-COLES + ELO ENSEMBLE</p>
       <p class="footer-line" id="footer-data-sources"></p>
       <p class="footer-line" id="footer-updated"></p>
-      <p class="footer-line" style="color: var(--pink); margin-top: 0.5rem;">NOT FINANCIAL ADVICE. OBVIOUSLY.</p>
+      <p class="footer-line" style="margin-top: 0.5rem; color: var(--text-dim);">FOR ENTERTAINMENT PURPOSES ONLY</p>
       <p class="footer-line" style="margin-top: 0.75rem;"><a href="https://ko-fi.com/sloplocks" target="_blank" rel="noopener" style="color: var(--yellow); text-decoration: none; font-family: var(--font-heading); font-weight: 600; letter-spacing: 0.05em;">☕ BUY US A COFFEE</a></p>
       <p class="footer-brand">SLOP LOCKS</p>
     </div>
@@ -1564,7 +1570,7 @@
         if (!locks || locks.length === 0) {
           var empty = createEl('div', 'locks-empty');
           empty.appendChild(createEl('div', 'locks-empty-icon', '\uD83D\uDE24'));
-          empty.appendChild(createEl('h3', null, 'NO LOCKS THIS WEEK. SORRY DEGENS.'));
+          empty.appendChild(createEl('h3', null, 'NO LOCKS THIS WEEK'));
           empty.appendChild(createEl('p', null, 'Check back when odds drop. The books are hiding.'));
           locksGrid.appendChild(empty);
           return;
@@ -1576,7 +1582,8 @@
 
           /* Top row: rank + date */
           var top = createEl('div', 'lock-card-top');
-          var rankText = '\uD83D\uDD12 #' + (i + 1) + (i === 0 ? ' TOP LOCK' : ' LOCK');
+          var rankLabels = [' SLIMIEST', ' SLIMY', ' SLIMY', ' SLICK', ' SLICK'];
+          var rankText = '\uD83D\uDD12 #' + (i + 1) + (rankLabels[i] || '');
           top.appendChild(createEl('span', 'lock-rank', rankText));
           var metaText = formatDate(lock.date) + ' \u00B7 MD ' + lock.matchday;
           top.appendChild(createEl('span', 'lock-meta-date', metaText));
@@ -1621,7 +1628,7 @@
           var empty = createEl('div', 'longslop-empty');
           empty.appendChild(createEl('div', 'longslop-empty-icon', '\uD83E\uDDE0'));
           empty.appendChild(createEl('h3', null, 'NO LONGSLOPS THIS WEEK'));
-          empty.appendChild(createEl('p', null, 'The books are too smart. No +500 edges found.'));
+          empty.appendChild(createEl('p', null, 'No +500 edges found this week.'));
           longslopContainer.appendChild(empty);
           return;
         }
@@ -1660,7 +1667,7 @@
 
         /* The Case For */
         var caseDiv = createEl('div', 'longslop-case');
-        caseDiv.appendChild(createEl('div', 'longslop-case-label', 'THE CASE FOR THIS MADNESS'));
+        caseDiv.appendChild(createEl('div', 'longslop-case-label', 'BIG SLIME\'S CASE'));
 
         var teamName = longslop.pick === 'home' ? longslop.home_team : (longslop.pick === 'away' ? longslop.away_team : 'a draw');
         var outcome = longslop.pick === 'draw' ? 'draw' : (teamName + ' to win');
@@ -1998,7 +2005,7 @@
       function renderMethodology() {
         methodologyText.textContent = '';
 
-        var intro = createEl('p', null, 'Our model says these things. Whether you should listen is another matter entirely.');
+        var intro = createEl('p', null, 'Three models blended by rolling accuracy into one ensemble prediction.');
         intro.style.marginBottom = '0.75rem';
         methodologyText.appendChild(intro);
 
@@ -2031,7 +2038,7 @@
           methodologyText.appendChild(p);
         }
 
-        var edgeNote = createEl('p', null, 'Edge = Model Probability - Implied Probability from odds. Positive edge = potential value bet. Or potential bad idea. Hard to say.');
+        var edgeNote = createEl('p', null, 'Edge = Model Probability - Implied Probability. Positive edge means Big Slime thinks the books are underpricing this outcome.');
         edgeNote.style.marginTop = '0.75rem';
         edgeNote.style.color = 'var(--text-muted)';
         methodologyText.appendChild(edgeNote);
