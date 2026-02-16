@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 
 from pipeline.config import (
+    ANTHROPIC_API_KEY,
     CONGESTION_THRESHOLD_DAYS,
     DATA_DIR,
     SPORTS,
@@ -99,6 +100,99 @@ def _check_congestion(team, fixtures, matches, threshold_days=CONGESTION_THRESHO
     return False
 
 
+# ---------------------------------------------------------------------------
+# Blurb generation (via Claude API)
+# ---------------------------------------------------------------------------
+
+def _generate_blurbs(picks, pick_type="lock"):
+    """Generate short analysis blurbs for picks using Claude.
+
+    Parameters
+    ----------
+    picks : list[dict] or dict or None
+        SLOP LOCK list or single LONGSLOP dict.
+    pick_type : str
+        "lock" or "longslop" — controls the prompt tone.
+
+    Returns the picks with a "blurb" field added to each. Fails silently
+    (blurb = "") if the API key is missing or the call fails.
+    """
+    if not ANTHROPIC_API_KEY:
+        if isinstance(picks, list):
+            for p in picks:
+                p["blurb"] = ""
+        elif picks:
+            picks["blurb"] = ""
+        return picks
+
+    if picks is None:
+        return None
+
+    items = picks if isinstance(picks, list) else [picks]
+    if not items:
+        return picks
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    except Exception:
+        for p in items:
+            p["blurb"] = ""
+        return picks
+
+    for p in items:
+        try:
+            # Build individual model breakdown
+            models_str = ""
+            ind = p.get("individual_models", {})
+            pick_outcome = p["pick"]
+            for model_name, probs in ind.items():
+                prob = probs.get(pick_outcome, 0)
+                models_str += f"  {model_name}: {prob:.1%}\n"
+
+            if pick_type == "lock":
+                prompt = (
+                    f"You are the analytics voice for SLOP LOCKS, a sports betting predictions site. "
+                    f"Write exactly 1-2 sentences explaining why this is a value pick. Be direct, "
+                    f"confident, concise. No hedging. Reference specific model data or edge.\n\n"
+                    f"Match: {p['home_team']} vs {p['away_team']}\n"
+                    f"Pick: {pick_outcome}\n"
+                    f"Model probability: {p['model_prob']:.1%}\n"
+                    f"Books implied: {p['implied_prob']:.1%}\n"
+                    f"Edge: {p['edge']:.1%}\n"
+                    f"Odds: {p['american_odds']:+d}\n"
+                    f"Individual models:\n{models_str}"
+                )
+            else:
+                prompt = (
+                    f"You are the analytics voice for SLOP LOCKS, a sports betting predictions site. "
+                    f"Write exactly 1-2 sentences explaining why this longshot may hit. Be bold, "
+                    f"intriguing, concise. This is a +500 or longer pick our model believes in.\n\n"
+                    f"Match: {p['home_team']} vs {p['away_team']}\n"
+                    f"Pick: {pick_outcome}\n"
+                    f"Model probability: {p['model_prob']:.1%}\n"
+                    f"Books implied: {p['implied_prob']:.1%}\n"
+                    f"Edge: {p['edge']:.1%}\n"
+                    f"Odds: {p['american_odds']:+d}\n"
+                    f"Individual models:\n{models_str}"
+                )
+
+            resp = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=100,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            p["blurb"] = resp.content[0].text.strip()
+        except Exception:
+            p["blurb"] = ""
+
+    # Strip individual_models from final output (only needed for blurb gen)
+    for p in items:
+        p.pop("individual_models", None)
+
+    return picks
+
+
 def _compute_slop_locks(prediction_records, outcomes):
     """Extract SLOP LOCKS (top 5 value picks by edge)."""
     lock_candidates = []
@@ -123,6 +217,7 @@ def _compute_slop_locks(prediction_records, outcomes):
                 "edge": round(e["edge"], 4),
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
+                "individual_models": rec.get("individual_models", {}),
             })
 
     lock_candidates.sort(key=lambda x: x["edge"], reverse=True)
@@ -164,6 +259,7 @@ def _compute_longslop(prediction_records, outcomes):
                 "edge": round(edge, 4),
                 "american_odds": american,
                 "decimal_odds": decimal_odds,
+                "individual_models": rec.get("individual_models", {}),
             })
 
     longslop_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
@@ -373,6 +469,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     slop_locks = _compute_slop_locks(prediction_records, outcomes)
     longslop = _compute_longslop(prediction_records, outcomes)
+
+    # Generate analysis blurbs via Claude
+    slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
+    longslop = _generate_blurbs(longslop, pick_type="longslop")
 
     # ------------------------------------------------------------------
     # 6. Evaluate past predictions

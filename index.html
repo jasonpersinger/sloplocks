@@ -448,6 +448,15 @@
       color: var(--slime);
     }
 
+    .lock-blurb {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
     .locks-empty {
       text-align: center;
       padding: 3rem 1.5rem;
@@ -1694,6 +1703,12 @@
           stats.appendChild(edgeBlock);
 
           card.appendChild(stats);
+
+          /* Blurb */
+          if (lock.blurb) {
+            card.appendChild(createEl('div', 'lock-blurb', lock.blurb));
+          }
+
           locksGrid.appendChild(card);
         }
       }
@@ -1752,15 +1767,19 @@
         var caseDiv = createEl('div', 'longslop-case');
         caseDiv.appendChild(createEl('div', 'longslop-case-label', 'BIG SLIME\'S CASE'));
 
-        var teamName = longslop.pick === 'home' ? longslop.home_team : (longslop.pick === 'away' ? longslop.away_team : 'a draw');
-        var outcome = longslop.pick === 'draw' ? 'draw' : (teamName + ' to win');
-        var modelPctStr = formatPctDecimal(longslop.model_prob);
-        var impliedPctStr = formatPctDecimal(longslop.implied_prob);
-        var oddsStr = formatOdds(longslop.american_odds);
-
-        var caseText = 'Our model gives ' + outcome + ' a ' + modelPctStr +
-          ' chance at ' + oddsStr + ' odds. The books imply ' + impliedPctStr +
-          '. It\'s a longshot, but the model says this one has a real shot.';
+        var caseText;
+        if (longslop.blurb) {
+          caseText = longslop.blurb;
+        } else {
+          var teamName = longslop.pick === 'home' ? longslop.home_team : (longslop.pick === 'away' ? longslop.away_team : 'a draw');
+          var outcome = longslop.pick === 'draw' ? 'draw' : (teamName + ' to win');
+          var modelPctStr = formatPctDecimal(longslop.model_prob);
+          var impliedPctStr = formatPctDecimal(longslop.implied_prob);
+          var oddsStr = formatOdds(longslop.american_odds);
+          caseText = 'Our model gives ' + outcome + ' a ' + modelPctStr +
+            ' chance at ' + oddsStr + ' odds. The books imply ' + impliedPctStr +
+            '. It\'s a longshot, but the model says this one has a real shot.';
+        }
 
         var caseP = createEl('p', null, caseText);
         caseDiv.appendChild(caseP);
