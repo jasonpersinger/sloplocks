@@ -17,6 +17,7 @@ from pipeline.config import (
 # ---- team-name normalisation ------------------------------------------------
 
 _TEAM_NAME_MAP = {
+    # football-data.org names
     "Arsenal FC": "Arsenal",
     "Aston Villa FC": "Aston Villa",
     "AFC Bournemouth": "Bournemouth",
@@ -37,6 +38,16 @@ _TEAM_NAME_MAP = {
     "Tottenham Hotspur FC": "Tottenham",
     "West Ham United FC": "West Ham",
     "Wolverhampton Wanderers FC": "Wolves",
+    # The Odds API names
+    "Manchester City": "Man City",
+    "Manchester United": "Man United",
+    "Brighton and Hove Albion": "Brighton",
+    "Tottenham Hotspur": "Tottenham",
+    "Wolverhampton Wanderers": "Wolves",
+    "Newcastle United": "Newcastle",
+    "West Ham United": "West Ham",
+    "Leicester City": "Leicester",
+    "Ipswich Town": "Ipswich",
 }
 
 

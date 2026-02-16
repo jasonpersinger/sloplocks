@@ -16,8 +16,8 @@ from pipeline.config import (
     DATA_DIR,
     SPORTS,
 )
-from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds
-from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule
+from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
+from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name
 from pipeline.fetch_xg import fetch_understat_xg
 from pipeline.models import (
     EloRatings,
@@ -267,8 +267,13 @@ def run_sport_pipeline(sport_key, output_dir=None):
     model_weight_dict = dict(zip(model_names, weights))
 
     # ------------------------------------------------------------------
-    # 4. Build odds lookup
+    # 4. Normalize odds team names and build lookup
     # ------------------------------------------------------------------
+    normalizer = normalize_team_name if sport_key == "epl" else normalize_nba_team_name
+    for o in odds_list:
+        o["home_team"] = normalizer(o["home_team"])
+        o["away_team"] = normalizer(o["away_team"])
+
     odds_lookup = {}
     for o in odds_list:
         key = (o["home_team"], o["away_team"])
