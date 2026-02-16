@@ -1,8 +1,8 @@
-name: Daily EPL Predictions
+name: Daily Predictions
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # 6am UTC daily
+    - cron: '0 6 * * *'  # 6am UTC daily (captures NBA games from previous night)
   workflow_dispatch:  # Manual trigger
 
 permissions:
@@ -28,6 +28,7 @@ jobs:
         env:
           FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          BALLDONTLIE_API_KEY: ${{ secrets.BALLDONTLIE_API_KEY }}
         run: python -m pipeline.run
 
       - name: Commit and push predictions

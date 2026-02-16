@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SLOP LOCKS — EPL Predictions</title>
-  <meta name="description" content="Big Slime's EPL match predictions. Dixon-Coles + Elo ensemble model with betting edge detection.">
+  <title>SLOP LOCKS — Sports Predictions</title>
+  <meta name="description" content="Big Slime's sports predictions. Ensemble model with betting edge detection. EPL &amp; NBA picks daily.">
   <meta name="theme-color" content="#39FF14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -231,6 +231,54 @@
 
     .tab-panel.active {
       display: block;
+    }
+
+    /* ========================================
+       SPORT TOGGLE
+       ======================================== */
+    .sport-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin: 1rem 0 0;
+    }
+
+    .sport-pill {
+      padding: 0.5rem 1.25rem;
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .sport-pill:first-child {
+      border-radius: 4px 0 0 4px;
+      border-right: none;
+    }
+
+    .sport-pill:last-child {
+      border-radius: 0 4px 4px 0;
+    }
+
+    .sport-pill:hover {
+      color: var(--text);
+      background: var(--panel-hover);
+    }
+
+    .sport-pill.active {
+      color: var(--slime);
+      background: var(--slime-dim);
+      border-color: rgba(57, 255, 20, 0.3);
+    }
+
+    .sport-pill.active + .sport-pill {
+      border-left-color: rgba(57, 255, 20, 0.3);
     }
 
     /* ========================================
@@ -1301,7 +1349,11 @@
         </svg>
         <h1 class="wordmark">SLOP LOCKS</h1>
       </div>
-      <p class="subtitle">BIG SLIME'S EPL PICKS</p>
+      <p class="subtitle">BIG SLIME'S PICKS</p>
+      <div class="sport-toggle" id="sport-toggle">
+        <button class="sport-pill" data-sport="nba">NBA</button>
+        <button class="sport-pill" data-sport="epl">EPL</button>
+      </div>
       <div class="header-meta">
         <span><span class="pulse-dot"></span> LIVE MODEL</span>
         <span id="header-updated">LOADING...</span>
@@ -1400,7 +1452,7 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="container">
-      <p class="footer-line">DIXON-COLES + ELO ENSEMBLE</p>
+      <p class="footer-line" id="footer-models">ELO + DIXON-COLES ENSEMBLE</p>
       <p class="footer-line" id="footer-data-sources"></p>
       <p class="footer-line" id="footer-updated"></p>
       <p class="footer-line" style="margin-top: 0.5rem; color: var(--text-dim);">FOR ENTERTAINMENT PURPOSES ONLY</p>
@@ -1426,6 +1478,9 @@
          ----------------------------------- */
       var predictionData = null;
       var currentFilter = 'all';
+      var currentSport = 'nba';
+      var currentOutcomes = ['home', 'away'];
+      var hasDrawOutcome = false;
 
       /* -----------------------------------
          DOM HELPERS
@@ -1477,6 +1532,20 @@
           tab.setAttribute('aria-selected', 'true');
           var target = tab.getAttribute('data-tab');
           $('#tab-' + target).classList.add('active');
+        });
+      });
+
+      /* -----------------------------------
+         SPORT TOGGLE
+         ----------------------------------- */
+      $$('.sport-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+          var sport = pill.getAttribute('data-sport');
+          if (sport === currentSport) return;
+          $$('.sport-pill').forEach(function (p) { p.classList.remove('active'); });
+          pill.classList.add('active');
+          currentSport = sport;
+          loadSportData(sport);
         });
       });
 
@@ -1585,7 +1654,8 @@
           var rankLabels = [' SLIMIEST', ' SLIMY', ' SLIMY', ' SLICK', ' SLICK'];
           var rankText = '\uD83D\uDD12 #' + (i + 1) + (rankLabels[i] || '');
           top.appendChild(createEl('span', 'lock-rank', rankText));
-          var metaText = formatDate(lock.date) + ' \u00B7 MD ' + lock.matchday;
+          var metaText = formatDate(lock.date);
+          if (lock.matchday) metaText += ' \u00B7 MD ' + lock.matchday;
           top.appendChild(createEl('span', 'lock-meta-date', metaText));
           card.appendChild(top);
 
@@ -1685,7 +1755,8 @@
         card.appendChild(caseDiv);
 
         /* Date meta */
-        var metaText = formatDate(longslop.date) + ' \u00B7 MD ' + longslop.matchday;
+        var metaText = formatDate(longslop.date);
+        if (longslop.matchday) metaText += ' \u00B7 MD ' + longslop.matchday;
         card.appendChild(createEl('div', 'longslop-meta', metaText));
 
         longslopContainer.appendChild(card);
@@ -1708,7 +1779,9 @@
         var header = createEl('div', 'match-header');
 
         var meta = createEl('div', 'match-meta');
-        meta.appendChild(createEl('span', 'matchday', 'MD ' + (match.matchday || '--')));
+        if (match.matchday) {
+          meta.appendChild(createEl('span', 'matchday', 'MD ' + match.matchday));
+        }
         meta.appendChild(createEl('span', null, formatDate(match.date) + ' \u00B7 ' + formatTime(match.date)));
         header.appendChild(meta);
 
@@ -1726,40 +1799,52 @@
 
         /* Probability bar */
         var hPct = Math.round(probs.home * 100);
-        var dPct = Math.round(probs.draw * 100);
-        var aPct = 100 - hPct - dPct;
-
         var probContainer = createEl('div', 'prob-bar-container');
-
         var labels = createEl('div', 'prob-bar-labels');
         labels.appendChild(createEl('span', null, 'HOME'));
-        labels.appendChild(createEl('span', null, 'DRAW'));
-        labels.appendChild(createEl('span', null, 'AWAY'));
-        probContainer.appendChild(labels);
 
         var bar = createEl('div', 'prob-bar');
         var segH = createEl('div', 'prob-segment home');
-        segH.style.width = hPct + '%';
-        var segD = createEl('div', 'prob-segment draw');
-        segD.style.width = dPct + '%';
-        var segA = createEl('div', 'prob-segment away');
-        segA.style.width = aPct + '%';
-        bar.appendChild(segH);
-        bar.appendChild(segD);
-        bar.appendChild(segA);
-        probContainer.appendChild(bar);
-
         var pcts = createEl('div', 'prob-percentages');
-        pcts.appendChild(createEl('span', 'prob-pct home', hPct + '%'));
-        pcts.appendChild(createEl('span', 'prob-pct draw', dPct + '%'));
-        pcts.appendChild(createEl('span', 'prob-pct away', aPct + '%'));
+
+        if (hasDrawOutcome) {
+          var dPct = Math.round((probs.draw || 0) * 100);
+          var aPct = 100 - hPct - dPct;
+          segH.style.width = hPct + '%';
+          var segD = createEl('div', 'prob-segment draw');
+          segD.style.width = dPct + '%';
+          var segA = createEl('div', 'prob-segment away');
+          segA.style.width = aPct + '%';
+          labels.appendChild(createEl('span', null, 'DRAW'));
+          labels.appendChild(createEl('span', null, 'AWAY'));
+          bar.appendChild(segH);
+          bar.appendChild(segD);
+          bar.appendChild(segA);
+          pcts.appendChild(createEl('span', 'prob-pct home', hPct + '%'));
+          pcts.appendChild(createEl('span', 'prob-pct draw', dPct + '%'));
+          pcts.appendChild(createEl('span', 'prob-pct away', aPct + '%'));
+        } else {
+          var aPct = 100 - hPct;
+          segH.style.width = hPct + '%';
+          var segA = createEl('div', 'prob-segment away');
+          segA.style.width = aPct + '%';
+          labels.appendChild(createEl('span', null, 'AWAY'));
+          bar.appendChild(segH);
+          bar.appendChild(segA);
+          pcts.appendChild(createEl('span', 'prob-pct home', hPct + '%'));
+          pcts.appendChild(createEl('span', 'prob-pct away', aPct + '%'));
+        }
+
+        probContainer.appendChild(labels);
+        probContainer.appendChild(bar);
         probContainer.appendChild(pcts);
         card.appendChild(probContainer);
 
         /* Odds grid */
         var oddsGrid = createEl('div', 'odds-grid');
-        var outcomes = ['home', 'draw', 'away'];
-        var outcomeLabels = ['HOME', 'DRAW', 'AWAY'];
+        oddsGrid.style.gridTemplateColumns = hasDrawOutcome ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)';
+        var outcomes = hasDrawOutcome ? ['home', 'draw', 'away'] : ['home', 'away'];
+        var outcomeLabels = hasDrawOutcome ? ['HOME', 'DRAW', 'AWAY'] : ['HOME', 'AWAY'];
 
         for (var i = 0; i < outcomes.length; i++) {
           var key = outcomes[i];
@@ -1796,10 +1881,14 @@
         /* Model breakdown */
         var breakdownDiv = createEl('div', 'model-breakdown');
 
+        var colCount = hasDrawOutcome ? 3 : 2;
+        var gridCols = '120px repeat(' + colCount + ', 1fr)';
+
         var mHeader = createEl('div', 'model-header-row');
+        mHeader.style.gridTemplateColumns = gridCols;
         mHeader.appendChild(createEl('span', null, 'MODEL'));
         mHeader.appendChild(createEl('span', null, 'HOME'));
-        mHeader.appendChild(createEl('span', null, 'DRAW'));
+        if (hasDrawOutcome) mHeader.appendChild(createEl('span', null, 'DRAW'));
         mHeader.appendChild(createEl('span', null, 'AWAY'));
         breakdownDiv.appendChild(mHeader);
 
@@ -1814,15 +1903,17 @@
           var mk = modelKeys[m];
           var mp = models[mk];
           var row = createEl('div', 'model-row');
+          row.style.gridTemplateColumns = gridCols;
           row.appendChild(createEl('span', 'model-name', modelNames[mk] || mk));
           row.appendChild(createEl('span', 'model-prob', formatPct(mp.home)));
-          row.appendChild(createEl('span', 'model-prob', formatPct(mp.draw)));
+          if (hasDrawOutcome) row.appendChild(createEl('span', 'model-prob', formatPct(mp.draw || 0)));
           row.appendChild(createEl('span', 'model-prob', formatPct(mp.away)));
           breakdownDiv.appendChild(row);
         }
 
         /* Ensemble row */
         var ensRow = createEl('div', 'model-row');
+        ensRow.style.gridTemplateColumns = gridCols;
         ensRow.style.borderTop = '1px solid var(--border)';
         ensRow.style.paddingTop = '0.5rem';
         ensRow.style.marginTop = '0.25rem';
@@ -1830,9 +1921,9 @@
         ensName.style.color = 'var(--slime)';
         ensName.style.fontWeight = '600';
         ensRow.appendChild(ensName);
-        var ensProbs = [probs.home, probs.draw, probs.away];
-        for (var ep = 0; ep < ensProbs.length; ep++) {
-          var ensP = createEl('span', 'model-prob', formatPct(ensProbs[ep]));
+        var ensKeys = hasDrawOutcome ? ['home', 'draw', 'away'] : ['home', 'away'];
+        for (var ep = 0; ep < ensKeys.length; ep++) {
+          var ensP = createEl('span', 'model-prob', formatPct(probs[ensKeys[ep]] || 0));
           ensP.style.color = 'var(--slime)';
           ensRow.appendChild(ensP);
         }
@@ -1850,9 +1941,10 @@
 
         if (!matches || matches.length === 0) {
           var empty = createEl('div', 'empty-state');
-          empty.appendChild(createEl('div', 'empty-icon', '\u26BD'));
+          var emptyIcon = currentSport === 'nba' ? '\uD83C\uDFC0' : '\u26BD';
+          empty.appendChild(createEl('div', 'empty-icon', emptyIcon));
           empty.appendChild(createEl('h3', null, 'NO MATCHES SCHEDULED'));
-          empty.appendChild(createEl('p', null, 'Check back when the next matchday approaches.'));
+          empty.appendChild(createEl('p', null, 'Check back when the next ' + (currentSport === 'nba' ? 'game day' : 'matchday') + ' approaches.'));
           matchesGrid.appendChild(empty);
           matchCount.textContent = '0';
           return;
@@ -1901,9 +1993,13 @@
         var cards = [
           { label: 'TOTAL MATCHES', value: String(stats.total_matches || 0), sub: 'PLAYED THIS SEASON', isSlime: false },
           { label: 'HOME WIN RATE', value: formatPct(stats.home_win_pct || 0), sub: (stats.home_wins || 0) + ' HOME WINS', isSlime: false },
-          { label: 'DRAW RATE', value: formatPct(stats.draw_pct || 0), sub: (stats.draws || 0) + ' DRAWS', isSlime: false },
-          { label: 'AWAY WIN RATE', value: formatPct(stats.away_win_pct || 0), sub: (stats.away_wins || 0) + ' AWAY WINS', isSlime: false }
         ];
+
+        if (hasDrawOutcome) {
+          cards.push({ label: 'DRAW RATE', value: formatPct(stats.draw_pct || 0), sub: (stats.draws || 0) + ' DRAWS', isSlime: false });
+        }
+
+        cards.push({ label: 'AWAY WIN RATE', value: formatPct(stats.away_win_pct || 0), sub: (stats.away_wins || 0) + ' AWAY WINS', isSlime: false });
 
         if (data.matches) {
           var totalValue = 0;
@@ -1929,26 +2025,32 @@
 
         /* Distribution bar */
         var hPct = Math.round((stats.home_win_pct || 0) * 100);
-        var dPct = Math.round((stats.draw_pct || 0) * 100);
-        var aPct = 100 - hPct - dPct;
 
         distBar.textContent = '';
+        distLegend.textContent = '';
+
         var segHome = createEl('div', 'dist-segment home', hPct + '%');
         segHome.style.width = hPct + '%';
-        var segDraw = createEl('div', 'dist-segment draw', dPct + '%');
-        segDraw.style.width = dPct + '%';
+        distBar.appendChild(segHome);
+
+        var legends = [{ cls: 'home', text: 'Home (' + (stats.home_wins || 0) + ')' }];
+
+        if (hasDrawOutcome) {
+          var dPct = Math.round((stats.draw_pct || 0) * 100);
+          var aPct = 100 - hPct - dPct;
+          var segDraw = createEl('div', 'dist-segment draw', dPct + '%');
+          segDraw.style.width = dPct + '%';
+          distBar.appendChild(segDraw);
+          legends.push({ cls: 'draw', text: 'Draw (' + (stats.draws || 0) + ')' });
+        } else {
+          var aPct = 100 - hPct;
+        }
+
         var segAway = createEl('div', 'dist-segment away', aPct + '%');
         segAway.style.width = aPct + '%';
-        distBar.appendChild(segHome);
-        distBar.appendChild(segDraw);
         distBar.appendChild(segAway);
+        legends.push({ cls: 'away', text: 'Away (' + (stats.away_wins || 0) + ')' });
 
-        distLegend.textContent = '';
-        var legends = [
-          { cls: 'home', text: 'Home (' + (stats.home_wins || 0) + ')' },
-          { cls: 'draw', text: 'Draw (' + (stats.draws || 0) + ')' },
-          { cls: 'away', text: 'Away (' + (stats.away_wins || 0) + ')' }
-        ];
         for (var li = 0; li < legends.length; li++) {
           var item = createEl('span', 'dist-legend-item');
           item.appendChild(createEl('span', 'dist-dot ' + legends[li].cls));
@@ -2005,20 +2107,32 @@
       function renderMethodology() {
         methodologyText.textContent = '';
 
-        var intro = createEl('p', null, 'Three models blended by rolling accuracy into one ensemble prediction.');
-        intro.style.marginBottom = '0.75rem';
-        methodologyText.appendChild(intro);
-
-        var models = [
-          {
-            name: 'Dixon-Coles',
-            desc: 'Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.'
-          },
-          {
-            name: 'Elo Ratings',
-            desc: 'Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.'
-          }
-        ];
+        var models;
+        if (currentSport === 'nba') {
+          var intro = createEl('p', null, 'Elo rating model tuned for NBA with 100-point home court advantage.');
+          intro.style.marginBottom = '0.75rem';
+          methodologyText.appendChild(intro);
+          models = [
+            {
+              name: 'Elo Ratings',
+              desc: 'Dynamic strength ratings updated after each game. NBA-tuned home court advantage (100 Elo pts). 2-way logistic model — no draw outcome.'
+            }
+          ];
+        } else {
+          var intro = createEl('p', null, 'Three models blended by rolling accuracy into one ensemble prediction.');
+          intro.style.marginBottom = '0.75rem';
+          methodologyText.appendChild(intro);
+          models = [
+            {
+              name: 'Dixon-Coles',
+              desc: 'Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.'
+            },
+            {
+              name: 'Elo Ratings',
+              desc: 'Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.'
+            }
+          ];
+        }
 
         for (var i = 0; i < models.length; i++) {
           var p = createEl('p');
@@ -2053,11 +2167,19 @@
         var text1 = document.createTextNode('Data: ');
         footerDataSources.appendChild(text1);
 
-        var sources = [
-          { name: 'football-data.org', url: 'https://www.football-data.org' },
-          { name: 'Understat', url: 'https://understat.com' },
-          { name: 'The Odds API', url: 'https://the-odds-api.com' }
-        ];
+        var sources;
+        if (currentSport === 'nba') {
+          sources = [
+            { name: 'balldontlie.io', url: 'https://www.balldontlie.io' },
+            { name: 'The Odds API', url: 'https://the-odds-api.com' }
+          ];
+        } else {
+          sources = [
+            { name: 'football-data.org', url: 'https://www.football-data.org' },
+            { name: 'Understat', url: 'https://understat.com' },
+            { name: 'The Odds API', url: 'https://the-odds-api.com' }
+          ];
+        }
 
         for (var i = 0; i < sources.length; i++) {
           if (i > 0) {
@@ -2091,20 +2213,28 @@
       }
 
       /* -----------------------------------
-         FETCH & INIT
+         LOAD SPORT DATA
          ----------------------------------- */
-      function init() {
-        renderMethodology();
-        renderFooterDataSources();
+      function loadSportData(sport) {
+        currentSport = sport;
+        loadingState.style.display = '';
 
-        fetch('data/predictions.json')
+        // Hide all tab panels while loading
+        $$('.tab-panel').forEach(function (p) { p.style.visibility = 'hidden'; });
+
+        var url = 'data/' + sport + '/predictions.json';
+        fetch(url)
           .then(function (res) {
             if (!res.ok) throw new Error('HTTP ' + res.status);
             return res.json();
           })
           .then(function (data) {
             predictionData = data;
+            currentOutcomes = data.outcomes || ['home', 'draw', 'away'];
+            hasDrawOutcome = currentOutcomes.indexOf('draw') !== -1;
+
             loadingState.style.display = 'none';
+            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
 
             /* Header meta */
             if (data.generated_at) {
@@ -2121,11 +2251,29 @@
             renderMatches(matchList);
             renderStats(data);
             renderWeights(data.model_weights);
+            renderMethodology();
+            renderFooterDataSources();
           })
           .catch(function (err) {
-            console.error('Failed to load predictions:', err);
-            showError('No predictions available. The pipeline may not have run yet, or data could not be fetched.');
+            console.error('Failed to load ' + sport + ' predictions:', err);
+            loadingState.style.display = 'none';
+            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
+            showError('No ' + sport.toUpperCase() + ' predictions available. The pipeline may not have run yet.');
           });
+      }
+
+      /* -----------------------------------
+         FETCH & INIT
+         ----------------------------------- */
+      function init() {
+        renderMethodology();
+        renderFooterDataSources();
+
+        // Activate the default sport pill
+        var defaultPill = $('[data-sport="' + currentSport + '"]');
+        if (defaultPill) defaultPill.classList.add('active');
+
+        loadSportData(currentSport);
       }
 
       /* -----------------------------------

@@ -120,3 +120,35 @@ class TestElo:
         assert math.isclose(
             probs["home"] + probs["draw"] + probs["away"], 1.0, abs_tol=1e-9
         )
+
+    def test_two_way_prediction_no_draw(self, teams):
+        """2-way mode (NBA) should return only home/away, summing to 1."""
+        elo = EloRatings(teams)
+        probs = elo_predict(elo, "Arsenal", "Wolves", outcomes=["home", "away"])
+        assert set(probs.keys()) == {"home", "away"}
+        assert "draw" not in probs
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+    def test_custom_k_factor_and_home_advantage(self, teams):
+        """EloRatings should respect custom k_factor and home_advantage."""
+        elo = EloRatings(teams, k_factor=25, home_advantage=100)
+        assert elo.k_factor == 25
+        assert elo.home_advantage == 100
+
+        # Update should use the custom k_factor — winner gains more with k=25
+        r_before = elo.get_rating("Arsenal")
+        elo.update("Arsenal", "Wolves", 3, 0)
+        gain_custom = elo.get_rating("Arsenal") - r_before
+
+        elo2 = EloRatings(teams, k_factor=10, home_advantage=100)
+        r_before2 = elo2.get_rating("Arsenal")
+        elo2.update("Arsenal", "Wolves", 3, 0)
+        gain_small_k = elo2.get_rating("Arsenal") - r_before2
+
+        assert gain_custom > gain_small_k
+
+    def test_two_way_uses_elo_home_advantage(self, teams):
+        """In 2-way mode, home team with equal ratings should have >50%."""
+        elo = EloRatings(teams, home_advantage=100)
+        probs = elo_predict(elo, "Arsenal", "Wolves", outcomes=["home", "away"])
+        assert probs["home"] > 0.5

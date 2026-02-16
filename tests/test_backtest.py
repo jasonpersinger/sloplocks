@@ -52,6 +52,25 @@ class TestEvaluatePrediction:
         assert math.isclose(result["actual_prob"], 0.2)
         assert math.isclose(result["log_loss"], -math.log(0.2))
 
+    def test_two_way_home_win(self):
+        """2-way probs (NBA) should work with no draw key."""
+        probs = {"home": 0.65, "away": 0.35}
+        result = evaluate_prediction(probs, home_goals=112, away_goals=105)
+
+        assert result["predicted"] == "home"
+        assert result["actual"] == "home"
+        assert result["correct"] is True
+        assert math.isclose(result["actual_prob"], 0.65)
+
+    def test_two_way_away_win(self):
+        """2-way probs — away team wins."""
+        probs = {"home": 0.45, "away": 0.55}
+        result = evaluate_prediction(probs, home_goals=98, away_goals=110)
+
+        assert result["predicted"] == "away"
+        assert result["actual"] == "away"
+        assert result["correct"] is True
+
 
 # ---------------------------------------------------------------------------
 # compute_model_weights

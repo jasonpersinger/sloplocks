@@ -27,13 +27,15 @@ def blend_predictions(
 ) -> dict[str, float]:
     """Weighted-average blend of multiple prediction dicts.
 
-    Each prediction dict must have keys: home, draw, away.
+    Keys are inferred from the first prediction dict, so this works
+    for both 3-way (home/draw/away) and 2-way (home/away) outcomes.
     Weights are normalised to sum to 1.
     """
     total_weight = sum(weights)
     norm_weights = [w / total_weight for w in weights]
 
-    blended = {"home": 0.0, "draw": 0.0, "away": 0.0}
+    keys = predictions[0].keys()
+    blended = {k: 0.0 for k in keys}
     for pred, w in zip(predictions, norm_weights):
         for key in blended:
             blended[key] += pred[key] * w
@@ -65,7 +67,11 @@ def compute_edges(
 
     edges: dict[str, dict] = {}
     for outcome, odds_key in outcome_map.items():
-        dec_odds = odds[odds_key]
+        if outcome not in model_probs:
+            continue
+        dec_odds = odds.get(odds_key, 0)
+        if dec_odds <= 0:
+            continue
         imp_prob = implied_probability(dec_odds)
         mod_prob = model_probs[outcome]
         edge = mod_prob - imp_prob

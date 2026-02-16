@@ -69,6 +69,18 @@ class TestBlendPredictions:
         total = blended["home"] + blended["draw"] + blended["away"]
         assert total == pytest.approx(1.0)
 
+    def test_two_way_blend(self):
+        """2-way (NBA) predictions should blend without a draw key."""
+        p1 = {"home": 0.60, "away": 0.40}
+        p2 = {"home": 0.50, "away": 0.50}
+        blended = blend_predictions([p1, p2], [1.0, 1.0])
+
+        assert "draw" not in blended
+        assert set(blended.keys()) == {"home", "away"}
+        assert blended["home"] == pytest.approx(0.55)
+        assert blended["away"] == pytest.approx(0.45)
+        assert blended["home"] + blended["away"] == pytest.approx(1.0)
+
 
 # ── Edge detection ─────────────────────────────────────────────────
 
@@ -95,3 +107,15 @@ class TestComputeEdges:
 
         assert edges["away"]["edge"] < 0
         assert edges["away"]["is_value"] is False
+
+    def test_two_way_edges_skip_draw(self):
+        """2-way model probs (NBA) should produce edges for home/away only."""
+        model_probs = {"home": 0.60, "away": 0.40}
+        odds = {"home_odds": 2.10, "draw_odds": 0.0, "away_odds": 1.75}
+        edges = compute_edges(model_probs, odds)
+
+        assert "draw" not in edges
+        assert "home" in edges
+        assert "away" in edges
+        # home implied = 1/2.10 ≈ 0.476, edge ≈ 0.124
+        assert edges["home"]["edge"] == pytest.approx(0.124, abs=1e-2)

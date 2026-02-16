@@ -3,17 +3,54 @@
 import json
 import os
 import pytest
+from datetime import datetime, timedelta
 from unittest.mock import patch, MagicMock
 import pandas as pd
-from pipeline.run import run_pipeline
+from pipeline.run import run_pipeline, run_sport_pipeline
 
 
-class TestRunPipeline:
+# ---------------------------------------------------------------------------
+# Fixtures
+# ---------------------------------------------------------------------------
+
+@pytest.fixture
+def sample_nba_matches():
+    """Minimal NBA match results for testing."""
+    base_date = datetime(2024, 10, 22)
+    results = [
+        ("Lakers", "Celtics", 112, 108),
+        ("Warriors", "Heat", 120, 115),
+        ("Bucks", "Knicks", 105, 110),
+        ("Suns", "Nuggets", 98, 103),
+        ("76ers", "Bulls", 115, 102),
+        ("Celtics", "Lakers", 130, 125),
+        ("Heat", "Warriors", 99, 105),
+        ("Knicks", "Bucks", 108, 100),
+        ("Nuggets", "Suns", 118, 110),
+        ("Bulls", "76ers", 95, 102),
+    ]
+    matches = []
+    for i, (home, away, hg, ag) in enumerate(results):
+        matches.append({
+            "date": (base_date + timedelta(days=i)).isoformat(),
+            "home_team": home,
+            "away_team": away,
+            "home_goals": hg,
+            "away_goals": ag,
+        })
+    return pd.DataFrame(matches)
+
+
+# ---------------------------------------------------------------------------
+# EPL pipeline
+# ---------------------------------------------------------------------------
+
+class TestRunEPLPipeline:
     @patch("pipeline.run.fetch_odds")
     @patch("pipeline.run.fetch_understat_xg")
     @patch("pipeline.run.fetch_epl_fixtures")
     @patch("pipeline.run.fetch_epl_matches")
-    def test_produces_valid_predictions_json(
+    def test_produces_valid_epl_predictions(
         self, mock_matches, mock_fixtures, mock_xg, mock_odds,
         sample_matches, sample_xg, sample_odds, tmp_path
     ):
@@ -38,8 +75,8 @@ class TestRunPipeline:
             }
         ]
 
-        output_dir = str(tmp_path)
-        run_pipeline(output_dir=output_dir)
+        output_dir = str(tmp_path / "epl")
+        run_sport_pipeline("epl", output_dir=output_dir)
 
         predictions_path = os.path.join(output_dir, "predictions.json")
         assert os.path.exists(predictions_path)
@@ -47,6 +84,8 @@ class TestRunPipeline:
         with open(predictions_path) as f:
             data = json.load(f)
 
+        assert data["sport"] == "epl"
+        assert data["outcomes"] == ["home", "draw", "away"]
         assert "generated_at" in data
         assert "matches" in data
         assert len(data["matches"]) >= 1
@@ -55,10 +94,10 @@ class TestRunPipeline:
         assert match["home_team"] == "Arsenal"
         assert match["away_team"] == "Chelsea"
         assert "model_probs" in match
-        assert "edges" in match
+        assert "draw" in match["model_probs"]
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
 
-        # Slop Locks of the Week
+        # Slop Locks
         assert "slop_locks" in data
         assert isinstance(data["slop_locks"], list)
         assert len(data["slop_locks"]) <= 5
@@ -66,3 +105,114 @@ class TestRunPipeline:
             assert lock["pick"] in ("home", "draw", "away")
             assert lock["edge"] > 0
             assert -200 <= lock["american_odds"] <= 200
+
+
+# ---------------------------------------------------------------------------
+# NBA pipeline
+# ---------------------------------------------------------------------------
+
+class TestRunNBAPipeline:
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_nba_schedule")
+    @patch("pipeline.run.fetch_nba_games")
+    def test_produces_valid_nba_predictions(
+        self, mock_games, mock_schedule, mock_odds,
+        sample_nba_matches, tmp_path
+    ):
+        mock_games.return_value = sample_nba_matches
+        mock_schedule.return_value = [
+            {
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "date": "2026-02-19",
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "commence_time": "2026-02-19T00:30:00Z",
+                "home_odds": 2.10,
+                "draw_odds": 0.0,
+                "away_odds": 1.75,
+            }
+        ]
+
+        output_dir = str(tmp_path / "nba")
+        run_sport_pipeline("nba", output_dir=output_dir)
+
+        predictions_path = os.path.join(output_dir, "predictions.json")
+        assert os.path.exists(predictions_path)
+
+        with open(predictions_path) as f:
+            data = json.load(f)
+
+        assert data["sport"] == "nba"
+        assert data["outcomes"] == ["home", "away"]
+        assert len(data["matches"]) >= 1
+
+        match = data["matches"][0]
+        assert "draw" not in match["model_probs"]
+        assert set(match["model_probs"].keys()) == {"home", "away"}
+        assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
+
+        # Season stats should not have draw fields
+        stats = data["season_stats"]
+        assert "draws" not in stats
+        assert "draw_pct" not in stats
+
+        # Only elo model for NBA
+        assert "elo" in data["model_weights"]
+        assert "dixon_coles" not in data["model_weights"]
+
+
+# ---------------------------------------------------------------------------
+# Multi-sport orchestrator
+# ---------------------------------------------------------------------------
+
+class TestRunPipeline:
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_nba_schedule")
+    @patch("pipeline.run.fetch_nba_games")
+    @patch("pipeline.run.fetch_understat_xg")
+    @patch("pipeline.run.fetch_epl_fixtures")
+    @patch("pipeline.run.fetch_epl_matches")
+    def test_produces_per_sport_files_and_manifest(
+        self, mock_epl_matches, mock_epl_fixtures, mock_xg,
+        mock_nba_games, mock_nba_schedule, mock_odds,
+        sample_matches, sample_xg, sample_nba_matches, tmp_path
+    ):
+        mock_epl_matches.return_value = sample_matches
+        mock_epl_fixtures.return_value = [
+            {
+                "home_team": "Arsenal",
+                "away_team": "Chelsea",
+                "date": "2026-02-22T15:00:00Z",
+                "matchday": 26,
+            }
+        ]
+        mock_xg.return_value = sample_xg
+        mock_nba_games.return_value = sample_nba_matches
+        mock_nba_schedule.return_value = [
+            {
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "date": "2026-02-19",
+            }
+        ]
+        mock_odds.return_value = []
+
+        output_dir = str(tmp_path)
+        manifest = run_pipeline(output_dir=output_dir)
+
+        # Manifest
+        manifest_path = os.path.join(output_dir, "manifest.json")
+        assert os.path.exists(manifest_path)
+        assert "epl" in manifest["sports"]
+        assert "nba" in manifest["sports"]
+        assert manifest["sports"]["epl"]["status"] == "ok"
+        assert manifest["sports"]["nba"]["status"] == "ok"
+
+        # Per-sport prediction files
+        assert os.path.exists(os.path.join(output_dir, "epl", "predictions.json"))
+        assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))

@@ -327,10 +327,16 @@ class EloRatings:
         Team names to initialise.
     initial_rating : float
         Starting Elo for every team (default 1500).
+    k_factor : float or None
+        K-factor for rating updates. Defaults to ``ELO_K_FACTOR`` from config.
+    home_advantage : float or None
+        Elo points added to home team. Defaults to ``ELO_HOME_ADVANTAGE``.
     """
 
-    def __init__(self, teams, initial_rating=1500):
+    def __init__(self, teams, initial_rating=1500, k_factor=None, home_advantage=None):
         self.ratings = {t: float(initial_rating) for t in teams}
+        self.k_factor = k_factor if k_factor is not None else ELO_K_FACTOR
+        self.home_advantage = home_advantage if home_advantage is not None else ELO_HOME_ADVANTAGE
 
     def get_rating(self, team):
         """Return the current Elo rating for *team*."""
@@ -362,8 +368,8 @@ class EloRatings:
         else:
             s_home, s_away = 0.5, 0.5
 
-        # Expected scores — home team gets ELO_HOME_ADVANTAGE boost
-        e_home = self.expected_score(r_home + ELO_HOME_ADVANTAGE, r_away)
+        # Expected scores — home team gets home_advantage boost
+        e_home = self.expected_score(r_home + self.home_advantage, r_away)
         e_away = 1.0 - e_home
 
         # Goal-difference multiplier
@@ -375,7 +381,7 @@ class EloRatings:
         else:
             gd_mult = (11.0 + goal_diff) / 8.0
 
-        k = ELO_K_FACTOR * gd_mult
+        k = self.k_factor * gd_mult
 
         self.ratings[home] = r_home + k * (s_home - e_home)
         self.ratings[away] = r_away + k * (s_away - e_away)
@@ -398,11 +404,12 @@ class EloRatings:
             )
 
 
-def elo_predict(elo, home_team, away_team):
+def elo_predict(elo, home_team, away_team, outcomes=None):
     """Convert Elo ratings into match-outcome probabilities.
 
-    The draw probability is modelled as a function of rating closeness,
-    calibrated to produce roughly 25% draws for typical EPL rating gaps.
+    For 3-way outcomes (soccer), the draw probability is modelled as a
+    function of rating closeness, calibrated to ~25% draws for typical gaps.
+    For 2-way outcomes (basketball), a straight logistic is used.
 
     Parameters
     ----------
@@ -410,13 +417,19 @@ def elo_predict(elo, home_team, away_team):
         Fitted Elo system.
     home_team, away_team : str
         Team names.
+    outcomes : list[str] or None
+        Valid outcomes, e.g. ``["home", "draw", "away"]`` or
+        ``["home", "away"]``. Defaults to 3-way if not specified.
 
     Returns
     -------
     dict
-        Keys: ``home``, ``draw``, ``away`` — each a float probability.
+        Probability for each outcome.
     """
-    r_home = elo.get_rating(home_team) + ELO_HOME_ADVANTAGE
+    if outcomes is None:
+        outcomes = ["home", "draw", "away"]
+
+    r_home = elo.get_rating(home_team) + elo.home_advantage
     r_away = elo.get_rating(away_team)
 
     diff = r_home - r_away
@@ -424,14 +437,15 @@ def elo_predict(elo, home_team, away_team):
     # Expected score for home (logistic)
     e_home = 1.0 / (1.0 + 10.0 ** (-diff / 400.0))
 
-    # Draw probability: peaks when teams are close, base ~25%
-    # Using a Gaussian-like function of the rating difference
+    if "draw" not in outcomes:
+        # 2-way: straight logistic
+        return {"home": e_home, "away": 1.0 - e_home}
+
+    # 3-way: carve out draw probability
     draw_base = 0.25
     draw_prob = draw_base * math.exp(-(diff ** 2) / (2 * 300 ** 2))
-    # Ensure draw_prob stays in a reasonable range
     draw_prob = max(0.10, min(0.35, draw_prob))
 
-    # Remaining probability split by expected score
     remaining = 1.0 - draw_prob
     home_prob = remaining * e_home
     away_prob = remaining * (1.0 - e_home)

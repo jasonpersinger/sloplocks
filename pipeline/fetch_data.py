@@ -118,16 +118,21 @@ def fetch_epl_fixtures() -> list[dict]:
 # ---- The Odds API ------------------------------------------------------------
 
 
-def fetch_odds() -> list[dict]:
-    """Fetch best decimal odds for upcoming EPL matches.
+def fetch_odds(sport_key=None) -> list[dict]:
+    """Fetch best decimal odds for upcoming matches.
 
-    For each match, scan all bookmakers and keep the highest odds for
-    home / draw / away.
+    Parameters
+    ----------
+    sport_key : str or None
+        The Odds API sport key (e.g. "soccer_epl", "basketball_nba").
+        Defaults to ``ODDS_SPORT`` from config for backwards compatibility.
 
     Returns a list of dicts with keys:
         home_team, away_team, commence_time, home_odds, draw_odds, away_odds
     """
-    url = f"{ODDS_API_BASE}/sports/{ODDS_SPORT}/odds"
+    if sport_key is None:
+        sport_key = ODDS_SPORT
+    url = f"{ODDS_API_BASE}/sports/{sport_key}/odds"
     params = {
         "apiKey": ODDS_API_KEY,
         "regions": ODDS_REGIONS,

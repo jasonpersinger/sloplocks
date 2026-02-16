@@ -5,6 +5,7 @@ import os
 # API Keys (from environment / GitHub Secrets)
 FOOTBALL_DATA_API_KEY = os.environ.get("FOOTBALL_DATA_API_KEY", "")
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
+BALLDONTLIE_API_KEY = os.environ.get("BALLDONTLIE_API_KEY", "")
 
 # football-data.org
 FOOTBALL_DATA_BASE = "https://api.football-data.org/v4"
@@ -19,6 +20,9 @@ ODDS_API_BASE = "https://api.the-odds-api.com/v4"
 ODDS_SPORT = "soccer_epl"
 ODDS_REGIONS = "us"
 ODDS_MARKETS = "h2h"
+
+# balldontlie.io
+BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 
 # Model parameters
 TIME_DECAY_RATE = 0.005
@@ -37,3 +41,27 @@ DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 PREDICTIONS_PATH = os.path.join(DATA_DIR, "predictions.json")
 HISTORY_PATH = os.path.join(DATA_DIR, "history.json")
 ACCURACY_PATH = os.path.join(DATA_DIR, "model_accuracy.json")
+
+# Per-sport configuration
+SPORTS = {
+    "epl": {
+        "name": "EPL",
+        "display_name": "Premier League",
+        "odds_sport": "soccer_epl",
+        "outcomes": ["home", "draw", "away"],
+        "models": ["dixon_coles", "xg", "elo"],
+        "elo_k_factor": 20,
+        "elo_home_advantage": 65,
+        "data_dir": os.path.join(DATA_DIR, "epl"),
+    },
+    "nba": {
+        "name": "NBA",
+        "display_name": "NBA",
+        "odds_sport": "basketball_nba",
+        "outcomes": ["home", "away"],
+        "models": ["elo"],
+        "elo_k_factor": 20,
+        "elo_home_advantage": 100,
+        "data_dir": os.path.join(DATA_DIR, "nba"),
+    },
+}
