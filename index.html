@@ -1389,7 +1389,7 @@
       <button class="nav-tab" data-tab="longslops" role="tab" aria-selected="false">LONGSLOPS</button>
       <button class="nav-tab" data-tab="matches" role="tab" aria-selected="false">MATCHES</button>
       <button class="nav-tab" data-tab="stats" role="tab" aria-selected="false">STATS</button>
-      <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">MODELS</button>
+      <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">METHODOLOGY</button>
     </nav>
 
     <!-- Loading State -->
@@ -1401,7 +1401,7 @@
     <!-- ============ SLOP LOCKS TAB ============ -->
     <div id="tab-locks" class="tab-panel active">
       <div class="locks-hero">
-        <h2 class="locks-hero-title">SLOP LOCKS OF THE WEEK</h2>
+        <h2 class="locks-hero-title">SLOP LOCKS OF THE DAY</h2>
         <p class="locks-hero-sub">TOP 5 PICKS &bull; RANKED BY EDGE</p>
       </div>
       <div class="locks-grid" id="locks-grid"></div>
@@ -1410,7 +1410,7 @@
     <!-- ============ LONGSLOPS TAB ============ -->
     <div id="tab-longslops" class="tab-panel">
       <div class="longslop-hero">
-        <h2 class="longslop-hero-title">LONGSLOP OF THE WEEK</h2>
+        <h2 class="longslop-hero-title">LONGSLOP OF THE DAY</h2>
       </div>
       <div id="longslop-container"></div>
     </div>
@@ -1434,6 +1434,15 @@
     <!-- ============ STATS TAB ============ -->
     <div id="tab-stats" class="tab-panel">
       <div class="section-header">
+        <h2>PICK PERFORMANCE</h2>
+        <span class="count" id="pick-record"></span>
+      </div>
+
+      <div class="stats-grid" id="pick-stats-grid"></div>
+
+      <div id="pick-history-section"></div>
+
+      <div class="section-header" style="margin-top:2rem;">
         <h2>SEASON STATS</h2>
         <span class="count">2025-26</span>
       </div>
@@ -1452,19 +1461,16 @@
     <!-- ============ MODELS TAB ============ -->
     <div id="tab-models" class="tab-panel">
       <div class="section-header">
-        <h2>ENSEMBLE WEIGHTS</h2>
+        <h2>METHODOLOGY</h2>
         <span class="count" id="model-count">-- MODELS</span>
       </div>
 
       <div class="stat-card" id="weights-card" style="display:none;">
-        <h3>MODEL CONTRIBUTION</h3>
+        <h3>CURRENT ENSEMBLE WEIGHTS</h3>
         <div class="weights-list" id="weights-list"></div>
       </div>
 
-      <div class="stat-card" style="margin-top: 1rem;">
-        <h3>METHODOLOGY</h3>
-        <div id="methodology-text" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.8;"></div>
-      </div>
+      <div id="methodology-text" style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-dim); line-height: 1.8;"></div>
     </div>
   </main>
 
@@ -1530,6 +1536,9 @@
       var distLegend = $('#dist-legend');
       var weightsCard = $('#weights-card');
       var weightsList = $('#weights-list');
+      var pickStatsGrid = $('#pick-stats-grid');
+      var pickRecord = $('#pick-record');
+      var pickHistorySection = $('#pick-history-section');
       var footerUpdated = $('#footer-updated');
       var sortLabel = $('#sort-label');
       var modelCount = $('#model-count');
@@ -1658,7 +1667,7 @@
         if (!locks || locks.length === 0) {
           var empty = createEl('div', 'locks-empty');
           empty.appendChild(createEl('div', 'locks-empty-icon', '\uD83D\uDE24'));
-          empty.appendChild(createEl('h3', null, 'NO LOCKS THIS WEEK'));
+          empty.appendChild(createEl('h3', null, 'NO LOCKS TODAY'));
           empty.appendChild(createEl('p', null, 'Check back when odds drop. The books are hiding.'));
           locksGrid.appendChild(empty);
           return;
@@ -1722,8 +1731,8 @@
         if (!longslop) {
           var empty = createEl('div', 'longslop-empty');
           empty.appendChild(createEl('div', 'longslop-empty-icon', '\uD83E\uDDE0'));
-          empty.appendChild(createEl('h3', null, 'NO LONGSLOPS THIS WEEK'));
-          empty.appendChild(createEl('p', null, 'No +500 longshots on the board this week.'));
+          empty.appendChild(createEl('h3', null, 'NO LONGSLOPS TODAY'));
+          empty.appendChild(createEl('p', null, 'No +500 longshots on the board today.'));
           longslopContainer.appendChild(empty);
           return;
         }
@@ -2012,6 +2021,108 @@
       }
 
       /* -----------------------------------
+         RENDER PICK PERFORMANCE
+         ----------------------------------- */
+      function renderPickStats(data) {
+        pickStatsGrid.textContent = '';
+        pickHistorySection.textContent = '';
+
+        var ps = data.pick_stats;
+        if (!ps) {
+          pickRecord.textContent = 'TRACKING';
+          var card = createEl('div', 'stat-card');
+          card.appendChild(createEl('p', null, 'Pick tracking starts when the pipeline runs. Check back after matches are played to see results.'));
+          card.style.color = 'var(--text-dim)';
+          card.style.fontSize = '0.75rem';
+          pickHistorySection.appendChild(card);
+          return;
+        }
+
+        var all = ps.all || {};
+        var locks = ps.slop_lock || {};
+        var longs = ps.longslop || {};
+
+        // Header record
+        if (all.evaluated > 0) {
+          pickRecord.textContent = all.wins + '-' + all.losses;
+        } else {
+          pickRecord.textContent = all.total + ' PENDING';
+        }
+
+        // Stat cards
+        var cards = [];
+
+        // SLOP LOCK stats
+        if (locks.evaluated > 0) {
+          cards.push({
+            label: 'SLOP LOCK HIT RATE',
+            value: formatPct(locks.hit_rate || 0),
+            sub: locks.wins + 'W-' + locks.losses + 'L (' + locks.evaluated + ' SETTLED)',
+            isSlime: true
+          });
+          cards.push({
+            label: 'SLOP LOCK ROI',
+            value: (locks.roi >= 0 ? '+' : '') + formatPct(locks.roi || 0),
+            sub: 'FLAT $100 BETS',
+            isSlime: locks.roi > 0
+          });
+        } else {
+          cards.push({
+            label: 'SLOP LOCKS',
+            value: String(locks.total || 0),
+            sub: 'PICKS PENDING RESULTS',
+            isSlime: false
+          });
+        }
+
+        // LONGSLOP stats
+        if (longs.evaluated > 0) {
+          cards.push({
+            label: 'LONGSLOP HIT RATE',
+            value: formatPct(longs.hit_rate || 0),
+            sub: longs.wins + 'W-' + longs.losses + 'L (' + longs.evaluated + ' SETTLED)',
+            isSlime: true
+          });
+          cards.push({
+            label: 'LONGSLOP ROI',
+            value: (longs.roi >= 0 ? '+' : '') + formatPct(longs.roi || 0),
+            sub: 'FLAT $100 BETS',
+            isSlime: longs.roi > 0
+          });
+        } else if (longs.total > 0) {
+          cards.push({
+            label: 'LONGSLOPS',
+            value: String(longs.total || 0),
+            sub: 'PICKS PENDING RESULTS',
+            isSlime: false
+          });
+        }
+
+        // Overall
+        if (all.evaluated > 0) {
+          cards.push({
+            label: 'OVERALL ROI',
+            value: (all.roi >= 0 ? '+' : '') + formatPct(all.roi || 0),
+            sub: all.wins + 'W-' + all.losses + 'L ACROSS ALL PICKS',
+            isSlime: all.roi > 0
+          });
+        }
+
+        for (var c = 0; c < cards.length; c++) {
+          var sc = createEl('div', 'stat-card fade-in');
+          sc.style.animationDelay = (c * 0.05) + 's';
+          sc.appendChild(createEl('h3', null, cards[c].label));
+          var valEl = createEl('div', 'stat-value' + (cards[c].isSlime ? ' slime' : ''), cards[c].value);
+          if (cards[c].value.charAt(0) === '-') {
+            valEl.style.color = 'var(--pink)';
+          }
+          sc.appendChild(valEl);
+          sc.appendChild(createEl('div', 'stat-label', cards[c].sub));
+          pickStatsGrid.appendChild(sc);
+        }
+      }
+
+      /* -----------------------------------
          RENDER STATS
          ----------------------------------- */
       function renderStats(data) {
@@ -2138,55 +2249,84 @@
       function renderMethodology() {
         methodologyText.textContent = '';
 
-        var models;
+        function addCard(title, paragraphs) {
+          var card = createEl('div', 'stat-card');
+          card.style.marginTop = '1rem';
+          card.appendChild(createEl('h3', null, title));
+          for (var i = 0; i < paragraphs.length; i++) {
+            var text = paragraphs[i];
+            if (text.charAt(0) === '>') {
+              var p = createEl('p');
+              p.style.marginTop = '0.5rem';
+              var arrow = createEl('span');
+              arrow.style.color = 'var(--slime)';
+              arrow.textContent = '> ';
+              p.appendChild(arrow);
+              var strong = createEl('strong');
+              strong.style.color = 'var(--text)';
+              var dashIdx = text.indexOf(' \u2014 ');
+              if (dashIdx > 0) {
+                strong.textContent = text.substring(2, dashIdx);
+                p.appendChild(strong);
+                p.appendChild(document.createTextNode(text.substring(dashIdx)));
+              } else {
+                p.appendChild(document.createTextNode(text.substring(2)));
+              }
+              card.appendChild(p);
+            } else {
+              var p = createEl('p', null, text);
+              p.style.marginTop = '0.5rem';
+              card.appendChild(p);
+            }
+          }
+          methodologyText.appendChild(card);
+        }
+
+        /* ── How It Works ── */
+        addCard('HOW IT WORKS', [
+          'Every day, SLOP LOCKS runs a prediction pipeline that fetches live data, fits mathematical models to the season\'s results, and compares our predicted probabilities against the bookmakers\' odds.',
+          'When our model says an outcome is more likely than what the books are pricing, that\'s an edge. The bigger the gap, the more confident the pick.'
+        ]);
+
+        /* ── The Models ── */
         if (currentSport === 'nba') {
-          var intro = createEl('p', null, 'Elo rating model tuned for NBA with 100-point home court advantage.');
-          intro.style.marginBottom = '0.75rem';
-          methodologyText.appendChild(intro);
-          models = [
-            {
-              name: 'Elo Ratings',
-              desc: 'Dynamic strength ratings updated after each game. NBA-tuned home court advantage (100 Elo pts). 2-way logistic model — no draw outcome.'
-            }
-          ];
+          addCard('THE MODEL', [
+            'NBA predictions currently use a single model:',
+            '> Elo Ratings \u2014 A dynamic power rating system that updates after every game. Each team starts with a baseline rating that shifts based on wins, losses, and margin of victory. Home court advantage is tuned to 100 Elo points for the NBA. Win probabilities are derived from the rating gap between two teams using a logistic function.'
+          ]);
         } else {
-          var intro = createEl('p', null, 'Three models blended by rolling accuracy into one ensemble prediction.');
-          intro.style.marginBottom = '0.75rem';
-          methodologyText.appendChild(intro);
-          models = [
-            {
-              name: 'Dixon-Coles',
-              desc: 'Poisson-based model with attack/defense parameters for each team. Captures scoring rates and corrects for low-score dependencies.'
-            },
-            {
-              name: 'Elo Ratings',
-              desc: 'Dynamic strength ratings updated after each match. Accounts for home advantage and margin of victory.'
-            }
-          ];
+          addCard('THE MODELS', [
+            'EPL predictions blend up to three independent models into a single ensemble:',
+            '> Dixon-Coles \u2014 A Poisson-based model that estimates attack and defense strength parameters for every team. It predicts the probability of every possible scoreline (0-0 through 6-6), then sums to get home/draw/away probabilities. Includes a correction factor for low-scoring matches where goals aren\'t truly independent.',
+            '> xG Model \u2014 The same Dixon-Coles framework, but fitted on expected goals (xG) from Understat instead of actual goals. This filters out lucky finishes and unlucky misses, capturing underlying performance rather than raw results.',
+            '> Elo Ratings \u2014 A dynamic power rating system updated after each match. Ratings shift based on results and margin of victory, with a 65-point home advantage baked in for the Premier League.'
+          ]);
         }
 
-        for (var i = 0; i < models.length; i++) {
-          var p = createEl('p');
-          p.style.marginTop = '0.5rem';
+        /* ── The Ensemble ── */
+        addCard('ENSEMBLE BLENDING', [
+          'Each model produces its own probability for every outcome. These are combined into a single prediction using a weighted average, where the weights come from each model\'s recent accuracy.',
+          'Models that have been more accurate over the last 10 evaluated matches get more influence. This is computed via softmax scaling of rolling accuracy, so hot models lead and cold models fade — automatically, every day.'
+        ]);
 
-          var arrow = createEl('span');
-          arrow.style.color = 'var(--slime)';
-          arrow.textContent = '> ';
-          p.appendChild(arrow);
+        /* ── Edge Detection ── */
+        addCard('EDGE DETECTION', [
+          'After blending, we compare our probabilities against the best available bookmaker odds from The Odds API.',
+          'Edge = Model Probability \u2212 Implied Probability. A positive edge means our model thinks the books are underpricing that outcome.',
+          'An outcome is flagged as a "value bet" when the edge exceeds 5% — our minimum threshold for conviction.'
+        ]);
 
-          var strong = createEl('strong');
-          strong.style.color = 'var(--text)';
-          strong.textContent = models[i].name;
-          p.appendChild(strong);
+        /* ── What Makes a Pick ── */
+        addCard('WHAT MAKES A PICK', [
+          '> SLOP LOCKS \u2014 The top 5 outcomes by edge across all upcoming matches. These are the bets where our model disagrees most with the books. Ranked by edge size — the #1 SLOP LOCK has the biggest gap between what we think and what the books are pricing.',
+          '> LONGSLOP \u2014 The +500 or longer odds outcome that our model gives the highest probability of actually hitting. The model must be at least as optimistic as the books (model probability \u2265 implied probability). This isn\'t about value — it\'s about finding the longshot with the best realistic chance of landing.'
+        ]);
 
-          p.appendChild(document.createTextNode(' \u2014 ' + models[i].desc));
-          methodologyText.appendChild(p);
-        }
-
-        var edgeNote = createEl('p', null, 'Edge = Model Probability - Implied Probability. Positive edge means Big Slime thinks the books are underpricing this outcome.');
-        edgeNote.style.marginTop = '0.75rem';
-        edgeNote.style.color = 'var(--text-muted)';
-        methodologyText.appendChild(edgeNote);
+        /* ── Data Sources ── */
+        addCard('DATA SOURCES', [
+          'Match data and fixtures are sourced from football-data.org (EPL) and balldontlie.io (NBA). Expected goals data comes from Understat. Bookmaker odds are fetched daily from The Odds API across US-available sportsbooks.',
+          'The pipeline runs daily via GitHub Actions. Every number on this site is generated by code — no human picks, no gut feelings, no vibes.'
+        ]);
       }
 
       /* -----------------------------------
@@ -2280,6 +2420,7 @@
             renderLocks(data.slop_locks || []);
             renderLongslop(data.longslop || null);
             renderMatches(matchList);
+            renderPickStats(data);
             renderStats(data);
             renderWeights(data.model_weights);
             renderMethodology();

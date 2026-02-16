@@ -30,6 +30,7 @@ from pipeline.models import (
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american
 from pipeline.backtest import (
     compute_model_weights,
+    compute_roi,
     evaluate_prediction,
     get_rolling_accuracy,
     update_accuracy_log,
@@ -264,6 +265,41 @@ def _compute_longslop(prediction_records, outcomes):
 
     longslop_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
     return longslop_candidates[0] if longslop_candidates else None
+
+
+def _compute_pick_stats(picks):
+    """Compute aggregate stats from evaluated picks.
+
+    Returns a dict with stats broken out by pick type (slop_lock, longslop, all).
+    """
+    stats = {}
+    for pick_type in ("slop_lock", "longslop", "all"):
+        subset = [p for p in picks if pick_type == "all" or p["type"] == pick_type]
+        evaluated = [p for p in subset if p.get("evaluated")]
+        wins = [p for p in evaluated if p.get("won")]
+        losses = [p for p in evaluated if not p.get("won")]
+
+        # ROI: flat $100 bet per pick
+        bets = []
+        for p in evaluated:
+            bets.append({
+                "stake": 100.0,
+                "odds": p.get("decimal_odds", 0),
+                "won": p.get("won", False),
+            })
+        roi = compute_roi(bets)
+
+        stats[pick_type] = {
+            "total": len(subset),
+            "evaluated": len(evaluated),
+            "wins": len(wins),
+            "losses": len(losses),
+            "pending": len(subset) - len(evaluated),
+            "hit_rate": round(len(wins) / max(len(evaluated), 1), 3) if evaluated else None,
+            "roi": round(roi, 3) if evaluated else None,
+        }
+
+    return stats
 
 
 # ---------------------------------------------------------------------------
@@ -515,6 +551,90 @@ def run_sport_pipeline(sport_key, output_dir=None):
         updated_past.append(pred)
 
     # ------------------------------------------------------------------
+    # 6b. Track and evaluate picks
+    # ------------------------------------------------------------------
+    pick_history_path = os.path.join(sport_dir, "pick_history.json")
+    pick_history = _load_json(pick_history_path)
+    if not isinstance(pick_history, dict):
+        pick_history = {}
+    past_picks = pick_history.get("picks", [])
+
+    # Evaluate unevaluated past picks against results
+    for pick in past_picks:
+        if pick.get("evaluated"):
+            continue
+        match_date = str(pick.get("match_date", ""))[:10]
+        key = (pick["home_team"], pick["away_team"], match_date)
+        result = result_lookup.get(key)
+        if result is not None:
+            hg, ag = result
+            if hg > ag:
+                actual = "home"
+            elif hg == ag:
+                actual = "draw"
+            else:
+                actual = "away"
+            pick["evaluated"] = True
+            pick["actual"] = actual
+            pick["won"] = pick["pick"] == actual
+            pick["home_goals"] = hg
+            pick["away_goals"] = ag
+
+    # Append today's new picks (deduplicate by match + pick + type)
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    existing_keys = set()
+    for p in past_picks:
+        existing_keys.add((p.get("pick_date"), p["type"], p["home_team"],
+                           p["away_team"], p["pick"]))
+
+    for lock in slop_locks:
+        pk = (today_str, "slop_lock", lock["home_team"],
+              lock["away_team"], lock["pick"])
+        if pk not in existing_keys:
+            past_picks.append({
+                "pick_date": today_str,
+                "type": "slop_lock",
+                "home_team": lock["home_team"],
+                "away_team": lock["away_team"],
+                "match_date": str(lock["date"])[:10],
+                "pick": lock["pick"],
+                "model_prob": lock["model_prob"],
+                "implied_prob": lock["implied_prob"],
+                "edge": lock["edge"],
+                "american_odds": lock["american_odds"],
+                "decimal_odds": lock["decimal_odds"],
+                "evaluated": False,
+            })
+
+    if longslop:
+        pk = (today_str, "longslop", longslop["home_team"],
+              longslop["away_team"], longslop["pick"])
+        if pk not in existing_keys:
+            past_picks.append({
+                "pick_date": today_str,
+                "type": "longslop",
+                "home_team": longslop["home_team"],
+                "away_team": longslop["away_team"],
+                "match_date": str(longslop["date"])[:10],
+                "pick": longslop["pick"],
+                "model_prob": longslop["model_prob"],
+                "implied_prob": longslop["implied_prob"],
+                "edge": longslop["edge"],
+                "american_odds": longslop["american_odds"],
+                "decimal_odds": longslop["decimal_odds"],
+                "evaluated": False,
+            })
+
+    pick_history = {
+        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "picks": past_picks,
+    }
+    _save_json(pick_history_path, pick_history)
+
+    # Compute pick stats for output
+    pick_stats = _compute_pick_stats(past_picks)
+
+    # ------------------------------------------------------------------
     # 7. Compute season stats
     # ------------------------------------------------------------------
     total_matches = len(matches)
@@ -547,6 +667,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         "matches": prediction_records,
         "season_stats": season_stats,
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
+        "pick_stats": pick_stats,
     }
     _save_json(predictions_path, predictions_output)
 
