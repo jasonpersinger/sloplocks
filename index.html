@@ -1698,7 +1698,7 @@
           var empty = createEl('div', 'longslop-empty');
           empty.appendChild(createEl('div', 'longslop-empty-icon', '\uD83E\uDDE0'));
           empty.appendChild(createEl('h3', null, 'NO LONGSLOPS THIS WEEK'));
-          empty.appendChild(createEl('p', null, 'No +500 edges found this week.'));
+          empty.appendChild(createEl('p', null, 'No +500 longshots on the board this week.'));
           longslopContainer.appendChild(empty);
           return;
         }
@@ -1730,7 +1730,10 @@
 
         var edgeItem = createEl('div', 'longslop-breakdown-item');
         edgeItem.appendChild(createEl('div', 'longslop-breakdown-label', 'EDGE'));
-        edgeItem.appendChild(createEl('div', 'longslop-breakdown-value slime', '+' + (longslop.edge * 100).toFixed(1) + '%'));
+        var edgeNum = (longslop.edge * 100).toFixed(1);
+        var edgeStr = longslop.edge >= 0 ? '+' + edgeNum + '%' : edgeNum + '%';
+        var edgeCls = longslop.edge >= 0 ? 'longslop-breakdown-value slime' : 'longslop-breakdown-value';
+        edgeItem.appendChild(createEl('div', edgeCls, edgeStr));
         breakdown.appendChild(edgeItem);
 
         card.appendChild(breakdown);
@@ -1743,12 +1746,11 @@
         var outcome = longslop.pick === 'draw' ? 'draw' : (teamName + ' to win');
         var modelPctStr = formatPctDecimal(longslop.model_prob);
         var impliedPctStr = formatPctDecimal(longslop.implied_prob);
-        var edgePctStr = (longslop.edge * 100).toFixed(1) + '%';
         var oddsStr = formatOdds(longslop.american_odds);
 
         var caseText = 'Our model gives ' + outcome + ' a ' + modelPctStr +
-          ' chance, but the books are only pricing it at ' + impliedPctStr +
-          '. That\'s a ' + edgePctStr + ' edge on a ' + oddsStr + ' longshot.';
+          ' chance at ' + oddsStr + ' odds. The books imply ' + impliedPctStr +
+          '. It\'s a longshot, but the model says this one has a real shot.';
 
         var caseP = createEl('p', null, caseText);
         caseDiv.appendChild(caseP);

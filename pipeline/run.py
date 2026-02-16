@@ -100,7 +100,7 @@ def _check_congestion(team, fixtures, matches, threshold_days=CONGESTION_THRESHO
 
 
 def _compute_slop_locks(prediction_records, outcomes):
-    """Extract SLOP LOCKS (top 5 value picks, -200 to +200)."""
+    """Extract SLOP LOCKS (top 5 value picks by edge)."""
     lock_candidates = []
     for rec in prediction_records:
         edges = rec.get("edges", {})
@@ -111,8 +111,6 @@ def _compute_slop_locks(prediction_records, outcomes):
                 continue
             american = best_odds.get(outcome, e.get("american_odds"))
             if american is None:
-                continue
-            if american < -200 or american > 200:
                 continue
             lock_candidates.append({
                 "home_team": rec["home_team"],
@@ -132,19 +130,27 @@ def _compute_slop_locks(prediction_records, outcomes):
 
 
 def _compute_longslop(prediction_records, outcomes):
-    """Extract LONGSLOP (best longshot pick, +500 or better)."""
+    """Extract LONGSLOP (best longshot the model believes may hit, +500 or better).
+
+    Ranked by model probability — the outcome our model gives the highest
+    chance of happening among all +500 lines, regardless of edge.
+    """
     longslop_candidates = []
     for rec in prediction_records:
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
+        model_probs = rec.get("model_probs", {})
         for outcome in outcomes:
             e = edges.get(outcome)
-            if not e or e["edge"] <= 0:
+            american = best_odds.get(outcome, e.get("american_odds") if e else None)
+            if american is None or american < 500:
                 continue
-            american = best_odds.get(outcome, e.get("american_odds"))
-            if american is None:
-                continue
-            if american < 500:
+            # Use model probability from edges if available, else from blended probs
+            model_prob = e["model_prob"] if e else model_probs.get(outcome, 0)
+            implied_prob = e["implied_prob"] if e else 0
+            edge = e["edge"] if e else 0
+            decimal_odds = e["decimal_odds"] if e else 0
+            if model_prob <= 0:
                 continue
             longslop_candidates.append({
                 "home_team": rec["home_team"],
@@ -152,14 +158,14 @@ def _compute_longslop(prediction_records, outcomes):
                 "date": rec["date"],
                 "matchday": rec.get("matchday"),
                 "pick": outcome,
-                "model_prob": round(e["model_prob"], 4),
-                "implied_prob": round(e["implied_prob"], 4),
-                "edge": round(e["edge"], 4),
+                "model_prob": round(model_prob, 4),
+                "implied_prob": round(implied_prob, 4),
+                "edge": round(edge, 4),
                 "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
+                "decimal_odds": decimal_odds,
             })
 
-    longslop_candidates.sort(key=lambda x: x["edge"], reverse=True)
+    longslop_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
     return longslop_candidates[0] if longslop_candidates else None
 
 
