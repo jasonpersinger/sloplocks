@@ -132,8 +132,8 @@ def _compute_slop_locks(prediction_records, outcomes):
 def _compute_longslop(prediction_records, outcomes):
     """Extract LONGSLOP (best longshot the model believes may hit, +500 or better).
 
-    Ranked by model probability — the outcome our model gives the highest
-    chance of happening among all +500 lines, regardless of edge.
+    Ranked by model probability among +500 lines where the model is at
+    least as optimistic as the books (model_prob >= implied_prob).
     """
     longslop_candidates = []
     for rec in prediction_records:
@@ -150,7 +150,8 @@ def _compute_longslop(prediction_records, outcomes):
             implied_prob = e["implied_prob"] if e else 0
             edge = e["edge"] if e else 0
             decimal_odds = e["decimal_odds"] if e else 0
-            if model_prob <= 0:
+            # Model must believe in this at least as much as the books do
+            if model_prob <= 0 or model_prob < implied_prob:
                 continue
             longslop_candidates.append({
                 "home_team": rec["home_team"],

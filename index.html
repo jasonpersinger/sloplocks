@@ -129,7 +129,7 @@
     }
 
     .logo-svg {
-      filter: drop-shadow(0 0 6px var(--slime-glow));
+      /* Removed glow for clean pixel art look */
     }
 
     .wordmark {
@@ -138,7 +138,6 @@
       font-size: 2.5rem;
       letter-spacing: 0.15em;
       color: var(--slime);
-      text-shadow: 0 0 20px var(--slime-glow), 0 0 40px rgba(57, 255, 20, 0.1);
       line-height: 1;
     }
 
@@ -1321,31 +1320,42 @@
   <header>
     <div class="container">
       <div class="logo">
-        <!-- Inline SVG: Toxic waste slime dude -->
-        <svg class="logo-svg" width="44" height="50" viewBox="0 0 44 50" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <!-- Body: blobby toxic waste shape -->
-          <ellipse cx="22" cy="32" rx="16" ry="14" fill="#39FF14"/>
-          <!-- Dripping slime blobs on body -->
-          <ellipse cx="10" cy="40" rx="3" ry="2" fill="#39FF14" opacity="0.7"/>
-          <path d="M10 42 Q9.5 46, 10.5 48" stroke="#39FF14" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
-          <ellipse cx="34" cy="38" rx="2.5" ry="1.5" fill="#39FF14" opacity="0.6"/>
-          <path d="M34 39.5 Q34.5 43, 33.5 45" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
-          <ellipse cx="22" cy="44" rx="2" ry="1.5" fill="#39FF14" opacity="0.6"/>
-          <path d="M22 45.5 Q22 48, 21.5 50" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-          <!-- Eyes: big goofy mismatched -->
-          <ellipse cx="16" cy="28" rx="5" ry="5.5" fill="#0D0D0D"/>
-          <ellipse cx="28" cy="27" rx="4.5" ry="5" fill="#0D0D0D"/>
-          <ellipse cx="17" cy="27" rx="2.5" ry="2.5" fill="#EAEAEA"/>
-          <ellipse cx="29" cy="26" rx="2" ry="2" fill="#EAEAEA"/>
-          <ellipse cx="17.5" cy="27.5" rx="1.2" ry="1.2" fill="#0D0D0D"/>
-          <ellipse cx="29.5" cy="26.5" rx="1" ry="1" fill="#0D0D0D"/>
-          <!-- Mouth: big crooked grin -->
-          <path d="M14 35 Q18 40, 22 38 Q26 36, 30 38" stroke="#0D0D0D" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <!-- Toxic waste drops from head -->
-          <path d="M15 19 Q14 16, 16 14" stroke="#39FF14" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>
-          <ellipse cx="16" cy="13" rx="2" ry="2" fill="#39FF14" opacity="0.6"/>
-          <path d="M28 18 Q29 14, 27 11" stroke="#39FF14" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-          <ellipse cx="27" cy="10" rx="1.8" ry="1.8" fill="#39FF14" opacity="0.5"/>
+        <!-- Inline SVG: 16-bit toxic waste padlock -->
+        <svg class="logo-svg" width="64" height="64" viewBox="0 0 16 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="image-rendering: pixelated; image-rendering: -moz-crisp-edges; image-rendering: crisp-edges;">
+          <!-- Shackle (U-shaped top) -->
+          <rect x="5" y="1" width="6" height="1" fill="#39FF14"/>
+          <rect x="4" y="2" width="1" height="3" fill="#39FF14"/>
+          <rect x="11" y="2" width="1" height="3" fill="#39FF14"/>
+          <rect x="5" y="2" width="1" height="2" fill="#0D0D0D"/>
+          <rect x="10" y="2" width="1" height="2" fill="#0D0D0D"/>
+
+          <!-- Body (main lock rectangle) -->
+          <rect x="2" y="5" width="12" height="10" fill="#39FF14"/>
+
+          <!-- Dark outline/shading -->
+          <rect x="2" y="5" width="1" height="10" fill="#2DD10F"/>
+          <rect x="13" y="5" width="1" height="10" fill="#2DD10F"/>
+          <rect x="2" y="14" width="12" height="1" fill="#2DD10F"/>
+
+          <!-- Keyhole -->
+          <rect x="7" y="8" width="2" height="2" fill="#0D0D0D"/>
+          <rect x="7" y="10" width="2" height="3" fill="#0D0D0D"/>
+          <rect x="6" y="11" width="1" height="1" fill="#0D0D0D"/>
+          <rect x="9" y="11" width="1" height="1" fill="#0D0D0D"/>
+
+          <!-- Toxic waste drips on body -->
+          <rect x="4" y="7" width="1" height="1" fill="#2DD10F"/>
+          <rect x="11" y="9" width="1" height="2" fill="#2DD10F"/>
+          <rect x="5" y="12" width="1" height="1" fill="#2DD10F"/>
+
+          <!-- Bottom drip accents -->
+          <rect x="3" y="15" width="2" height="1" fill="#39FF14"/>
+          <rect x="4" y="16" width="1" height="2" fill="#39FF14"/>
+          <rect x="7" y="15" width="2" height="1" fill="#39FF14"/>
+          <rect x="8" y="16" width="1" height="3" fill="#39FF14"/>
+          <rect x="11" y="15" width="2" height="1" fill="#39FF14"/>
+          <rect x="11" y="16" width="1" height="1" fill="#39FF14"/>
+        </svg>
         </svg>
         <h1 class="wordmark">SLOP LOCKS</h1>
       </div>
