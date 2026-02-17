@@ -1,10 +1,12 @@
-"""Dixon-Coles prediction model and Elo rating system for SLOP LOCKS."""
+"""Dixon-Coles prediction model, Elo rating system, Adjusted Efficiency,
+and Four Factors logistic regression for SLOP LOCKS."""
 
 import math
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 from scipy.stats import poisson
+from sklearn.linear_model import LogisticRegression
 
 from pipeline.config import (
     CONGESTION_PENALTY,
@@ -451,3 +453,332 @@ def elo_predict(elo, home_team, away_team, outcomes=None):
     away_prob = remaining * (1.0 - e_home)
 
     return {"home": home_prob, "draw": draw_prob, "away": away_prob}
+
+
+# ---------------------------------------------------------------------------
+# Adjusted Efficiency (KenPom-style)
+# ---------------------------------------------------------------------------
+
+class AdjustedEfficiency:
+    """KenPom-style adjusted efficiency model for college basketball.
+
+    Computes adjusted offensive/defensive efficiency and tempo per team,
+    iteratively correcting for opponent strength.
+
+    Parameters
+    ----------
+    box_scores : pd.DataFrame
+        Columns: game_id, team, date, pts, fgm, fga, fg3m, fg3a, ftm, fta,
+        orb, drb, to, possessions.
+    games : pd.DataFrame
+        Columns: game_id, home_team, away_team, home_goals, away_goals.
+    iterations : int
+        Number of opponent-adjustment iterations.
+    """
+
+    def __init__(self, box_scores, games, iterations=10):
+        self.off_efficiency = {}
+        self.def_efficiency = {}
+        self.tempo = {}
+        self._fit(box_scores, games, iterations)
+
+    def _fit(self, box_scores, games, iterations):
+        # Build opponent mapping from games: for each (game_id, team) -> opponent
+        opponents_in_game = {}
+        for _, g in games.iterrows():
+            gid = g["game_id"]
+            opponents_in_game[(gid, g["home_team"])] = g["away_team"]
+            opponents_in_game[(gid, g["away_team"])] = g["home_team"]
+
+        # Collect per-team raw stats
+        teams = box_scores["team"].unique()
+        team_total_pts = {t: 0.0 for t in teams}
+        team_total_poss = {t: 0.0 for t in teams}
+        team_total_pts_allowed = {t: 0.0 for t in teams}
+        team_total_poss_against = {t: 0.0 for t in teams}
+        team_game_count = {t: 0 for t in teams}
+        team_opponents = {t: [] for t in teams}
+
+        # Index box_scores by (game_id, team) for quick lookup
+        bs_lookup = {}
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
+
+        for _, row in box_scores.iterrows():
+            team = row["team"]
+            gid = row["game_id"]
+            poss = row["possessions"]
+
+            team_total_pts[team] += row["pts"]
+            team_total_poss[team] += poss
+            team_game_count[team] += 1
+
+            opp = opponents_in_game.get((gid, team))
+            if opp is not None:
+                team_opponents[team].append(opp)
+                opp_row = bs_lookup.get((gid, opp))
+                if opp_row is not None:
+                    team_total_pts_allowed[team] += opp_row["pts"]
+                    team_total_poss_against[team] += opp_row["possessions"]
+
+        # Raw efficiencies (points per 100 possessions)
+        raw_off = {}
+        raw_def = {}
+        raw_tempo = {}
+        for t in teams:
+            if team_total_poss[t] > 0:
+                raw_off[t] = (team_total_pts[t] / team_total_poss[t]) * 100.0
+            else:
+                raw_off[t] = 100.0
+            if team_total_poss_against[t] > 0:
+                raw_def[t] = (team_total_pts_allowed[t] / team_total_poss_against[t]) * 100.0
+            else:
+                raw_def[t] = 100.0
+            if team_game_count[t] > 0:
+                raw_tempo[t] = team_total_poss[t] / team_game_count[t]
+            else:
+                raw_tempo[t] = 68.0
+
+        # Iterative opponent adjustment
+        adj_off = dict(raw_off)
+        adj_def = dict(raw_def)
+
+        for _ in range(iterations):
+            league_avg_off = np.mean(list(adj_off.values()))
+            league_avg_def = np.mean(list(adj_def.values()))
+
+            new_off = {}
+            new_def = {}
+            for t in teams:
+                opps = team_opponents[t]
+                if opps:
+                    avg_def_of_opps = np.mean([adj_def[o] for o in opps])
+                    avg_off_of_opps = np.mean([adj_off[o] for o in opps])
+                else:
+                    avg_def_of_opps = league_avg_def
+                    avg_off_of_opps = league_avg_off
+
+                if avg_def_of_opps > 0:
+                    new_off[t] = raw_off[t] * (league_avg_def / avg_def_of_opps)
+                else:
+                    new_off[t] = raw_off[t]
+                if avg_off_of_opps > 0:
+                    new_def[t] = raw_def[t] * (league_avg_off / avg_off_of_opps)
+                else:
+                    new_def[t] = raw_def[t]
+
+            adj_off = new_off
+            adj_def = new_def
+
+        self.off_efficiency = adj_off
+        self.def_efficiency = adj_def
+        self.tempo = raw_tempo
+
+
+def efficiency_predict(model, home_team, away_team, home_bonus=3.5, sigma=11.0):
+    """Predict 2-way win probabilities from an AdjustedEfficiency model.
+
+    Parameters
+    ----------
+    model : AdjustedEfficiency
+        Fitted model.
+    home_team, away_team : str
+        Team names.
+    home_bonus : float
+        Points added to home team's expected score.
+    sigma : float
+        Logistic spread parameter for converting point spread to probability.
+
+    Returns
+    -------
+    dict
+        ``{"home": float, "away": float}``
+    """
+    league_avg = np.mean(list(model.off_efficiency.values()))
+    if league_avg == 0:
+        league_avg = 100.0
+
+    home_off = model.off_efficiency.get(home_team, league_avg)
+    away_off = model.off_efficiency.get(away_team, league_avg)
+    home_def = model.def_efficiency.get(home_team, league_avg)
+    away_def = model.def_efficiency.get(away_team, league_avg)
+    home_tempo = model.tempo.get(home_team, 68.0)
+    away_tempo = model.tempo.get(away_team, 68.0)
+
+    expected_tempo = (home_tempo + away_tempo) / 2.0
+    pace_factor = expected_tempo / 100.0
+
+    home_pts = (home_off * away_def / league_avg) * pace_factor + home_bonus
+    away_pts = (away_off * home_def / league_avg) * pace_factor
+
+    spread = home_pts - away_pts
+    home_prob = 1.0 / (1.0 + math.exp(-spread / sigma))
+
+    return {"home": home_prob, "away": 1.0 - home_prob}
+
+
+# ---------------------------------------------------------------------------
+# Four Factors Logistic Regression
+# ---------------------------------------------------------------------------
+
+class FourFactorsModel:
+    """Four Factors logistic regression model for college basketball.
+
+    Computes Dean Oliver's four factors (offensive and defensive) per team
+    as season averages, then trains a logistic regression on historical games.
+
+    Parameters
+    ----------
+    box_scores : pd.DataFrame
+        Columns: game_id, team, date, pts, fgm, fga, fg3m, fg3a, ftm, fta,
+        orb, drb, to, possessions.
+    games : pd.DataFrame
+        Columns: game_id, home_team, away_team, home_goals, away_goals.
+    """
+
+    def __init__(self, box_scores, games):
+        self.team_stats = {}
+        self.model = None
+        self._fit(box_scores, games)
+
+    def _fit(self, box_scores, games):
+        # Build opponent mapping
+        opponents_in_game = {}
+        for _, g in games.iterrows():
+            gid = g["game_id"]
+            opponents_in_game[(gid, g["home_team"])] = g["away_team"]
+            opponents_in_game[(gid, g["away_team"])] = g["home_team"]
+
+        # Index box_scores by (game_id, team)
+        bs_lookup = {}
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
+
+        # Accumulate per-team stats
+        teams = box_scores["team"].unique()
+        accum = {t: {
+            "fgm": 0, "fga": 0, "fg3m": 0, "fta": 0, "orb": 0, "to": 0,
+            "possessions": 0,
+            "opp_fgm": 0, "opp_fga": 0, "opp_fg3m": 0, "opp_fta": 0,
+            "opp_orb": 0, "opp_drb": 0, "opp_to": 0, "opp_possessions": 0,
+            "drb": 0, "game_count": 0,
+        } for t in teams}
+
+        for _, row in box_scores.iterrows():
+            team = row["team"]
+            gid = row["game_id"]
+            a = accum[team]
+            a["fgm"] += row["fgm"]
+            a["fga"] += row["fga"]
+            a["fg3m"] += row["fg3m"]
+            a["fta"] += row["fta"]
+            a["orb"] += row["orb"]
+            a["drb"] += row["drb"]
+            a["to"] += row["to"]
+            a["possessions"] += row["possessions"]
+            a["game_count"] += 1
+
+            opp = opponents_in_game.get((gid, team))
+            if opp is not None:
+                opp_row = bs_lookup.get((gid, opp))
+                if opp_row is not None:
+                    a["opp_fgm"] += opp_row["fgm"]
+                    a["opp_fga"] += opp_row["fga"]
+                    a["opp_fg3m"] += opp_row["fg3m"]
+                    a["opp_fta"] += opp_row["fta"]
+                    a["opp_orb"] += opp_row["orb"]
+                    a["opp_drb"] += opp_row["drb"]
+                    a["opp_to"] += opp_row["to"]
+                    a["opp_possessions"] += opp_row["possessions"]
+
+        # Compute four factors per team
+        for t in teams:
+            a = accum[t]
+            fga = max(a["fga"], 1)
+            poss = max(a["possessions"], 1)
+            opp_fga = max(a["opp_fga"], 1)
+            opp_poss = max(a["opp_possessions"], 1)
+
+            off_efg = (a["fgm"] + 0.5 * a["fg3m"]) / fga
+            off_to_rate = a["to"] / poss
+            # ORB% = team ORB / (team ORB + opponent DRB)
+            orb_denom = a["orb"] + a["opp_drb"]
+            off_orb_pct = a["orb"] / max(orb_denom, 1)
+            off_ft_rate = a["fta"] / fga
+
+            def_efg = (a["opp_fgm"] + 0.5 * a["opp_fg3m"]) / opp_fga
+            def_to_rate = a["opp_to"] / opp_poss
+            # Opponent ORB% = opponent ORB / (opponent ORB + team DRB)
+            def_orb_denom = a["opp_orb"] + a["drb"]
+            def_orb_pct = a["opp_orb"] / max(def_orb_denom, 1)
+            def_ft_rate = a["opp_fta"] / opp_fga
+
+            self.team_stats[t] = {
+                "off_efg": off_efg,
+                "off_to_rate": off_to_rate,
+                "off_orb_pct": off_orb_pct,
+                "off_ft_rate": off_ft_rate,
+                "def_efg": def_efg,
+                "def_to_rate": def_to_rate,
+                "def_orb_pct": def_orb_pct,
+                "def_ft_rate": def_ft_rate,
+            }
+
+        # Train logistic regression on historical games
+        feature_keys = [
+            "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
+            "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
+        ]
+        X = []
+        y = []
+        for _, g in games.iterrows():
+            ht = g["home_team"]
+            at = g["away_team"]
+            if ht not in self.team_stats or at not in self.team_stats:
+                continue
+            home_feats = [self.team_stats[ht][k] for k in feature_keys]
+            away_feats = [self.team_stats[at][k] for k in feature_keys]
+            X.append(home_feats + away_feats)
+            y.append(1 if g["home_goals"] > g["away_goals"] else 0)
+
+        if len(X) >= 5 and len(set(y)) >= 2:
+            self.model = LogisticRegression(max_iter=1000)
+            self.model.fit(np.array(X), np.array(y))
+
+
+def four_factors_predict(model, home_team, away_team):
+    """Predict 2-way win probabilities from a FourFactorsModel.
+
+    Parameters
+    ----------
+    model : FourFactorsModel
+        Fitted model.
+    home_team, away_team : str
+        Team names.
+
+    Returns
+    -------
+    dict
+        ``{"home": float, "away": float}``
+    """
+    if model.model is None:
+        return {"home": 0.5, "away": 0.5}
+    if home_team not in model.team_stats or away_team not in model.team_stats:
+        return {"home": 0.5, "away": 0.5}
+
+    feature_keys = [
+        "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
+        "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
+    ]
+    home_feats = [model.team_stats[home_team][k] for k in feature_keys]
+    away_feats = [model.team_stats[away_team][k] for k in feature_keys]
+    X = np.array([home_feats + away_feats])
+    proba = model.model.predict_proba(X)[0]
+
+    # proba[1] = P(home wins), proba[0] = P(away wins)
+    # Ensure correct class ordering
+    classes = list(model.model.classes_)
+    home_idx = classes.index(1)
+    away_idx = classes.index(0)
+
+    return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}

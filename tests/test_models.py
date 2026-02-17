@@ -6,10 +6,14 @@ import pytest
 
 from pipeline.config import MAX_GOALS
 from pipeline.models import (
+    AdjustedEfficiency,
     EloRatings,
+    FourFactorsModel,
     dixon_coles_predict,
+    efficiency_predict,
     elo_predict,
     fit_dixon_coles,
+    four_factors_predict,
     scoreline_to_probabilities,
 )
 
@@ -152,3 +156,79 @@ class TestElo:
         elo = EloRatings(teams, home_advantage=100)
         probs = elo_predict(elo, "Arsenal", "Wolves", outcomes=["home", "away"])
         assert probs["home"] > 0.5
+
+
+# ---------------------------------------------------------------------------
+# Adjusted Efficiency (KenPom-style)
+# ---------------------------------------------------------------------------
+
+NCAAM_TEAMS = ["Duke", "North Carolina", "Kansas", "Kentucky", "Gonzaga", "UCLA"]
+
+
+class TestAdjustedEfficiency:
+    """Tests for the KenPom-style adjusted efficiency model."""
+
+    def test_all_teams_have_ratings(self, ncaam_box_scores, ncaam_games):
+        model = AdjustedEfficiency(ncaam_box_scores, ncaam_games)
+        for team in NCAAM_TEAMS:
+            assert team in model.off_efficiency, f"{team} missing from off_efficiency"
+            assert team in model.def_efficiency, f"{team} missing from def_efficiency"
+            assert team in model.tempo, f"{team} missing from tempo"
+
+    def test_efficiencies_are_positive(self, ncaam_box_scores, ncaam_games):
+        model = AdjustedEfficiency(ncaam_box_scores, ncaam_games)
+        for team in NCAAM_TEAMS:
+            assert model.off_efficiency[team] > 0
+            assert model.def_efficiency[team] > 0
+            assert model.tempo[team] > 0
+
+    def test_predict_returns_two_way_probs(self, ncaam_box_scores, ncaam_games):
+        model = AdjustedEfficiency(ncaam_box_scores, ncaam_games)
+        probs = efficiency_predict(model, "Duke", "Kansas")
+        assert set(probs.keys()) == {"home", "away"}
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+    def test_home_team_gets_bonus(self, ncaam_box_scores, ncaam_games):
+        """With equal forced ratings, home team should have >50% win prob."""
+        model = AdjustedEfficiency(ncaam_box_scores, ncaam_games)
+        # Force equal ratings
+        for team in NCAAM_TEAMS:
+            model.off_efficiency[team] = 100.0
+            model.def_efficiency[team] = 100.0
+            model.tempo[team] = 68.0
+        probs = efficiency_predict(model, "Duke", "Kansas", home_bonus=3.5)
+        assert probs["home"] > 0.5
+
+
+# ---------------------------------------------------------------------------
+# Four Factors Logistic Regression
+# ---------------------------------------------------------------------------
+
+class TestFourFactorsModel:
+    """Tests for the Four Factors logistic regression model."""
+
+    def test_all_teams_have_stats(self, ncaam_box_scores, ncaam_games):
+        model = FourFactorsModel(ncaam_box_scores, ncaam_games)
+        for team in NCAAM_TEAMS:
+            assert team in model.team_stats, f"{team} missing from team_stats"
+
+    def test_team_stats_have_expected_keys(self, ncaam_box_scores, ncaam_games):
+        model = FourFactorsModel(ncaam_box_scores, ncaam_games)
+        expected_keys = {
+            "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
+            "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
+        }
+        for team in NCAAM_TEAMS:
+            assert set(model.team_stats[team].keys()) == expected_keys
+
+    def test_predict_returns_two_way_probs(self, ncaam_box_scores, ncaam_games):
+        model = FourFactorsModel(ncaam_box_scores, ncaam_games)
+        probs = four_factors_predict(model, "Duke", "Kansas")
+        assert set(probs.keys()) == {"home", "away"}
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+    def test_probabilities_are_reasonable(self, ncaam_box_scores, ncaam_games):
+        model = FourFactorsModel(ncaam_box_scores, ncaam_games)
+        probs = four_factors_predict(model, "Duke", "Kansas")
+        assert 0.1 <= probs["home"] <= 0.9
+        assert 0.1 <= probs["away"] <= 0.9
