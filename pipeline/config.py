@@ -25,6 +25,9 @@ ODDS_MARKETS = "h2h"
 # balldontlie.io
 BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 
+# ESPN (no API key needed)
+ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+
 # Model parameters
 TIME_DECAY_RATE = 0.005
 FORM_WINDOW = 6
@@ -64,5 +67,16 @@ SPORTS = {
         "elo_k_factor": 20,
         "elo_home_advantage": 100,
         "data_dir": os.path.join(DATA_DIR, "nba"),
+    },
+    "ncaam": {
+        "name": "NCAAM",
+        "display_name": "NCAAM",
+        "odds_sport": "basketball_ncaab",
+        "outcomes": ["home", "away"],
+        "models": ["elo", "efficiency", "four_factors"],
+        "elo_k_factor": 32,
+        "elo_home_advantage": 125,
+        "efficiency_home_bonus": 3.5,
+        "data_dir": os.path.join(DATA_DIR, "ncaam"),
     },
 }
