@@ -32,7 +32,7 @@ SAMPLE_TEAMS_RESPONSE = {
 
 
 def _make_espn_event(event_id, home_name, away_name, home_score, away_score,
-                     status="final", date="2026-02-15T00:00Z"):
+                     completed=True, date="2026-02-15T00:00Z"):
     """Helper: build an ESPN scoreboard event object."""
     return {
         "id": event_id,
@@ -50,18 +50,26 @@ def _make_espn_event(event_id, home_name, away_name, home_score, away_score,
                     "team": {"displayName": away_name},
                 },
             ],
-            "status": {"type": {"name": status}},
+            "status": {"type": {"completed": completed}},
         }],
     }
 
 
-def _make_summary_response(home_totals, away_totals):
+def _make_summary_response(home_totals, away_totals,
+                           home_name="Duke Blue Devils",
+                           away_name="Kansas Jayhawks"):
     """Helper: build an ESPN summary response with box score totals."""
     return {
         "boxscore": {
-            "teams": [
-                {"statistics": [{"totals": home_totals}]},
-                {"statistics": [{"totals": away_totals}]},
+            "players": [
+                {
+                    "team": {"displayName": home_name},
+                    "statistics": [{"totals": home_totals}],
+                },
+                {
+                    "team": {"displayName": away_name},
+                    "statistics": [{"totals": away_totals}],
+                },
             ]
         }
     }
@@ -212,8 +220,8 @@ class TestFetchNcaamGames:
         scoreboard_resp = MagicMock()
         scoreboard_resp.json.return_value = {
             "events": [
-                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 75, 70, status="final"),
-                _make_espn_event("2", "Duke Blue Devils", "Kansas Jayhawks", 0, 0, status="pre"),
+                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 75, 70, completed=True),
+                _make_espn_event("2", "Duke Blue Devils", "Kansas Jayhawks", 0, 0, completed=False),
             ]
         }
         scoreboard_resp.raise_for_status = MagicMock()
@@ -309,7 +317,7 @@ class TestFetchNcaamSchedule:
         game_resp = MagicMock()
         game_resp.json.return_value = {
             "events": [
-                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 0, 0, status="pre", date="2026-02-19T00:00Z"),
+                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 0, 0, completed=False, date="2026-02-19T00:00Z"),
             ]
         }
         game_resp.raise_for_status = MagicMock()
@@ -335,8 +343,8 @@ class TestFetchNcaamSchedule:
         mixed_resp = MagicMock()
         mixed_resp.json.return_value = {
             "events": [
-                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 75, 70, status="final"),
-                _make_espn_event("2", "Kansas Jayhawks", "UConn Huskies", 0, 0, status="pre", date="2026-02-20T00:00Z"),
+                _make_espn_event("1", "Duke Blue Devils", "Kansas Jayhawks", 75, 70, completed=True),
+                _make_espn_event("2", "Kansas Jayhawks", "UConn Huskies", 0, 0, completed=False, date="2026-02-20T00:00Z"),
             ]
         }
         mixed_resp.raise_for_status = MagicMock()

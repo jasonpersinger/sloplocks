@@ -110,8 +110,8 @@ def _season_date_range(season: int) -> list[str]:
 def _parse_event(event: dict) -> dict | None:
     """Parse an ESPN scoreboard event into a game dict, or None if not final."""
     comp = event["competitions"][0]
-    status_name = comp.get("status", {}).get("type", {}).get("name", "")
-    if status_name != "final":
+    status_type = comp.get("status", {}).get("type", {})
+    if not status_type.get("completed", False):
         return None
 
     home = away = None
@@ -197,15 +197,16 @@ def fetch_ncaam_games(
                 s_resp.raise_for_status()
                 s_data = s_resp.json()
 
-                teams = s_data.get("boxscore", {}).get("teams", [])
-                if len(teams) < 2:
+                # Totals are under boxscore.players[], not boxscore.teams[]
+                player_groups = s_data.get("boxscore", {}).get("players", [])
+                if len(player_groups) < 2:
                     continue
 
-                for i, team_data in enumerate(teams):
+                for player_group in player_groups:
                     try:
-                        totals = team_data["statistics"][0]["totals"]
+                        totals = player_group["statistics"][0]["totals"]
                         stats = _parse_box_score_totals(totals)
-                        team_name = parsed["home_name"] if i == 0 else parsed["away_name"]
+                        team_name = player_group["team"]["displayName"]
                         box_rows.append({
                             "game_id": parsed["event_id"],
                             "team": normalize_ncaam_team_name(team_name),
@@ -254,8 +255,8 @@ def fetch_ncaam_schedule() -> list[dict]:
 
         for event in data.get("events", []):
             comp = event["competitions"][0]
-            status_name = comp.get("status", {}).get("type", {}).get("name", "")
-            if status_name == "final":
+            status_type = comp.get("status", {}).get("type", {})
+            if status_type.get("completed", False):
                 continue
 
             home = away = None
