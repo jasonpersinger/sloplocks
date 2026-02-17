@@ -19,12 +19,17 @@ from pipeline.config import (
 )
 from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name
+from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
 from pipeline.fetch_xg import fetch_understat_xg
 from pipeline.models import (
+    AdjustedEfficiency,
     EloRatings,
+    FourFactorsModel,
     dixon_coles_predict,
+    efficiency_predict,
     elo_predict,
     fit_dixon_coles,
+    four_factors_predict,
     scoreline_to_probabilities,
 )
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american
@@ -327,6 +332,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 1. Fetch data (sport-specific)
     # ------------------------------------------------------------------
+    box_scores_df = None
+
     if sport_key == "epl":
         matches = fetch_epl_matches()
         fixtures = fetch_epl_fixtures()
@@ -339,6 +346,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
     elif sport_key == "nba":
         matches = fetch_nba_games()
         fixtures = fetch_nba_schedule()
+        xg_data = None
+    elif sport_key == "ncaam":
+        games_df, box_scores_df = fetch_ncaam_games()
+        fixtures = fetch_ncaam_schedule()
+        matches = games_df
         xg_data = None
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
@@ -379,6 +391,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
         )
         elo.process_season(matches)
 
+    # Adjusted Efficiency model (NCAAM)
+    efficiency_model = None
+    if "efficiency" in sport["models"] and box_scores_df is not None:
+        efficiency_model = AdjustedEfficiency(box_scores_df, matches)
+
+    # Four Factors model (NCAAM)
+    four_factors_model = None
+    if "four_factors" in sport["models"] and box_scores_df is not None:
+        four_factors_model = FourFactorsModel(box_scores_df, matches)
+
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
@@ -394,6 +416,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("xg")
     if elo is not None:
         model_names.append("elo")
+    if efficiency_model is not None:
+        model_names.append("efficiency")
+    if four_factors_model is not None:
+        model_names.append("four_factors")
 
     accuracies = [get_rolling_accuracy(accuracy_log, name) for name in model_names]
     weights = compute_model_weights(accuracies)
@@ -402,7 +428,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 4. Normalize odds team names and build lookup
     # ------------------------------------------------------------------
-    normalizer = normalize_team_name if sport_key == "epl" else normalize_nba_team_name
+    if sport_key == "epl":
+        normalizer = normalize_team_name
+    elif sport_key == "nba":
+        normalizer = normalize_nba_team_name
+    elif sport_key == "ncaam":
+        normalizer = normalize_ncaam_team_name
+    else:
+        normalizer = lambda x: x
     for o in odds_list:
         o["home_team"] = normalizer(o["home_team"])
         o["away_team"] = normalizer(o["away_team"])
@@ -465,6 +498,24 @@ def run_sport_pipeline(sport_key, output_dir=None):
             individual_preds.append(elo_probs)
             blend_weights.append(model_weight_dict["elo"])
             individual_models["elo"] = elo_probs
+
+        # Adjusted Efficiency (NCAAM)
+        if efficiency_model is not None and home in efficiency_model.off_efficiency and away in efficiency_model.off_efficiency:
+            eff_probs = efficiency_predict(
+                efficiency_model, home, away,
+                home_bonus=sport.get("efficiency_home_bonus", 3.5),
+            )
+            individual_preds.append(eff_probs)
+            blend_weights.append(model_weight_dict["efficiency"])
+            individual_models["efficiency"] = eff_probs
+
+        # Four Factors (NCAAM)
+        if four_factors_model is not None and four_factors_model.model is not None:
+            if home in four_factors_model.team_stats and away in four_factors_model.team_stats:
+                ff_probs = four_factors_predict(four_factors_model, home, away)
+                individual_preds.append(ff_probs)
+                blend_weights.append(model_weight_dict["four_factors"])
+                individual_models["four_factors"] = ff_probs
 
         if not individual_preds:
             continue
