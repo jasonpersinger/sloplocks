@@ -157,6 +157,24 @@ class TestElo:
         probs = elo_predict(elo, "Arsenal", "Wolves", outcomes=["home", "away"])
         assert probs["home"] > 0.5
 
+    def test_rest_adjustment_reduces_home_win_prob(self):
+        """B2B penalty on home team should lower their win probability."""
+        teams = ["A", "B"]
+        elo = EloRatings(teams, k_factor=20, home_advantage=65)
+
+        prob_fresh = elo_predict(elo, "A", "B", outcomes=["home", "away"])
+        prob_b2b   = elo_predict(elo, "A", "B", outcomes=["home", "away"],
+                                 home_rest_adj=-30.0)
+
+        assert prob_b2b["home"] < prob_fresh["home"]
+
+    def test_rest_adjustment_zero_is_unchanged(self):
+        elo = EloRatings(["A", "B"], k_factor=20, home_advantage=65)
+        prob_default = elo_predict(elo, "A", "B", outcomes=["home", "away"])
+        prob_zero    = elo_predict(elo, "A", "B", outcomes=["home", "away"],
+                                   home_rest_adj=0.0, away_rest_adj=0.0)
+        assert prob_default == prob_zero
+
 
 # ---------------------------------------------------------------------------
 # Adjusted Efficiency (KenPom-style)

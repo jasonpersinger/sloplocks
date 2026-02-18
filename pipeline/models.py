@@ -406,7 +406,8 @@ class EloRatings:
             )
 
 
-def elo_predict(elo, home_team, away_team, outcomes=None):
+def elo_predict(elo, home_team, away_team, outcomes=None,
+                home_rest_adj=0.0, away_rest_adj=0.0):
     """Convert Elo ratings into match-outcome probabilities.
 
     For 3-way outcomes (soccer), the draw probability is modelled as a
@@ -422,6 +423,10 @@ def elo_predict(elo, home_team, away_team, outcomes=None):
     outcomes : list[str] or None
         Valid outcomes, e.g. ``["home", "draw", "away"]`` or
         ``["home", "away"]``. Defaults to 3-way if not specified.
+    home_rest_adj : float
+        Elo-point adjustment for home team rest (negative = B2B penalty).
+    away_rest_adj : float
+        Elo-point adjustment for away team rest (negative = B2B penalty).
 
     Returns
     -------
@@ -431,8 +436,8 @@ def elo_predict(elo, home_team, away_team, outcomes=None):
     if outcomes is None:
         outcomes = ["home", "draw", "away"]
 
-    r_home = elo.get_rating(home_team) + elo.home_advantage
-    r_away = elo.get_rating(away_team)
+    r_home = elo.get_rating(home_team) + elo.home_advantage + home_rest_adj
+    r_away = elo.get_rating(away_team) + away_rest_adj
 
     diff = r_home - r_away
 

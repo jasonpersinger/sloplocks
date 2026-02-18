@@ -27,6 +27,8 @@ BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 
 # ESPN (no API key needed)
 ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
+NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
 
 # Model parameters
 TIME_DECAY_RATE = 0.005
@@ -63,9 +65,10 @@ SPORTS = {
         "display_name": "NBA",
         "odds_sport": "basketball_nba",
         "outcomes": ["home", "away"],
-        "models": ["elo"],
+        "models": ["elo", "efficiency", "four_factors"],
         "elo_k_factor": 20,
-        "elo_home_advantage": 100,
+        "elo_home_advantage": 65,
+        "efficiency_home_bonus": 3.5,
         "data_dir": os.path.join(DATA_DIR, "nba"),
     },
     "ncaam": {
