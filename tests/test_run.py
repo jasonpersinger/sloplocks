@@ -264,3 +264,13 @@ class TestDaysSinceLastGame:
         from pipeline.run import _days_since_last_game
         result = _days_since_last_game("Lakers", "2026-02-11", matches)
         assert result is None
+
+    def test_returns_none_for_same_day_game(self):
+        """Games on the same date as before_date are excluded (strict <)."""
+        matches = self._make_matches([
+            {"date": "2026-02-11", "home_team": "Lakers", "away_team": "Celtics",
+             "home_goals": 110, "away_goals": 105},
+        ])
+        from pipeline.run import _days_since_last_game
+        result = _days_since_last_game("Lakers", "2026-02-11", matches)
+        assert result is None
