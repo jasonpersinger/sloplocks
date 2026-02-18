@@ -3,11 +3,14 @@
 from unittest.mock import patch, MagicMock
 import pandas as pd
 import pytest
+import requests
 
 from pipeline.fetch_nba import (
     normalize_nba_team_name,
     fetch_nba_games,
     fetch_nba_schedule,
+    fetch_nba_espn_games,
+    fetch_nba_espn_schedule,
 )
 
 
@@ -163,3 +166,154 @@ class TestFetchNbaSchedule:
         fixtures = fetch_nba_schedule()
         assert len(fixtures) == 1
         assert fixtures[0]["home_team"] == "Heat"
+
+
+# ---- ESPN-based NBA fetcher tests -------------------------------------------
+
+NBA_SAMPLE_TOTALS = [
+    "", "110", "44-95", "17-42", "5-7",
+    "49", "25", "10", "9", "6", "15", "34", "17", "",
+]
+
+
+def _make_nba_espn_event(event_id, home_name, away_name,
+                         home_score, away_score,
+                         completed=True, date="2026-01-15T00:00Z"):
+    return {
+        "id": event_id,
+        "date": date,
+        "competitions": [{
+            "competitors": [
+                {
+                    "homeAway": "home",
+                    "team": {"displayName": home_name},
+                    "score": str(home_score),
+                },
+                {
+                    "homeAway": "away",
+                    "team": {"displayName": away_name},
+                    "score": str(away_score),
+                },
+            ],
+            "status": {"type": {"completed": completed}},
+        }],
+    }
+
+
+def _make_nba_summary(home_name, away_name, home_totals, away_totals):
+    return {
+        "boxscore": {
+            "players": [
+                {
+                    "team": {"displayName": home_name},
+                    "statistics": [{"totals": home_totals}],
+                },
+                {
+                    "team": {"displayName": away_name},
+                    "statistics": [{"totals": away_totals}],
+                },
+            ]
+        }
+    }
+
+
+class TestFetchNbaEspnGames:
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_returns_games_and_box_scores(self, mock_get):
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.raise_for_status = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                _make_nba_espn_event("1", "Los Angeles Lakers", "Boston Celtics",
+                                     112, 108),
+            ]
+        }
+        summary_resp = MagicMock()
+        summary_resp.raise_for_status = MagicMock()
+        summary_resp.json.return_value = _make_nba_summary(
+            "Los Angeles Lakers", "Boston Celtics",
+            NBA_SAMPLE_TOTALS, NBA_SAMPLE_TOTALS,
+        )
+        mock_get.side_effect = [scoreboard_resp, summary_resp]
+
+        games_df, box_df = fetch_nba_espn_games(season=2025, dates=["2026-01-15"])
+
+        assert len(games_df) == 1
+        assert list(games_df.columns) == [
+            "game_id", "date", "home_team", "away_team", "home_goals", "away_goals"
+        ]
+        assert games_df.iloc[0]["home_team"] == "Lakers"
+        assert games_df.iloc[0]["away_team"] == "Celtics"
+        assert games_df.iloc[0]["home_goals"] == 112
+        assert "game_id" in games_df.columns
+        assert len(box_df) == 2
+        assert box_df.iloc[0]["pts"] == 110
+
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_skips_non_completed_games(self, mock_get):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = {
+            "events": [
+                _make_nba_espn_event("1", "Lakers", "Celtics", 0, 0, completed=False),
+            ]
+        }
+        mock_get.return_value = resp
+
+        games_df, box_df = fetch_nba_espn_games(season=2025, dates=["2026-01-15"])
+        assert len(games_df) == 0
+        assert len(box_df) == 0
+
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_handles_missing_box_score(self, mock_get):
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.raise_for_status = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                _make_nba_espn_event("1", "Los Angeles Lakers", "Boston Celtics", 112, 108),
+            ]
+        }
+        summary_resp = MagicMock()
+        summary_resp.raise_for_status.side_effect = requests.RequestException("timeout")
+        mock_get.side_effect = [scoreboard_resp, summary_resp]
+
+        games_df, box_df = fetch_nba_espn_games(season=2025, dates=["2026-01-15"])
+        assert len(games_df) == 1   # game still recorded
+        assert len(box_df) == 0     # box score silently skipped
+
+
+class TestFetchNbaEspnSchedule:
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_returns_upcoming_games(self, mock_get):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = {
+            "events": [
+                _make_nba_espn_event("1", "Los Angeles Lakers", "Boston Celtics",
+                                     0, 0, completed=False, date="2026-02-19T00:00Z"),
+            ]
+        }
+        mock_get.return_value = resp
+
+        fixtures = fetch_nba_espn_schedule()
+        assert len(fixtures) >= 1
+        assert fixtures[0]["home_team"] == "Lakers"
+        assert fixtures[0]["away_team"] == "Celtics"
+        assert fixtures[0]["date"] == "2026-02-19"
+
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_excludes_completed_games(self, mock_get):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = {
+            "events": [
+                _make_nba_espn_event("1", "Lakers", "Celtics", 112, 108,
+                                     completed=True),
+                _make_nba_espn_event("2", "Heat", "Bulls", 0, 0,
+                                     completed=False, date="2026-02-20T00:00Z"),
+            ]
+        }
+        mock_get.return_value = resp
+
+        fixtures = fetch_nba_espn_schedule()
+        assert all(f["home_team"] != "Lakers" for f in fixtures)
