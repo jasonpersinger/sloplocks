@@ -216,3 +216,51 @@ class TestRunPipeline:
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "epl", "predictions.json"))
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
+
+
+# ---------------------------------------------------------------------------
+# _days_since_last_game helper
+# ---------------------------------------------------------------------------
+
+class TestDaysSinceLastGame:
+    def _make_matches(self, rows):
+        return pd.DataFrame(rows, columns=["date", "home_team", "away_team",
+                                           "home_goals", "away_goals"])
+
+    def test_returns_correct_days_for_known_team(self):
+        matches = self._make_matches([
+            {"date": "2026-02-10", "home_team": "Lakers", "away_team": "Celtics",
+             "home_goals": 110, "away_goals": 105},
+        ])
+        from pipeline.run import _days_since_last_game
+        result = _days_since_last_game("Lakers", "2026-02-11", matches)
+        assert result == 1
+
+    def test_returns_none_for_unknown_team(self):
+        matches = self._make_matches([
+            {"date": "2026-02-10", "home_team": "Lakers", "away_team": "Celtics",
+             "home_goals": 110, "away_goals": 105},
+        ])
+        from pipeline.run import _days_since_last_game
+        result = _days_since_last_game("Thunder", "2026-02-11", matches)
+        assert result is None
+
+    def test_ignores_future_games(self):
+        matches = self._make_matches([
+            {"date": "2026-02-10", "home_team": "Lakers", "away_team": "Celtics",
+             "home_goals": 110, "away_goals": 105},
+            {"date": "2026-02-12", "home_team": "Lakers", "away_team": "Nuggets",
+             "home_goals": 100, "away_goals": 98},
+        ])
+        from pipeline.run import _days_since_last_game
+        # Asking "as of Feb 11", the Feb 12 game is in the future
+        result = _days_since_last_game("Lakers", "2026-02-11", matches)
+        assert result == 1  # only Feb 10 counts
+
+    def test_handles_empty_matches(self):
+        matches = pd.DataFrame(
+            columns=["date", "home_team", "away_team", "home_goals", "away_goals"]
+        )
+        from pipeline.run import _days_since_last_game
+        result = _days_since_last_game("Lakers", "2026-02-11", matches)
+        assert result is None

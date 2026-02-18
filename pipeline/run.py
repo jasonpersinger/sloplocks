@@ -15,6 +15,7 @@ from pipeline.config import (
     ANTHROPIC_API_KEY,
     CONGESTION_THRESHOLD_DAYS,
     DATA_DIR,
+    NBA_B2B_PENALTY,
     SPORTS,
 )
 from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
@@ -104,6 +105,36 @@ def _check_congestion(team, fixtures, matches, threshold_days=CONGESTION_THRESHO
             return True
 
     return False
+
+
+def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) -> int | None:
+    """Return days since team's most recent game strictly before before_date.
+
+    Parameters
+    ----------
+    team : str
+        Normalised team name.
+    before_date : str
+        ISO date string (YYYY-MM-DD) of the upcoming fixture.
+    matches : pd.DataFrame
+        Historical game results with a ``date`` column.
+
+    Returns
+    -------
+    int or None
+        Days since last game, or None if the team has no recorded games.
+    """
+    cutoff = pd.to_datetime(before_date)
+    team_mask = (matches["home_team"] == team) | (matches["away_team"] == team)
+    team_games = matches[team_mask].copy()
+    team_games["_dt"] = pd.to_datetime(team_games["date"])
+    past_games = team_games[team_games["_dt"] < cutoff]
+
+    if past_games.empty:
+        return None
+
+    last_game = past_games["_dt"].max()
+    return (cutoff - last_game).days
 
 
 # ---------------------------------------------------------------------------
