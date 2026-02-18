@@ -181,6 +181,7 @@ def fetch_ncaam_games(
             if parsed is not None:
                 final_events.append(parsed)
                 game_rows.append({
+                    "game_id": parsed["event_id"],
                     "date": parsed["date"],
                     "home_team": normalize_ncaam_team_name(parsed["home_name"]),
                     "away_team": normalize_ncaam_team_name(parsed["away_name"]),
@@ -222,7 +223,7 @@ def fetch_ncaam_games(
 
     games_df = pd.DataFrame(
         game_rows,
-        columns=["date", "home_team", "away_team", "home_goals", "away_goals"],
+        columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"],
     )
 
     box_cols = [
