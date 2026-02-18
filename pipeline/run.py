@@ -19,7 +19,7 @@ from pipeline.config import (
     SPORTS,
 )
 from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
-from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name
+from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
 from pipeline.fetch_xg import fetch_understat_xg
 from pipeline.models import (
@@ -375,8 +375,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
         except Exception:
             pass
     elif sport_key == "nba":
-        matches = fetch_nba_games()
-        fixtures = fetch_nba_schedule()
+        games_df, box_scores_df = fetch_nba_espn_games()
+        fixtures = fetch_nba_espn_schedule()
+        matches = games_df
         xg_data = None
     elif sport_key == "ncaam":
         games_df, box_scores_df = fetch_ncaam_games()
@@ -525,7 +526,18 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
         # Elo (all sports)
         if elo is not None and home in elo.ratings and away in elo.ratings:
-            elo_probs = elo_predict(elo, home, away, outcomes=outcomes)
+            home_rest_adj = 0.0
+            away_rest_adj = 0.0
+            if sport_key == "nba":
+                home_rest = _days_since_last_game(home, fix["date"], matches)
+                away_rest = _days_since_last_game(away, fix["date"], matches)
+                if home_rest == 1:
+                    home_rest_adj = -NBA_B2B_PENALTY
+                if away_rest == 1:
+                    away_rest_adj = -NBA_B2B_PENALTY
+            elo_probs = elo_predict(elo, home, away, outcomes=outcomes,
+                                    home_rest_adj=home_rest_adj,
+                                    away_rest_adj=away_rest_adj)
             individual_preds.append(elo_probs)
             blend_weights.append(model_weight_dict["elo"])
             individual_models["elo"] = elo_probs
