@@ -28,7 +28,6 @@ BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 # ESPN (no API key needed)
 ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
-NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
 
 # Model parameters
 TIME_DECAY_RATE = 0.005
@@ -38,6 +37,7 @@ CONGESTION_THRESHOLD_DAYS = 4
 CONGESTION_PENALTY = 0.05
 ELO_K_FACTOR = 20
 ELO_HOME_ADVANTAGE = 65
+NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
 VALUE_EDGE_THRESHOLD = 0.05
 ENSEMBLE_ACCURACY_WINDOW = 10
 MAX_GOALS = 6
