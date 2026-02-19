@@ -103,8 +103,7 @@ class TestRunEPLPipeline:
         assert len(data["slop_locks"]) <= 5
         for lock in data["slop_locks"]:
             assert lock["pick"] in ("home", "draw", "away")
-            assert lock["edge"] > 0
-            assert -200 <= lock["american_odds"] <= 200
+            assert -150 <= lock["american_odds"] <= 195
 
 
 # ---------------------------------------------------------------------------
@@ -274,3 +273,78 @@ class TestDaysSinceLastGame:
         from pipeline.run import _days_since_last_game
         result = _days_since_last_game("Lakers", "2026-02-11", matches)
         assert result is None
+
+
+# ---------------------------------------------------------------------------
+# _compute_slop_locks helper
+# ---------------------------------------------------------------------------
+
+class TestComputeSlopLocks:
+    """Tests for the _compute_slop_locks helper."""
+
+    def _make_record(self, home, away, outcome, model_prob, american_odds, edge=0.0):
+        implied_prob = 1 / (1 + abs(american_odds) / 100) if american_odds < 0 else 100 / (american_odds + 100)
+        return {
+            "home_team": home,
+            "away_team": away,
+            "date": "2026-03-01",
+            "matchday": None,
+            "edges": {
+                outcome: {
+                    "model_prob": model_prob,
+                    "implied_prob": implied_prob,
+                    "edge": edge,
+                    "decimal_odds": 0.0,
+                    "american_odds": american_odds,
+                    "is_value": edge >= 0.05,
+                }
+            },
+            "best_odds": {outcome: american_odds},
+            "model_probs": {outcome: model_prob},
+            "individual_models": {},
+        }
+
+    def test_filters_to_odds_window(self):
+        """Only picks with -150 <= american_odds <= 195 qualify."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.70, -200),   # too short, excluded
+            self._make_record("C", "D", "home", 0.65, -140),   # in window
+            self._make_record("E", "F", "away", 0.55, 190),    # in window
+            self._make_record("G", "H", "away", 0.45, 250),    # too long, excluded
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"])
+        odds = [l["american_odds"] for l in locks]
+        assert all(-150 <= o <= 195 for o in odds)
+        assert len(locks) == 2
+
+    def test_ranked_by_model_probability(self):
+        """Locks are sorted by model_prob descending."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.55, 100),
+            self._make_record("C", "D", "home", 0.75, -130),
+            self._make_record("E", "F", "away", 0.65, 110),
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"])
+        probs = [l["model_prob"] for l in locks]
+        assert probs == sorted(probs, reverse=True)
+
+    def test_no_market_agreement_required(self):
+        """A pick qualifies even when model_prob < implied_prob (negative edge)."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.52, -130, edge=-0.045),
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"])
+        assert len(locks) == 1
+
+    def test_returns_at_most_five(self):
+        """At most 5 locks returned."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record(f"T{i}", f"T{i+1}", "home", 0.60, -100)
+            for i in range(10)
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"])
+        assert len(locks) <= 5

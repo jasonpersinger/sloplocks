@@ -16,6 +16,8 @@ from pipeline.config import (
     CONGESTION_THRESHOLD_DAYS,
     DATA_DIR,
     NBA_B2B_PENALTY,
+    SLOP_LOCK_MIN_ODDS,
+    SLOP_LOCK_MAX_ODDS,
     SPORTS,
 )
 from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
@@ -231,17 +233,19 @@ def _generate_blurbs(picks, pick_type="lock"):
 
 
 def _compute_slop_locks(prediction_records, outcomes):
-    """Extract SLOP LOCKS (top 5 value picks by edge)."""
+    """Extract SLOP LOCKS: top 5 most confident picks at -150 to +195 odds."""
     lock_candidates = []
     for rec in prediction_records:
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
         for outcome in outcomes:
             e = edges.get(outcome)
-            if not e or e["edge"] <= 0:
+            if not e:
                 continue
             american = best_odds.get(outcome, e.get("american_odds"))
             if american is None:
+                continue
+            if not (SLOP_LOCK_MIN_ODDS <= american <= SLOP_LOCK_MAX_ODDS):
                 continue
             lock_candidates.append({
                 "home_team": rec["home_team"],
@@ -257,7 +261,7 @@ def _compute_slop_locks(prediction_records, outcomes):
                 "individual_models": rec.get("individual_models", {}),
             })
 
-    lock_candidates.sort(key=lambda x: x["edge"], reverse=True)
+    lock_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
     return lock_candidates[:5]
 
 

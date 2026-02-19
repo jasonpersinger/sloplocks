@@ -39,6 +39,8 @@ ELO_K_FACTOR = 20
 ELO_HOME_ADVANTAGE = 65
 NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
 VALUE_EDGE_THRESHOLD = 0.05
+SLOP_LOCK_MIN_ODDS = -150   # American odds lower bound for Slop Locks
+SLOP_LOCK_MAX_ODDS = 195    # American odds upper bound for Slop Locks
 ENSEMBLE_ACCURACY_WINDOW = 10
 MAX_GOALS = 6
 
