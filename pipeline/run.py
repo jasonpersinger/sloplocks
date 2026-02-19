@@ -233,8 +233,14 @@ def _generate_blurbs(picks, pick_type="lock"):
 
 
 def _compute_slop_locks(prediction_records, outcomes):
-    """Extract SLOP LOCKS: top 5 most confident picks at -150 to +195 odds."""
-    lock_candidates = []
+    """Extract SLOP LOCKS: top 5 most confident picks.
+
+    Picks within -150 to +195 are preferred. If fewer than 5 qualify, the
+    remaining slots are filled with the most confident picks outside the window
+    so there are always picks whenever odds data is available.
+    """
+    in_window = []
+    outside_window = []
     for rec in prediction_records:
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
@@ -245,9 +251,7 @@ def _compute_slop_locks(prediction_records, outcomes):
             american = best_odds.get(outcome, e.get("american_odds"))
             if american is None:
                 continue
-            if not (SLOP_LOCK_MIN_ODDS <= american <= SLOP_LOCK_MAX_ODDS):
-                continue
-            lock_candidates.append({
+            candidate = {
                 "home_team": rec["home_team"],
                 "away_team": rec["away_team"],
                 "date": rec["date"],
@@ -259,10 +263,18 @@ def _compute_slop_locks(prediction_records, outcomes):
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
                 "individual_models": rec.get("individual_models", {}),
-            })
+            }
+            if SLOP_LOCK_MIN_ODDS <= american <= SLOP_LOCK_MAX_ODDS:
+                in_window.append(candidate)
+            else:
+                outside_window.append(candidate)
 
-    lock_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
-    return lock_candidates[:5]
+    in_window.sort(key=lambda x: x["model_prob"], reverse=True)
+    outside_window.sort(key=lambda x: x["model_prob"], reverse=True)
+    result = in_window[:5]
+    if len(result) < 5:
+        result.extend(outside_window[:5 - len(result)])
+    return result
 
 
 def _compute_longslop(prediction_records, outcomes):

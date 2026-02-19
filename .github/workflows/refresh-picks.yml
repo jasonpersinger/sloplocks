@@ -1,0 +1,40 @@
+name: Refresh Picks
+
+# Fast odds refresh without model retraining (~20 seconds).
+# Use this anytime you want updated picks without running the full pipeline.
+
+on:
+  workflow_dispatch:  # Manual trigger only
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Refresh odds and recompute picks
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: python -m pipeline.refresh_picks
+
+      - name: Commit and push
+        run: |
+          git config user.name "sloplocks-bot"
+          git config user.email "bot@sloplocks.lol"
+          git add data/
+          git diff --staged --quiet || git commit -m "data: refresh picks $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase origin master
+          git push

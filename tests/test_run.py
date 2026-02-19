@@ -103,7 +103,8 @@ class TestRunEPLPipeline:
         assert len(data["slop_locks"]) <= 5
         for lock in data["slop_locks"]:
             assert lock["pick"] in ("home", "draw", "away")
-            assert -150 <= lock["american_odds"] <= 195
+            assert "american_odds" in lock
+            assert "model_prob" in lock
 
 
 # ---------------------------------------------------------------------------
@@ -304,19 +305,24 @@ class TestComputeSlopLocks:
             "individual_models": {},
         }
 
-    def test_filters_to_odds_window(self):
-        """Only picks with -150 <= american_odds <= 195 qualify."""
+    def test_prefers_odds_window_with_fallback(self):
+        """In-window picks come first; outside-window picks backfill when fewer than 5."""
         from pipeline.run import _compute_slop_locks
         records = [
-            self._make_record("A", "B", "home", 0.70, -200),   # too short, excluded
+            self._make_record("A", "B", "home", 0.70, -200),   # outside window (short)
             self._make_record("C", "D", "home", 0.65, -140),   # in window
             self._make_record("E", "F", "away", 0.55, 190),    # in window
-            self._make_record("G", "H", "away", 0.45, 250),    # too long, excluded
+            self._make_record("G", "H", "away", 0.45, 250),    # outside window (long)
         ]
         locks = _compute_slop_locks(records, ["home", "away"])
-        odds = [l["american_odds"] for l in locks]
-        assert all(-150 <= o <= 195 for o in odds)
-        assert len(locks) == 2
+        # All 4 returned because in-window count (2) < 5, so fallback fills the rest
+        assert len(locks) == 4
+        # In-window picks come first, ranked by model_prob
+        assert locks[0]["american_odds"] == -140   # highest prob in-window
+        assert locks[1]["american_odds"] == 190    # second in-window
+        # Fallback picks follow, also ranked by model_prob
+        assert locks[2]["american_odds"] == -200   # highest prob outside window
+        assert locks[3]["american_odds"] == 250
 
     def test_ranked_by_model_probability(self):
         """Locks are sorted by model_prob descending."""
