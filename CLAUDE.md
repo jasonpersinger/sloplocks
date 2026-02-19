@@ -5,7 +5,7 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 
 ## Supported Sports
 - **EPL** (Premier League) — 3-way outcomes (home/draw/away), Dixon-Coles + xG + Elo ensemble
-- **NBA** — 2-way outcomes (home/away), Elo-only model with 100-point home court advantage
+- **NBA** — 2-way outcomes (home/away), Elo + AdjustedEfficiency + FourFactors ensemble with B2B rest adjustment
 
 ## Tech Stack
 - Pipeline: Python 3.11+ (scipy, pandas, numpy, requests, beautifulsoup4)
@@ -35,14 +35,16 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 2. **xG-adjusted Dixon-Coles** — Same model using expected goals from Understat
 3. **Elo ratings** — Dynamic power ratings with 65-point home advantage, goal-diff multiplier
 
-### NBA (Elo only)
-1. **Elo ratings** — 2-way logistic model with 100-point home court advantage, K=20
+### NBA (3 models, softmax-weighted by rolling accuracy)
+1. **Elo ratings** — Dynamic power ratings with 65-point home advantage, K=20, B2B rest penalty
+2. **AdjustedEfficiency** — Offensive/defensive efficiency ratings (points per 100 possessions) adjusted for schedule strength
+3. **FourFactors** — Dean Oliver's four factors model (eFG%, TOV%, ORB%, FT rate)
 
 ## Data Sources
 - football-data.org (EPL results, fixtures) — API key in `FOOTBALL_DATA_API_KEY`
 - Understat (EPL xG) — scraped, no key needed
 - The Odds API (bookmaker odds, all sports) — API key in `ODDS_API_KEY`
-- balldontlie.io (NBA results, schedule) — API key in `BALLDONTLIE_API_KEY`
+- ESPN API (NBA results, schedule) — no key needed (same as NCAAM)
 
 ## Commands
 - Run pipeline: `python -m pipeline.run`
@@ -69,7 +71,7 @@ sloplocks/
 ├── pipeline/
 │   ├── config.py           ← Central config, API keys, SPORTS dict
 │   ├── fetch_data.py       ← football-data.org + Odds API clients
-│   ├── fetch_nba.py        ← balldontlie.io NBA client
+│   ├── fetch_nba.py        ← ESPN NBA client (games, schedule, box scores)
 │   ├── fetch_xg.py         ← Understat xG scraper
 │   ├── models.py           ← Dixon-Coles + Elo (2-way and 3-way)
 │   ├── ensemble.py         ← Blending + edge detection (generic)
@@ -102,7 +104,8 @@ sloplocks/
 - TIME_DECAY_RATE = 0.005
 - FORM_WINDOW = 6
 - ELO_K_FACTOR = 20 (both sports)
-- ELO_HOME_ADVANTAGE = 65 (EPL), 100 (NBA)
+- ELO_HOME_ADVANTAGE = 65 (EPL and NBA)
+- NBA_B2B_PENALTY = 30 (Elo points deducted for back-to-back games)
 - VALUE_EDGE_THRESHOLD = 0.05 (5% edge = value bet)
 - MAX_GOALS = 6 (scoreline matrix size, EPL only)
 - ENSEMBLE_ACCURACY_WINDOW = 10 (rolling window for model weights)
