@@ -192,8 +192,8 @@ def _generate_blurbs(picks, pick_type="lock"):
             if pick_type == "lock":
                 prompt = (
                     f"You are the analytics voice for SLOP LOCKS, a sports betting predictions site. "
-                    f"Write exactly 1-2 sentences explaining why this is a value pick. Be direct, "
-                    f"confident, concise. No hedging. Reference specific model data or edge.\n\n"
+                    f"Write exactly 1-2 sentences explaining why the model is confident in this pick. Be direct, "
+                    f"confident, concise. No hedging. Reference the model probability and why this outcome is likely.\n\n"
                     f"Match: {p['home_team']} vs {p['away_team']}\n"
                     f"Pick: {pick_outcome}\n"
                     f"Model probability: {p['model_prob']:.1%}\n"
