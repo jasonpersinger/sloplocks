@@ -40,6 +40,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     for m in matches:
         edges = m.get("edges", {})
         best_odds = m.get("best_odds", {})
+        game_candidates = []
         for outcome in outcomes:
             e = edges.get(outcome)
             if not e:
@@ -47,7 +48,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
             american = best_odds.get(outcome, e.get("american_odds"))
             if american is None:
                 continue
-            candidate = {
+            game_candidates.append({
                 "home_team": m["home_team"],
                 "away_team": m["away_team"],
                 "date": m["date"],
@@ -60,11 +61,14 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
                 "decimal_odds": e["decimal_odds"],
                 "individual_models": m.get("individual_models", {}),
                 "blurb": "",
-            }
-            if SLOP_LOCK_MIN_ODDS <= american <= SLOP_LOCK_MAX_ODDS:
-                in_window.append(candidate)
-            else:
-                outside_window.append(candidate)
+            })
+        if not game_candidates:
+            continue
+        best = max(game_candidates, key=lambda x: x["model_prob"])
+        if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
+            in_window.append(best)
+        else:
+            outside_window.append(best)
 
     in_window.sort(key=lambda x: x["model_prob"], reverse=True)
     outside_window.sort(key=lambda x: x["model_prob"], reverse=True)

@@ -244,6 +244,8 @@ def _compute_slop_locks(prediction_records, outcomes):
     for rec in prediction_records:
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
+        # Build candidates for this game, then keep only the most confident outcome
+        game_candidates = []
         for outcome in outcomes:
             e = edges.get(outcome)
             if not e:
@@ -251,7 +253,7 @@ def _compute_slop_locks(prediction_records, outcomes):
             american = best_odds.get(outcome, e.get("american_odds"))
             if american is None:
                 continue
-            candidate = {
+            game_candidates.append({
                 "home_team": rec["home_team"],
                 "away_team": rec["away_team"],
                 "date": rec["date"],
@@ -263,11 +265,15 @@ def _compute_slop_locks(prediction_records, outcomes):
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
                 "individual_models": rec.get("individual_models", {}),
-            }
-            if SLOP_LOCK_MIN_ODDS <= american <= SLOP_LOCK_MAX_ODDS:
-                in_window.append(candidate)
-            else:
-                outside_window.append(candidate)
+            })
+        if not game_candidates:
+            continue
+        # One pick per game — the outcome the model is most confident in
+        best = max(game_candidates, key=lambda x: x["model_prob"])
+        if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
+            in_window.append(best)
+        else:
+            outside_window.append(best)
 
     in_window.sort(key=lambda x: x["model_prob"], reverse=True)
     outside_window.sort(key=lambda x: x["model_prob"], reverse=True)
