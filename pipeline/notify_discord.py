@@ -24,7 +24,7 @@ COLOR_SLIME = 0x39FF14   # #39FF14 — slime green
 COLOR_GOLD  = 0xFFD60A   # #FFD60A — yellow
 
 SPORT_EMOJIS = {"nba": "🏀", "ncaam": "🎓", "epl": "⚽"}
-PICK_LABELS  = {"home": "HOME", "away": "AWAY", "draw": "DRAW"}
+PICK_LABELS  = {"draw": "DRAW"}
 DATA_DIR = Path("data")
 
 # NBA/NCAAM evening games (7–10pm ET) are stored as the next UTC day.
@@ -53,10 +53,20 @@ def _fmt_pct(p: float) -> str:
     return f"{p * 100:.1f}%"
 
 
+def _pick_team(lock: dict) -> str:
+    """Return the name of the team being picked (or DRAW)."""
+    outcome = lock["pick"]
+    if outcome == "home":
+        return lock["home_team"]
+    if outcome == "away":
+        return lock["away_team"]
+    return "DRAW"
+
+
 def _lock_field(lock: dict, sport_key: str) -> dict:
     """Build a single Discord embed field for one lock."""
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
-    pick  = PICK_LABELS.get(lock["pick"], lock["pick"].upper())
+    pick  = _pick_team(lock)
     date  = _display_date(lock.get("date", ""), sport_key)
 
     name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}"
@@ -81,11 +91,11 @@ def _sotd_embed(sotd: dict) -> dict | None:
     sport_key  = sotd.get("sport", "")
     sport_name = sotd.get("sport_name", sport_key.upper())
     emoji      = SPORT_EMOJIS.get(sport_key, "⭐")
-    pick_label = PICK_LABELS.get(pick["pick"], pick["pick"].upper())
+    pick_team = _pick_team(pick)
 
     description = (
         f"{emoji}  **{pick['home_team']} vs {pick['away_team']}**  ·  {_display_date(pick.get('date',''), sport_key)}\n"
-        f"**{pick_label}**  ·  {_fmt_odds(pick['american_odds'])}"
+        f"**{pick_team}**  ·  {_fmt_odds(pick['american_odds'])}"
         f"  ·  {_fmt_pct(pick['model_prob'])} conf"
         f"  ·  {pick['edge'] * 100:+.1f}% edge"
     )
