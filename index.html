@@ -651,6 +651,152 @@
     }
 
     /* ========================================
+       SLOP OF THE DAY
+       ======================================== */
+    .sotd-hero {
+      text-align: center;
+      padding: 1.5rem 0 1rem;
+    }
+
+    .sotd-hero-title {
+      font-family: var(--font-heading);
+      font-weight: 900;
+      font-size: 1.4rem;
+      letter-spacing: 0.12em;
+      color: var(--slime);
+      text-shadow: 0 0 20px var(--slime-glow);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+    }
+
+    .sotd-hero-sub {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .sotd-card {
+      background: var(--panel);
+      border: 2px solid var(--slime);
+      border-radius: 10px;
+      padding: 2rem 1.75rem;
+      max-width: 520px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      animation: slideUp 0.4s ease both;
+    }
+
+    .sotd-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--slime), transparent);
+      box-shadow: 0 0 20px var(--slime-glow);
+    }
+
+    .sotd-sport-badge {
+      display: inline-block;
+      font-family: var(--font-heading);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--black);
+      background: var(--slime);
+      padding: 0.2em 0.7em;
+      border-radius: 3px;
+      margin-bottom: 1rem;
+    }
+
+    .sotd-match {
+      font-family: var(--font-heading);
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.04em;
+      color: var(--text);
+      text-transform: uppercase;
+      margin-bottom: 0.4rem;
+    }
+
+    .sotd-date {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .sotd-pick-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sotd-pick {
+      font-family: var(--font-heading);
+      font-size: 1.6rem;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .sotd-pick.pick-home { color: var(--blue); }
+    .sotd-pick.pick-draw { color: var(--yellow); }
+    .sotd-pick.pick-away { color: var(--pink); }
+
+    .sotd-odds {
+      font-family: var(--font-mono);
+      font-size: 1.6rem;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .sotd-stats {
+      display: flex;
+      gap: 2.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sotd-stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 0.2rem;
+    }
+
+    .sotd-stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .sotd-stat-value.slime {
+      color: var(--slime);
+      text-shadow: 0 0 8px var(--slime-glow);
+    }
+
+    .sotd-blurb {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      line-height: 1.65;
+      border-top: 1px solid var(--border);
+      padding-top: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    /* ========================================
        MATCH CARDS
        ======================================== */
     .matches-grid {
@@ -1388,6 +1534,7 @@
     <nav class="nav-tabs" role="tablist">
       <button class="nav-tab active" data-tab="locks" role="tab" aria-selected="true">SLOP LOCKS</button>
       <button class="nav-tab" data-tab="longslops" role="tab" aria-selected="false">LONGSLOPS</button>
+      <button class="nav-tab" data-tab="sotd" role="tab" aria-selected="false">SLOP OF THE DAY</button>
       <button class="nav-tab" data-tab="matches" role="tab" aria-selected="false">MATCHES</button>
       <button class="nav-tab" data-tab="stats" role="tab" aria-selected="false">STATS</button>
       <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">METHODOLOGY</button>
@@ -1414,6 +1561,15 @@
         <h2 class="longslop-hero-title">LONGSLOP OF THE DAY</h2>
       </div>
       <div id="longslop-container"></div>
+    </div>
+
+    <!-- ============ SLOP OF THE DAY TAB ============ -->
+    <div id="tab-sotd" class="tab-panel">
+      <div class="sotd-hero">
+        <h2 class="sotd-hero-title">SLOP OF THE DAY</h2>
+        <p class="sotd-hero-sub">Single most confident pick &bull; All sports</p>
+      </div>
+      <div id="sotd-container"></div>
     </div>
 
     <!-- ============ MATCHES TAB ============ -->
@@ -1527,6 +1683,8 @@
       var loadingState = $('#loading-state');
       var locksGrid = $('#locks-grid');
       var longslopContainer = $('#longslop-container');
+      var sotdContainer = $('#sotd-container');
+      var sportToggle = $('#sport-toggle');
       var matchesGrid = $('#matches-grid');
       var matchCount = $('#match-count');
       var headerUpdated = $('#header-updated');
@@ -1561,6 +1719,13 @@
           tab.setAttribute('aria-selected', 'true');
           var target = tab.getAttribute('data-tab');
           $('#tab-' + target).classList.add('active');
+
+          if (target === 'sotd') {
+            sportToggle.style.display = 'none';
+            loadSotd();
+          } else {
+            sportToggle.style.display = '';
+          }
         });
       });
 
@@ -1972,6 +2137,85 @@
 
         card.appendChild(breakdownDiv);
         return card;
+      }
+
+      /* -----------------------------------
+         SLOP OF THE DAY
+         ----------------------------------- */
+      function loadSotd() {
+        loadingState.style.display = '';
+        $$('.tab-panel').forEach(function (p) { p.style.visibility = 'hidden'; });
+
+        fetch('data/sotd.json')
+          .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+          })
+          .then(function (data) {
+            loadingState.style.display = 'none';
+            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
+            renderSotd(data);
+          })
+          .catch(function () {
+            loadingState.style.display = 'none';
+            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
+            renderSotd(null);
+          });
+      }
+
+      function renderSotd(data) {
+        sotdContainer.textContent = '';
+
+        if (!data || !data.pick) {
+          var empty = createEl('div', 'longslop-empty');
+          empty.appendChild(createEl('h3', null, 'NO PICK AVAILABLE'));
+          empty.appendChild(createEl('p', null, 'Pipeline hasn\'t run yet or no odds available.'));
+          sotdContainer.appendChild(empty);
+          return;
+        }
+
+        var pick = data.pick;
+        var card = createEl('div', 'sotd-card');
+
+        /* Sport badge */
+        if (data.sport_name) {
+          card.appendChild(createEl('div', 'sotd-sport-badge', data.sport_name));
+        }
+
+        /* Match */
+        card.appendChild(createEl('div', 'sotd-match', pick.home_team + ' vs ' + pick.away_team));
+
+        /* Date */
+        card.appendChild(createEl('div', 'sotd-date', formatDate(pick.date)));
+
+        /* Pick + odds row */
+        var pickRow = createEl('div', 'sotd-pick-row');
+        pickRow.appendChild(createEl('span', 'sotd-pick pick-' + pick.pick, getPickLabel(pick)));
+        pickRow.appendChild(createEl('span', 'sotd-odds', formatOdds(pick.american_odds)));
+        card.appendChild(pickRow);
+
+        /* Stats */
+        var stats = createEl('div', 'sotd-stats');
+
+        var confBlock = createEl('div');
+        confBlock.appendChild(createEl('div', 'sotd-stat-label', 'CONFIDENCE'));
+        confBlock.appendChild(createEl('div', 'sotd-stat-value slime', formatPctDecimal(pick.model_prob)));
+        stats.appendChild(confBlock);
+
+        var edgeBlock = createEl('div');
+        edgeBlock.appendChild(createEl('div', 'sotd-stat-label', 'EDGE'));
+        var edgePct = (pick.edge * 100).toFixed(1);
+        edgeBlock.appendChild(createEl('div', 'sotd-stat-value slime', '+' + edgePct + '%'));
+        stats.appendChild(edgeBlock);
+
+        card.appendChild(stats);
+
+        /* Blurb */
+        if (pick.blurb) {
+          card.appendChild(createEl('div', 'sotd-blurb', pick.blurb));
+        }
+
+        sotdContainer.appendChild(card);
       }
 
       /* -----------------------------------

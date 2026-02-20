@@ -283,6 +283,85 @@ def _compute_slop_locks(prediction_records, outcomes):
     return result
 
 
+def _compute_best_candidate(prediction_records, outcomes):
+    """Return the single most confident pick across all games.
+
+    Considers the full candidate pool with no odds window restriction.
+    Requires odds data (edges) to exist for a game. Returns None if
+    no games have odds data.
+    """
+    best = None
+    for rec in prediction_records:
+        edges = rec.get("edges", {})
+        best_odds = rec.get("best_odds", {})
+        game_candidates = []
+        for outcome in outcomes:
+            e = edges.get(outcome)
+            if not e:
+                continue
+            american = best_odds.get(outcome, e.get("american_odds"))
+            if american is None:
+                continue
+            game_candidates.append({
+                "home_team": rec["home_team"],
+                "away_team": rec["away_team"],
+                "date": rec["date"],
+                "pick": outcome,
+                "model_prob": round(e["model_prob"], 4),
+                "implied_prob": round(e["implied_prob"], 4),
+                "edge": round(e["edge"], 4),
+                "american_odds": american,
+                "decimal_odds": e["decimal_odds"],
+                "individual_models": rec.get("individual_models", {}),
+            })
+        if not game_candidates:
+            continue
+        top = max(game_candidates, key=lambda x: x["model_prob"])
+        if best is None or top["model_prob"] > best["model_prob"]:
+            best = top
+    return best
+
+
+def compute_sotd(sport_candidates, base_dir):
+    """Write data/sotd.json with the most confident pick across all sports.
+
+    Parameters
+    ----------
+    sport_candidates : dict[str, dict]
+        Mapping of sport_key -> {"best_candidate": ..., "sport_name": str}.
+        best_candidate may be None if no odds are available for that sport.
+    base_dir : str
+        Root data directory.
+    """
+    overall_best = None
+    best_sport = None
+    for sport_key, info in sport_candidates.items():
+        candidate = info.get("best_candidate")
+        if candidate is None:
+            continue
+        if overall_best is None or candidate["model_prob"] > overall_best["model_prob"]:
+            overall_best = candidate
+            best_sport = sport_key
+
+    sotd = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+
+    if overall_best is not None:
+        pick = dict(overall_best)
+        _generate_blurbs([pick], pick_type="lock")  # adds blurb, strips individual_models
+        sotd["sport"] = best_sport
+        sotd["sport_name"] = sport_candidates[best_sport]["sport_name"]
+        sotd["pick"] = pick
+    else:
+        sotd["sport"] = None
+        sotd["sport_name"] = None
+        sotd["pick"] = None
+
+    _save_json(os.path.join(base_dir, "sotd.json"), sotd)
+    return sotd
+
+
 def _compute_longslop(prediction_records, outcomes):
     """Extract LONGSLOP (best longshot the model believes may hit, +500 or better).
 
@@ -617,10 +696,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
         prediction_records.append(record)
 
     # ------------------------------------------------------------------
-    # 5b. SLOP LOCKS + LONGSLOP
+    # 5b. SLOP LOCKS + LONGSLOP + BEST CANDIDATE
     # ------------------------------------------------------------------
     slop_locks = _compute_slop_locks(prediction_records, outcomes)
     longslop = _compute_longslop(prediction_records, outcomes)
+    best_candidate = _compute_best_candidate(prediction_records, outcomes)
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
@@ -791,6 +871,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
     }
     _save_json(predictions_path, predictions_output)
 
+    # Expose best_candidate in return value (with individual_models for compute_sotd blurb)
+    predictions_output["best_candidate"] = best_candidate
+
     history_output = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "predictions": updated_past + prediction_records,
@@ -823,15 +906,21 @@ def run_pipeline(output_dir=None):
         "sports": {},
     }
 
+    sport_candidates = {}
     for sport_key in SPORTS:
         sport_dir = os.path.join(base_dir, sport_key) if output_dir else None
         try:
-            run_sport_pipeline(sport_key, output_dir=sport_dir)
+            output = run_sport_pipeline(sport_key, output_dir=sport_dir)
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
                 "status": "ok",
                 "updated_at": now,
             }
+            if output.get("best_candidate"):
+                sport_candidates[sport_key] = {
+                    "best_candidate": output["best_candidate"],
+                    "sport_name": SPORTS[sport_key]["display_name"],
+                }
         except Exception as exc:
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
@@ -840,6 +929,7 @@ def run_pipeline(output_dir=None):
                 "updated_at": now,
             }
 
+    compute_sotd(sport_candidates, base_dir)
     _save_json(os.path.join(base_dir, "manifest.json"), manifest)
 
     return manifest

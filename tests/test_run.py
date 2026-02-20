@@ -354,3 +354,182 @@ class TestComputeSlopLocks:
         ]
         locks = _compute_slop_locks(records, ["home", "away"])
         assert len(locks) <= 5
+
+
+# ---------------------------------------------------------------------------
+# _compute_best_candidate helper
+# ---------------------------------------------------------------------------
+
+class TestComputeBestCandidate:
+    """Tests for the _compute_best_candidate helper."""
+
+    def _make_record(self, home, away, outcome, model_prob, american_odds):
+        implied = 1 / (1 + abs(american_odds) / 100) if american_odds < 0 else 100 / (american_odds + 100)
+        return {
+            "home_team": home,
+            "away_team": away,
+            "date": "2026-03-01",
+            "edges": {
+                outcome: {
+                    "model_prob": model_prob,
+                    "implied_prob": implied,
+                    "edge": model_prob - implied,
+                    "decimal_odds": 2.0,
+                    "american_odds": american_odds,
+                    "is_value": False,
+                }
+            },
+            "best_odds": {outcome: american_odds},
+            "model_probs": {outcome: model_prob},
+            "individual_models": {},
+        }
+
+    def test_returns_highest_model_prob_pick(self):
+        from pipeline.run import _compute_best_candidate
+        records = [
+            self._make_record("A", "B", "home", 0.60, -120),
+            self._make_record("C", "D", "home", 0.80, -150),
+            self._make_record("E", "F", "away", 0.70, +110),
+        ]
+        result = _compute_best_candidate(records, ["home", "away"])
+        assert result is not None
+        assert result["home_team"] == "C"
+        assert result["model_prob"] == 0.80
+
+    def test_ignores_records_without_edges(self):
+        from pipeline.run import _compute_best_candidate
+        records = [
+            {"home_team": "A", "away_team": "B", "date": "2026-03-01",
+             "edges": {}, "best_odds": {}, "model_probs": {}, "individual_models": {}},
+            self._make_record("C", "D", "home", 0.65, -120),
+        ]
+        result = _compute_best_candidate(records, ["home", "away"])
+        assert result is not None
+        assert result["home_team"] == "C"
+
+    def test_returns_none_when_no_odds(self):
+        from pipeline.run import _compute_best_candidate
+        records = [
+            {"home_team": "A", "away_team": "B", "date": "2026-03-01",
+             "edges": {}, "best_odds": {}, "model_probs": {}, "individual_models": {}},
+        ]
+        result = _compute_best_candidate(records, ["home", "away"])
+        assert result is None
+
+    def test_one_pick_per_game_highest_prob(self):
+        from pipeline.run import _compute_best_candidate
+        rec = {
+            "home_team": "A", "away_team": "B", "date": "2026-03-01",
+            "edges": {
+                "home": {"model_prob": 0.60, "implied_prob": 0.55, "edge": 0.05,
+                         "decimal_odds": 1.8, "american_odds": -125, "is_value": True},
+                "away": {"model_prob": 0.75, "implied_prob": 0.45, "edge": 0.30,
+                         "decimal_odds": 2.2, "american_odds": +120, "is_value": True},
+            },
+            "best_odds": {"home": -125, "away": +120},
+            "model_probs": {"home": 0.60, "away": 0.75},
+            "individual_models": {},
+        }
+        result = _compute_best_candidate([rec], ["home", "away"])
+        assert result["pick"] == "away"
+
+    def test_no_odds_window_restriction(self):
+        from pipeline.run import _compute_best_candidate
+        records = [
+            self._make_record("A", "B", "home", 0.90, -300),
+        ]
+        result = _compute_best_candidate(records, ["home", "away"])
+        assert result is not None
+        assert result["american_odds"] == -300
+
+
+# ---------------------------------------------------------------------------
+# compute_sotd helper
+# ---------------------------------------------------------------------------
+
+class TestComputeSotd:
+    """Tests for the compute_sotd helper."""
+
+    def _make_candidate(self, home, away, outcome, model_prob, american_odds):
+        implied = 1 / (1 + abs(american_odds) / 100) if american_odds < 0 else 100 / (american_odds + 100)
+        return {
+            "home_team": home,
+            "away_team": away,
+            "date": "2026-03-01",
+            "pick": outcome,
+            "model_prob": model_prob,
+            "implied_prob": implied,
+            "edge": model_prob - implied,
+            "american_odds": american_odds,
+            "decimal_odds": 2.0,
+            "individual_models": {},
+        }
+
+    def test_writes_sotd_json(self, tmp_path):
+        from pipeline.run import compute_sotd
+        candidates = {
+            "nba": {"best_candidate": self._make_candidate("Lakers", "Celtics", "home", 0.70, -130),
+                    "sport_name": "NBA"},
+        }
+        compute_sotd(candidates, str(tmp_path))
+        sotd_path = tmp_path / "sotd.json"
+        assert sotd_path.exists()
+        with open(sotd_path) as f:
+            data = json.load(f)
+        assert data["sport"] == "nba"
+        assert data["pick"]["home_team"] == "Lakers"
+
+    def test_picks_highest_prob_across_sports(self, tmp_path):
+        from pipeline.run import compute_sotd
+        candidates = {
+            "nba": {"best_candidate": self._make_candidate("A", "B", "home", 0.65, -110),
+                    "sport_name": "NBA"},
+            "epl": {"best_candidate": self._make_candidate("C", "D", "away", 0.80, -150),
+                    "sport_name": "EPL"},
+            "ncaam": {"best_candidate": self._make_candidate("E", "F", "home", 0.72, +100),
+                      "sport_name": "NCAAM"},
+        }
+        compute_sotd(candidates, str(tmp_path))
+        with open(tmp_path / "sotd.json") as f:
+            data = json.load(f)
+        assert data["sport"] == "epl"
+        assert data["pick"]["model_prob"] == 0.80
+
+    def test_null_when_no_candidates(self, tmp_path):
+        from pipeline.run import compute_sotd
+        compute_sotd({}, str(tmp_path))
+        with open(tmp_path / "sotd.json") as f:
+            data = json.load(f)
+        assert data["sport"] is None
+        assert data["pick"] is None
+
+    def test_includes_sport_name(self, tmp_path):
+        from pipeline.run import compute_sotd
+        candidates = {
+            "ncaam": {"best_candidate": self._make_candidate("X", "Y", "home", 0.75, +110),
+                      "sport_name": "NCAAM"},
+        }
+        compute_sotd(candidates, str(tmp_path))
+        with open(tmp_path / "sotd.json") as f:
+            data = json.load(f)
+        assert data["sport_name"] == "NCAAM"
+
+    def test_null_best_candidates_skipped(self, tmp_path):
+        from pipeline.run import compute_sotd
+        candidates = {
+            "nba": {"best_candidate": None, "sport_name": "NBA"},
+            "epl": {"best_candidate": self._make_candidate("A", "B", "home", 0.70, -130),
+                    "sport_name": "EPL"},
+        }
+        compute_sotd(candidates, str(tmp_path))
+        with open(tmp_path / "sotd.json") as f:
+            data = json.load(f)
+        assert data["sport"] == "epl"
+
+    def test_generated_at_is_set(self, tmp_path):
+        from pipeline.run import compute_sotd
+        compute_sotd({}, str(tmp_path))
+        with open(tmp_path / "sotd.json") as f:
+            data = json.load(f)
+        assert "generated_at" in data
+        assert "T" in data["generated_at"]
