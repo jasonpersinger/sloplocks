@@ -12,7 +12,7 @@ Usage:
 import json
 import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
@@ -27,6 +27,23 @@ SPORT_EMOJIS = {"nba": "🏀", "ncaam": "🎓", "epl": "⚽"}
 PICK_LABELS  = {"home": "HOME", "away": "AWAY", "draw": "DRAW"}
 DATA_DIR = Path("data")
 
+# NBA/NCAAM evening games (7–10pm ET) are stored as the next UTC day.
+# Subtract one day to recover the correct local date for display.
+_ET_OFFSET_SPORTS = {"nba", "ncaam"}
+
+
+def _display_date(date_str: str, sport_key: str) -> str:
+    """Return a human-readable date, correcting for UTC→ET shift on NBA/NCAAM."""
+    if not date_str:
+        return ""
+    game_date = datetime.strptime(date_str[:10], "%Y-%m-%d").date()
+    if sport_key in _ET_OFFSET_SPORTS:
+        utc_today = datetime.now(timezone.utc).date()
+        # If the stored date is tomorrow UTC, it's actually tonight ET
+        if game_date == utc_today + timedelta(days=1):
+            game_date = utc_today
+    return game_date.strftime("%b %d")
+
 
 def _fmt_odds(american: int) -> str:
     return f"+{american}" if american >= 0 else str(american)
@@ -40,7 +57,7 @@ def _lock_field(lock: dict, sport_key: str) -> dict:
     """Build a single Discord embed field for one lock."""
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick  = PICK_LABELS.get(lock["pick"], lock["pick"].upper())
-    date  = lock.get("date", "")[:10]
+    date  = _display_date(lock.get("date", ""), sport_key)
 
     name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}"
     value = (
@@ -67,7 +84,7 @@ def _sotd_embed(sotd: dict) -> dict | None:
     pick_label = PICK_LABELS.get(pick["pick"], pick["pick"].upper())
 
     description = (
-        f"{emoji}  **{pick['home_team']} vs {pick['away_team']}**  ·  {pick.get('date','')[:10]}\n"
+        f"{emoji}  **{pick['home_team']} vs {pick['away_team']}**  ·  {_display_date(pick.get('date',''), sport_key)}\n"
         f"**{pick_label}**  ·  {_fmt_odds(pick['american_odds'])}"
         f"  ·  {_fmt_pct(pick['model_prob'])} conf"
         f"  ·  {pick['edge'] * 100:+.1f}% edge"
@@ -85,7 +102,9 @@ def _sotd_embed(sotd: dict) -> dict | None:
 
 def build_payload() -> dict:
     embeds = []
-    earliest_game_date: str | None = None
+    # Header always shows today's US Eastern date (UTC-5 in winter, UTC-4 in summer)
+    et_now = datetime.now(timezone.utc) - timedelta(hours=5)
+    header_date = et_now.strftime("%b %d, %Y")
 
     # --- SLOP OF THE DAY ---
     sotd_path = DATA_DIR / "sotd.json"
@@ -108,12 +127,6 @@ def build_payload() -> dict:
         if not locks:
             continue
 
-        # Track the earliest game date across all sports for the header
-        for lock in locks:
-            d = lock.get("date", "")[:10]
-            if d and (earliest_game_date is None or d < earliest_game_date):
-                earliest_game_date = d
-
         sport_name = data.get("sport_name", sport_key.upper())
         emoji      = SPORT_EMOJIS.get(sport_key, "🎯")
         fields     = [_lock_field(lock, sport_key) for lock in locks]
@@ -124,13 +137,6 @@ def build_payload() -> dict:
             "fields": fields,
             "footer": {"text": "sloplocks.lol"},
         })
-
-    # Header date: use earliest game date so it matches what's in the picks
-    if earliest_game_date:
-        dt = datetime.strptime(earliest_game_date, "%Y-%m-%d")
-        header_date = dt.strftime("%b %d, %Y")
-    else:
-        header_date = datetime.now(timezone.utc).strftime("%b %d, %Y")
 
     return {
         "username": "BIG SLIME",
