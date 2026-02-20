@@ -630,8 +630,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     result_lookup = {}
     for _, row in matches.iterrows():
-        key = (row["home_team"], row["away_team"], str(row["date"])[:10])
-        result_lookup[key] = (int(row["home_goals"]), int(row["away_goals"]))
+        date_str = str(row["date"])[:10]
+        score = (int(row["home_goals"]), int(row["away_goals"]))
+        result_lookup[(row["home_team"], row["away_team"], date_str)] = score
+        # Also index under date+1 to handle UTC date shift for evening ET games
+        next_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+        result_lookup.setdefault((row["home_team"], row["away_team"], next_date), score)
 
     updated_past = []
     for pred in past_predictions:
@@ -690,16 +694,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
             pick["home_goals"] = hg
             pick["away_goals"] = ag
 
-    # Append today's new picks (deduplicate by match + pick + type)
+    # Append today's new picks (deduplicate by game identity, not pick_date)
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     existing_keys = set()
     for p in past_picks:
-        existing_keys.add((p.get("pick_date"), p["type"], p["home_team"],
-                           p["away_team"], p["pick"]))
+        existing_keys.add((p["type"], p["home_team"], p["away_team"],
+                           p.get("match_date"), p["pick"]))
 
     for lock in slop_locks:
-        pk = (today_str, "slop_lock", lock["home_team"],
-              lock["away_team"], lock["pick"])
+        pk = ("slop_lock", lock["home_team"], lock["away_team"],
+              str(lock["date"])[:10], lock["pick"])
         if pk not in existing_keys:
             past_picks.append({
                 "pick_date": today_str,
@@ -717,8 +721,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
             })
 
     if longslop:
-        pk = (today_str, "longslop", longslop["home_team"],
-              longslop["away_team"], longslop["pick"])
+        pk = ("longslop", longslop["home_team"], longslop["away_team"],
+              str(longslop["date"])[:10], longslop["pick"])
         if pk not in existing_keys:
             past_picks.append({
                 "pick_date": today_str,
