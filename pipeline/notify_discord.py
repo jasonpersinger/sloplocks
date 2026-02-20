@@ -115,33 +115,33 @@ def build_payload() -> dict:
         if sotd_embed:
             embeds.append(sotd_embed)
 
-    # --- Per-sport lock embeds ---
+    # --- Collect all locks across every sport, pick top 5 by confidence ---
+    all_locks: list[tuple[str, dict]] = []  # (sport_key, lock)
     for sport_key in ("nba", "ncaam", "epl"):
         pred_path = DATA_DIR / sport_key / "predictions.json"
         if not pred_path.exists():
             continue
         with open(pred_path) as f:
             data = json.load(f)
+        for lock in data.get("slop_locks") or []:
+            all_locks.append((sport_key, lock))
 
-        locks = data.get("slop_locks") or []
-        if not locks:
-            continue
+    all_locks.sort(key=lambda x: x[1]["model_prob"], reverse=True)
+    top5 = all_locks[:5]
 
-        sport_name = data.get("sport_name", sport_key.upper())
-        emoji      = SPORT_EMOJIS.get(sport_key, "🎯")
-        fields     = [_lock_field(lock, sport_key) for lock in locks]
-
+    if top5:
+        fields = [_lock_field(lock, sport_key) for sport_key, lock in top5]
         embeds.append({
-            "title": f"{emoji}  {sport_name} SLOP LOCKS",
+            "title": "🔒  TOP 5 SLOP LOCKS",
             "color": COLOR_SLIME,
             "fields": fields,
-            "footer": {"text": "sloplocks.lol"},
+            "footer": {"text": "sloplocks.lol  ·  ranked by model confidence"},
         })
 
     return {
         "username": "BIG SLIME",
         "content": f"🔒  **SLOP LOCKS  ·  {header_date}**",
-        "embeds": embeds[:10],  # Discord allows max 10 embeds per message
+        "embeds": embeds[:10],
     }
 
 
