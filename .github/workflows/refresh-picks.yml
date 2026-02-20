@@ -38,3 +38,9 @@ jobs:
           git diff --staged --quiet || git commit -m "data: refresh picks $(date -u +%Y-%m-%dT%H:%MZ)"
           git pull --rebase origin master
           git push
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m pipeline.notify_discord
+

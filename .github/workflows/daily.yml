@@ -40,3 +40,9 @@ jobs:
           git diff --staged --quiet || git commit -m "data: daily predictions $(date -u +%Y-%m-%d)"
           git pull --rebase origin master
           git push
+
+      - name: Notify Discord
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m pipeline.notify_discord
+
