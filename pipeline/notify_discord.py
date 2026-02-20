@@ -84,8 +84,8 @@ def _sotd_embed(sotd: dict) -> dict | None:
 
 
 def build_payload() -> dict:
-    today = datetime.now(timezone.utc).strftime("%b %d, %Y")
     embeds = []
+    earliest_game_date: str | None = None
 
     # --- SLOP OF THE DAY ---
     sotd_path = DATA_DIR / "sotd.json"
@@ -108,6 +108,12 @@ def build_payload() -> dict:
         if not locks:
             continue
 
+        # Track the earliest game date across all sports for the header
+        for lock in locks:
+            d = lock.get("date", "")[:10]
+            if d and (earliest_game_date is None or d < earliest_game_date):
+                earliest_game_date = d
+
         sport_name = data.get("sport_name", sport_key.upper())
         emoji      = SPORT_EMOJIS.get(sport_key, "🎯")
         fields     = [_lock_field(lock, sport_key) for lock in locks]
@@ -119,9 +125,16 @@ def build_payload() -> dict:
             "footer": {"text": "sloplocks.lol"},
         })
 
+    # Header date: use earliest game date so it matches what's in the picks
+    if earliest_game_date:
+        dt = datetime.strptime(earliest_game_date, "%Y-%m-%d")
+        header_date = dt.strftime("%b %d, %Y")
+    else:
+        header_date = datetime.now(timezone.utc).strftime("%b %d, %Y")
+
     return {
         "username": "BIG SLIME",
-        "content": f"🔒  **SLOP LOCKS  ·  {today}**",
+        "content": f"🔒  **SLOP LOCKS  ·  {header_date}**",
         "embeds": embeds[:10],  # Discord allows max 10 embeds per message
     }
 
