@@ -127,7 +127,7 @@ def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) ->
     int or None
         Days since last game, or None if the team has no recorded games.
     """
-    cutoff = pd.to_datetime(before_date)
+    cutoff = pd.to_datetime(before_date[:10])
     team_mask = (matches["home_team"] == team) | (matches["away_team"] == team)
     team_games = matches[team_mask].copy()
     team_games["_dt"] = pd.to_datetime(team_games["date"])
