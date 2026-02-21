@@ -1767,12 +1767,13 @@
       }
 
       function formatTime(isoStr) {
+        if (!isoStr || isoStr.length <= 10) return '';
         var d = new Date(isoStr);
-        var h = d.getHours();
-        var m = d.getMinutes();
-        var ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12 || 12;
-        return h + ':' + (m < 10 ? '0' : '') + m + ' ' + ampm;
+        return d.toLocaleTimeString('en-US', {
+          timeZone: 'America/New_York',
+          hour: 'numeric',
+          minute: '2-digit'
+        }) + ' ET';
       }
 
       function formatTimestamp(isoStr) {
@@ -1850,6 +1851,8 @@
           var rankText = '\uD83D\uDD12 #' + (i + 1) + (rankLabels[i] || '');
           top.appendChild(createEl('span', 'lock-rank', rankText));
           var metaText = formatDate(lock.date);
+          var lockTime = formatTime(lock.date);
+          if (lockTime) metaText += ' \u00B7 ' + lockTime;
           if (lock.matchday) metaText += ' \u00B7 MD ' + lock.matchday;
           top.appendChild(createEl('span', 'lock-meta-date', metaText));
           card.appendChild(top);
@@ -1963,6 +1966,8 @@
 
         /* Date meta */
         var metaText = formatDate(longslop.date);
+        var longslopTime = formatTime(longslop.date);
+        if (longslopTime) metaText += ' \u00B7 ' + longslopTime;
         if (longslop.matchday) metaText += ' \u00B7 MD ' + longslop.matchday;
         card.appendChild(createEl('div', 'longslop-meta', metaText));
 
@@ -2187,7 +2192,10 @@
         card.appendChild(createEl('div', 'sotd-match', pick.home_team + ' vs ' + pick.away_team));
 
         /* Date */
-        card.appendChild(createEl('div', 'sotd-date', formatDate(pick.date)));
+        var sotdDateText = formatDate(pick.date);
+        var sotdTime = formatTime(pick.date);
+        if (sotdTime) sotdDateText += ' \u00B7 ' + sotdTime;
+        card.appendChild(createEl('div', 'sotd-date', sotdDateText));
 
         /* Pick + odds row */
         var pickRow = createEl('div', 'sotd-pick-row');

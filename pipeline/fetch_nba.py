@@ -374,7 +374,7 @@ def fetch_nba_espn_schedule() -> list[dict]:
             fixtures.append({
                 "home_team": normalize_nba_team_name(home["team"]["displayName"]),
                 "away_team": normalize_nba_team_name(away["team"]["displayName"]),
-                "date": event["date"][:10],
+                "date": event["date"],
             })
 
         time.sleep(_ESPN_REQUEST_DELAY)
