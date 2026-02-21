@@ -32,6 +32,7 @@ def sample_nba_matches():
     matches = []
     for i, (home, away, hg, ag) in enumerate(results):
         matches.append({
+            "game_id": str(1000 + i),
             "date": (base_date + timedelta(days=i)).isoformat(),
             "home_team": home,
             "away_team": away,
@@ -39,6 +40,21 @@ def sample_nba_matches():
             "away_goals": ag,
         })
     return pd.DataFrame(matches)
+
+
+@pytest.fixture
+def sample_nba_box_scores(sample_nba_matches):
+    """Box scores matching the sample_nba_matches fixture."""
+    from tests.conftest import _make_box_score
+    rows = []
+    for _, g in sample_nba_matches.iterrows():
+        rows.append(_make_box_score(
+            g["game_id"], g["date"], g["home_team"], g["home_goals"], True,
+        ))
+        rows.append(_make_box_score(
+            g["game_id"], g["date"], g["away_team"], g["away_goals"], False,
+        ))
+    return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -113,13 +129,13 @@ class TestRunEPLPipeline:
 
 class TestRunNBAPipeline:
     @patch("pipeline.run.fetch_odds")
-    @patch("pipeline.run.fetch_nba_schedule")
-    @patch("pipeline.run.fetch_nba_games")
+    @patch("pipeline.run.fetch_nba_espn_schedule")
+    @patch("pipeline.run.fetch_nba_espn_games")
     def test_produces_valid_nba_predictions(
         self, mock_games, mock_schedule, mock_odds,
-        sample_nba_matches, tmp_path
+        sample_nba_matches, sample_nba_box_scores, tmp_path
     ):
-        mock_games.return_value = sample_nba_matches
+        mock_games.return_value = (sample_nba_matches, sample_nba_box_scores)
         mock_schedule.return_value = [
             {
                 "home_team": "Lakers",
@@ -172,15 +188,18 @@ class TestRunNBAPipeline:
 
 class TestRunPipeline:
     @patch("pipeline.run.fetch_odds")
-    @patch("pipeline.run.fetch_nba_schedule")
-    @patch("pipeline.run.fetch_nba_games")
+    @patch("pipeline.run.fetch_ncaam_schedule")
+    @patch("pipeline.run.fetch_ncaam_games")
+    @patch("pipeline.run.fetch_nba_espn_schedule")
+    @patch("pipeline.run.fetch_nba_espn_games")
     @patch("pipeline.run.fetch_understat_xg")
     @patch("pipeline.run.fetch_epl_fixtures")
     @patch("pipeline.run.fetch_epl_matches")
     def test_produces_per_sport_files_and_manifest(
         self, mock_epl_matches, mock_epl_fixtures, mock_xg,
-        mock_nba_games, mock_nba_schedule, mock_odds,
-        sample_matches, sample_xg, sample_nba_matches, tmp_path
+        mock_nba_games, mock_nba_schedule, mock_ncaam_games, mock_ncaam_schedule, mock_odds,
+        sample_matches, sample_xg, sample_nba_matches, sample_nba_box_scores,
+        ncaam_games, ncaam_box_scores, tmp_path
     ):
         mock_epl_matches.return_value = sample_matches
         mock_epl_fixtures.return_value = [
@@ -192,11 +211,19 @@ class TestRunPipeline:
             }
         ]
         mock_xg.return_value = sample_xg
-        mock_nba_games.return_value = sample_nba_matches
+        mock_nba_games.return_value = (sample_nba_matches, sample_nba_box_scores)
         mock_nba_schedule.return_value = [
             {
                 "home_team": "Lakers",
                 "away_team": "Warriors",
+                "date": "2026-02-19",
+            }
+        ]
+        mock_ncaam_games.return_value = (ncaam_games, ncaam_box_scores)
+        mock_ncaam_schedule.return_value = [
+            {
+                "home_team": "Duke",
+                "away_team": "Kansas",
                 "date": "2026-02-19",
             }
         ]
@@ -336,14 +363,14 @@ class TestComputeSlopLocks:
         probs = [l["model_prob"] for l in locks]
         assert probs == sorted(probs, reverse=True)
 
-    def test_no_market_agreement_required(self):
-        """A pick qualifies even when model_prob < implied_prob (negative edge)."""
+    def test_negative_edge_picks_excluded(self):
+        """Negative-edge picks are excluded — model must beat the market."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.52, -130, edge=-0.045),
         ]
         locks = _compute_slop_locks(records, ["home", "away"])
-        assert len(locks) == 1
+        assert len(locks) == 0
 
     def test_returns_at_most_five(self):
         """At most 5 locks returned."""
