@@ -481,12 +481,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
         except Exception:
             pass
     elif sport_key == "nba":
-        games_df, box_scores_df = fetch_nba_espn_games()
+        games_df, box_scores_df = fetch_nba_espn_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
         fixtures = fetch_nba_espn_schedule()
         matches = games_df
         xg_data = None
     elif sport_key == "ncaam":
-        games_df, box_scores_df = fetch_ncaam_games()
+        games_df, box_scores_df = fetch_ncaam_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
         fixtures = fetch_ncaam_schedule()
         matches = games_df
         xg_data = None
