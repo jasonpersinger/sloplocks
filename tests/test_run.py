@@ -372,6 +372,27 @@ class TestComputeSlopLocks:
         locks = _compute_slop_locks(records, ["home", "away"])
         assert len(locks) == 0
 
+    def test_opponent_conflict_excluded(self):
+        """If Team A is picked over Team B, Team B must not also appear as a pick."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            # Game 1: Brentford beats Brighton — higher edge
+            self._make_record("Brentford", "Brighton", "home", 0.60, 114, edge=0.028),
+            # Game 2: Brighton beats NF — lower edge; Brighton is loser in game 1
+            self._make_record("Brighton", "NF", "home", 0.55, 110, edge=0.001),
+            # Unrelated game — should still appear
+            self._make_record("Wolves", "Villa", "away", 0.62, -108, edge=0.049),
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"])
+        picked_teams = [
+            l["home_team"] if l["pick"] == "home" else l["away_team"]
+            for l in locks
+        ]
+        # Brentford and Wolves picked; Brighton excluded (opponent of Brentford pick)
+        assert "Brentford" in picked_teams
+        assert "Brighton" not in picked_teams
+        assert "Villa" in picked_teams
+
     def test_returns_at_most_five(self):
         """At most 5 locks returned."""
         from pipeline.run import _compute_slop_locks

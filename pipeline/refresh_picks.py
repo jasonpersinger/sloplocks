@@ -18,7 +18,7 @@ from pipeline.ensemble import compute_edges, decimal_to_american
 from pipeline.fetch_data import fetch_odds, normalize_team_name
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
-from pipeline.run import _compute_best_candidate, compute_sotd
+from pipeline.run import _compute_best_candidate, compute_sotd, _exclude_opponent_conflicts
 
 _NORMALIZERS = {
     "epl": normalize_team_name,
@@ -77,7 +77,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     result = in_window[:_MAX_LOCKS]
     if len(result) < _MAX_LOCKS:
         result.extend(outside_window[:_MAX_LOCKS - len(result)])
-    return result
+    return _exclude_opponent_conflicts(result)
 
 
 def refresh_sport(sport_key: str) -> dict | None:

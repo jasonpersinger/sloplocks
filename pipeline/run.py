@@ -233,6 +233,36 @@ def _generate_blurbs(picks, pick_type="lock"):
     return picks
 
 
+def _exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
+    """Remove picks where a picked team is also the losing side of another pick.
+
+    If we pick Team A to beat Team B, but Team B is also picked in a different
+    game, we drop the lower-edge pick. Both Brentford and Brighton appearing as
+    locks when they play each other looks contradictory to users.
+    """
+    def picked(lock):
+        return lock["home_team"] if lock["pick"] == "home" else lock["away_team"]
+
+    def unpicked(lock):
+        return lock["away_team"] if lock["pick"] == "home" else lock["home_team"]
+
+    # Map: unpicked team name -> the lock where they are the losing side
+    unpicked_map = {unpicked(l): l for l in locks}
+
+    to_remove = set()
+    for lock in locks:
+        pt = picked(lock)
+        if pt in unpicked_map and unpicked_map[pt] is not lock:
+            # pt is picked here but is the loser in another lock — conflict
+            other = unpicked_map[pt]
+            if lock["edge"] <= other["edge"]:
+                to_remove.add(id(lock))
+            else:
+                to_remove.add(id(other))
+
+    return [l for l in locks if id(l) not in to_remove]
+
+
 def _compute_slop_locks(prediction_records, outcomes):
     """Extract SLOP LOCKS: top 5 most confident picks.
 
@@ -282,7 +312,7 @@ def _compute_slop_locks(prediction_records, outcomes):
     result = in_window[:5]
     if len(result) < 5:
         result.extend(outside_window[:5 - len(result)])
-    return result
+    return _exclude_opponent_conflicts(result)
 
 
 def _compute_best_candidate(prediction_records, outcomes):
