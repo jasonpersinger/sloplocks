@@ -1,5 +1,7 @@
 """Fetch NBA game results and schedule from balldontlie.io."""
 
+import json as _json
+import os
 import time
 from datetime import datetime, timedelta, timezone
 
@@ -219,6 +221,42 @@ def _nba_season_date_range(season: int) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# ESPN cache helpers
+# ---------------------------------------------------------------------------
+
+
+def _load_espn_cache(cache_path: str | None) -> dict:
+    """Load ESPN cache from disk, returning empty cache if missing."""
+    if cache_path is None or not os.path.exists(cache_path):
+        return {"games": {}}
+    with open(cache_path) as f:
+        return _json.load(f)
+
+
+def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+    """Write ESPN cache to disk."""
+    if cache_path is None:
+        return
+    os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
+    with open(cache_path, "w") as f:
+        _json.dump(cache, f)
+
+
+def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2) -> list[str]:
+    """Return only dates that need fetching based on cache contents.
+
+    If cache is empty, returns all_dates (full season).
+    Otherwise returns dates >= (max_cached_date - lookback_days).
+    """
+    games = cache.get("games", {})
+    if not games:
+        return all_dates
+    max_cached = max(v["date"] for v in games.values())
+    cutoff = (datetime.strptime(max_cached, "%Y-%m-%d") - timedelta(days=lookback_days)).date()
+    return [d for d in all_dates if datetime.strptime(d, "%Y-%m-%d").date() >= cutoff]
+
+
+# ---------------------------------------------------------------------------
 # ESPN event parsing
 # ---------------------------------------------------------------------------
 
@@ -256,6 +294,7 @@ def _parse_nba_espn_event(event: dict) -> dict | None:
 def fetch_nba_espn_games(
     season: int | None = None,
     dates: list[str] | None = None,
+    cache_path: str | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NBA games and box scores via ESPN API.
 
@@ -265,6 +304,10 @@ def fetch_nba_espn_games(
         Season start year (e.g. 2025 for 2025-26). Defaults to current season.
     dates : list[str] or None
         Explicit YYYY-MM-DD dates. Defaults to full season range.
+    cache_path : str or None
+        Path to the ESPN cache JSON file. If provided, previously fetched
+        games and box scores are loaded from disk and only missing/recent
+        dates are re-fetched.
 
     Returns
     -------
@@ -278,10 +321,11 @@ def fetch_nba_espn_games(
     if dates is None:
         dates = _nba_season_date_range(season)
 
-    game_rows = []
-    box_rows = []
+    # Load cache and restrict fetching to incremental dates
+    cache = _load_espn_cache(cache_path)
+    fetch_dates = _incremental_dates(cache, dates)
 
-    for date_str in dates:
+    for date_str in fetch_dates:
         espn_date = date_str.replace("-", "")
         url = f"{NBA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=50&seasontype=2"
         resp = requests.get(url, timeout=30)
@@ -293,18 +337,27 @@ def fetch_nba_espn_games(
             parsed = _parse_nba_espn_event(event)
             if parsed is not None:
                 final_events.append(parsed)
-                game_rows.append({
-                    "game_id": parsed["event_id"],
+                game_id = parsed["event_id"]
+                # Add/update game entry in cache (without touching existing box_scores)
+                existing = cache["games"].get(game_id, {})
+                cache["games"][game_id] = {
                     "date": parsed["date"],
                     "home_team": normalize_nba_team_name(parsed["home_name"]),
                     "away_team": normalize_nba_team_name(parsed["away_name"]),
                     "home_goals": parsed["home_score"],
                     "away_goals": parsed["away_score"],
-                })
+                    "box_scores": existing.get("box_scores", []),
+                }
 
+        # Fetch box scores for games that don't already have them in cache
         for parsed in final_events:
+            game_id = parsed["event_id"]
+            if cache["games"][game_id].get("box_scores"):
+                # Already have box scores for this game — skip the summary call
+                continue
+
             time.sleep(_ESPN_REQUEST_DELAY)
-            summary_url = f"{NBA_ESPN_BASE}/summary?event={parsed['event_id']}"
+            summary_url = f"{NBA_ESPN_BASE}/summary?event={game_id}"
             try:
                 s_resp = requests.get(summary_url, timeout=30)
                 s_resp.raise_for_status()
@@ -312,23 +365,55 @@ def fetch_nba_espn_games(
                 player_groups = s_data.get("boxscore", {}).get("players", [])
                 if len(player_groups) < 2:
                     continue
+                box_scores = []
                 for player_group in player_groups:
                     try:
                         totals = player_group["statistics"][0]["totals"]
                         stats = _parse_box_score_totals(totals)
                         team_name = player_group["team"]["displayName"]
-                        box_rows.append({
-                            "game_id": parsed["event_id"],
+                        box_scores.append({
                             "team": normalize_nba_team_name(team_name),
-                            "date": parsed["date"],
                             **stats,
                         })
                     except (KeyError, IndexError):
                         continue
+                cache["games"][game_id]["box_scores"] = box_scores
             except requests.RequestException:
                 continue
 
         time.sleep(_ESPN_REQUEST_DELAY)
+
+    _save_espn_cache(cache_path, cache)
+
+    # Build DataFrames from the full cache (includes cached + newly fetched data)
+    game_rows = []
+    box_rows = []
+    for game_id, entry in cache["games"].items():
+        game_rows.append({
+            "game_id": game_id,
+            "date": entry["date"],
+            "home_team": entry["home_team"],
+            "away_team": entry["away_team"],
+            "home_goals": entry["home_goals"],
+            "away_goals": entry["away_goals"],
+        })
+        for bs in entry.get("box_scores", []):
+            box_rows.append({
+                "game_id": game_id,
+                "team": bs["team"],
+                "date": entry["date"],
+                "pts": bs["pts"],
+                "fgm": bs["fgm"],
+                "fga": bs["fga"],
+                "fg3m": bs["fg3m"],
+                "fg3a": bs["fg3a"],
+                "ftm": bs["ftm"],
+                "fta": bs["fta"],
+                "orb": bs["orb"],
+                "drb": bs["drb"],
+                "to": bs["to"],
+                "possessions": bs["possessions"],
+            })
 
     games_df = pd.DataFrame(
         game_rows,
