@@ -1,5 +1,7 @@
 """Tests for pipeline.fetch_ncaam — ESPN API client for NCAAM."""
 
+import json
+import os
 from unittest.mock import patch, MagicMock, call
 import pandas as pd
 import pytest
@@ -10,6 +12,9 @@ from pipeline.fetch_ncaam import (
     fetch_ncaam_games,
     fetch_ncaam_schedule,
     _build_team_map,
+    _load_espn_cache,
+    _save_espn_cache,
+    _incremental_dates,
 )
 
 
@@ -334,7 +339,7 @@ class TestFetchNcaamSchedule:
         assert len(fixtures) == 1
         assert fixtures[0]["home_team"] == "Duke"
         assert fixtures[0]["away_team"] == "Kansas"
-        assert fixtures[0]["date"] == "2026-02-19"
+        assert fixtures[0]["date"] == "2026-02-19T00:00Z"
 
     @patch("pipeline.fetch_ncaam.time.sleep")
     @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "Kansas Jayhawks": "Kansas", "UConn Huskies": "UConn"})
@@ -371,3 +376,135 @@ class TestFetchNcaamSchedule:
 
         fetch_ncaam_schedule()
         assert mock_get.call_count == 8
+
+
+# ---------------------------------------------------------------------------
+# TestFetchNcaamGamesCache
+# ---------------------------------------------------------------------------
+
+
+class TestFetchNcaamGamesCache:
+    @patch("pipeline.fetch_ncaam.time.sleep")
+    @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "North Carolina Tar Heels": "North Carolina"})
+    @patch("pipeline.fetch_ncaam.requests.get")
+    def test_skips_box_score_for_cached_game(self, mock_get, mock_sleep, tmp_path):
+        """Game already in cache with box_scores → summary endpoint NOT called."""
+        cache_path = str(tmp_path / "espn_cache.json")
+        existing_cache = {
+            "games": {
+                "401825518": {
+                    "date": "2026-02-15",
+                    "home_team": "Duke",
+                    "away_team": "North Carolina",
+                    "home_goals": 75,
+                    "away_goals": 70,
+                    "box_scores": [
+                        {
+                            "team": "Duke",
+                            "pts": 75, "fgm": 28, "fga": 58, "fg3m": 8, "fg3a": 20,
+                            "ftm": 11, "fta": 14, "orb": 8, "drb": 27, "to": 10,
+                            "possessions": 66.16,
+                        },
+                        {
+                            "team": "North Carolina",
+                            "pts": 70, "fgm": 25, "fga": 55, "fg3m": 6, "fg3a": 18,
+                            "ftm": 14, "fta": 18, "orb": 9, "drb": 30, "to": 12,
+                            "possessions": 63.92,
+                        },
+                    ],
+                }
+            }
+        }
+        with open(cache_path, "w") as f:
+            json.dump(existing_cache, f)
+
+        # Scoreboard returns the same game that is already cached
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                _make_espn_event("401825518", "Duke Blue Devils", "North Carolina Tar Heels", 75, 70),
+            ]
+        }
+        scoreboard_resp.raise_for_status = MagicMock()
+
+        # Only one HTTP request should be made (the scoreboard); no summary call
+        mock_get.side_effect = [scoreboard_resp]
+
+        games_df, box_df = fetch_ncaam_games(
+            season=2025, dates=["2026-02-15"], cache_path=cache_path
+        )
+
+        assert mock_get.call_count == 1
+        assert len(games_df) == 1
+        assert len(box_df) == 2
+
+    @patch("pipeline.fetch_ncaam.time.sleep")
+    @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "North Carolina Tar Heels": "North Carolina"})
+    @patch("pipeline.fetch_ncaam.requests.get")
+    def test_cache_written_after_fetch(self, mock_get, mock_sleep, tmp_path):
+        """Cache file is created after fetching a new game."""
+        cache_path = str(tmp_path / "espn_cache.json")
+
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                _make_espn_event("401825518", "Duke Blue Devils", "North Carolina Tar Heels", 75, 70),
+            ]
+        }
+        scoreboard_resp.raise_for_status = MagicMock()
+
+        summary_resp = MagicMock()
+        summary_resp.json.return_value = _make_summary_response(
+            SAMPLE_TOTALS, SAMPLE_TOTALS,
+            home_name="Duke Blue Devils", away_name="North Carolina Tar Heels",
+        )
+        summary_resp.raise_for_status = MagicMock()
+
+        mock_get.side_effect = [scoreboard_resp, summary_resp]
+
+        fetch_ncaam_games(season=2025, dates=["2026-02-15"], cache_path=cache_path)
+
+        assert os.path.exists(cache_path)
+        with open(cache_path) as f:
+            cache = json.load(f)
+        assert "401825518" in cache["games"]
+        assert cache["games"]["401825518"]["home_team"] == "Duke"
+        assert len(cache["games"]["401825518"]["box_scores"]) == 2
+
+    @patch("pipeline.fetch_ncaam.time.sleep")
+    @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "North Carolina Tar Heels": "North Carolina"})
+    @patch("pipeline.fetch_ncaam.requests.get")
+    def test_only_recent_dates_fetched_when_cache_has_data(self, mock_get, mock_sleep, tmp_path):
+        """When cache has max date 2026-02-18, only dates >= 2026-02-16 are fetched."""
+        cache_path = str(tmp_path / "espn_cache.json")
+        existing_cache = {
+            "games": {
+                "999": {
+                    "date": "2026-02-18",
+                    "home_team": "Duke",
+                    "away_team": "North Carolina",
+                    "home_goals": 80,
+                    "away_goals": 75,
+                    "box_scores": [],
+                }
+            }
+        }
+        with open(cache_path, "w") as f:
+            json.dump(existing_cache, f)
+
+        all_dates = [
+            "2026-02-14", "2026-02-15", "2026-02-16", "2026-02-17",
+            "2026-02-18", "2026-02-19", "2026-02-20",
+        ]
+
+        empty_resp = MagicMock()
+        empty_resp.json.return_value = {"events": []}
+        empty_resp.raise_for_status = MagicMock()
+
+        # 5 dates from 2026-02-16 onward → 5 scoreboard requests
+        mock_get.side_effect = [empty_resp] * 5
+
+        fetch_ncaam_games(season=2025, dates=all_dates, cache_path=cache_path)
+
+        # Only 5 scoreboard requests (2026-02-16 through 2026-02-20)
+        assert mock_get.call_count == 5
