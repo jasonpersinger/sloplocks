@@ -13,6 +13,7 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 from pathlib import Path
 
 import requests
@@ -112,8 +113,7 @@ def _sotd_embed(sotd: dict) -> dict | None:
 
 def build_payload() -> dict:
     embeds = []
-    # Header always shows today's US Eastern date (UTC-5 in winter, UTC-4 in summer)
-    et_now = datetime.now(timezone.utc) - timedelta(hours=5)
+    et_now = datetime.now(ZoneInfo("America/New_York"))
     header_date = et_now.strftime("%b %d, %Y")
 
     # --- SLOP OF THE DAY ---

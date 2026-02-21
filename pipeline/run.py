@@ -316,6 +316,7 @@ def _compute_best_candidate(prediction_records, outcomes):
                 "decimal_odds": e["decimal_odds"],
                 "individual_models": rec.get("individual_models", {}),
             })
+        game_candidates = [c for c in game_candidates if c["edge"] >= 0]
         if not game_candidates:
             continue
         top = max(game_candidates, key=lambda x: x["model_prob"])
