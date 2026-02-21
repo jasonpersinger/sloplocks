@@ -1759,7 +1759,8 @@
          HELPERS
          ----------------------------------- */
       function formatDate(isoStr) {
-        var d = new Date(isoStr);
+        var parts = isoStr.slice(0, 10).split('-');
+        var d = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
         var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         return days[d.getDay()] + ' ' + months[d.getMonth()] + ' ' + d.getDate();

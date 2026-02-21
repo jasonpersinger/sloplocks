@@ -63,6 +63,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
                 "individual_models": m.get("individual_models", {}),
                 "blurb": "",
             })
+        game_candidates = [c for c in game_candidates if c["edge"] >= 0]
         if not game_candidates:
             continue
         best = max(game_candidates, key=lambda x: x["model_prob"])
