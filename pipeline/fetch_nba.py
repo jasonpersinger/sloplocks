@@ -428,40 +428,46 @@ def fetch_nba_espn_games(
 
 
 def fetch_nba_espn_schedule() -> list[dict]:
-    """Fetch upcoming NBA games (today + next 7 days) via ESPN API."""
-    today = datetime.now(timezone.utc).date()
+    """Fetch today's NBA games via ESPN API.
+
+    Uses the ESPN scoreboard for today's date in US Eastern Time (UTC-5/UTC-4).
+    Stores the game date as the local scoreboard date, not the raw UTC event
+    timestamp (which shifts late-night games to the following UTC day).
+    """
+    # Derive today's date in US Eastern Time so late-night games (e.g. 9pm ET =
+    # 2am UTC next day) are attributed to the correct local game date.
+    et_offset = timedelta(hours=5)  # UTC-5; close enough for schedule purposes
+    today_et = (datetime.now(timezone.utc) - et_offset).date()
+    game_date_str = today_et.strftime("%Y-%m-%d")
+    espn_date = today_et.strftime("%Y%m%d")
+
+    url = f"{NBA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=50"
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+
     fixtures = []
+    for event in data.get("events", []):
+        comp = event["competitions"][0]
+        status_type = comp.get("status", {}).get("type", {})
+        if status_type.get("completed", False):
+            continue
 
-    for day_offset in range(8):
-        date = today + timedelta(days=day_offset)
-        espn_date = date.strftime("%Y%m%d")
-        url = f"{NBA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=50"
-        resp = requests.get(url, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
+        home = away = None
+        for competitor in comp["competitors"]:
+            if competitor["homeAway"] == "home":
+                home = competitor
+            else:
+                away = competitor
 
-        for event in data.get("events", []):
-            comp = event["competitions"][0]
-            status_type = comp.get("status", {}).get("type", {})
-            if status_type.get("completed", False):
-                continue
+        if home is None or away is None:
+            continue
 
-            home = away = None
-            for competitor in comp["competitors"]:
-                if competitor["homeAway"] == "home":
-                    home = competitor
-                else:
-                    away = competitor
-
-            if home is None or away is None:
-                continue
-
-            fixtures.append({
-                "home_team": normalize_nba_team_name(home["team"]["displayName"]),
-                "away_team": normalize_nba_team_name(away["team"]["displayName"]),
-                "date": event["date"],
-            })
-
-        time.sleep(_ESPN_REQUEST_DELAY)
+        fixtures.append({
+            "home_team": normalize_nba_team_name(home["team"]["displayName"]),
+            "away_team": normalize_nba_team_name(away["team"]["displayName"]),
+            # Use the local scoreboard date, not event["date"] (UTC timestamp)
+            "date": game_date_str,
+        })
 
     return fixtures

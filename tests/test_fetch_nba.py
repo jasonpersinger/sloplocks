@@ -301,7 +301,9 @@ class TestFetchNbaEspnSchedule:
         assert len(fixtures) >= 1
         assert fixtures[0]["home_team"] == "Lakers"
         assert fixtures[0]["away_team"] == "Celtics"
-        assert fixtures[0]["date"] == "2026-02-19T00:00Z"
+        # Date is now stored as the queried ET date (YYYY-MM-DD), not the raw UTC event timestamp
+        import re
+        assert re.match(r"\d{4}-\d{2}-\d{2}$", fixtures[0]["date"])
 
     @patch("pipeline.fetch_nba.requests.get")
     def test_excludes_completed_games(self, mock_get):

@@ -619,7 +619,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     # ------------------------------------------------------------------
     # 5. Predict each fixture
+    # Only generate predictions for games scheduled today (UTC date).
+    # This prevents future-day games from appearing in today's Slop Locks.
     # ------------------------------------------------------------------
+    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] == today_str]
+
     prediction_records = []
 
     for fix in fixtures:

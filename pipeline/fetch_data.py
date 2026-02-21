@@ -1,5 +1,6 @@
 """Fetch EPL match data from football-data.org and odds from The Odds API."""
 
+from datetime import datetime, timezone
 import requests
 import pandas as pd
 
@@ -100,13 +101,17 @@ def fetch_epl_matches() -> pd.DataFrame:
 
 
 def fetch_epl_fixtures() -> list[dict]:
-    """Fetch scheduled (upcoming) EPL fixtures.
+    """Fetch today's scheduled EPL fixtures.
+
+    EPL games kick off in UK time (12:30–20:00 UTC on match days), so UTC
+    date is the correct reference — no timezone shift needed.
 
     Returns a list of dicts with keys: home_team, away_team, date, matchday.
     """
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     url = f"{FOOTBALL_DATA_BASE}/competitions/{EPL_COMPETITION_ID}/matches"
     headers = {"X-Auth-Token": FOOTBALL_DATA_API_KEY}
-    params = {"status": "SCHEDULED"}
+    params = {"status": "SCHEDULED", "dateFrom": today, "dateTo": today}
 
     resp = requests.get(url, headers=headers, params=params, timeout=30)
     resp.raise_for_status()

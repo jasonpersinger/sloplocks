@@ -3,10 +3,12 @@
 import json
 import os
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch, MagicMock
 import pandas as pd
 from pipeline.run import run_pipeline, run_sport_pipeline
+
+_TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 # ---------------------------------------------------------------------------
@@ -75,7 +77,7 @@ class TestRunEPLPipeline:
             {
                 "home_team": "Arsenal",
                 "away_team": "Chelsea",
-                "date": "2026-02-22T15:00:00Z",
+                "date": f"{_TODAY}T15:00:00Z",
                 "matchday": 26,
             }
         ]
@@ -140,14 +142,14 @@ class TestRunNBAPipeline:
             {
                 "home_team": "Lakers",
                 "away_team": "Warriors",
-                "date": "2026-02-19",
+                "date": _TODAY,
             }
         ]
         mock_odds.return_value = [
             {
                 "home_team": "Lakers",
                 "away_team": "Warriors",
-                "commence_time": "2026-02-19T00:30:00Z",
+                "commence_time": f"{_TODAY}T00:30:00Z",
                 "home_odds": 2.10,
                 "draw_odds": 0.0,
                 "away_odds": 1.75,

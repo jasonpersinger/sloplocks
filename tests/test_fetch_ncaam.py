@@ -314,11 +314,10 @@ class TestFetchNcaamGames:
 
 
 class TestFetchNcaamSchedule:
-    @patch("pipeline.fetch_ncaam.time.sleep")
     @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "Kansas Jayhawks": "Kansas"})
     @patch("pipeline.fetch_ncaam.requests.get")
-    def test_returns_upcoming_games(self, mock_get, mock_sleep):
-        # First day has one game, remaining 7 days are empty
+    def test_returns_upcoming_games(self, mock_get):
+        # Single request for today's scoreboard
         game_resp = MagicMock()
         game_resp.json.return_value = {
             "events": [
@@ -326,12 +325,7 @@ class TestFetchNcaamSchedule:
             ]
         }
         game_resp.raise_for_status = MagicMock()
-
-        empty_resp = MagicMock()
-        empty_resp.json.return_value = {"events": []}
-        empty_resp.raise_for_status = MagicMock()
-
-        mock_get.side_effect = [game_resp] + [empty_resp] * 7
+        mock_get.return_value = game_resp
 
         fixtures = fetch_ncaam_schedule()
 
@@ -339,12 +333,13 @@ class TestFetchNcaamSchedule:
         assert len(fixtures) == 1
         assert fixtures[0]["home_team"] == "Duke"
         assert fixtures[0]["away_team"] == "Kansas"
-        assert fixtures[0]["date"] == "2026-02-19T00:00Z"
+        # Date is the queried ET date (YYYY-MM-DD), not the raw UTC event timestamp
+        import re
+        assert re.match(r"\d{4}-\d{2}-\d{2}$", fixtures[0]["date"])
 
-    @patch("pipeline.fetch_ncaam.time.sleep")
     @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "Kansas Jayhawks": "Kansas", "UConn Huskies": "UConn"})
     @patch("pipeline.fetch_ncaam.requests.get")
-    def test_excludes_final_games(self, mock_get, mock_sleep):
+    def test_excludes_final_games(self, mock_get):
         mixed_resp = MagicMock()
         mixed_resp.json.return_value = {
             "events": [
@@ -353,29 +348,23 @@ class TestFetchNcaamSchedule:
             ]
         }
         mixed_resp.raise_for_status = MagicMock()
-
-        empty_resp = MagicMock()
-        empty_resp.json.return_value = {"events": []}
-        empty_resp.raise_for_status = MagicMock()
-
-        mock_get.side_effect = [mixed_resp] + [empty_resp] * 7
+        mock_get.return_value = mixed_resp
 
         fixtures = fetch_ncaam_schedule()
         assert len(fixtures) == 1
         assert fixtures[0]["home_team"] == "Kansas"
 
-    @patch("pipeline.fetch_ncaam.time.sleep")
     @patch("pipeline.fetch_ncaam._team_map", {})
     @patch("pipeline.fetch_ncaam.requests.get")
-    def test_fetches_multiple_days(self, mock_get, mock_sleep):
-        """Should make 8 requests (today + 7 days)."""
+    def test_fetches_only_today(self, mock_get):
+        """Should make exactly 1 request (today's scoreboard only)."""
         mock_resp = MagicMock()
         mock_resp.json.return_value = {"events": []}
         mock_resp.raise_for_status = MagicMock()
         mock_get.return_value = mock_resp
 
         fetch_ncaam_schedule()
-        assert mock_get.call_count == 8
+        assert mock_get.call_count == 1
 
 
 # ---------------------------------------------------------------------------
