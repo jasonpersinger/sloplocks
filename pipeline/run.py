@@ -18,6 +18,7 @@ from pipeline.config import (
     NBA_B2B_PENALTY,
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
+    SLOP_LOCK_FALLBACK_MIN_ODDS,
     SPORTS,
 )
 from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
@@ -272,7 +273,7 @@ def _compute_slop_locks(prediction_records, outcomes):
         best = max(game_candidates, key=lambda x: x["model_prob"])
         if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
             in_window.append(best)
-        else:
+        elif best["american_odds"] >= SLOP_LOCK_FALLBACK_MIN_ODDS:
             outside_window.append(best)
 
     in_window.sort(key=lambda x: x["model_prob"], reverse=True)
@@ -317,6 +318,8 @@ def _compute_best_candidate(prediction_records, outcomes):
         if not game_candidates:
             continue
         top = max(game_candidates, key=lambda x: x["model_prob"])
+        if top["american_odds"] < SLOP_LOCK_FALLBACK_MIN_ODDS:
+            continue
         if best is None or top["model_prob"] > best["model_prob"]:
             best = top
     return best

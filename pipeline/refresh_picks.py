@@ -13,7 +13,7 @@ import json
 import sys
 from pathlib import Path
 
-from pipeline.config import SLOP_LOCK_MIN_ODDS, SLOP_LOCK_MAX_ODDS, SPORTS
+from pipeline.config import SLOP_LOCK_MIN_ODDS, SLOP_LOCK_MAX_ODDS, SLOP_LOCK_FALLBACK_MIN_ODDS, SPORTS
 from pipeline.ensemble import compute_edges, decimal_to_american
 from pipeline.fetch_data import fetch_odds, normalize_team_name
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
@@ -68,7 +68,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
         best = max(game_candidates, key=lambda x: x["model_prob"])
         if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
             in_window.append(best)
-        else:
+        elif best["american_odds"] >= SLOP_LOCK_FALLBACK_MIN_ODDS:
             outside_window.append(best)
 
     in_window.sort(key=lambda x: x["model_prob"], reverse=True)
