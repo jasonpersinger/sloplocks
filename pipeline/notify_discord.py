@@ -1,8 +1,7 @@
 """Post daily SLOP LOCKS to a Discord webhook.
 
 Reads the current data files and sends one Discord message with:
-  - SLOP OF THE DAY embed (gold, highlighted)
-  - One embed per sport with locks (slime green)
+  - Top 5 SLOP LOCKS embed (slime green)
 
 Usage:
     python -m pipeline.notify_discord            # reads from data/
@@ -22,9 +21,8 @@ DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
 
 # Discord embed colors (decimal representation of hex)
 COLOR_SLIME = 0x39FF14   # #39FF14 — slime green
-COLOR_GOLD  = 0xFFD60A   # #FFD60A — yellow
 
-SPORT_EMOJIS = {"nba": "🏀", "ncaam": "🎓", "epl": "⚽"}
+SPORT_EMOJIS = {"nba": "🏀", "ncaam": "🎓"}
 PICK_LABELS  = {"draw": "DRAW"}
 DATA_DIR = Path("data")
 
@@ -83,51 +81,14 @@ def _lock_field(lock: dict, sport_key: str) -> dict:
     return {"name": name, "value": value[:1024], "inline": False}
 
 
-def _sotd_embed(sotd: dict) -> dict | None:
-    """Build the SLOP OF THE DAY embed, or None if no pick."""
-    pick = sotd.get("pick")
-    if not pick:
-        return None
-
-    sport_key  = sotd.get("sport", "")
-    sport_name = sotd.get("sport_name", sport_key.upper())
-    emoji      = SPORT_EMOJIS.get(sport_key, "⭐")
-    pick_team = _pick_team(pick)
-
-    description = (
-        f"{emoji}  **{pick['home_team']} vs {pick['away_team']}**  ·  {_display_date(pick.get('date',''), sport_key)}\n"
-        f"**{pick_team}**  ·  {_fmt_odds(pick['american_odds'])}"
-        f"  ·  {_fmt_pct(pick['model_prob'])} conf"
-        f"  ·  {pick['edge'] * 100:+.1f}% edge"
-    )
-    if pick.get("blurb"):
-        description += f"\n> {pick['blurb']}"
-
-    return {
-        "title": "⭐  SLOP OF THE DAY",
-        "description": description[:4096],
-        "color": COLOR_GOLD,
-        "footer": {"text": f"Most confident pick across all sports  ·  {sport_name}"},
-    }
-
-
 def build_payload() -> dict:
     embeds = []
     et_now = datetime.now(ZoneInfo("America/New_York"))
     header_date = et_now.strftime("%b %d, %Y")
 
-    # --- SLOP OF THE DAY ---
-    sotd_path = DATA_DIR / "sotd.json"
-    if sotd_path.exists():
-        with open(sotd_path) as f:
-            sotd = json.load(f)
-        sotd_embed = _sotd_embed(sotd)
-        if sotd_embed:
-            embeds.append(sotd_embed)
-
     # --- Collect all locks across every sport, pick top 5 by confidence ---
     all_locks: list[tuple[str, dict]] = []  # (sport_key, lock)
-    for sport_key in ("nba", "ncaam", "epl"):
+    for sport_key in ("nba", "ncaam"):
         pred_path = DATA_DIR / sport_key / "predictions.json"
         if not pred_path.exists():
             continue
@@ -163,7 +124,7 @@ def main() -> None:
     payload = build_payload()
 
     if not payload["embeds"]:
-        print("No locks or SOTD to notify about today")
+        print("No locks to notify about today")
         sys.exit(0)
 
     resp = requests.post(

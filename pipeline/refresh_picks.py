@@ -6,7 +6,7 @@ seconds — no historical data fetch, no model fitting.
 
 Usage:
     python -m pipeline.refresh_picks            # all sports
-    python -m pipeline.refresh_picks nba epl    # specific sports
+    python -m pipeline.refresh_picks nba ncaam  # specific sports
 """
 
 import json
@@ -15,13 +15,12 @@ from pathlib import Path
 
 from pipeline.config import SLOP_LOCK_MIN_ODDS, SLOP_LOCK_MAX_ODDS, SLOP_LOCK_FALLBACK_MIN_ODDS, SPORTS
 from pipeline.ensemble import compute_edges, decimal_to_american
-from pipeline.fetch_data import fetch_odds, normalize_team_name
+from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
-from pipeline.run import _compute_best_candidate, compute_sotd, _exclude_opponent_conflicts
+from pipeline.run import _exclude_opponent_conflicts
 
 _NORMALIZERS = {
-    "epl": normalize_team_name,
     "nba": normalize_nba_team_name,
     "ncaam": normalize_ncaam_team_name,
 }
@@ -80,11 +79,10 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     return _exclude_opponent_conflicts(result)
 
 
-def refresh_sport(sport_key: str) -> dict | None:
+def refresh_sport(sport_key: str) -> None:
     """Refresh odds and slop locks for one sport.
 
-    Returns a dict with ``best_candidate`` and ``sport_name`` keys for SOTD
-    computation, or None if predictions.json doesn't exist for this sport.
+    Returns None if predictions.json doesn't exist for this sport.
     """
     sport = SPORTS[sport_key]
     data_path = Path(f"data/{sport_key}/predictions.json")
@@ -124,7 +122,6 @@ def refresh_sport(sport_key: str) -> dict | None:
 
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
     slop_locks = _recompute_slop_locks(matches, outcomes)
-    best_candidate = _compute_best_candidate(matches, outcomes)
     in_window = sum(
         1 for s in slop_locks
         if SLOP_LOCK_MIN_ODDS <= s["american_odds"] <= SLOP_LOCK_MAX_ODDS
@@ -142,21 +139,12 @@ def refresh_sport(sport_key: str) -> dict | None:
         f"{len(slop_locks)} locks ({in_window} in window, {fallback} fallback)"
     )
 
-    return {
-        "best_candidate": best_candidate,
-        "sport_name": sport["display_name"],
-    }
-
 
 def main() -> None:
     sports = sys.argv[1:] if len(sys.argv) > 1 else list(SPORTS.keys())
     print(f"Refreshing picks for: {', '.join(sports)}")
-    sport_candidates: dict[str, dict] = {}
     for sport_key in sports:
-        result = refresh_sport(sport_key)
-        if result and result.get("best_candidate"):
-            sport_candidates[sport_key] = result
-    compute_sotd(sport_candidates, "data")
+        refresh_sport(sport_key)
     print("Done.")
 
 

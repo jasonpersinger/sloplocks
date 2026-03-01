@@ -3,22 +3,12 @@
 import os
 
 # API Keys (from environment / GitHub Secrets)
-FOOTBALL_DATA_API_KEY = os.environ.get("FOOTBALL_DATA_API_KEY", "")
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
 BALLDONTLIE_API_KEY = os.environ.get("BALLDONTLIE_API_KEY", "")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
-# football-data.org
-FOOTBALL_DATA_BASE = "https://api.football-data.org/v4"
-EPL_COMPETITION_ID = "PL"
-
-# Understat
-UNDERSTAT_BASE = "https://understat.com"
-CURRENT_SEASON = "2025"  # Understat uses start year of season
-
 # The Odds API
 ODDS_API_BASE = "https://api.the-odds-api.com/v4"
-ODDS_SPORT = "soccer_epl"
 ODDS_REGIONS = "us"
 ODDS_MARKETS = "h2h"
 
@@ -53,16 +43,6 @@ ACCURACY_PATH = os.path.join(DATA_DIR, "model_accuracy.json")
 
 # Per-sport configuration
 SPORTS = {
-    "epl": {
-        "name": "EPL",
-        "display_name": "Premier League",
-        "odds_sport": "soccer_epl",
-        "outcomes": ["home", "draw", "away"],
-        "models": ["dixon_coles", "xg", "elo"],
-        "elo_k_factor": 20,
-        "elo_home_advantage": 65,
-        "data_dir": os.path.join(DATA_DIR, "epl"),
-    },
     "nba": {
         "name": "NBA",
         "display_name": "NBA",

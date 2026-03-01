@@ -4,7 +4,6 @@
 Multi-sport prediction engine with ensemble models and automated betting edge detection. Live at https://sloplocks.lol.
 
 ## Supported Sports
-- **EPL** (Premier League) — 3-way outcomes (home/draw/away), Dixon-Coles + xG + Elo ensemble
 - **NBA** — 2-way outcomes (home/away), Elo + AdjustedEfficiency + FourFactors ensemble with B2B rest adjustment
 
 ## Tech Stack
@@ -22,7 +21,7 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 
 ## Sport Config System
 `pipeline/config.py` contains a `SPORTS` dict with per-sport configuration:
-- `outcomes` — `["home", "draw", "away"]` (EPL) or `["home", "away"]` (NBA)
+- `outcomes` — `["home", "away"]` (all current sports)
 - `models` — which models to run per sport
 - `elo_k_factor`, `elo_home_advantage` — sport-specific Elo tuning
 - `odds_sport` — The Odds API sport key
@@ -30,21 +29,14 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 
 ## The Ensemble
 
-### EPL (3 models, softmax-weighted by rolling accuracy)
-1. **Dixon-Coles** — Attack/defense parameters from actual goals, time-decay, low-score correction (rho)
-2. **xG-adjusted Dixon-Coles** — Same model using expected goals from Understat
-3. **Elo ratings** — Dynamic power ratings with 65-point home advantage, goal-diff multiplier
-
-### NBA (3 models, softmax-weighted by rolling accuracy)
-1. **Elo ratings** — Dynamic power ratings with 65-point home advantage, K=20, B2B rest penalty
+### NBA / NCAAM (3 models, softmax-weighted by rolling accuracy)
+1. **Elo ratings** — Dynamic power ratings with 65-point home advantage, K=20, B2B rest penalty (NBA)
 2. **AdjustedEfficiency** — Offensive/defensive efficiency ratings (points per 100 possessions) adjusted for schedule strength
 3. **FourFactors** — Dean Oliver's four factors model (eFG%, TOV%, ORB%, FT rate)
 
 ## Data Sources
-- football-data.org (EPL results, fixtures) — API key in `FOOTBALL_DATA_API_KEY`
-- Understat (EPL xG) — scraped, no key needed
 - The Odds API (bookmaker odds, all sports) — API key in `ODDS_API_KEY`
-- ESPN API (NBA results, schedule) — no key needed (same as NCAAM)
+- ESPN API (NBA/NCAAM results, schedule) — no key needed
 
 ## Commands
 - Run pipeline: `python -m pipeline.run`
@@ -55,33 +47,32 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 ## File Structure
 ```
 sloplocks/
-├── index.html              ← Frontend (single file, ~2200 lines)
+├── index.html              ← Frontend (single file)
 ├── manifest.json           ← PWA manifest
 ├── sw.js                   ← Service worker
 ├── data/                   ← Generated daily by pipeline
 │   ├── manifest.json       ← Sport status/availability
-│   ├── epl/
+│   ├── nba/
 │   │   ├── predictions.json
 │   │   ├── history.json
 │   │   └── model_accuracy.json
-│   └── nba/
+│   └── ncaam/
 │       ├── predictions.json
 │       ├── history.json
 │       └── model_accuracy.json
 ├── pipeline/
 │   ├── config.py           ← Central config, API keys, SPORTS dict
-│   ├── fetch_data.py       ← football-data.org + Odds API clients
+│   ├── fetch_data.py       ← Odds API client
 │   ├── fetch_nba.py        ← ESPN NBA client (games, schedule, box scores)
-│   ├── fetch_xg.py         ← Understat xG scraper
-│   ├── models.py           ← Dixon-Coles + Elo (2-way and 3-way)
+│   ├── fetch_ncaam.py      ← ESPN NCAAM client
+│   ├── models.py           ← Elo + Efficiency + FourFactors models
 │   ├── ensemble.py         ← Blending + edge detection (generic)
 │   ├── backtest.py         ← Accuracy tracking + ROI
 │   └── run.py              ← Pipeline orchestrator (multi-sport)
 ├── tests/
-│   ├── conftest.py         ← Shared fixtures (EPL sample matches)
+│   ├── conftest.py         ← Shared fixtures
 │   ├── test_fetch_data.py
 │   ├── test_fetch_nba.py
-│   ├── test_fetch_xg.py
 │   ├── test_models.py
 │   ├── test_ensemble.py
 │   ├── test_backtest.py
@@ -101,13 +92,10 @@ sloplocks/
 - Negative edge: #FF2D95
 
 ## Model Parameters (config.py)
-- TIME_DECAY_RATE = 0.005
-- FORM_WINDOW = 6
 - ELO_K_FACTOR = 20 (both sports)
-- ELO_HOME_ADVANTAGE = 65 (EPL and NBA)
+- ELO_HOME_ADVANTAGE = 65 (both sports)
 - NBA_B2B_PENALTY = 30 (Elo points deducted for back-to-back games)
 - VALUE_EDGE_THRESHOLD = 0.05 (5% edge = value bet)
-- MAX_GOALS = 6 (scoreline matrix size, EPL only)
 - ENSEMBLE_ACCURACY_WINDOW = 10 (rolling window for model weights)
 
 ## Deployment

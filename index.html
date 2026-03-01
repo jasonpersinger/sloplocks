@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SLOP LOCKS — Sports Predictions</title>
-  <meta name="description" content="Big Slime's sports predictions. Ensemble model with betting edge detection. EPL &amp; NBA picks daily.">
+  <meta name="description" content="Big Slime's sports predictions. Ensemble model with betting edge detection. NBA &amp; NCAAM picks daily.">
   <meta name="theme-color" content="#39FF14">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -648,152 +648,6 @@
       font-family: var(--font-mono);
       font-size: 0.75rem;
       color: var(--text-muted);
-    }
-
-    /* ========================================
-       SLOP OF THE DAY
-       ======================================== */
-    .sotd-hero {
-      text-align: center;
-      padding: 1.5rem 0 1rem;
-    }
-
-    .sotd-hero-title {
-      font-family: var(--font-heading);
-      font-weight: 900;
-      font-size: 1.4rem;
-      letter-spacing: 0.12em;
-      color: var(--slime);
-      text-shadow: 0 0 20px var(--slime-glow);
-      margin-bottom: 0.25rem;
-      text-transform: uppercase;
-    }
-
-    .sotd-hero-sub {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-    }
-
-    .sotd-card {
-      background: var(--panel);
-      border: 2px solid var(--slime);
-      border-radius: 10px;
-      padding: 2rem 1.75rem;
-      max-width: 520px;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-      animation: slideUp 0.4s ease both;
-    }
-
-    .sotd-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, var(--slime), transparent);
-      box-shadow: 0 0 20px var(--slime-glow);
-    }
-
-    .sotd-sport-badge {
-      display: inline-block;
-      font-family: var(--font-heading);
-      font-size: 0.6rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--black);
-      background: var(--slime);
-      padding: 0.2em 0.7em;
-      border-radius: 3px;
-      margin-bottom: 1rem;
-    }
-
-    .sotd-match {
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 1.15rem;
-      letter-spacing: 0.04em;
-      color: var(--text);
-      text-transform: uppercase;
-      margin-bottom: 0.4rem;
-    }
-
-    .sotd-date {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 1.25rem;
-    }
-
-    .sotd-pick-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .sotd-pick {
-      font-family: var(--font-heading);
-      font-size: 1.6rem;
-      font-weight: 900;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-    }
-
-    .sotd-pick.pick-home { color: var(--blue); }
-    .sotd-pick.pick-draw { color: var(--yellow); }
-    .sotd-pick.pick-away { color: var(--pink); }
-
-    .sotd-odds {
-      font-family: var(--font-mono);
-      font-size: 1.6rem;
-      font-weight: 600;
-      color: var(--text-dim);
-    }
-
-    .sotd-stats {
-      display: flex;
-      gap: 2.5rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .sotd-stat-label {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 0.2rem;
-    }
-
-    .sotd-stat-value {
-      font-family: var(--font-mono);
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    .sotd-stat-value.slime {
-      color: var(--slime);
-      text-shadow: 0 0 8px var(--slime-glow);
-    }
-
-    .sotd-blurb {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--text-dim);
-      line-height: 1.65;
-      border-top: 1px solid var(--border);
-      padding-top: 1rem;
-      margin-top: 0.25rem;
     }
 
     /* ========================================
@@ -1518,7 +1372,6 @@
       <div class="sport-toggle" id="sport-toggle">
         <button class="sport-pill" data-sport="nba">NBA</button>
         <button class="sport-pill" data-sport="ncaam">NCAAM</button>
-        <button class="sport-pill" data-sport="epl">EPL</button>
       </div>
       <div class="header-meta">
         <span><span class="pulse-dot"></span> LIVE MODEL</span>
@@ -1534,7 +1387,6 @@
     <nav class="nav-tabs" role="tablist">
       <button class="nav-tab active" data-tab="locks" role="tab" aria-selected="true">SLOP LOCKS</button>
       <button class="nav-tab" data-tab="longslops" role="tab" aria-selected="false">LONGSLOPS</button>
-      <button class="nav-tab" data-tab="sotd" role="tab" aria-selected="false">SLOP OF THE DAY</button>
       <button class="nav-tab" data-tab="matches" role="tab" aria-selected="false">MATCHES</button>
       <button class="nav-tab" data-tab="stats" role="tab" aria-selected="false">STATS</button>
       <button class="nav-tab" data-tab="models" role="tab" aria-selected="false">METHODOLOGY</button>
@@ -1561,15 +1413,6 @@
         <h2 class="longslop-hero-title">LONGSLOP OF THE DAY</h2>
       </div>
       <div id="longslop-container"></div>
-    </div>
-
-    <!-- ============ SLOP OF THE DAY TAB ============ -->
-    <div id="tab-sotd" class="tab-panel">
-      <div class="sotd-hero">
-        <h2 class="sotd-hero-title">SLOP OF THE DAY</h2>
-        <p class="sotd-hero-sub">Single most confident pick &bull; All sports</p>
-      </div>
-      <div id="sotd-container"></div>
     </div>
 
     <!-- ============ MATCHES TAB ============ -->
@@ -1683,7 +1526,6 @@
       var loadingState = $('#loading-state');
       var locksGrid = $('#locks-grid');
       var longslopContainer = $('#longslop-container');
-      var sotdContainer = $('#sotd-container');
       var sportToggle = $('#sport-toggle');
       var matchesGrid = $('#matches-grid');
       var matchCount = $('#match-count');
@@ -1720,12 +1562,6 @@
           var target = tab.getAttribute('data-tab');
           $('#tab-' + target).classList.add('active');
 
-          if (target === 'sotd') {
-            sportToggle.style.display = 'none';
-            loadSotd();
-          } else {
-            sportToggle.style.display = '';
-          }
         });
       });
 
@@ -2105,9 +1941,9 @@
         breakdownDiv.appendChild(mHeader);
 
         var modelNames = {
-          'dixon_coles': 'Dixon-Coles',
-          'xg': 'xG Model',
-          'elo': 'Elo Rating'
+          'elo': 'Elo Rating',
+          'efficiency': 'Adj. Efficiency',
+          'four_factors': 'Four Factors'
         };
 
         var modelKeys = Object.keys(models);
@@ -2143,88 +1979,6 @@
 
         card.appendChild(breakdownDiv);
         return card;
-      }
-
-      /* -----------------------------------
-         SLOP OF THE DAY
-         ----------------------------------- */
-      function loadSotd() {
-        loadingState.style.display = '';
-        $$('.tab-panel').forEach(function (p) { p.style.visibility = 'hidden'; });
-
-        fetch('data/sotd.json')
-          .then(function (res) {
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            return res.json();
-          })
-          .then(function (data) {
-            loadingState.style.display = 'none';
-            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
-            renderSotd(data);
-          })
-          .catch(function () {
-            loadingState.style.display = 'none';
-            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
-            renderSotd(null);
-          });
-      }
-
-      function renderSotd(data) {
-        sotdContainer.textContent = '';
-
-        if (!data || !data.pick) {
-          var empty = createEl('div', 'longslop-empty');
-          empty.appendChild(createEl('h3', null, 'NO PICK AVAILABLE'));
-          empty.appendChild(createEl('p', null, 'Pipeline hasn\'t run yet or no odds available.'));
-          sotdContainer.appendChild(empty);
-          return;
-        }
-
-        var pick = data.pick;
-        var card = createEl('div', 'sotd-card');
-
-        /* Sport badge */
-        if (data.sport_name) {
-          card.appendChild(createEl('div', 'sotd-sport-badge', data.sport_name));
-        }
-
-        /* Match */
-        card.appendChild(createEl('div', 'sotd-match', pick.home_team + ' vs ' + pick.away_team));
-
-        /* Date */
-        var sotdDateText = formatDate(pick.date);
-        var sotdTime = formatTime(pick.date);
-        if (sotdTime) sotdDateText += ' \u00B7 ' + sotdTime;
-        card.appendChild(createEl('div', 'sotd-date', sotdDateText));
-
-        /* Pick + odds row */
-        var pickRow = createEl('div', 'sotd-pick-row');
-        pickRow.appendChild(createEl('span', 'sotd-pick pick-' + pick.pick, getPickLabel(pick)));
-        pickRow.appendChild(createEl('span', 'sotd-odds', formatOdds(pick.american_odds)));
-        card.appendChild(pickRow);
-
-        /* Stats */
-        var stats = createEl('div', 'sotd-stats');
-
-        var confBlock = createEl('div');
-        confBlock.appendChild(createEl('div', 'sotd-stat-label', 'CONFIDENCE'));
-        confBlock.appendChild(createEl('div', 'sotd-stat-value slime', formatPctDecimal(pick.model_prob)));
-        stats.appendChild(confBlock);
-
-        var edgeBlock = createEl('div');
-        edgeBlock.appendChild(createEl('div', 'sotd-stat-label', 'EDGE'));
-        var edgePct = (pick.edge * 100).toFixed(1);
-        edgeBlock.appendChild(createEl('div', 'sotd-stat-value slime', '+' + edgePct + '%'));
-        stats.appendChild(edgeBlock);
-
-        card.appendChild(stats);
-
-        /* Blurb */
-        if (pick.blurb) {
-          card.appendChild(createEl('div', 'sotd-blurb', pick.blurb));
-        }
-
-        sotdContainer.appendChild(card);
       }
 
       /* -----------------------------------
@@ -2464,9 +2218,9 @@
         weightsList.textContent = '';
 
         var names = {
-          'dixon_coles': 'Dixon-Coles',
-          'xg': 'xG Model',
-          'elo': 'Elo Rating'
+          'elo': 'Elo Rating',
+          'efficiency': 'Adj. Efficiency',
+          'four_factors': 'Four Factors'
         };
 
         var keys = Object.keys(weights);
@@ -2543,21 +2297,12 @@
         ]);
 
         /* ── The Models ── */
-        if (currentSport === 'nba') {
-          addCard('THE MODELS', [
-            'NBA predictions blend three independent models into a single ensemble:',
-            '> Elo Ratings \u2014 A dynamic power rating system updated after every game. Home court advantage is calibrated to 65 Elo points. Teams playing on consecutive days receive a \u221230 point back-to-back rest penalty to their effective rating.',
-            '> Adjusted Efficiency \u2014 Offensive and defensive efficiency ratings per 100 possessions, adjusted iteratively for opponent strength. Captures true team quality beyond win/loss record.',
-            '> Four Factors \u2014 Dean Oliver\'s four factors model: effective field goal rate, turnover rate, offensive rebounding rate, and free throw rate. Captures how teams win, filtering out unsustainable streaks.'
-          ]);
-        } else {
-          addCard('THE MODELS', [
-            'EPL predictions blend up to three independent models into a single ensemble:',
-            '> Dixon-Coles \u2014 A Poisson-based model that estimates attack and defense strength parameters for every team. It predicts the probability of every possible scoreline (0-0 through 6-6), then sums to get home/draw/away probabilities. Includes a correction factor for low-scoring matches where goals aren\'t truly independent.',
-            '> xG Model \u2014 The same Dixon-Coles framework, but fitted on expected goals (xG) from Understat instead of actual goals. This filters out lucky finishes and unlucky misses, capturing underlying performance rather than raw results.',
-            '> Elo Ratings \u2014 A dynamic power rating system updated after each match. Ratings shift based on results and margin of victory, with a 65-point home advantage baked in for the Premier League.'
-          ]);
-        }
+        addCard('THE MODELS', [
+          'Predictions blend three independent models into a single ensemble:',
+          '> Elo Ratings \u2014 A dynamic power rating system updated after every game. Home court advantage is calibrated to 65 Elo points. Teams playing on consecutive days receive a \u221230 point back-to-back rest penalty to their effective rating.',
+          '> Adjusted Efficiency \u2014 Offensive and defensive efficiency ratings per 100 possessions, adjusted iteratively for opponent strength. Captures true team quality beyond win/loss record.',
+          '> Four Factors \u2014 Dean Oliver\'s four factors model: effective field goal rate, turnover rate, offensive rebounding rate, and free throw rate. Captures how teams win, filtering out unsustainable streaks.'
+        ]);
 
         /* ── The Ensemble ── */
         addCard('ENSEMBLE BLENDING', [
@@ -2580,7 +2325,7 @@
 
         /* ── Data Sources ── */
         addCard('DATA SOURCES', [
-          'Match data and fixtures are sourced from football-data.org (EPL) and the ESPN public API (NBA). Expected goals data comes from Understat. Bookmaker odds are fetched daily from The Odds API across US-available sportsbooks.',
+          'Match data and fixtures are sourced from the ESPN public API. Bookmaker odds are fetched daily from The Odds API across US-available sportsbooks.',
           'The pipeline runs daily via GitHub Actions. Every number on this site is generated by code — no human picks, no gut feelings, no vibes.'
         ]);
       }
@@ -2594,19 +2339,10 @@
         var text1 = document.createTextNode('Data: ');
         footerDataSources.appendChild(text1);
 
-        var sources;
-        if (currentSport === 'nba') {
-          sources = [
-            { name: 'ESPN API', url: 'https://www.espn.com' },
-            { name: 'The Odds API', url: 'https://the-odds-api.com' }
-          ];
-        } else {
-          sources = [
-            { name: 'football-data.org', url: 'https://www.football-data.org' },
-            { name: 'Understat', url: 'https://understat.com' },
-            { name: 'The Odds API', url: 'https://the-odds-api.com' }
-          ];
-        }
+        var sources = [
+          { name: 'ESPN API', url: 'https://www.espn.com' },
+          { name: 'The Odds API', url: 'https://the-odds-api.com' }
+        ];
 
         for (var i = 0; i < sources.length; i++) {
           if (i > 0) {

@@ -13,7 +13,6 @@ import pandas as pd
 
 from pipeline.config import (
     ANTHROPIC_API_KEY,
-    CONGESTION_THRESHOLD_DAYS,
     DATA_DIR,
     NBA_B2B_PENALTY,
     SLOP_LOCK_MIN_ODDS,
@@ -21,20 +20,16 @@ from pipeline.config import (
     SLOP_LOCK_FALLBACK_MIN_ODDS,
     SPORTS,
 )
-from pipeline.fetch_data import fetch_epl_matches, fetch_epl_fixtures, fetch_odds, normalize_team_name
+from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
-from pipeline.fetch_xg import fetch_understat_xg
 from pipeline.models import (
     AdjustedEfficiency,
     EloRatings,
     FourFactorsModel,
-    dixon_coles_predict,
     efficiency_predict,
     elo_predict,
-    fit_dixon_coles,
     four_factors_predict,
-    scoreline_to_probabilities,
 )
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american
 from pipeline.backtest import (
@@ -79,35 +74,6 @@ def _save_json(path, data):
     with open(path, "w") as f:
         json.dump(data, f, indent=2, cls=_NumpyEncoder)
 
-
-def _check_congestion(team, fixtures, matches, threshold_days=CONGESTION_THRESHOLD_DAYS):
-    """Return True if *team* has a fixture within *threshold_days* of another."""
-    team_dates = []
-
-    for _, row in matches.iterrows():
-        if row["home_team"] == team or row["away_team"] == team:
-            dt = pd.to_datetime(row["date"])
-            if dt.tzinfo is not None:
-                dt = dt.tz_localize(None)
-            team_dates.append(dt)
-
-    for fix in fixtures:
-        if fix["home_team"] == team or fix["away_team"] == team:
-            dt = pd.to_datetime(fix["date"])
-            if dt.tzinfo is not None:
-                dt = dt.tz_localize(None)
-            team_dates.append(dt)
-
-    if len(team_dates) < 2:
-        return False
-
-    team_dates.sort()
-    for i in range(1, len(team_dates)):
-        gap = (team_dates[i] - team_dates[i - 1]).days
-        if 0 < gap <= threshold_days:
-            return True
-
-    return False
 
 
 def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) -> int | None:
@@ -315,87 +281,6 @@ def _compute_slop_locks(prediction_records, outcomes):
     return _exclude_opponent_conflicts(result)
 
 
-def _compute_best_candidate(prediction_records, outcomes):
-    """Return the single most confident pick across all games.
-
-    Considers the full candidate pool with no odds window restriction.
-    Requires odds data (edges) to exist for a game. Returns None if
-    no games have odds data.
-    """
-    best = None
-    for rec in prediction_records:
-        edges = rec.get("edges", {})
-        best_odds = rec.get("best_odds", {})
-        game_candidates = []
-        for outcome in outcomes:
-            e = edges.get(outcome)
-            if not e:
-                continue
-            american = best_odds.get(outcome, e.get("american_odds"))
-            if american is None:
-                continue
-            game_candidates.append({
-                "home_team": rec["home_team"],
-                "away_team": rec["away_team"],
-                "date": rec["date"],
-                "pick": outcome,
-                "model_prob": round(e["model_prob"], 4),
-                "implied_prob": round(e["implied_prob"], 4),
-                "edge": round(e["edge"], 4),
-                "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
-                "individual_models": rec.get("individual_models", {}),
-            })
-        game_candidates = [c for c in game_candidates if c["edge"] >= 0]
-        if not game_candidates:
-            continue
-        top = max(game_candidates, key=lambda x: x["model_prob"])
-        if top["american_odds"] < SLOP_LOCK_FALLBACK_MIN_ODDS:
-            continue
-        if best is None or top["model_prob"] > best["model_prob"]:
-            best = top
-    return best
-
-
-def compute_sotd(sport_candidates, base_dir):
-    """Write data/sotd.json with the most confident pick across all sports.
-
-    Parameters
-    ----------
-    sport_candidates : dict[str, dict]
-        Mapping of sport_key -> {"best_candidate": ..., "sport_name": str}.
-        best_candidate may be None if no odds are available for that sport.
-    base_dir : str
-        Root data directory.
-    """
-    overall_best = None
-    best_sport = None
-    for sport_key, info in sport_candidates.items():
-        candidate = info.get("best_candidate")
-        if candidate is None:
-            continue
-        if overall_best is None or candidate["model_prob"] > overall_best["model_prob"]:
-            overall_best = candidate
-            best_sport = sport_key
-
-    sotd = {
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-    }
-
-    if overall_best is not None:
-        pick = dict(overall_best)
-        _generate_blurbs([pick], pick_type="lock")  # adds blurb, strips individual_models
-        sotd["sport"] = best_sport
-        sotd["sport_name"] = sport_candidates[best_sport]["sport_name"]
-        sotd["pick"] = pick
-    else:
-        sotd["sport"] = None
-        sotd["sport_name"] = None
-        sotd["pick"] = None
-
-    _save_json(os.path.join(base_dir, "sotd.json"), sotd)
-    return sotd
-
 
 def _compute_longslop(prediction_records, outcomes):
     """Extract LONGSLOP (best longshot the model believes may hit, +500 or better).
@@ -484,7 +369,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     Parameters
     ----------
     sport_key : str
-        Key into ``SPORTS`` config dict (e.g. "epl", "nba").
+        Key into ``SPORTS`` config dict (e.g. "nba", "ncaam").
     output_dir : str or None
         Override the sport's data directory.
     """
@@ -501,29 +386,18 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     box_scores_df = None
 
-    if sport_key == "epl":
-        matches = fetch_epl_matches()
-        fixtures = fetch_epl_fixtures()
-
-        xg_data = None
-        try:
-            xg_data = fetch_understat_xg()
-        except Exception:
-            pass
-    elif sport_key == "nba":
+    if sport_key == "nba":
         games_df, box_scores_df = fetch_nba_espn_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         fixtures = fetch_nba_espn_schedule()
         matches = games_df
-        xg_data = None
     elif sport_key == "ncaam":
         games_df, box_scores_df = fetch_ncaam_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         fixtures = fetch_ncaam_schedule()
         matches = games_df
-        xg_data = None
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
 
@@ -537,19 +411,6 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 2. Fit models
     # ------------------------------------------------------------------
-    dc_params = None
-    xg_params = None
-
-    if "dixon_coles" in sport["models"]:
-        dc_params = fit_dixon_coles(matches)
-
-    if "xg" in sport["models"] and xg_data is not None and len(xg_data) >= 20:
-        xg_params = fit_dixon_coles(
-            xg_data,
-            goals_col_home="home_xg",
-            goals_col_away="away_xg",
-        )
-
     # Elo ratings (with sport-specific parameters)
     elo = None
     if "elo" in sport["models"]:
@@ -582,10 +443,6 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     # Build list of active models for this run
     model_names = []
-    if dc_params is not None:
-        model_names.append("dixon_coles")
-    if xg_params is not None:
-        model_names.append("xg")
     if elo is not None:
         model_names.append("elo")
     if efficiency_model is not None:
@@ -600,9 +457,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 4. Normalize odds team names and build lookup
     # ------------------------------------------------------------------
-    if sport_key == "epl":
-        normalizer = normalize_team_name
-    elif sport_key == "nba":
+    if sport_key == "nba":
         normalizer = normalize_nba_team_name
     elif sport_key == "ncaam":
         normalizer = normalize_ncaam_team_name
@@ -632,9 +487,6 @@ def run_sport_pipeline(sport_key, output_dir=None):
         away = fix["away_team"]
 
         # For models requiring fitted params, check team is known
-        if dc_params is not None:
-            if home not in dc_params["attack"] or away not in dc_params["attack"]:
-                continue
         if elo is not None:
             if home not in elo.ratings and away not in elo.ratings:
                 continue
@@ -642,32 +494,6 @@ def run_sport_pipeline(sport_key, output_dir=None):
         individual_preds = []
         blend_weights = []
         individual_models = {}
-
-        # Dixon-Coles (EPL only)
-        if dc_params is not None and home in dc_params["attack"] and away in dc_params["attack"]:
-            cong_home = _check_congestion(home, fixtures, matches)
-            cong_away = _check_congestion(away, fixtures, matches)
-
-            dc_matrix = dixon_coles_predict(home, away, dc_params,
-                                            congestion_home=cong_home,
-                                            congestion_away=cong_away)
-            dc_probs = scoreline_to_probabilities(dc_matrix)
-            individual_preds.append(dc_probs)
-            blend_weights.append(model_weight_dict["dixon_coles"])
-            individual_models["dixon_coles"] = dc_probs
-
-        # xG (EPL only)
-        if xg_params is not None and home in xg_params["attack"] and away in xg_params["attack"]:
-            cong_home = _check_congestion(home, fixtures, matches)
-            cong_away = _check_congestion(away, fixtures, matches)
-
-            xg_matrix = dixon_coles_predict(home, away, xg_params,
-                                            congestion_home=cong_home,
-                                            congestion_away=cong_away)
-            xg_probs = scoreline_to_probabilities(xg_matrix)
-            individual_preds.append(xg_probs)
-            blend_weights.append(model_weight_dict["xg"])
-            individual_models["xg"] = xg_probs
 
         # Elo (all sports)
         if elo is not None and home in elo.ratings and away in elo.ratings:
@@ -740,11 +566,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
         prediction_records.append(record)
 
     # ------------------------------------------------------------------
-    # 5b. SLOP LOCKS + LONGSLOP + BEST CANDIDATE
+    # 5b. SLOP LOCKS + LONGSLOP
     # ------------------------------------------------------------------
     slop_locks = _compute_slop_locks(prediction_records, outcomes)
     longslop = _compute_longslop(prediction_records, outcomes)
-    best_candidate = _compute_best_candidate(prediction_records, outcomes)
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
@@ -915,9 +740,6 @@ def run_sport_pipeline(sport_key, output_dir=None):
     }
     _save_json(predictions_path, predictions_output)
 
-    # Expose best_candidate in return value (with individual_models for compute_sotd blurb)
-    predictions_output["best_candidate"] = best_candidate
-
     history_output = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "predictions": updated_past + prediction_records,
@@ -950,21 +772,15 @@ def run_pipeline(output_dir=None):
         "sports": {},
     }
 
-    sport_candidates = {}
     for sport_key in SPORTS:
         sport_dir = os.path.join(base_dir, sport_key) if output_dir else None
         try:
-            output = run_sport_pipeline(sport_key, output_dir=sport_dir)
+            run_sport_pipeline(sport_key, output_dir=sport_dir)
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
                 "status": "ok",
                 "updated_at": now,
             }
-            if output.get("best_candidate"):
-                sport_candidates[sport_key] = {
-                    "best_candidate": output["best_candidate"],
-                    "sport_name": SPORTS[sport_key]["display_name"],
-                }
         except Exception as exc:
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
@@ -973,7 +789,6 @@ def run_pipeline(output_dir=None):
                 "updated_at": now,
             }
 
-    compute_sotd(sport_candidates, base_dir)
     _save_json(os.path.join(base_dir, "manifest.json"), manifest)
 
     return manifest
