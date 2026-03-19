@@ -193,6 +193,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 0.5rem;
+      min-height: 1.5rem;
     }
 
     .team-name {
@@ -200,7 +202,26 @@
       font-size: 1.1rem;
       letter-spacing: 0.02em;
       text-transform: uppercase;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
+
+    .team-stats {
+      display: flex;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      white-space: nowrap;
+      color: var(--text-dim);
+      min-width: 90px;
+      justify-content: flex-end;
+    }
+
+    .team-stats .prob { color: var(--text); }
+    .team-stats .edge.pos { color: var(--slime); }
+    .team-stats .edge.neg { color: var(--text-muted); }
 
     .pick-badge {
       font-family: var(--font-heading);
@@ -209,6 +230,8 @@
       border-radius: 4px;
       background: var(--border);
       color: var(--text-dim);
+      min-width: 45px;
+      text-align: center;
     }
 
     .pick-badge.active {
