@@ -401,6 +401,19 @@ def run_sport_pipeline(sport_key, output_dir=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         fixtures = fetch_ncaam_schedule()
+        # Fallback: if scoreboard is empty, check cache for any games matching the allowed window
+        if not fixtures and games_df is not None:
+            today_utc = datetime.now(timezone.utc).date()
+            tomorrow_utc = today_utc + timedelta(days=1)
+            allowed = {today_utc.strftime("%Y-%m-%d"), tomorrow_utc.strftime("%Y-%m-%d")}
+            upcoming = games_df[games_df["date"].isin(allowed)]
+            for _, row in upcoming.iterrows():
+                fixtures.append({
+                    "home_team": row["home_team"],
+                    "away_team": row["away_team"],
+                    "date": row["date"],
+                    "completed": row.get("completed", False)
+                })
         matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
