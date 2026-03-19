@@ -518,6 +518,8 @@
         if (match.completed) cardClass += ' completed';
         
         var card = createEl('div', cardClass);
+        var probs = match.model_probs || { home: 0.33, draw: 0.34, away: 0.33 };
+        var edges = match.edges || {};
         
         var teams = createEl('div', 'match-teams');
         
