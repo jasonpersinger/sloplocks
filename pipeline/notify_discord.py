@@ -44,7 +44,9 @@ def _display_date(date_str: str, sport_key: str) -> str:
     return game_date.strftime("%b %d")
 
 
-def _fmt_odds(american: int) -> str:
+def _fmt_odds(american: int | None) -> str:
+    if american is None:
+        return "N/A"
     return f"+{american}" if american >= 0 else str(american)
 
 
@@ -71,8 +73,9 @@ def _lock_field(lock: dict, sport_key: str) -> dict:
     star_str = "⭐" * stars
 
     name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}"
+    odds  = lock.get("american_odds")
     value = (
-        f"**{pick}**  ·  {_fmt_odds(lock['american_odds'])}"
+        f"**{pick}**  ·  {_fmt_odds(odds)}"
         f"  ·  {_fmt_pct(lock['model_prob'])} conf"
         f"  ·  {lock['edge'] * 100:+.1f}% edge"
         f"\n{star_str} Rating"

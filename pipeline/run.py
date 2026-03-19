@@ -575,6 +575,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_prob = blended[pick]
         edge = edges.get(pick, {}).get("edge", 0.0)
         stars = compute_confidence_stars(model_prob, edge)
+        american_odds = best_odds.get(pick)
 
         record = {
             "home_team": home,
@@ -586,6 +587,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
             "confidence_stars": stars,
+            "american_odds": american_odds,
             "model_probs": {k: round(v, 4) for k, v in blended.items()},
             "individual_models": {
                 name: {k: round(v, 4) for k, v in probs.items()}

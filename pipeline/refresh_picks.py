@@ -131,6 +131,7 @@ def refresh_sport(sport_key: str) -> None:
             match["model_prob"] = round(model_prob, 4)
             match["edge"] = round(edge, 4)
             match["confidence_stars"] = compute_confidence_stars(model_prob, edge)
+            match["american_odds"] = match["best_odds"].get(pick)
 
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
     slop_locks = _recompute_slop_locks(matches, outcomes)
