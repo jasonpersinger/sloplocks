@@ -468,6 +468,7 @@ def fetch_nba_espn_schedule() -> list[dict]:
             # Use the local scoreboard date, not event["date"] (UTC timestamp)
             "date": game_date_str,
             "completed": is_completed,
+            "neutral": comp.get("neutralSite", False),
         })
 
     return fixtures

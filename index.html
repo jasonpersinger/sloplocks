@@ -271,13 +271,18 @@
 
     /* ============ COMPLETED STATE ============ */
     .card.completed { opacity: 0.5; filter: grayscale(0.8); }
-    .final-badge {
+    .final-badge, .neutral-badge {
       font-size: 0.55rem;
       background: var(--text-muted);
       color: var(--black);
       padding: 1px 4px;
       border-radius: 2px;
       margin-left: 0.5rem;
+    }
+    .neutral-badge {
+      background: var(--slime-dim);
+      color: var(--slime);
+      border: 1px solid rgba(57, 255, 20, 0.2);
     }
 
     /* ============ INFO FOOTER ============ */
@@ -526,6 +531,9 @@
 
         if (match.completed || match.date) {
           var meta = createEl('div', 'match-meta', (match.completed ? 'FINAL' : 'UPCOMING'));
+          if (match.neutral) {
+            meta.appendChild(createEl('span', 'neutral-badge', 'NEUTRAL SITE'));
+          }
           card.appendChild(meta);
         }
 

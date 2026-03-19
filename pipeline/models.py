@@ -407,7 +407,8 @@ class EloRatings:
 
 
 def elo_predict(elo, home_team, away_team, outcomes=None,
-                home_rest_adj=0.0, away_rest_adj=0.0):
+                home_rest_adj=0.0, away_rest_adj=0.0,
+                home_advantage_override=None):
     """Convert Elo ratings into match-outcome probabilities.
 
     For 3-way outcomes (soccer), the draw probability is modelled as a
@@ -427,6 +428,8 @@ def elo_predict(elo, home_team, away_team, outcomes=None,
         Elo-point adjustment for home team rest (negative = B2B penalty).
     away_rest_adj : float
         Elo-point adjustment for away team rest (negative = B2B penalty).
+    home_advantage_override : float or None
+        If provided, use this value instead of elo.home_advantage.
 
     Returns
     -------
@@ -436,7 +439,8 @@ def elo_predict(elo, home_team, away_team, outcomes=None,
     if outcomes is None:
         outcomes = ["home", "draw", "away"]
 
-    r_home = elo.get_rating(home_team) + elo.home_advantage + home_rest_adj
+    home_adv = home_advantage_override if home_advantage_override is not None else elo.home_advantage
+    r_home = elo.get_rating(home_team) + home_adv + home_rest_adj
     r_away = elo.get_rating(away_team) + away_rest_adj
 
     diff = r_home - r_away
@@ -495,36 +499,41 @@ class AdjustedEfficiency:
             opponents_in_game[(gid, g["home_team"])] = g["away_team"]
             opponents_in_game[(gid, g["away_team"])] = g["home_team"]
 
+        # Compute weights based on recency
+        weights = _compute_weights(box_scores)
+
         # Collect per-team raw stats
         teams = box_scores["team"].unique()
         team_total_pts = {t: 0.0 for t in teams}
         team_total_poss = {t: 0.0 for t in teams}
         team_total_pts_allowed = {t: 0.0 for t in teams}
         team_total_poss_against = {t: 0.0 for t in teams}
-        team_game_count = {t: 0 for t in teams}
+        team_weight_sum = {t: 0.0 for t in teams}
         team_opponents = {t: [] for t in teams}
 
         # Index box_scores by (game_id, team) for quick lookup
         bs_lookup = {}
-        for _, row in box_scores.iterrows():
-            bs_lookup[(row["game_id"], row["team"])] = row
+        for idx, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = (row, weights[box_scores.index.get_loc(idx)])
 
-        for _, row in box_scores.iterrows():
+        for idx, row in box_scores.iterrows():
             team = row["team"]
             gid = row["game_id"]
             poss = row["possessions"]
+            w = weights[box_scores.index.get_loc(idx)]
 
-            team_total_pts[team] += row["pts"]
-            team_total_poss[team] += poss
-            team_game_count[team] += 1
+            team_total_pts[team] += row["pts"] * w
+            team_total_poss[team] += poss * w
+            team_weight_sum[team] += w
 
             opp = opponents_in_game.get((gid, team))
             if opp is not None:
                 team_opponents[team].append(opp)
-                opp_row = bs_lookup.get((gid, opp))
-                if opp_row is not None:
-                    team_total_pts_allowed[team] += opp_row["pts"]
-                    team_total_poss_against[team] += opp_row["possessions"]
+                lookup_res = bs_lookup.get((gid, opp))
+                if lookup_res is not None:
+                    opp_row, _ = lookup_res
+                    team_total_pts_allowed[team] += opp_row["pts"] * w
+                    team_total_poss_against[team] += opp_row["possessions"] * w
 
         # Raw efficiencies (points per 100 possessions)
         raw_off = {}
@@ -539,8 +548,8 @@ class AdjustedEfficiency:
                 raw_def[t] = (team_total_pts_allowed[t] / team_total_poss_against[t]) * 100.0
             else:
                 raw_def[t] = 100.0
-            if team_game_count[t] > 0:
-                raw_tempo[t] = team_total_poss[t] / team_game_count[t]
+            if team_weight_sum[t] > 0:
+                raw_tempo[t] = team_total_poss[t] / team_weight_sum[t]
             else:
                 raw_tempo[t] = 68.0
 
@@ -654,47 +663,52 @@ class FourFactorsModel:
             opponents_in_game[(gid, g["home_team"])] = g["away_team"]
             opponents_in_game[(gid, g["away_team"])] = g["home_team"]
 
+        # Compute weights based on recency
+        weights = _compute_weights(box_scores)
+
         # Index box_scores by (game_id, team)
         bs_lookup = {}
-        for _, row in box_scores.iterrows():
-            bs_lookup[(row["game_id"], row["team"])] = row
+        for idx, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = (row, weights[box_scores.index.get_loc(idx)])
 
         # Accumulate per-team stats
         teams = box_scores["team"].unique()
         accum = {t: {
-            "fgm": 0, "fga": 0, "fg3m": 0, "fta": 0, "orb": 0, "to": 0,
-            "possessions": 0,
-            "opp_fgm": 0, "opp_fga": 0, "opp_fg3m": 0, "opp_fta": 0,
-            "opp_orb": 0, "opp_drb": 0, "opp_to": 0, "opp_possessions": 0,
-            "drb": 0, "game_count": 0,
+            "fgm": 0.0, "fga": 0.0, "fg3m": 0.0, "fta": 0.0, "orb": 0.0, "to": 0.0,
+            "possessions": 0.0,
+            "opp_fgm": 0.0, "opp_fga": 0.0, "opp_fg3m": 0.0, "opp_fta": 0.0,
+            "opp_orb": 0.0, "opp_drb": 0.0, "opp_to": 0.0, "opp_possessions": 0.0,
+            "drb": 0.0, "weight_sum": 0.0,
         } for t in teams}
 
-        for _, row in box_scores.iterrows():
+        for idx, row in box_scores.iterrows():
             team = row["team"]
             gid = row["game_id"]
+            w = weights[box_scores.index.get_loc(idx)]
             a = accum[team]
-            a["fgm"] += row["fgm"]
-            a["fga"] += row["fga"]
-            a["fg3m"] += row["fg3m"]
-            a["fta"] += row["fta"]
-            a["orb"] += row["orb"]
-            a["drb"] += row["drb"]
-            a["to"] += row["to"]
-            a["possessions"] += row["possessions"]
-            a["game_count"] += 1
+            a["fgm"] += row["fgm"] * w
+            a["fga"] += row["fga"] * w
+            a["fg3m"] += row["fg3m"] * w
+            a["fta"] += row["fta"] * w
+            a["orb"] += row["orb"] * w
+            a["drb"] += row["drb"] * w
+            a["to"] += row["to"] * w
+            a["possessions"] += row["possessions"] * w
+            a["weight_sum"] += w
 
             opp = opponents_in_game.get((gid, team))
             if opp is not None:
-                opp_row = bs_lookup.get((gid, opp))
-                if opp_row is not None:
-                    a["opp_fgm"] += opp_row["fgm"]
-                    a["opp_fga"] += opp_row["fga"]
-                    a["opp_fg3m"] += opp_row["fg3m"]
-                    a["opp_fta"] += opp_row["fta"]
-                    a["opp_orb"] += opp_row["orb"]
-                    a["opp_drb"] += opp_row["drb"]
-                    a["opp_to"] += opp_row["to"]
-                    a["opp_possessions"] += opp_row["possessions"]
+                lookup_res = bs_lookup.get((gid, opp))
+                if lookup_res is not None:
+                    opp_row, _ = lookup_res
+                    a["opp_fgm"] += opp_row["fgm"] * w
+                    a["opp_fga"] += opp_row["fga"] * w
+                    a["opp_fg3m"] += opp_row["fg3m"] * w
+                    a["opp_fta"] += opp_row["fta"] * w
+                    a["opp_orb"] += opp_row["orb"] * w
+                    a["opp_drb"] += opp_row["drb"] * w
+                    a["opp_to"] += opp_row["to"] * w
+                    a["opp_possessions"] += opp_row["possessions"] * w
 
         # Compute four factors per team
         for t in teams:

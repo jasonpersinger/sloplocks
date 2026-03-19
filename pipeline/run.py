@@ -554,6 +554,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     for fix in fixtures:
         home = fix["home_team"]
         away = fix["away_team"]
+        is_neutral = fix.get("neutral", False)
 
         # For models requiring fitted params, check team is known
         if elo is not None:
@@ -575,18 +576,26 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     home_rest_adj = -NBA_B2B_PENALTY
                 if away_rest == 1:
                     away_rest_adj = -NBA_B2B_PENALTY
+            
+            # Disable home advantage for neutral sites
+            current_home_adv = 0.0 if is_neutral else elo.home_advantage
+            
             elo_probs = elo_predict(elo, home, away, outcomes=outcomes,
                                     home_rest_adj=home_rest_adj,
-                                    away_rest_adj=away_rest_adj)
+                                    away_rest_adj=away_rest_adj,
+                                    home_advantage_override=current_home_adv)
             individual_preds.append(elo_probs)
             blend_weights.append(model_weight_dict["elo"])
             individual_models["elo"] = elo_probs
 
         # Adjusted Efficiency (NCAAM)
         if efficiency_model is not None and home in efficiency_model.off_efficiency and away in efficiency_model.off_efficiency:
+            # Disable home bonus for neutral sites
+            current_home_bonus = 0.0 if is_neutral else sport.get("efficiency_home_bonus", 3.5)
+            
             eff_probs = efficiency_predict(
                 efficiency_model, home, away,
-                home_bonus=sport.get("efficiency_home_bonus", 3.5),
+                home_bonus=current_home_bonus,
             )
             individual_preds.append(eff_probs)
             blend_weights.append(model_weight_dict["efficiency"])
@@ -633,6 +642,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "date": fix["date"],
             "matchday": fix.get("matchday"),
             "completed": fix.get("completed", False),
+            "neutral": is_neutral,
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
