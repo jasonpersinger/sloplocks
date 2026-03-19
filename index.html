@@ -179,6 +179,16 @@
       text-align: left;
       cursor: pointer;
       text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .info-toggle:hover {
+      background: #222;
+      color: var(--slime);
+    }
+    #reveal-btn {
+      margin-top: 8px;
+      border-top: 1px dashed var(--hacker);
+      border-bottom: 1px dashed var(--hacker);
     }
     .info-content {
       display: none;
@@ -188,6 +198,15 @@
     .expanded .info-content {
       display: block;
     }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--hacker);
+    }
+    .stat-label { color: var(--dim); font-size: 10px; text-transform: uppercase; }
+    .stat-value { color: var(--dim); font-weight: 600; font-size: 10px; }
 
     /* Animations */
     .pulse { animation: pulseAnim 2s infinite; }
@@ -229,16 +248,25 @@
     </main>
 
     <footer id="logs-footer" class="info-section">
-      <button class="info-toggle">
-        <span>[ + ] SYSTEM LOGS / PERFORMANCE</span>
-        <span class="arrow">▼</span>
+      <button class="info-toggle" id="footer-toggle">
+        [ + ] SYSTEM LOGS / PERFORMANCE
       </button>
       <div class="info-content">
+        <div class="dim" style="font-size: 10px; margin-bottom: 4px; font-weight: bold;">PERFORMANCE</div>
         <div id="pick-stats"></div>
+        
+        <div class="dim" style="font-size: 10px; margin-top: 16px; margin-bottom: 4px; font-weight: bold;">SEASON STATS</div>
         <div id="season-stats"></div>
-        <div id="last-updated" class="dim" style="font-size: 10px; margin-top: 8px;"></div>
+
+        <div class="dim" style="font-size: 10px; margin-top: 16px; margin-bottom: 4px; font-weight: bold;">METHODOLOGY</div>
+        <div class="dim" style="font-size: 10px; line-height: 1.4; opacity: 0.8;">
+          SLOP LOCKS utilizes a weighted ensemble of ELO ratings, adjusted offensive efficiency, and four-factors modeling.
+          We compare our predicted probabilities against market odds to identify positive expected value (+EV).
+        </div>
+
+        <div id="last-updated" class="dim" style="font-size: 10px; margin-top: 16px;"></div>
         <div id="data-sources" class="dim" style="font-size: 10px; margin-top: 4px;"></div>
-        <div class="dim" style="font-size: 9px; margin-top: 12px; opacity: 0.5;">FOR ENTERTAINMENT PURPOSES ONLY</div>
+        <div class="dim" style="font-size: 9px; margin-top: 16px; opacity: 0.5;">FOR ENTERTAINMENT PURPOSES ONLY</div>
         <div style="margin-top: 12px;">
           <a href="https://ko-fi.com/sloplocks" target="_blank" rel="noopener" style="color:var(--slime); text-decoration: none; font-size: 10px;">[ BUY US A COFFEE ]</a>
         </div>
@@ -494,9 +522,11 @@
         this.textContent = slateVisible ? '[ - ] HIDE SLATE' : '[ + ] VIEW FULL SLATE';
       });
 
-      infoSection.querySelector('.info-toggle').addEventListener('click', function() {
+      var footerToggle = document.getElementById('footer-toggle');
+      footerToggle.addEventListener('click', function() {
         infoSection.classList.toggle('expanded');
-        this.querySelector('.arrow').textContent = infoSection.classList.contains('expanded') ? '▲' : '▼';
+        var isExpanded = infoSection.classList.contains('expanded');
+        this.textContent = isExpanded ? '[ - ] SYSTEM LOGS / PERFORMANCE' : '[ + ] SYSTEM LOGS / PERFORMANCE';
       });
 
       dataSourcesDiv.innerHTML = 'DATA: <a href="https://espn.com" target="_blank">ESPN</a> &bull; <a href="https://the-odds-api.com" target="_blank">THE ODDS API</a>';
