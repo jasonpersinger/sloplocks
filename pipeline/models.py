@@ -440,8 +440,8 @@ def elo_predict(elo, home_team, away_team, outcomes=None,
         outcomes = ["home", "draw", "away"]
 
     home_adv = home_advantage_override if home_advantage_override is not None else elo.home_advantage
-    r_home = elo.get_rating(home_team) + home_adv + home_rest_adj
-    r_away = elo.get_rating(away_team) + away_rest_adj
+    r_home = elo.ratings.get(home_team, 1500.0) + home_adv + home_rest_adj
+    r_away = elo.ratings.get(away_team, 1500.0) + away_rest_adj
 
     diff = r_home - r_away
 

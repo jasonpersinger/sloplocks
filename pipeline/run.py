@@ -456,8 +456,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
         # Fallback: if scoreboard is empty, check cache for any games matching the allowed window
         if not fixtures and games_df is not None:
             today_utc = datetime.now(timezone.utc).date()
-            tomorrow_utc = today_utc + timedelta(days=1)
-            allowed = {today_utc.strftime("%Y-%m-%d"), tomorrow_utc.strftime("%Y-%m-%d")}
+            allowed = {
+                (today_utc - timedelta(days=1)).strftime("%Y-%m-%d"),
+                today_utc.strftime("%Y-%m-%d"),
+                (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
+            }
             upcoming = games_df[games_df["date"].isin(allowed)]
             for _, row in upcoming.iterrows():
                 fixtures.append({
@@ -495,15 +498,27 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # Elo ratings (with sport-specific parameters)
     elo = None
     if "elo" in sport["models"]:
-        all_teams = sorted(
-            set(matches["home_team"].unique()) | set(matches["away_team"].unique())
-        )
+        all_teams = []
+        if matches is not None and not matches.empty:
+            all_teams = sorted(
+                set(matches["home_team"].unique()) | set(matches["away_team"].unique())
+            )
+        
+        # Add teams from current fixtures to all_teams so Elo has them
+        fixture_teams = set()
+        for f in fixtures:
+            fixture_teams.add(f["home_team"])
+            fixture_teams.add(f["away_team"])
+        
+        all_teams = sorted(set(all_teams) | fixture_teams)
+
         elo = EloRatings(
             all_teams,
             k_factor=sport["elo_k_factor"],
             home_advantage=sport["elo_home_advantage"],
         )
-        elo.process_season(matches)
+        if matches is not None and not matches.empty:
+            elo.process_season(matches)
 
     # Adjusted Efficiency model (NCAAM)
     efficiency_model = None
@@ -563,8 +578,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # This ensures evening ET games (which shift to the next UTC day) are included.
     # ------------------------------------------------------------------
     today_utc = datetime.now(timezone.utc).date()
-    tomorrow_utc = today_utc + timedelta(days=1)
-    allowed_dates = {today_utc.strftime("%Y-%m-%d"), tomorrow_utc.strftime("%Y-%m-%d")}
+    allowed_dates = {
+        (today_utc - timedelta(days=1)).strftime("%Y-%m-%d"),
+        today_utc.strftime("%Y-%m-%d"),
+        (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
+    }
     fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] in allowed_dates]
 
     prediction_records = []
@@ -574,17 +592,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
         away = fix["away_team"]
         is_neutral = fix.get("neutral", False)
 
-        # For models requiring fitted params, check team is known
-        if elo is not None:
-            if home not in elo.ratings and away not in elo.ratings:
-                continue
-
         individual_preds = []
         blend_weights = []
         individual_models = {}
 
         # Elo (all sports)
-        if elo is not None and home in elo.ratings and away in elo.ratings:
+        if elo is not None:
             home_rest_adj = 0.0
             away_rest_adj = 0.0
             if sport_key == "nba":
