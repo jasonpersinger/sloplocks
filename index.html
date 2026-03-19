@@ -1380,7 +1380,6 @@
           <rect x="11" y="15" width="2" height="1" fill="#39FF14"/>
           <rect x="11" y="16" width="1" height="1" fill="#39FF14"/>
         </svg>
-        </svg>
         <h1 class="wordmark">SLOP LOCKS</h1>
       </div>
       <p class="subtitle">BIG SLIME'S PICKS</p>
@@ -2413,9 +2412,6 @@
         currentSport = sport;
         loadingState.style.display = '';
 
-        // Hide all tab panels while loading
-        $$('.tab-panel').forEach(function (p) { p.style.visibility = 'hidden'; });
-
         var url = 'data/' + sport + '/predictions.json';
         fetch(url)
           .then(function (res) {
@@ -2428,7 +2424,10 @@
             hasDrawOutcome = currentOutcomes.indexOf('draw') !== -1;
 
             loadingState.style.display = 'none';
-            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
+            var panels = $$('.tab-panel');
+            for (var p = 0; p < panels.length; p++) {
+              panels[p].style.visibility = '';
+            }
 
             /* Header meta */
             if (data.generated_at) {
@@ -2452,7 +2451,10 @@
           .catch(function (err) {
             console.error('Failed to load ' + sport + ' predictions:', err);
             loadingState.style.display = 'none';
-            $$('.tab-panel').forEach(function (p) { p.style.visibility = ''; });
+            var panels = $$('.tab-panel');
+            for (var p = 0; p < panels.length; p++) {
+              panels[p].style.visibility = '';
+            }
             showError('No ' + sport.toUpperCase() + ' predictions available. The pipeline may not have run yet.');
           });
       }
