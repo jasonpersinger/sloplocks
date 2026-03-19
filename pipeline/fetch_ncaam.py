@@ -212,7 +212,8 @@ def fetch_ncaam_games(
 
     for date_str in fetch_dates:
         espn_date = date_str.replace("-", "")
-        url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200"
+        # Fetch both Tournament (50) and standard (100) groups in one call
+        url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups=50,100"
         resp = requests.get(url, timeout=30)
         resp.raise_for_status()
         data = resp.json()
@@ -334,7 +335,8 @@ def fetch_ncaam_schedule() -> list[dict]:
     game_date_str = today_et.strftime("%Y-%m-%d")
     espn_date = today_et.strftime("%Y%m%d")
 
-    url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200"
+    # Fetch both Tournament (50) and standard (100) groups
+    url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups=50,100"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()

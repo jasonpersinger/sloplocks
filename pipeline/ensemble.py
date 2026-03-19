@@ -86,3 +86,23 @@ def compute_edges(
         }
 
     return edges
+
+
+def compute_confidence_stars(model_prob: float, edge: float) -> int:
+    """Calculate 1-5 star rating based on weighted points.
+    Edge >= 10%: +2, Edge >= 5%: +1
+    Prob >= 75%: +2, Prob >= 60%: +1
+    Base: 1 star. Max: 5.
+    """
+    stars = 1
+    if edge >= 0.10:
+        stars += 2
+    elif edge >= 0.05:
+        stars += 1
+
+    if model_prob >= 0.75:
+        stars += 2
+    elif model_prob >= 0.60:
+        stars += 1
+
+    return min(5, stars)

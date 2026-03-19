@@ -67,12 +67,15 @@ def _lock_field(lock: dict, sport_key: str) -> dict:
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick  = _pick_team(lock)
     date  = _display_date(lock.get("date", ""), sport_key)
+    stars = lock.get("confidence_stars", 1)
+    star_str = "⭐" * stars
 
     name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}"
     value = (
         f"**{pick}**  ·  {_fmt_odds(lock['american_odds'])}"
         f"  ·  {_fmt_pct(lock['model_prob'])} conf"
         f"  ·  {lock['edge'] * 100:+.1f}% edge"
+        f"\n{star_str} Rating"
     )
     if lock.get("blurb"):
         # Discord quote block for the blurb
@@ -86,27 +89,43 @@ def build_payload() -> dict:
     et_now = datetime.now(ZoneInfo("America/New_York"))
     header_date = et_now.strftime("%b %d, %Y")
 
-    # --- Collect all locks across every sport, pick top 5 by confidence ---
-    all_locks: list[tuple[str, dict]] = []  # (sport_key, lock)
+    # --- Collect all candidates across every sport ---
+    all_candidates: list[tuple[str, dict]] = []  # (sport_key, match)
     for sport_key in ("nba", "ncaam"):
         pred_path = DATA_DIR / sport_key / "predictions.json"
         if not pred_path.exists():
             continue
         with open(pred_path) as f:
             data = json.load(f)
+        
+        # Use a dict to deduplicate by (home, away)
+        seen_matches = {}
+        
+        # 1. Add Slop Locks (these already have confidence_stars from run.py)
         for lock in data.get("slop_locks") or []:
-            all_locks.append((sport_key, lock))
+            key = (lock["home_team"], lock["away_team"])
+            seen_matches[key] = lock
+            
+        # 2. Add all other matches (all now have confidence_stars from run.py)
+        for match in data.get("matches") or []:
+            key = (match["home_team"], match["away_team"])
+            if key not in seen_matches:
+                seen_matches[key] = match
+        
+        for match in seen_matches.values():
+            all_candidates.append((sport_key, match))
 
-    all_locks.sort(key=lambda x: x[1]["model_prob"], reverse=True)
-    top5 = all_locks[:5]
+    # Sort all candidates by star rating (desc), then model prob (desc)
+    all_candidates.sort(key=lambda x: (x[1].get("confidence_stars", 0), x[1].get("model_prob", 0)), reverse=True)
+    top10 = all_candidates[:10]
 
-    if top5:
-        fields = [_lock_field(lock, sport_key) for sport_key, lock in top5]
+    if top10:
+        fields = [_lock_field(match, sport_key) for sport_key, match in top10]
         embeds.append({
-            "title": "🔒  TOP 5 SLOP LOCKS",
+            "title": "\u2B50  TOP MATCHUPS",
             "color": COLOR_SLIME,
             "fields": fields,
-            "footer": {"text": "sloplocks.lol  ·  ranked by model confidence"},
+            "footer": {"text": "sloplocks.lol  ·  ranked by confidence rating"},
         })
 
     return {

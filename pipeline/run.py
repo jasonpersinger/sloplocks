@@ -31,7 +31,7 @@ from pipeline.models import (
     elo_predict,
     four_factors_predict,
 )
-from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american
+from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american, compute_confidence_stars
 from pipeline.backtest import (
     compute_model_weights,
     compute_roi,
@@ -474,11 +474,13 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     # ------------------------------------------------------------------
     # 5. Predict each fixture
-    # Only generate predictions for games scheduled today (UTC date).
-    # This prevents future-day games from appearing in today's Slop Locks.
+    # Generate predictions for games scheduled today or tomorrow (UTC).
+    # This ensures evening ET games (which shift to the next UTC day) are included.
     # ------------------------------------------------------------------
-    today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] == today_str]
+    today_utc = datetime.now(timezone.utc).date()
+    tomorrow_utc = today_utc + timedelta(days=1)
+    allowed_dates = {today_utc.strftime("%Y-%m-%d"), tomorrow_utc.strftime("%Y-%m-%d")}
+    fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] in allowed_dates]
 
     prediction_records = []
 
@@ -550,11 +552,22 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 if dec > 0:
                     best_odds[out] = decimal_to_american(dec)
 
+        # Determine the best pick and its confidence rating
+        # We pick the outcome the model is most confident in (highest probability)
+        pick = max(blended.keys(), key=lambda k: blended[k])
+        model_prob = blended[pick]
+        edge = edges.get(pick, {}).get("edge", 0.0)
+        stars = compute_confidence_stars(model_prob, edge)
+
         record = {
             "home_team": home,
             "away_team": away,
             "date": fix["date"],
             "matchday": fix.get("matchday"),
+            "pick": pick,
+            "model_prob": round(model_prob, 4),
+            "edge": round(edge, 4),
+            "confidence_stars": stars,
             "model_probs": {k: round(v, 4) for k, v in blended.items()},
             "individual_models": {
                 name: {k: round(v, 4) for k, v in probs.items()}

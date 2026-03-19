@@ -92,11 +92,27 @@
     /* ========================================
        LAYOUT
        ======================================== */
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0 1rem;
+    .confidence-stars {
+      display: flex;
+      gap: 2px;
+      margin-top: 0.5rem;
+      font-size: 0.75rem;
+      color: var(--yellow);
     }
+    .star {
+      opacity: 0.3;
+    }
+    .star.filled {
+      opacity: 1;
+      text-shadow: 0 0 8px var(--yellow-dim);
+    }
+    .confidence-label {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    </style>
 
     /* ========================================
        HEADER
@@ -1845,6 +1861,18 @@
         teamsRow.appendChild(createEl('span', 'team away', match.away_team));
         card.appendChild(teamsRow);
 
+        /* Confidence Stars */
+        var starCount = match.confidence_stars || 1;
+        var confidenceDiv = createEl('div', 'confidence-stars');
+        var label = createEl('div', 'confidence-label', 'CONFIDENCE RATING');
+        var stars = createEl('div');
+        for (var s = 1; s <= 5; s++) {
+          stars.appendChild(createEl('span', 'star' + (s <= starCount ? ' filled' : ''), '\u2605'));
+        }
+        confidenceDiv.appendChild(label);
+        confidenceDiv.appendChild(stars);
+        card.appendChild(confidenceDiv);
+
         /* Probability bar */
         var hPct = Math.round(probs.home * 100);
         var probContainer = createEl('div', 'prob-bar-container');
@@ -2014,6 +2042,10 @@
         }
 
         filtered.sort(function (a, b) {
+          var as = a.confidence_stars || 1;
+          var bs = b.confidence_stars || 1;
+          if (bs !== as) return bs - as;
+
           var av = countValues(a);
           var bv = countValues(b);
           if (bv !== av) return bv - av;
