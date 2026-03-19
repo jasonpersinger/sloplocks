@@ -214,28 +214,33 @@ def fetch_ncaam_games(
 
     for date_str in fetch_dates:
         espn_date = date_str.replace("-", "")
-        # Fetch both Tournament (50) and standard (100) groups in one call
-        url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups=50,100"
-        resp = requests.get(url, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-
+        
         final_events = []
-        for event in data.get("events", []):
-            parsed = _parse_event(event)
-            if parsed is not None:
-                final_events.append(parsed)
-                game_id = parsed["event_id"]
-                # Add/update game entry in cache (without touching existing box_scores)
-                existing = cache["games"].get(game_id, {})
-                cache["games"][game_id] = {
-                    "date": parsed["date"],
-                    "home_team": normalize_ncaam_team_name(parsed["home_name"]),
-                    "away_team": normalize_ncaam_team_name(parsed["away_name"]),
-                    "home_goals": parsed["home_score"],
-                    "away_goals": parsed["away_score"],
-                    "box_scores": existing.get("box_scores", []),
-                }
+        # Fetch groups separately. 50 = NCAA Tournament, 100 = All Division I
+        for group in [50, 100]:
+            url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups={group}"
+            try:
+                resp = requests.get(url, timeout=30)
+                resp.raise_for_status()
+                data = resp.json()
+            except Exception:
+                continue
+
+            for event in data.get("events", []):
+                parsed = _parse_event(event)
+                if parsed is not None:
+                    final_events.append(parsed)
+                    game_id = parsed["event_id"]
+                    # Add/update game entry in cache (without touching existing box_scores)
+                    existing = cache["games"].get(game_id, {})
+                    cache["games"][game_id] = {
+                        "date": parsed["date"],
+                        "home_team": normalize_ncaam_team_name(parsed["home_name"]),
+                        "away_team": normalize_ncaam_team_name(parsed["away_name"]),
+                        "home_goals": parsed["home_score"],
+                        "away_goals": parsed["away_score"],
+                        "box_scores": existing.get("box_scores", []),
+                    }
 
         # Fetch box scores for games that don't already have them in cache
         for parsed in final_events:
@@ -337,8 +342,8 @@ def fetch_ncaam_schedule() -> list[dict]:
     game_date_str = today_et.strftime("%Y-%m-%d")
     espn_date = today_et.strftime("%Y%m%d")
 
-    # Fetch both Tournament (50) and standard (100) groups
-    url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups=50,100"
+    # Fetch default scoreboard (usually includes major tournaments)
+    url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()
