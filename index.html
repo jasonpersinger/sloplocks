@@ -10,22 +10,13 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
       --slime: #39FF14;
-      --slime-dim: rgba(57, 255, 20, 0.12);
-      --slime-glow: rgba(57, 255, 20, 0.35);
+      --dim: #888888;
+      --hacker: #1A1A1A;
       --black: #000000;
-      --panel: #0A0A0A;
-      --border: #1A1A1A;
-      --text: #FFFFFF;
-      --text-dim: #888888;
-      --text-muted: #444444;
-      --pink: #FF2D95;
-      --blue: #2E86FF;
-      --yellow: #FFD60A;
-      --font-heading: 'Oswald', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
 
@@ -33,435 +24,162 @@
 
     body {
       background: var(--black);
-      color: var(--text);
+      color: var(--slime);
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      line-height: 1.5;
+      font-size: 13px;
+      line-height: 1.2;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 2rem 1rem;
+      overflow-x: hidden;
     }
 
     .container {
       width: 100%;
-      max-width: 500px;
-    }
-
-    /* ============ HEADER ============ */
-    header {
-      text-align: center;
-      margin-bottom: 2.5rem;
-    }
-
-    .logo-svg { margin-bottom: 0.5rem; }
-
-    .wordmark {
-      font-family: var(--font-heading);
-      font-size: 2.2rem;
-      letter-spacing: 0.15em;
-      color: var(--slime);
-      line-height: 1;
-      margin-bottom: 0.25rem;
-    }
-
-    .subtitle {
-      font-family: var(--font-heading);
-      font-size: 0.65rem;
-      letter-spacing: 0.4em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    /* ============ SPORT TOGGLE ============ */
-    .sport-toggle {
+      max-width: 450px;
+      border-left: 1px solid var(--hacker);
+      border-right: 1px solid var(--hacker);
+      min-height: 100vh;
       display: flex;
-      justify-content: center;
-      margin: 1.5rem 0;
-      background: var(--panel);
-      padding: 4px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
-    .sport-pill {
-      flex: 1;
-      padding: 0.6rem;
-      font-family: var(--font-heading);
-      font-weight: 700;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      background: transparent;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .sport-pill.active {
-      color: var(--slime);
+      flex-direction: column;
       background: var(--black);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
     }
 
-    /* ============ SECTION HEADERS ============ */
-    .section-label {
-      font-family: var(--font-heading);
-      font-size: 0.7rem;
-      letter-spacing: 0.2em;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 1rem;
+    /* Utility Classes */
+    .border-b { border-bottom: 1px solid var(--hacker); }
+    .border-t { border-top: 1px solid var(--hacker); }
+    .dashed-b { border-bottom: 1px dashed var(--hacker); }
+    .dim { color: var(--dim); }
+    .p-1 { padding: 4px; }
+    .p-2 { padding: 8px; }
+    .p-3 { padding: 12px; }
+    .flex { display: flex; }
+    .justify-between { justify-content: space-between; }
+    .items-center { align-items: center; }
+    .text-center { text-align: center; }
+    .uppercase { text-transform: uppercase; }
+
+    /* Ticker */
+    #ticker-top {
+      width: 100%;
+      height: 28px;
+      background: var(--hacker);
+      color: var(--slime);
+      font-size: 10px;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-    }
-
-    .section-label::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: var(--border);
-    }
-
-    /* ============ MATCH CARDS ============ */
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .card {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.25rem;
-      position: relative;
-      overflow: hidden;
-      animation: fadeIn 0.4s ease forwards;
-    }
-
-    .card.lock {
-      border-color: var(--slime-dim);
-      box-shadow: inset 0 0 20px rgba(57, 255, 20, 0.03);
-    }
-
-    .card.lock::before {
-      content: 'LOCK';
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: var(--slime);
-      color: var(--black);
-      font-family: var(--font-heading);
-      font-size: 0.55rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 0 0 0 8px;
-    }
-
-    .card.slimegrinder {
-      border-color: var(--blue);
-      background: linear-gradient(145deg, #0A0A0A 0%, #050505 100%);
-    }
-
-    .card.slimegrinder::before {
-      content: 'SLIMEGRINDER';
-      position: absolute;
-      top: 0;
-      right: 0;
-      background: var(--blue);
-      color: var(--text);
-      font-family: var(--font-heading);
-      font-size: 0.55rem;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 0 0 0 8px;
-    }
-
-    .match-teams {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      margin-bottom: 1rem;
-    }
-
-    .team-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.5rem;
-      min-height: 1.5rem;
-    }
-
-    .team-name {
-      font-family: var(--font-heading);
-      font-size: 1.1rem;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      justify-content: center;
+      letter-spacing: 0.05em;
       white-space: nowrap;
     }
 
-    .team-stats {
+    /* Navigation */
+    #sport-toggle {
       display: flex;
-      gap: 0.5rem;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      white-space: nowrap;
-      color: var(--text-dim);
-      min-width: 90px;
-      justify-content: flex-end;
+      border-bottom: 1px solid var(--hacker);
     }
-
-    .team-stats .prob { color: var(--text); }
-    .team-stats .edge.pos { color: var(--slime); }
-    .team-stats .edge.neg { color: var(--text-muted); }
-
-    .pick-badge {
-      font-family: var(--font-heading);
-      font-size: 0.65rem;
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: var(--border);
-      color: var(--text-dim);
-      min-width: 45px;
-      text-align: center;
-    }
-
-    .pick-badge.active {
-      background: var(--slime-dim);
-      color: var(--slime);
-      border: 1px solid var(--slime);
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .odds-edge {
-      font-size: 0.75rem;
-      color: var(--text-dim);
-    }
-
-    .odds-edge strong { color: var(--text); }
-    .odds-edge .edge { color: var(--slime); margin-left: 0.5rem; }
-
-    .stars { color: var(--yellow); letter-spacing: -2px; font-size: 0.9rem; }
-
-    .match-meta {
-      font-size: 0.6rem;
-      color: var(--text-muted);
-      margin-top: 0.5rem;
-    }
-
-    /* ============ REVEAL BUTTON ============ */
-    .reveal-btn {
-      width: 100%;
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: transparent;
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      color: var(--text-dim);
-      font-family: var(--font-heading);
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .reveal-btn:hover {
-      border-color: var(--slime);
-      color: var(--slime);
-      background: var(--slime-dim);
-    }
-
-    #slate-container {
-      display: none;
-      margin-top: 0.75rem;
-    }
-
-    /* ============ COMPLETED STATE ============ */
-    .card.completed { opacity: 0.5; filter: grayscale(0.8); }
-    .final-badge, .neutral-badge {
-      font-size: 0.55rem;
-      background: var(--text-muted);
-      color: var(--black);
-      padding: 1px 4px;
-      border-radius: 2px;
-      margin-left: 0.5rem;
-    }
-    .neutral-badge {
-      background: var(--slime-dim);
-      color: var(--slime);
-      border: 1px solid rgba(57, 255, 20, 0.2);
-    }
-
-    /* ============ INFO FOOTER ============ */
-    .info-section {
-      margin-top: 4rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--border);
-      width: 100%;
-    }
-
-    .info-toggle {
-      width: 100%;
-      text-align: left;
+    .sport-pill {
       background: none;
       border: none;
-      color: var(--text-muted);
-      font-family: var(--font-heading);
-      font-size: 0.7rem;
-      letter-spacing: 0.1em;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      padding: 14px;
       cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex: 1;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .sport-pill.active {
+      color: var(--slime);
     }
 
+    /* Tape Feed */
+    #tape-feed {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Logs Footer */
+    #logs-footer {
+      border-top: 1px solid var(--hacker);
+      margin-top: auto;
+    }
+    .info-toggle {
+      width: 100%;
+      padding: 12px;
+      background: var(--hacker);
+      border: none;
+      color: var(--dim);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-align: left;
+      cursor: pointer;
+      text-transform: uppercase;
+    }
     .info-content {
       display: none;
-      padding-top: 1.5rem;
+      padding: 12px;
+      background: var(--black);
+    }
+    .expanded .info-content {
+      display: block;
     }
 
-    .info-section.expanded .info-content { display: block; }
-    .info-section.expanded .info-toggle { color: var(--text-dim); }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 0;
-      border-bottom: 1px solid #080808;
-    }
-
-    .stat-label { color: var(--text-muted); font-size: 0.65rem; text-transform: uppercase; }
-    .stat-value { color: var(--text-dim); font-weight: 600; }
-    .stat-value.slime { color: var(--slime); }
-
-    .footer-meta {
-      text-align: center;
-      margin-top: 3rem;
-      font-size: 0.6rem;
-      color: var(--text-muted);
-    }
-
-    .footer-meta a { color: inherit; text-decoration: none; border-bottom: 1px solid transparent; }
-    .footer-meta a:hover { color: var(--text-dim); border-bottom-color: var(--text-dim); }
-
-    .loading-state { text-align: center; padding: 4rem 0; color: var(--text-muted); font-size: 0.7rem; }
+    /* Animations */
     .pulse { animation: pulseAnim 2s infinite; }
     @keyframes pulseAnim { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 400px) {
-      .wordmark { font-size: 1.8rem; }
-    }
   </style>
 </head>
 <body>
+  <div id="ticker-top">
+    [ TOP EDGE: +12.4% ] [ TOTAL GAMES: -- ] [ LAST UPDATE: -- ]
+  </div>
+
   <div class="container">
-    <header>
-      <div class="logo">
-        <svg class="logo-svg" width="48" height="48" viewBox="0 0 16 20" xmlns="http://www.w3.org/2000/svg" style="image-rendering: pixelated;">
-          <rect x="5" y="1" width="6" height="1" fill="#39FF14"/>
-          <rect x="4" y="2" width="1" height="3" fill="#39FF14"/>
-          <rect x="11" y="2" width="1" height="3" fill="#39FF14"/>
-          <rect x="5" y="2" width="1" height="2" fill="#000000"/>
-          <rect x="10" y="2" width="1" height="2" fill="#000000"/>
-          <rect x="2" y="5" width="12" height="10" fill="#39FF14"/>
-          <rect x="2" y="5" width="1" height="10" fill="#2DD10F"/>
-          <rect x="13" y="5" width="1" height="10" fill="#2DD10F"/>
-          <rect x="2" y="14" width="12" height="1" fill="#2DD10F"/>
-          <rect x="7" y="8" width="2" height="2" fill="#000000"/>
-          <rect x="7" y="10" width="2" height="3" fill="#000000"/>
-          <rect x="6" y="11" width="1" height="1" fill="#000000"/>
-          <rect x="9" y="11" width="1" height="1" fill="#000000"/>
-          <rect x="4" y="7" width="1" height="1" fill="#2DD10F"/>
-          <rect x="11" y="9" width="1" height="2" fill="#2DD10F"/>
-          <rect x="5" y="12" width="1" height="1" fill="#2DD10F"/>
-          <rect x="3" y="15" width="2" height="1" fill="#39FF14"/>
-          <rect x="4" y="16" width="1" height="2" fill="#39FF14"/>
-          <rect x="7" y="15" width="2" height="1" fill="#39FF14"/>
-          <rect x="8" y="16" width="1" height="3" fill="#39FF14"/>
-          <rect x="11" y="15" width="2" height="1" fill="#39FF14"/>
-          <rect x="11" y="16" width="1" height="1" fill="#39FF14"/>
-        </svg>
-        <h1 class="wordmark">SLOP LOCKS</h1>
-        <p class="subtitle">BIG SLIME'S DAILY PICKS</p>
-      </div>
+    <nav id="sport-nav">
+      <button class="sport-pill active" data-sport="nba">[ NBA ]</button>
+      <button class="sport-pill" data-sport="ncaam">( NCAAM )</button>
+    </nav>
 
-      <div class="sport-toggle" id="sport-toggle">
-        <button class="sport-pill active" data-sport="nba">NBA</button>
-        <button class="sport-pill" data-sport="ncaam">NCAAM</button>
-      </div>
-    </header>
-
-    <main>
-      <div id="loading-state" class="loading-state pulse">
+    <main id="tape-feed">
+      <div id="loading-state" class="p-3 text-center dim pulse">
         LOADING LIVE MODELS...
       </div>
 
-      <div id="slimegrinder-section" style="display:none; margin-bottom: 2.5rem;">
-        <div class="section-label">SLIMEGRINDER TRIO</div>
-        <div id="slimegrinder-container" class="feed"></div>
-        <p style="font-size: 0.55rem; color: var(--text-muted); text-align: center; margin-top: 0.75rem; letter-spacing: 0.05em;">
-          TARGETING 66% HIT RATE &bull; CONSERVATIVE BANKROLL GROWTH
-        </p>
-      </div>
-
       <div id="locks-section" style="display:none;">
-        <div class="section-label">SLOP LOCKS</div>
-        <div id="locks-container" class="feed"></div>
+        <div id="locks-container"></div>
       </div>
 
-      <button id="reveal-btn" class="reveal-btn" style="display:none;">
+      <div id="slimegrinder-section" style="display:none;">
+        <div id="slimegrinder-container"></div>
+      </div>
+
+      <button id="reveal-btn" style="display:none;" class="info-toggle text-center">
         [ + ] VIEW FULL SLATE
       </button>
 
       <div id="slate-section" style="display:none;">
-        <div class="section-label" style="margin-top:2rem;">FULL SLATE</div>
-        <div id="slate-container" class="feed" style="display:flex;"></div>
+        <div id="slate-container"></div>
       </div>
     </main>
 
-    <div class="info-section" id="info-section">
+    <footer id="logs-footer" class="info-section">
       <button class="info-toggle">
-        <span>STATS & METHODOLOGY</span>
+        <span>[ + ] SYSTEM LOGS / PERFORMANCE</span>
         <span class="arrow">▼</span>
       </button>
       <div class="info-content">
-        <div class="section-label">PERFORMANCE</div>
         <div id="pick-stats"></div>
-        
-        <div class="section-label" style="margin-top:1.5rem;">SEASON STATS</div>
         <div id="season-stats"></div>
-
-        <div class="section-label" style="margin-top:1.5rem;">METHODOLOGY</div>
-        <div style="color: var(--text-dim); font-size: 0.65rem; line-height: 1.6;">
-          SLOP LOCKS utilizes a weighted ensemble of ELO ratings, adjusted offensive efficiency, and four-factors modeling.
-          We compare our predicted probabilities against market odds to identify positive expected value (+EV).
+        <div id="last-updated" class="dim" style="font-size: 10px; margin-top: 8px;"></div>
+        <div id="data-sources" class="dim" style="font-size: 10px; margin-top: 4px;"></div>
+        <div class="dim" style="font-size: 9px; margin-top: 12px; opacity: 0.5;">FOR ENTERTAINMENT PURPOSES ONLY</div>
+        <div style="margin-top: 12px;">
+          <a href="https://ko-fi.com/sloplocks" target="_blank" rel="noopener" style="color:var(--slime); text-decoration: none; font-size: 10px;">[ BUY US A COFFEE ]</a>
         </div>
-      </div>
-    </div>
-
-    <footer class="footer-meta">
-      <div id="last-updated"></div>
-      <div id="data-sources" style="margin-top:0.5rem;"></div>
-      <div style="margin-top:1rem; opacity: 0.5;">FOR ENTERTAINMENT PURPOSES ONLY</div>
-      <div style="margin-top:1rem;">
-        <a href="https://ko-fi.com/sloplocks" target="_blank" rel="noopener" style="color:var(--yellow)">☕ BUY US A COFFEE</a>
       </div>
     </footer>
   </div>
@@ -487,7 +205,7 @@
       var slateContainer = document.getElementById('slate-container');
       var revealBtn = document.getElementById('reveal-btn');
       var lastUpdated = document.getElementById('last-updated');
-      var infoSection = document.getElementById('info-section');
+      var infoSection = document.getElementById('logs-footer');
       var pickStatsDiv = document.getElementById('pick-stats');
       var seasonStatsDiv = document.getElementById('season-stats');
       var dataSourcesDiv = document.getElementById('data-sources');
