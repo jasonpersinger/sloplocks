@@ -118,8 +118,8 @@ def build_payload() -> dict:
         for match in seen_matches.values():
             all_candidates.append((sport_key, match))
 
-    # Sort all candidates by star rating (desc), then model prob (desc)
-    all_candidates.sort(key=lambda x: (x[1].get("confidence_stars", 0), x[1].get("model_prob", 0)), reverse=True)
+    # Sort all candidates by Edge (desc), then star rating (desc), then model prob (desc)
+    all_candidates.sort(key=lambda x: (x[1].get("edge", 0), x[1].get("confidence_stars", 0), x[1].get("model_prob", 0)), reverse=True)
     top10 = all_candidates[:10]
 
     if top10:
@@ -128,7 +128,7 @@ def build_payload() -> dict:
             "title": "\u2B50  TOP MATCHUPS",
             "color": COLOR_SLIME,
             "fields": fields,
-            "footer": {"text": "sloplocks.lol  ·  ranked by confidence rating"},
+            "footer": {"text": "sloplocks.lol  ·  ranked by edge"},
         })
 
     return {

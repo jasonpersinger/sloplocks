@@ -2056,6 +2056,10 @@
           var bComp = b.completed || false;
           if (aComp !== bComp) return aComp ? 1 : -1;
 
+          var ae = a.edge || 0;
+          var be = b.edge || 0;
+          if (be !== ae) return be - ae;
+
           var as = a.confidence_stars || 1;
           var bs = b.confidence_stars || 1;
           if (bs !== as) return bs - as;
