@@ -521,15 +521,25 @@
         
         var teams = createEl('div', 'match-teams');
         
+        function createStats(side) {
+          var p = probs[side] || 0;
+          var e = (edges[side] && edges[side].edge) ? edges[side].edge : 0;
+          var div = createEl('div', 'team-stats');
+          div.appendChild(createEl('span', 'prob', (p * 100).toFixed(1) + '%'));
+          var edgeSpan = createEl('span', 'edge ' + (e > 0 ? 'pos' : 'neg'), '(' + (e > 0 ? '+' : '') + (e * 100).toFixed(1) + '%)');
+          div.appendChild(edgeSpan);
+          return div;
+        }
+
         var hRow = createEl('div', 'team-row');
         hRow.appendChild(createEl('span', 'team-name', match.home_team));
-        var hBadge = createEl('span', 'pick-badge' + (match.pick === 'home' ? ' active' : ''), 'WIN');
-        hRow.appendChild(hBadge);
+        hRow.appendChild(createStats('home'));
+        hRow.appendChild(createEl('span', 'pick-badge' + (match.pick === 'home' ? ' active' : ''), 'WIN'));
         
         var aRow = createEl('div', 'team-row');
         aRow.appendChild(createEl('span', 'team-name', match.away_team));
-        var aBadge = createEl('span', 'pick-badge' + (match.pick === 'away' ? ' active' : ''), 'WIN');
-        aRow.appendChild(aBadge);
+        aRow.appendChild(createStats('away'));
+        aRow.appendChild(createEl('span', 'pick-badge' + (match.pick === 'away' ? ' active' : ''), 'WIN'));
         
         teams.appendChild(hRow);
         teams.appendChild(aRow);
