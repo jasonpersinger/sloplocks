@@ -555,6 +555,14 @@
         
         var slateMatches = allMatches.filter(function(m) { return !usedKeys[m.home_team + m.away_team]; });
 
+        // FALLBACK: If no grinders found (e.g. no odds), show top 3 likeliest winners as "projected"
+        if (grinders.length === 0 && allMatches.length > 0) {
+          grinders = allMatches.slice(0, 3);
+          slimegrinderSection.querySelector('.section-label').textContent = 'PROJECTED TRIO (NO ODDS)';
+        } else {
+          slimegrinderSection.querySelector('.section-label').textContent = 'SLIMEGRINDER TRIO';
+        }
+
         if (grinders.length > 0) {
           grinders.forEach(function(g) { slimegrinderContainer.appendChild(createMatchCard(g, 'slimegrinder')); });
           slimegrinderSection.style.display = 'block';
