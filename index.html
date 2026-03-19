@@ -162,6 +162,25 @@
       border-radius: 0 0 0 8px;
     }
 
+    .card.slimegrinder {
+      border-color: var(--blue);
+      background: linear-gradient(145deg, #0A0A0A 0%, #050505 100%);
+    }
+
+    .card.slimegrinder::before {
+      content: 'SLIMEGRINDER';
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--blue);
+      color: var(--text);
+      font-family: var(--font-heading);
+      font-size: 0.55rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 0 0 0 8px;
+    }
+
     .match-teams {
       display: flex;
       flex-direction: column;
@@ -365,6 +384,14 @@
         LOADING LIVE MODELS...
       </div>
 
+      <div id="slimegrinder-section" style="display:none; margin-bottom: 2.5rem;">
+        <div class="section-label">SLIMEGRINDER TRIO</div>
+        <div id="slimegrinder-container" class="feed"></div>
+        <p style="font-size: 0.55rem; color: var(--text-muted); text-align: center; margin-top: 0.75rem; letter-spacing: 0.05em;">
+          TARGETING 66% HIT RATE &bull; CONSERVATIVE BANKROLL GROWTH
+        </p>
+      </div>
+
       <div id="locks-section" style="display:none;">
         <div class="section-label">SLOP LOCKS</div>
         <div id="locks-container" class="feed"></div>
@@ -423,6 +450,8 @@
       var slateVisible = false;
 
       var loadingState = document.getElementById('loading-state');
+      var slimegrinderSection = document.getElementById('slimegrinder-section');
+      var slimegrinderContainer = document.getElementById('slimegrinder-container');
       var locksSection = document.getElementById('locks-section');
       var locksContainer = document.getElementById('locks-container');
       var slateSection = document.getElementById('slate-section');
@@ -453,8 +482,13 @@
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
       }
 
-      function createMatchCard(match, isLock) {
-        var card = createEl('div', 'card' + (isLock ? ' lock' : '') + (match.completed ? ' completed' : ''));
+      function createMatchCard(match, type) {
+        var cardClass = 'card';
+        if (type === 'lock') cardClass += ' lock';
+        if (type === 'slimegrinder') cardClass += ' slimegrinder';
+        if (match.completed) cardClass += ' completed';
+        
+        var card = createEl('div', cardClass);
         
         var teams = createEl('div', 'match-teams');
         
@@ -473,8 +507,9 @@
         card.appendChild(teams);
 
         var footer = createEl('div', 'card-footer');
-        var oddsVal = match.american_odds || (match.edges && match.edges[match.pick] ? match.edges[match.pick].american_odds : null);
-        var edgeVal = match.edge || (match.edges && match.edges[match.pick] ? match.edges[match.pick].edge : 0);
+        var pick = match.pick || 'home';
+        var oddsVal = match.american_odds || (match.edges && match.edges[pick] ? match.edges[pick].american_odds : null);
+        var edgeVal = match.edge || (match.edges && match.edges[pick] ? match.edges[pick].edge : 0);
         
         var info = createEl('div', 'odds-edge');
         info.innerHTML = '<strong>' + formatOdds(oddsVal) + '</strong>';
@@ -498,25 +533,36 @@
 
       function render(data) {
         locksContainer.textContent = '';
+        slimegrinderContainer.textContent = '';
         slateContainer.textContent = '';
         
         var locks = data.slop_locks || [];
+        var grinders = data.slimegrinder || [];
         var allMatches = data.matches || [];
         
-        // Sort matches by Edge descending
+        // Sort matches by Edge descending for the slate
         allMatches.sort(function(a, b) {
           var ae = a.edge || 0;
           var be = b.edge || 0;
           return be - ae;
         });
 
-        // Filter out locks from the allMatches list to avoid duplicates
-        var lockKeys = {};
-        locks.forEach(function(l) { lockKeys[l.home_team + l.away_team] = true; });
-        var slateMatches = allMatches.filter(function(m) { return !lockKeys[m.home_team + m.away_team]; });
+        // Filter out locks and grinders from the allMatches list to avoid duplicates
+        var usedKeys = {};
+        locks.forEach(function(l) { usedKeys[l.home_team + l.away_team] = true; });
+        grinders.forEach(function(g) { usedKeys[g.home_team + g.away_team] = true; });
+        
+        var slateMatches = allMatches.filter(function(m) { return !usedKeys[m.home_team + m.away_team]; });
+
+        if (grinders.length > 0) {
+          grinders.forEach(function(g) { slimegrinderContainer.appendChild(createMatchCard(g, 'slimegrinder')); });
+          slimegrinderSection.style.display = 'block';
+        } else {
+          slimegrinderSection.style.display = 'none';
+        }
 
         if (locks.length > 0) {
-          locks.forEach(function(l) { locksContainer.appendChild(createMatchCard(l, true)); });
+          locks.forEach(function(l) { locksContainer.appendChild(createMatchCard(l, 'lock')); });
           locksSection.style.display = 'block';
         } else {
           locksSection.style.display = 'none';
@@ -564,6 +610,7 @@
       function loadSportData(sport) {
         currentSport = sport;
         loadingState.style.display = 'block';
+        slimegrinderSection.style.display = 'none';
         locksSection.style.display = 'none';
         slateSection.style.display = 'none';
         revealBtn.style.display = 'none';

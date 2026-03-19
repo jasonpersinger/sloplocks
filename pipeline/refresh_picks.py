@@ -13,7 +13,16 @@ import json
 import sys
 from pathlib import Path
 
-from pipeline.config import SLOP_LOCK_MIN_ODDS, SLOP_LOCK_MAX_ODDS, SLOP_LOCK_FALLBACK_MIN_ODDS, SPORTS
+from pipeline.config import (
+    SLOP_LOCK_MIN_ODDS,
+    SLOP_LOCK_MAX_ODDS,
+    SLOP_LOCK_FALLBACK_MIN_ODDS,
+    SLIMEGRINDER_MIN_ODDS,
+    SLIMEGRINDER_MAX_ODDS,
+    SPORTS,
+    DATA_DIR,
+)
+
 from pipeline.ensemble import compute_edges, decimal_to_american, compute_confidence_stars
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
@@ -82,6 +91,47 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     return _exclude_opponent_conflicts(result)
 
 
+def _compute_slimegrinder(matches: list[dict], outcomes: list[str]) -> list[dict]:
+    """Extract SLIMEGRINDER: Top 3 likely winners with positive edge.
+    Odds window: -250 to +165.
+    """
+    candidates = []
+    for m in matches:
+        if m.get("completed"):
+            continue
+        edges = m.get("edges", {})
+        best_odds = m.get("best_odds", {})
+
+        for outcome in outcomes:
+            e = edges.get(outcome)
+            if not e or not best_odds.get(outcome):
+                continue
+
+            american = best_odds[outcome]
+            if not (SLIMEGRINDER_MIN_ODDS <= american <= SLIMEGRINDER_MAX_ODDS):
+                continue
+
+            if e["edge"] <= 0:
+                continue
+
+            candidates.append({
+                "home_team": m["home_team"],
+                "away_team": m["away_team"],
+                "date": m["date"],
+                "matchday": m.get("matchday"),
+                "pick": outcome,
+                "model_prob": round(e["model_prob"], 4),
+                "implied_prob": round(e["implied_prob"], 4),
+                "edge": round(e["edge"], 4),
+                "american_odds": american,
+                "decimal_odds": e["decimal_odds"],
+                "confidence_stars": m.get("confidence_stars", 1),
+            })
+
+    candidates.sort(key=lambda x: x["model_prob"], reverse=True)
+    return _exclude_opponent_conflicts(candidates)[:3]
+
+
 def refresh_sport(sport_key: str) -> None:
     """Refresh odds and slop locks for one sport.
 
@@ -135,6 +185,7 @@ def refresh_sport(sport_key: str) -> None:
 
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
     slop_locks = _recompute_slop_locks(matches, outcomes)
+    slimegrinder = _compute_slimegrinder(matches, outcomes)
     in_window = sum(
         1 for s in slop_locks
         if SLOP_LOCK_MIN_ODDS <= s["american_odds"] <= SLOP_LOCK_MAX_ODDS
@@ -143,6 +194,7 @@ def refresh_sport(sport_key: str) -> None:
 
     data["matches"] = matches
     data["slop_locks"] = slop_locks
+    data["slimegrinder"] = slimegrinder
 
     with data_path.open("w") as f:
         json.dump(data, f, indent=2)

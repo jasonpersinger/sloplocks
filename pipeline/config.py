@@ -32,6 +32,11 @@ VALUE_EDGE_THRESHOLD = 0.05
 SLOP_LOCK_MIN_ODDS = -150          # American odds lower bound for Slop Locks
 SLOP_LOCK_MAX_ODDS = 195           # American odds upper bound for Slop Locks
 SLOP_LOCK_FALLBACK_MIN_ODDS = -350 # Hard floor for fallback picks outside the preferred window
+
+# Slimegrinder: Conservative bankroll building
+SLIMEGRINDER_MIN_ODDS = -250
+SLIMEGRINDER_MAX_ODDS = 165
+
 ENSEMBLE_ACCURACY_WINDOW = 10
 MAX_GOALS = 6
 

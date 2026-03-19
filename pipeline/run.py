@@ -18,6 +18,8 @@ from pipeline.config import (
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SLOP_LOCK_FALLBACK_MIN_ODDS,
+    SLIMEGRINDER_MIN_ODDS,
+    SLIMEGRINDER_MAX_ODDS,
     SPORTS,
 )
 from pipeline.fetch_data import fetch_odds
@@ -328,6 +330,54 @@ def _compute_longslop(prediction_records, outcomes):
     return longslop_candidates[0] if longslop_candidates else None
 
 
+def _compute_slimegrinder(prediction_records, outcomes):
+    """Extract SLIMEGRINDER: Top 3 likely winners with positive edge.
+    Odds window: -250 to +165.
+    """
+    candidates = []
+    for rec in prediction_records:
+        if rec.get("completed"):
+            continue
+        edges = rec.get("edges", {})
+        best_odds = rec.get("best_odds", {})
+
+        for outcome in outcomes:
+            e = edges.get(outcome)
+            # Must have odds to be a Slimegrinder
+            if not e or not best_odds.get(outcome):
+                continue
+
+            american = best_odds[outcome]
+            if not (SLIMEGRINDER_MIN_ODDS <= american <= SLIMEGRINDER_MAX_ODDS):
+                continue
+
+            model_prob = e["model_prob"]
+            implied_prob = e["implied_prob"]
+            edge = e["edge"]
+
+            # Must have positive edge
+            if edge <= 0:
+                continue
+
+            candidates.append({
+                "home_team": rec["home_team"],
+                "away_team": rec["away_team"],
+                "date": rec["date"],
+                "matchday": rec.get("matchday"),
+                "pick": outcome,
+                "model_prob": round(model_prob, 4),
+                "implied_prob": round(implied_prob, 4),
+                "edge": round(edge, 4),
+                "american_odds": american,
+                "decimal_odds": e["decimal_odds"],
+                "confidence_stars": rec.get("confidence_stars", 1),
+            })
+
+    # Sort by raw model probability (descending) to find the likeliest winners
+    candidates.sort(key=lambda x: x["model_prob"], reverse=True)
+    return _exclude_opponent_conflicts(candidates)[:3]
+
+
 def _compute_pick_stats(picks):
     """Compute aggregate stats from evaluated picks.
 
@@ -603,6 +653,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     slop_locks = _compute_slop_locks(prediction_records, outcomes)
     longslop = _compute_longslop(prediction_records, outcomes)
+    slimegrinder = _compute_slimegrinder(prediction_records, outcomes)
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
@@ -765,6 +816,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         "sport_name": sport["display_name"],
         "outcomes": outcomes,
         "slop_locks": slop_locks,
+        "slimegrinder": slimegrinder,
         "longslop": longslop,
         "matches": prediction_records,
         "season_stats": season_stats,
