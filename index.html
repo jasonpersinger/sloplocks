@@ -106,12 +106,20 @@
       opacity: 1;
       text-shadow: 0 0 8px var(--yellow-dim);
     }
-    .confidence-label {
+    .final-badge {
+      background: var(--text-muted);
+      color: var(--black);
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 2px;
       font-size: 0.65rem;
-      color: var(--text-dim);
-      text-transform: uppercase;
-      margin-bottom: 2px;
+      margin-left: 0.5rem;
     }
+    .match-card.completed {
+      opacity: 0.7;
+      filter: grayscale(0.5);
+    }
+    </style>
 
     /* ========================================
        HEADER
@@ -1828,7 +1836,8 @@
          RENDER MATCH CARD
          ----------------------------------- */
       function createMatchCard(match, index) {
-        var card = createEl('div', 'match-card' + (hasValue(match) ? ' has-value' : ''));
+        var isCompleted = match.completed || false;
+        var card = createEl('div', 'match-card' + (hasValue(match) ? ' has-value' : '') + (isCompleted ? ' completed' : ''));
         card.style.animationDelay = (index * 0.05) + 's';
 
         var probs = match.model_probs || { home: 0.33, draw: 0.34, away: 0.33 };
@@ -1845,6 +1854,9 @@
           meta.appendChild(createEl('span', 'matchday', 'MD ' + match.matchday));
         }
         meta.appendChild(createEl('span', null, formatDate(match.date) + ' \u00B7 ' + formatTime(match.date)));
+        if (isCompleted) {
+          meta.appendChild(createEl('span', 'final-badge', 'FINAL'));
+        }
         header.appendChild(meta);
 
         if (valueCount > 0) {
@@ -2040,6 +2052,10 @@
         }
 
         filtered.sort(function (a, b) {
+          var aComp = a.completed || false;
+          var bComp = b.completed || false;
+          if (aComp !== bComp) return aComp ? 1 : -1;
+
           var as = a.confidence_stars || 1;
           var bs = b.confidence_stars || 1;
           if (bs !== as) return bs - as;
@@ -2183,13 +2199,17 @@
 
         if (data.matches) {
           var totalValue = 0;
+          var upcomingCount = 0;
           for (var i = 0; i < data.matches.length; i++) {
-            totalValue += countValues(data.matches[i]);
+            if (!data.matches[i].completed) {
+              totalValue += countValues(data.matches[i]);
+              upcomingCount++;
+            }
           }
           cards.push({
             label: 'VALUE BETS FOUND',
             value: String(totalValue),
-            sub: 'IN ' + data.matches.length + ' UPCOMING MATCHES',
+            sub: 'IN ' + upcomingCount + ' UPCOMING MATCHES',
             isSlime: true
           });
         }

@@ -450,8 +450,7 @@ def fetch_nba_espn_schedule() -> list[dict]:
     for event in data.get("events", []):
         comp = event["competitions"][0]
         status_type = comp.get("status", {}).get("type", {})
-        if status_type.get("completed", False):
-            continue
+        is_completed = status_type.get("completed", False)
 
         home = away = None
         for competitor in comp["competitors"]:
@@ -468,6 +467,7 @@ def fetch_nba_espn_schedule() -> list[dict]:
             "away_team": normalize_nba_team_name(away["team"]["displayName"]),
             # Use the local scoreboard date, not event["date"] (UTC timestamp)
             "date": game_date_str,
+            "completed": is_completed,
         })
 
     return fixtures

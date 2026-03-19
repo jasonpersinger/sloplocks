@@ -145,6 +145,8 @@ def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2
 
 def _parse_event(event: dict) -> dict | None:
     """Parse an ESPN scoreboard event into a game dict, or None if not final."""
+    if "competitions" not in event or not event["competitions"]:
+        return None
     comp = event["competitions"][0]
     status_type = comp.get("status", {}).get("type", {})
     if not status_type.get("completed", False):
@@ -343,10 +345,12 @@ def fetch_ncaam_schedule() -> list[dict]:
 
     fixtures = []
     for event in data.get("events", []):
-        comp = event["competitions"][0]
-        status_type = comp.get("status", {}).get("type", {})
-        if status_type.get("completed", False):
+        if "competitions" not in event or not event["competitions"]:
             continue
+        comp = event["competitions"][0]
+        # Include all games for the UI, regardless of completion status
+        status_type = comp.get("status", {}).get("type", {})
+        is_completed = status_type.get("completed", False)
 
         home = away = None
         for competitor in comp["competitors"]:
@@ -363,6 +367,7 @@ def fetch_ncaam_schedule() -> list[dict]:
             "away_team": normalize_ncaam_team_name(away["team"]["displayName"]),
             # Use the local scoreboard date, not event["date"] (UTC timestamp)
             "date": game_date_str,
+            "completed": is_completed,
         })
 
     return fixtures

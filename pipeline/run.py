@@ -239,6 +239,8 @@ def _compute_slop_locks(prediction_records, outcomes):
     in_window = []
     outside_window = []
     for rec in prediction_records:
+        if rec.get("completed"):
+            continue
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
         # Build candidates for this game, then keep only the most confident outcome
@@ -290,6 +292,8 @@ def _compute_longslop(prediction_records, outcomes):
     """
     longslop_candidates = []
     for rec in prediction_records:
+        if rec.get("completed"):
+            continue
         edges = rec.get("edges", {})
         best_odds = rec.get("best_odds", {})
         model_probs = rec.get("model_probs", {})
@@ -564,6 +568,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "away_team": away,
             "date": fix["date"],
             "matchday": fix.get("matchday"),
+            "completed": fix.get("completed", False),
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
@@ -808,4 +813,11 @@ def run_pipeline(output_dir=None):
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    import sys
+    manifest = run_pipeline()
+    # Check if any sport has an error
+    errors = [s["error"] for s in manifest["sports"].values() if s["status"] == "error"]
+    if errors:
+        for err in errors:
+            print(f"Error in pipeline: {err}", file=sys.stderr)
+        sys.exit(1)

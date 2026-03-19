@@ -38,6 +38,8 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     outside_window: list[dict] = []
 
     for m in matches:
+        if m.get("completed"):
+            continue
         edges = m.get("edges", {})
         best_odds = m.get("best_odds", {})
         game_candidates = []
