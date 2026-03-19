@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 
 from pipeline.config import SLOP_LOCK_MIN_ODDS, SLOP_LOCK_MAX_ODDS, SLOP_LOCK_FALLBACK_MIN_ODDS, SPORTS
-from pipeline.ensemble import compute_edges, decimal_to_american
+from pipeline.ensemble import compute_edges, decimal_to_american, compute_confidence_stars
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
@@ -59,6 +59,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
                 "edge": round(e["edge"], 4),
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
+                "confidence_stars": compute_confidence_stars(e["model_prob"], e["edge"]),
                 "individual_models": m.get("individual_models", {}),
                 "blurb": "",
             })
@@ -113,12 +114,21 @@ def refresh_sport(sport_key: str) -> None:
     for match in matches:
         match_odds = odds_lookup.get((match["home_team"], match["away_team"]))
         if match_odds:
-            match["edges"] = compute_edges(match["model_probs"], match_odds)
+            edges = compute_edges(match["model_probs"], match_odds)
+            match["edges"] = edges
             match["best_odds"] = {
                 outcome: decimal_to_american(match_odds[f"{outcome}_odds"])
                 for outcome in outcomes
                 if match_odds.get(f"{outcome}_odds", 0) > 0
             }
+            # Recompute top-level pick/stars based on new odds
+            pick = max(match["model_probs"].keys(), key=lambda k: match["model_probs"][k])
+            model_prob = match["model_probs"][pick]
+            edge = edges.get(pick, {}).get("edge", 0.0)
+            match["pick"] = pick
+            match["model_prob"] = round(model_prob, 4)
+            match["edge"] = round(edge, 4)
+            match["confidence_stars"] = compute_confidence_stars(model_prob, edge)
 
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
     slop_locks = _recompute_slop_locks(matches, outcomes)
