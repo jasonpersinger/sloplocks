@@ -25,6 +25,8 @@ from pipeline.config import (
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
+from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
+from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
 from pipeline.models import (
     AdjustedEfficiency,
     EloRatings,
@@ -465,6 +467,18 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     "completed": row.get("completed", False)
                 })
         matches = games_df
+    elif sport_key == "mlb":
+        games_df, box_scores_df = fetch_mlb_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        fixtures = fetch_mlb_schedule()
+        matches = games_df
+    elif sport_key == "mma":
+        games_df, box_scores_df = fetch_mma_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        fixtures = fetch_mma_schedule()
+        matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
 
@@ -528,6 +542,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
         normalizer = normalize_nba_team_name
     elif sport_key == "ncaam":
         normalizer = normalize_ncaam_team_name
+    elif sport_key == "mlb":
+        normalizer = normalize_mlb_team_name
+    elif sport_key == "mma":
+        normalizer = normalize_mma_name
     else:
         normalizer = lambda x: x
     for o in odds_list:
@@ -643,6 +661,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "matchday": fix.get("matchday"),
             "completed": fix.get("completed", False),
             "neutral": is_neutral,
+            "home_pitcher": fix.get("home_pitcher"),
+            "away_pitcher": fix.get("away_pitcher"),
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
@@ -669,22 +689,20 @@ def run_sport_pipeline(sport_key, output_dir=None):
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
     longslop = _generate_blurbs(longslop, pick_type="longslop")
 
-    # ------------------------------------------------------------------
-    # 6. Evaluate past predictions
-    # ------------------------------------------------------------------
     history = _load_json(history_path)
     if not isinstance(history, dict):
         history = {}
     past_predictions = history.get("predictions", [])
 
     result_lookup = {}
-    for _, row in matches.iterrows():
-        date_str = str(row["date"])[:10]
-        score = (int(row["home_goals"]), int(row["away_goals"]))
-        result_lookup[(row["home_team"], row["away_team"], date_str)] = score
-        # Also index under date+1 to handle UTC date shift for evening ET games
-        next_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-        result_lookup.setdefault((row["home_team"], row["away_team"], next_date), score)
+    if matches is not None and not matches.empty:
+        for _, row in matches.iterrows():
+            date_str = str(row["date"])[:10]
+            score = (int(row["home_goals"]), int(row["away_goals"]))
+            result_lookup[(row["home_team"], row["away_team"], date_str)] = score
+            # Also index under date+1 to handle UTC date shift for evening ET games
+            next_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
+            result_lookup.setdefault((row["home_team"], row["away_team"], next_date), score)
 
     updated_past = []
     for pred in past_predictions:

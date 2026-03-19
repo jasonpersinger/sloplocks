@@ -27,11 +27,15 @@ from pipeline.ensemble import compute_edges, decimal_to_american, compute_confid
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
+from pipeline.fetch_mlb import normalize_mlb_team_name
+from pipeline.fetch_mma import normalize_mma_name
 from pipeline.run import _exclude_opponent_conflicts
 
 _NORMALIZERS = {
     "nba": normalize_nba_team_name,
     "ncaam": normalize_ncaam_team_name,
+    "mlb": normalize_mlb_team_name,
+    "mma": normalize_mma_name,
 }
 
 _MAX_LOCKS = 5

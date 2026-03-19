@@ -16,8 +16,10 @@ ODDS_MARKETS = "h2h"
 BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 
 # ESPN (no API key needed)
-ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
+NCAAM_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
+MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
+MMA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc"
 
 # Model parameters
 TIME_DECAY_RATE = 0.005
@@ -69,5 +71,25 @@ SPORTS = {
         "elo_home_advantage": 125,
         "efficiency_home_bonus": 3.5,
         "data_dir": os.path.join(DATA_DIR, "ncaam"),
+    },
+    "mlb": {
+        "name": "MLB",
+        "display_name": "MLB",
+        "odds_sport": "baseball_mlb",
+        "outcomes": ["home", "away"],
+        "models": ["elo"],
+        "elo_k_factor": 4, # Lower K for 162 game season
+        "elo_home_advantage": 24, # Standard MLB home edge
+        "data_dir": os.path.join(DATA_DIR, "mlb"),
+    },
+    "mma": {
+        "name": "MMA",
+        "display_name": "MMA",
+        "odds_sport": "mma_mixed_martial_arts", # Standard Odds API key
+        "outcomes": ["home", "away"], # Home = Favorite/First, Away = Underdog/Second
+        "models": ["elo"],
+        "elo_k_factor": 32,
+        "elo_home_advantage": 0, # No home advantage in MMA generally
+        "data_dir": os.path.join(DATA_DIR, "mma"),
     },
 }

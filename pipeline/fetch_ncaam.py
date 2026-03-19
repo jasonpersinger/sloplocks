@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import requests
 
-from pipeline.config import ESPN_BASE
+from pipeline.config import NCAAM_ESPN_BASE
 
 _REQUEST_DELAY = 0.5
 
@@ -19,7 +19,7 @@ _team_map: dict[str, str] | None = None
 
 def _build_team_map() -> dict[str, str]:
     """Fetch ESPN teams endpoint and build displayName -> location map."""
-    url = f"{ESPN_BASE}/teams?limit=400"
+    url = f"{NCAAM_ESPN_BASE}/teams?limit=400"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()
@@ -218,7 +218,7 @@ def fetch_ncaam_games(
         final_events = []
         # Fetch groups separately. 50 = NCAA Tournament, 100 = All Division I
         for group in [50, 100]:
-            url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups={group}"
+            url = f"{NCAAM_ESPN_BASE}/scoreboard?dates={espn_date}&limit=200&groups={group}"
             try:
                 resp = requests.get(url, timeout=30)
                 resp.raise_for_status()
@@ -250,7 +250,7 @@ def fetch_ncaam_games(
                 continue
 
             time.sleep(_REQUEST_DELAY)
-            summary_url = f"{ESPN_BASE}/summary?event={game_id}"
+            summary_url = f"{NCAAM_ESPN_BASE}/summary?event={game_id}"
             try:
                 s_resp = requests.get(summary_url, timeout=30)
                 s_resp.raise_for_status()
@@ -343,7 +343,7 @@ def fetch_ncaam_schedule() -> list[dict]:
     espn_date = today_et.strftime("%Y%m%d")
 
     # Fetch default scoreboard (usually includes major tournaments)
-    url = f"{ESPN_BASE}/scoreboard?dates={espn_date}&limit=200"
+    url = f"{NCAAM_ESPN_BASE}/scoreboard?dates={espn_date}&limit=200"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()

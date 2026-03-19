@@ -1,0 +1,195 @@
+"""Fetch MMA (UFC) results and schedule from ESPN."""
+
+import json as _json
+import os
+import time
+from datetime import datetime, timedelta, timezone
+
+import pandas as pd
+import requests
+
+from pipeline.config import MMA_ESPN_BASE
+
+_REQUEST_DELAY = 0.5
+
+# ---- name normalisation -----------------------------------------------------
+
+def normalize_mma_name(name: str) -> str:
+    """Standardize fighter names."""
+    return name.strip()
+
+
+# ---- season date range -------------------------------------------------------
+
+
+def _season_date_range(season: int) -> list[str]:
+    """Generate list of YYYY-MM-DD date strings for a full year.
+    MMA doesn't have a standard season, so we fetch the whole year.
+    """
+    start = datetime(season, 1, 1)
+    # Don't fetch future dates beyond today
+    end = min(datetime(season, 12, 31), datetime.now(timezone.utc).replace(tzinfo=None))
+    dates = []
+    current = start
+    while current <= end:
+        dates.append(current.strftime("%Y-%m-%d"))
+        current += timedelta(days=7) # MMA events are typically weekly, scoreboard often covers week
+    return dates
+
+
+# ---- ESPN cache helpers -------------------------------------------------------
+
+
+def _load_espn_cache(cache_path: str | None) -> dict:
+    """Load ESPN cache from disk."""
+    if cache_path is None or not os.path.exists(cache_path):
+        return {"games": {}}
+    with open(cache_path) as f:
+        return _json.load(f)
+
+
+def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+    """Write ESPN cache to disk."""
+    if cache_path is None:
+        return
+    os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
+    with open(cache_path, "w") as f:
+        _json.dump(cache, f)
+
+
+# ---- ESPN scoreboard / summary -----------------------------------------------
+
+
+def _parse_event(event: dict) -> list[dict]:
+    """MMA events contain multiple 'competitions' (fights) per event (card)."""
+    fights = []
+    if "competitions" not in event:
+        return []
+    
+    date_str = event["date"][:10]
+    
+    for comp in event["competitions"]:
+        status_type = comp.get("status", {}).get("type", {})
+        if not status_type.get("completed", False):
+            continue
+
+        home = away = None # Home = Favorite/Winner generally
+        for competitor in comp.get("competitors", []):
+            if competitor.get("homeAway") == "home":
+                home = competitor
+            elif competitor.get("homeAway") == "away":
+                away = competitor
+
+        if home is None or away is None:
+            continue
+
+        fights.append({
+            "event_id": comp["id"],
+            "date": date_str,
+            "home_name": home["team"]["displayName"],
+            "away_name": away["team"]["displayName"],
+            "home_score": 1 if home.get("winner") else 0,
+            "away_score": 1 if away.get("winner") else 0,
+        })
+    return fights
+
+
+def fetch_mma_games(
+    season: int | None = None,
+    dates: list[str] | None = None,
+    cache_path: str | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Fetch finished UFC fights for a season."""
+    if season is None:
+        season = datetime.now(timezone.utc).year
+
+    if dates is None:
+        dates = _season_date_range(season)
+
+    cache = _load_espn_cache(cache_path)
+    
+    # Simple logic for MMA: fetch every date in range once
+    for date_str in dates:
+        espn_date = date_str.replace("-", "")
+        url = f"{MMA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=100"
+        try:
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception:
+            continue
+
+        for event in data.get("events", []):
+            fights = _parse_event(event)
+            for f in fights:
+                game_id = f["event_id"]
+                cache["games"][game_id] = {
+                    "date": f["date"],
+                    "home_team": normalize_mma_name(f["home_name"]),
+                    "away_team": normalize_mma_name(f["away_name"]),
+                    "home_goals": f["home_score"],
+                    "away_goals": f["away_score"],
+                }
+        time.sleep(_REQUEST_DELAY)
+
+    _save_espn_cache(cache_path, cache)
+
+    game_rows = []
+    for game_id, entry in cache["games"].items():
+        game_rows.append({
+            "game_id": game_id,
+            "date": entry["date"],
+            "home_team": entry["home_team"],
+            "away_team": entry["away_team"],
+            "home_goals": entry["home_goals"],
+            "away_goals": entry["away_goals"],
+        })
+
+    games_df = pd.DataFrame(
+        game_rows,
+        columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"],
+    )
+    return games_df, None
+
+
+def fetch_mma_schedule() -> list[dict]:
+    """Fetch upcoming UFC fights."""
+    et_offset = timedelta(hours=5)
+    today_et = (datetime.now(timezone.utc) - et_offset).date()
+    start_date = today_et.strftime("%Y%m%d")
+    end_date = (today_et + timedelta(days=14)).strftime("%Y%m%d")
+    url = f"{MMA_ESPN_BASE}/scoreboard?dates={start_date}-{end_date}&limit=100"
+    
+    resp = requests.get(url, timeout=30)
+    resp.raise_for_status()
+    data = resp.json()
+
+    fixtures = []
+    for event in data.get("events", []):
+        if "competitions" not in event:
+            continue
+        
+        date_str = event["date"][:10]
+        for comp in event["competitions"]:
+            status_type = comp.get("status", {}).get("type", {})
+            is_completed = status_type.get("completed", False)
+
+            home = away = None
+            for competitor in comp.get("competitors", []):
+                if competitor.get("homeAway") == "home":
+                    home = competitor
+                elif competitor.get("homeAway") == "away":
+                    away = competitor
+
+            if home is None or away is None:
+                continue
+
+            fixtures.append({
+                "home_team": normalize_mma_name(home["team"]["displayName"]),
+                "away_team": normalize_mma_name(away["team"]["displayName"]),
+                "date": date_str,
+                "completed": is_completed,
+                "neutral": True, # Fights are always neutral site effectively
+            })
+
+    return fixtures

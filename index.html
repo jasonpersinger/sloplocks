@@ -59,6 +59,7 @@
     .items-center { align-items: center; }
     .text-center { text-align: center; }
     .uppercase { text-transform: uppercase; }
+    .pitcher-tag { font-size: 10px; color: var(--dim); opacity: 0.8; margin-top: -2px; margin-bottom: 2px; }
 
     /* Ticker */
     #ticker-top {
@@ -222,6 +223,8 @@
     <nav id="sport-nav">
       <button class="sport-pill active" data-sport="nba">[ NBA ]</button>
       <button class="sport-pill" data-sport="ncaam">( NCAAM )</button>
+      <button class="sport-pill" data-sport="mlb">( MLB )</button>
+      <button class="sport-pill" data-sport="mma">( MMA )</button>
     </nav>
 
     <main id="tape-feed">
@@ -361,9 +364,15 @@
 
         // Row 2: Home Team
         container.appendChild(createTeamLine(match.home_team || 'HOME', 'home'));
+        if (match.home_pitcher) {
+          container.appendChild(createEl('div', 'pitcher-tag', 'P: ' + match.home_pitcher.toUpperCase()));
+        }
         
         // Row 3: Away Team
         container.appendChild(createTeamLine(match.away_team || 'AWAY', 'away'));
+        if (match.away_pitcher) {
+          container.appendChild(createEl('div', 'pitcher-tag', 'P: ' + match.away_pitcher.toUpperCase()));
+        }
 
         // Row 4: Pick Badge + Odds + Confidence Stars
         var row4 = createEl('div', 'row-4');
