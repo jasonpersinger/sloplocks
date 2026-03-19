@@ -138,9 +138,10 @@
     .dashed-line { flex: 1; border-bottom: 1px dashed var(--hacker); height: 1px; }
     
     .team-line { display: flex; justify-content: space-between; align-items: center; }
-    .team-name { font-weight: 600; font-size: 14px; }
-    .team-info { display: flex; gap: 12px; font-size: 12px; }
-    .pos-edge { color: var(--slime); }
+    .team-name { font-weight: 600; font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .team-info { display: flex; gap: 16px; font-size: 12px; min-width: 160px; justify-content: flex-end; }
+    .pos-edge { color: var(--slime); font-weight: 600; }
+    .neg-edge { color: var(--dim); opacity: 0.5; }
 
     .row-4 { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
     .pick-badge {
@@ -351,12 +352,16 @@
           var info = createEl('div', 'team-info');
           var p = probs[side] || 0;
           var e = (edges[side] && edges[side].edge) ? edges[side].edge : 0;
+          var o = (edges[side] && edges[side].american_odds) ? edges[side].american_odds : null;
           
+          if (o !== null) {
+            info.appendChild(createEl('span', 'dim', formatOdds(o)));
+          }
           info.appendChild(createEl('span', 'dim', formatPct(p)));
           if (e > 0) {
             info.appendChild(createEl('span', 'pos-edge', '+' + (e * 100).toFixed(1) + '%'));
           } else {
-            info.appendChild(createEl('span', 'dim', (e * 100).toFixed(1) + '%'));
+            info.appendChild(createEl('span', 'neg-edge', (e * 100).toFixed(1) + '%'));
           }
           line.appendChild(info);
           return line;
@@ -374,18 +379,14 @@
           container.appendChild(createEl('div', 'pitcher-tag', 'P: ' + match.away_pitcher.toUpperCase()));
         }
 
-        // Row 4: Pick Badge + Odds + Confidence Stars
+        // Row 4: Pick Status & Confidence
         var row4 = createEl('div', 'row-4');
         var pick = match.pick || 'home';
         var pickTeam = (pick === 'home' ? (match.home_team || 'HOME') : (match.away_team || 'AWAY')).toUpperCase();
         row4.appendChild(createEl('div', 'pick-badge', '[ ' + pickTeam + ' ]'));
         
-        var oddsStars = createEl('div', 'odds-stars');
-        var oddsVal = match.american_odds || (match.edges && match.edges[pick] ? match.edges[pick].american_odds : null);
-        oddsStars.appendChild(createEl('span', 'dim', formatOdds(oddsVal)));
-        oddsStars.appendChild(createEl('span', 'slime', '★★★★★'.substring(0, match.confidence_stars || 1)));
-        row4.appendChild(oddsStars);
-        
+        var stars = '★★★★★'.substring(0, match.confidence_stars || 1);
+        row4.appendChild(createEl('div', 'slime', stars));
         container.appendChild(row4);
 
         return container;
