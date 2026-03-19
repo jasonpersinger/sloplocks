@@ -104,6 +104,65 @@
       flex-direction: column;
     }
 
+    /* Match Row */
+    .match-row {
+      padding: 12px;
+      border-bottom: 1px solid var(--hacker);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    
+    .match-row.lock {
+      background: var(--slime);
+      color: var(--black);
+    }
+    .match-row.lock .dim { color: var(--black); opacity: 0.6; }
+    .match-row.lock .dashed-line { border-color: var(--black); opacity: 0.3; }
+    .match-row.lock .pick-badge { background: var(--black); color: var(--slime); }
+    .match-row.lock .pos-edge { color: var(--black); font-weight: bold; }
+    .match-row.lock .slime { color: var(--black); }
+
+    .match-row.grinder {
+      border: 1px solid var(--slime);
+      margin: 4px;
+    }
+
+    .match-row.completed {
+      opacity: 0.5;
+    }
+
+    .row-1 { display: flex; align-items: center; gap: 8px; font-size: 10px; }
+    .dashed-line { flex: 1; border-bottom: 1px dashed var(--hacker); height: 1px; }
+    
+    .team-line { display: flex; justify-content: space-between; align-items: center; }
+    .team-name { font-weight: 600; font-size: 14px; }
+    .team-info { display: flex; gap: 12px; font-size: 12px; }
+    .pos-edge { color: var(--slime); }
+
+    .row-4 { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+    .pick-badge {
+      background: var(--hacker);
+      color: var(--slime);
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .odds-stars { display: flex; gap: 12px; align-items: center; }
+    .slime { color: var(--slime); }
+    .section-label {
+      background: var(--hacker);
+      color: var(--dim);
+      padding: 6px;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--hacker);
+      text-transform: uppercase;
+    }
+
     /* Logs Footer */
     #logs-footer {
       border-top: 1px solid var(--hacker);
@@ -156,6 +215,7 @@
       </div>
 
       <div id="slimegrinder-section" style="display:none;">
+        <div class="section-label text-center">SLIMEGRINDER TRIO</div>
         <div id="slimegrinder-container"></div>
       </div>
 
@@ -232,68 +292,66 @@
         return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
       }
 
-      function createMatchCard(match, type) {
-        var cardClass = 'card';
-        if (type === 'lock') cardClass += ' lock';
-        if (type === 'slimegrinder') cardClass += ' slimegrinder';
-        if (match.completed) cardClass += ' completed';
+      function createMatchRow(match, type) {
+        var rowClass = 'match-row';
+        if (type === 'lock') rowClass += ' lock';
+        if (type === 'slimegrinder') rowClass += ' grinder';
+        if (match.completed) rowClass += ' completed';
         
-        var card = createEl('div', cardClass);
-        var probs = match.model_probs || { home: 0.33, draw: 0.34, away: 0.33 };
+        var container = createEl('div', rowClass);
+        
+        // Row 1: Time/Status + Dashed Line
+        var row1 = createEl('div', 'row-1');
+        var statusText = match.completed ? '[ FINAL ]' : (match.time || 'UPCOMING');
+        row1.appendChild(createEl('span', 'dim', statusText));
+        if (match.neutral) {
+          row1.appendChild(createEl('span', 'neutral-tag', '[ NEUTRAL ]'));
+        }
+        row1.appendChild(createEl('div', 'dashed-line'));
+        container.appendChild(row1);
+
+        var probs = match.model_probs || {};
         var edges = match.edges || {};
-        
-        var teams = createEl('div', 'match-teams');
-        
-        function createStats(side) {
+
+        function createTeamLine(teamName, side) {
+          var line = createEl('div', 'team-line');
+          line.appendChild(createEl('span', 'team-name', teamName.toUpperCase()));
+          
+          var info = createEl('div', 'team-info');
           var p = probs[side] || 0;
           var e = (edges[side] && edges[side].edge) ? edges[side].edge : 0;
-          var div = createEl('div', 'team-stats');
-          div.appendChild(createEl('span', 'prob', (p * 100).toFixed(1) + '%'));
-          var edgeSpan = createEl('span', 'edge ' + (e > 0 ? 'pos' : 'neg'), '(' + (e > 0 ? '+' : '') + (e * 100).toFixed(1) + '%)');
-          div.appendChild(edgeSpan);
-          return div;
-        }
-
-        var hRow = createEl('div', 'team-row');
-        hRow.appendChild(createEl('span', 'team-name', match.home_team));
-        hRow.appendChild(createStats('home'));
-        hRow.appendChild(createEl('span', 'pick-badge' + (match.pick === 'home' ? ' active' : ''), 'WIN'));
-        
-        var aRow = createEl('div', 'team-row');
-        aRow.appendChild(createEl('span', 'team-name', match.away_team));
-        aRow.appendChild(createStats('away'));
-        aRow.appendChild(createEl('span', 'pick-badge' + (match.pick === 'away' ? ' active' : ''), 'WIN'));
-        
-        teams.appendChild(hRow);
-        teams.appendChild(aRow);
-        card.appendChild(teams);
-
-        var footer = createEl('div', 'card-footer');
-        var pick = match.pick || 'home';
-        var oddsVal = match.american_odds || (match.edges && match.edges[pick] ? match.edges[pick].american_odds : null);
-        var edgeVal = match.edge || (match.edges && match.edges[pick] ? match.edges[pick].edge : 0);
-        
-        var info = createEl('div', 'odds-edge');
-        info.innerHTML = '<strong>' + formatOdds(oddsVal) + '</strong>';
-        if (edgeVal > 0) {
-          var edgeSpan = createEl('span', 'edge', '+' + (edgeVal * 100).toFixed(1) + '% EDGE');
-          info.appendChild(edgeSpan);
-        }
-        footer.appendChild(info);
-
-        var stars = createEl('div', 'stars', '★★★★★'.substring(0, match.confidence_stars || 1));
-        footer.appendChild(stars);
-        card.appendChild(footer);
-
-        if (match.completed || match.date) {
-          var meta = createEl('div', 'match-meta', (match.completed ? 'FINAL' : 'UPCOMING'));
-          if (match.neutral) {
-            meta.appendChild(createEl('span', 'neutral-badge', 'NEUTRAL SITE'));
+          
+          info.appendChild(createEl('span', 'dim', formatPct(p)));
+          if (e > 0) {
+            info.appendChild(createEl('span', 'pos-edge', '+' + (e * 100).toFixed(1) + '%'));
+          } else {
+            info.appendChild(createEl('span', 'dim', (e * 100).toFixed(1) + '%'));
           }
-          card.appendChild(meta);
+          line.appendChild(info);
+          return line;
         }
 
-        return card;
+        // Row 2: Home Team
+        container.appendChild(createTeamLine(match.home_team || 'HOME', 'home'));
+        
+        // Row 3: Away Team
+        container.appendChild(createTeamLine(match.away_team || 'AWAY', 'away'));
+
+        // Row 4: Pick Badge + Odds + Confidence Stars
+        var row4 = createEl('div', 'row-4');
+        var pick = match.pick || 'home';
+        var pickTeam = (pick === 'home' ? (match.home_team || 'HOME') : (match.away_team || 'AWAY')).toUpperCase();
+        row4.appendChild(createEl('div', 'pick-badge', '[ ' + pickTeam + ' ]'));
+        
+        var oddsStars = createEl('div', 'odds-stars');
+        var oddsVal = match.american_odds || (match.edges && match.edges[pick] ? match.edges[pick].american_odds : null);
+        oddsStars.appendChild(createEl('span', 'dim', formatOdds(oddsVal)));
+        oddsStars.appendChild(createEl('span', 'slime', '★★★★★'.substring(0, match.confidence_stars || 1)));
+        row4.appendChild(oddsStars);
+        
+        container.appendChild(row4);
+
+        return container;
       }
 
       function render(data) {
@@ -336,21 +394,21 @@
         }
 
         if (grinders.length > 0) {
-          grinders.forEach(function(g) { slimegrinderContainer.appendChild(createMatchCard(g, 'slimegrinder')); });
+          grinders.forEach(function(g) { slimegrinderContainer.appendChild(createMatchRow(g, 'slimegrinder')); });
           slimegrinderSection.style.display = 'block';
         } else {
           slimegrinderSection.style.display = 'none';
         }
 
         if (locks.length > 0) {
-          locks.forEach(function(l) { locksContainer.appendChild(createMatchCard(l, 'lock')); });
+          locks.forEach(function(l) { locksContainer.appendChild(createMatchRow(l, 'lock')); });
           locksSection.style.display = 'block';
         } else {
           locksSection.style.display = 'none';
         }
 
         if (slateMatches.length > 0) {
-          slateMatches.forEach(function(m) { slateContainer.appendChild(createMatchCard(m, false)); });
+          slateMatches.forEach(function(m) { slateContainer.appendChild(createMatchRow(m, false)); });
           revealBtn.style.display = 'block';
         } else {
           revealBtn.style.display = 'none';
