@@ -233,9 +233,140 @@
   </div>
 
   <script>
-    // JS added in Tasks 2-5
-    document.getElementById('header-date').textContent =
-      new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+(function () {
+  'use strict';
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  }
+
+  // ── Date header ──────────────────────────────────────────────────────────
+  document.getElementById('header-date').textContent =
+    new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
+
+  // ── Formatting helpers ───────────────────────────────────────────────────
+  function formatOdds(american) {
+    if (american == null) return '--';
+    return american >= 0 ? '+' + american : String(american);
+  }
+
+  function formatDate(iso) {
+    // "2026-03-20" → "MAR 20"
+    // Use noon UTC to avoid timezone off-by-one for dates near midnight
+    var d = new Date(iso + 'T12:00:00Z');
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase();
+  }
+
+  var SPORT_LABELS = { nba: 'NBA', ncaam: 'NCAAM', mlb: 'MLB', mma: 'MMA' };
+  function formatSportLabel(sport) {
+    return SPORT_LABELS[sport] || sport.toUpperCase();
+  }
+
+  function pct(p) { return (p * 100).toFixed(1) + '%'; }
+
+  // ── createPickCard ────────────────────────────────────────────────────────
+  // pick: a slop_locks item with .sport tagged on it
+  function createPickCard(pick) {
+    var pickedTeam = pick.pick === 'home' ? pick.home_team : pick.away_team;
+    var opponent   = pick.pick === 'home' ? pick.away_team : pick.home_team;
+
+    var card = document.createElement('div');
+    card.className = 'pick-card';
+
+    // Row 1: sport · date
+    var sportDate = document.createElement('div');
+    sportDate.className = 'card-sport-date';
+    sportDate.textContent = formatSportLabel(pick.sport) + ' · ' + formatDate(pick.date);
+    card.appendChild(sportDate);
+
+    // Row 2: picked team name (left) + odds (right)
+    var pickRow = document.createElement('div');
+    pickRow.className = 'card-pick-row';
+
+    var teamEl = document.createElement('div');
+    teamEl.className = 'card-team';
+    teamEl.textContent = pickedTeam.toUpperCase();
+    pickRow.appendChild(teamEl);
+
+    var oddsEl = document.createElement('div');
+    oddsEl.className = 'card-odds';
+    oddsEl.textContent = formatOdds(pick.american_odds);
+    pickRow.appendChild(oddsEl);
+
+    card.appendChild(pickRow);
+
+    // Row 3: vs OPPONENT
+    var oppEl = document.createElement('div');
+    oppEl.className = 'card-opponent';
+    oppEl.textContent = 'vs ' + opponent.toUpperCase();
+    card.appendChild(oppEl);
+
+    // Row 4: Model % · Market % · Edge +%
+    var statsRow = document.createElement('div');
+    statsRow.className = 'card-stats';
+
+    var modelEl = document.createElement('span');
+    modelEl.className = 'stat-model';
+    modelEl.textContent = 'Model: ' + pct(pick.model_prob);
+    statsRow.appendChild(modelEl);
+
+    var marketEl = document.createElement('span');
+    marketEl.className = 'stat-market';
+    marketEl.textContent = 'Market: ' + pct(pick.implied_prob);
+    statsRow.appendChild(marketEl);
+
+    var edgeEl = document.createElement('span');
+    edgeEl.className = 'stat-edge';
+    edgeEl.textContent = 'Edge: +' + pct(pick.edge);
+    statsRow.appendChild(edgeEl);
+
+    card.appendChild(statsRow);
+
+    // Row 5: edge bar labels + bar
+    var labelsEl = document.createElement('div');
+    labelsEl.className = 'edge-labels';
+
+    var leftLabel = document.createElement('span');
+    leftLabel.textContent = 'MARKET IMPLIED';
+    labelsEl.appendChild(leftLabel);
+
+    var rightLabel = document.createElement('span');
+    rightLabel.textContent = 'MODEL EDGE';
+    labelsEl.appendChild(rightLabel);
+
+    card.appendChild(labelsEl);
+
+    var barOuter = document.createElement('div');
+    barOuter.className = 'edge-bar-outer';
+
+    var barMarket = document.createElement('div');
+    barMarket.className = 'edge-bar-market';
+    barMarket.style.width = (pick.implied_prob * 100).toFixed(2) + '%';
+    barOuter.appendChild(barMarket);
+
+    var barEdge = document.createElement('div');
+    barEdge.className = 'edge-bar-edge';
+    barEdge.style.width = (pick.edge * 100).toFixed(2) + '%';
+    barOuter.appendChild(barEdge);
+
+    card.appendChild(barOuter);
+
+    // Row 6: AI blurb (only if non-empty)
+    if (pick.blurb && pick.blurb.trim() !== '') {
+      var blurbEl = document.createElement('div');
+      blurbEl.className = 'card-blurb';
+      blurbEl.textContent = pick.blurb;
+      card.appendChild(blurbEl);
+    }
+
+    return card;
+  }
+
+  // Tasks 3-5 JS goes here
+
+  loadAllSports(); // init — defined in Task 3
+
+})();
   </script>
 </body>
 </html>
