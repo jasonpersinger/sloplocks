@@ -387,11 +387,11 @@
   // ── renderFeed ────────────────────────────────────────────────────────────
   // picks: array of tagged slop_locks items (each has .sport set)
   function renderFeed(picks) {
-    clearFeed();
     if (!picks || picks.length === 0) {
       showMessage('NO PICKS TODAY — CHECK BACK AFTER 6AM UTC', false);
       return;
     }
+    clearFeed();
     picks.forEach(function (pick) {
       feed.appendChild(createPickCard(pick));
     });
@@ -445,7 +445,10 @@
 
     var fetches = ALL_SPORTS.map(function (sport) {
       return fetch('data/' + sport + '/predictions.json?t=' + Date.now())
-        .then(function (res) { return res.json(); })
+        .then(function (res) {
+          if (!res.ok) throw new Error(res.status);
+          return res.json();
+        })
         .then(function (data) { return { sport: sport, data: data }; });
     });
 
