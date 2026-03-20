@@ -317,7 +317,7 @@
 
     var edgeEl = document.createElement('span');
     edgeEl.className = 'stat-edge';
-    edgeEl.textContent = 'Edge: +' + pct(pick.edge);
+    edgeEl.textContent = 'Edge: ' + (pick.edge >= 0 ? '+' : '') + pct(pick.edge);
     statsRow.appendChild(edgeEl);
 
     card.appendChild(statsRow);
@@ -341,12 +341,12 @@
 
     var barMarket = document.createElement('div');
     barMarket.className = 'edge-bar-market';
-    barMarket.style.width = (pick.implied_prob * 100).toFixed(2) + '%';
+    barMarket.style.width = ((pick.implied_prob || 0) * 100).toFixed(2) + '%';
     barOuter.appendChild(barMarket);
 
     var barEdge = document.createElement('div');
     barEdge.className = 'edge-bar-edge';
-    barEdge.style.width = (pick.edge * 100).toFixed(2) + '%';
+    barEdge.style.width = ((pick.edge || 0) * 100).toFixed(2) + '%';
     barOuter.appendChild(barEdge);
 
     card.appendChild(barOuter);
@@ -494,7 +494,8 @@
         loadedSportsData[sport] = data;
         var locks = data.slop_locks || [];
         locks.forEach(function (pick) { pick.sport = sport; });
-        renderFeed(locks);
+        locks.sort(function (a, b) { return b.model_prob - a.model_prob; });
+        renderFeed(locks.slice(0, 5));
         renderStats(sport);
       })
       .catch(function () {
