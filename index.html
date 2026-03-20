@@ -362,7 +362,122 @@
     return card;
   }
 
-  // Tasks 3-5 JS goes here
+  // ── Feed state ───────────────────────────────────────────────────────────
+  var feed = document.getElementById('pick-feed');
+  var statsFooter = document.getElementById('stats-footer');
+  var currentSport = 'all';
+  var loadedSportsData = {}; // { nba: predictionsJSON, ncaam: ..., ... }
+
+  // ── clearFeed ─────────────────────────────────────────────────────────────
+  function clearFeed() {
+    while (feed.firstChild) {
+      feed.removeChild(feed.firstChild);
+    }
+  }
+
+  // ── showMessage ───────────────────────────────────────────────────────────
+  function showMessage(text, pulse) {
+    clearFeed();
+    var el = document.createElement('div');
+    el.className = pulse ? 'feed-message pulse' : 'feed-message';
+    el.textContent = text;
+    feed.appendChild(el);
+  }
+
+  // ── renderFeed ────────────────────────────────────────────────────────────
+  // picks: array of tagged slop_locks items (each has .sport set)
+  function renderFeed(picks) {
+    clearFeed();
+    if (!picks || picks.length === 0) {
+      showMessage('NO PICKS TODAY — CHECK BACK AFTER 6AM UTC', false);
+      return;
+    }
+    picks.forEach(function (pick) {
+      feed.appendChild(createPickCard(pick));
+    });
+  }
+
+  // ── renderStats ───────────────────────────────────────────────────────────
+  function renderStats(mode) {
+    if (mode === 'all') {
+      var wins = 0, losses = 0, evaluated = 0;
+      Object.keys(loadedSportsData).forEach(function (sport) {
+        var ps = (loadedSportsData[sport].pick_stats || {}).all || {};
+        wins      += ps.wins      || 0;
+        losses    += ps.losses    || 0;
+        evaluated += ps.evaluated || 0;
+      });
+      var hitRate = evaluated > 0 ? wins / evaluated : null;
+      if (hitRate === null) {
+        statsFooter.textContent = '-- · -- · ROI --';
+      } else {
+        statsFooter.textContent =
+          wins + '-' + losses + ' · ' + (hitRate * 100).toFixed(1) + '% · ROI --';
+      }
+      return;
+    }
+
+    // Per-sport
+    var data = loadedSportsData[mode];
+    if (!data) { statsFooter.textContent = '-- · -- · ROI --'; return; }
+    var ps = (data.pick_stats || {}).all || {};
+    var hitRate = ps.hit_rate != null ? ps.hit_rate : null;
+    var roi     = ps.roi      != null ? ps.roi      : null;
+    if (hitRate === null) {
+      statsFooter.textContent = '-- · -- · ROI --';
+    } else {
+      var roiStr = roi != null
+        ? 'ROI ' + (roi >= 0 ? '+' : '') + (roi * 100).toFixed(1) + '%'
+        : 'ROI --';
+      statsFooter.textContent =
+        (ps.wins || 0) + '-' + (ps.losses || 0) + ' · ' +
+        (hitRate * 100).toFixed(1) + '% · ' + roiStr;
+    }
+  }
+
+  // ── loadAllSports ─────────────────────────────────────────────────────────
+  var ALL_SPORTS = ['nba', 'ncaam', 'mlb', 'mma'];
+
+  function loadAllSports() {
+    currentSport = 'all';
+    loadedSportsData = {};
+    showMessage('LOADING...', true);
+
+    var fetches = ALL_SPORTS.map(function (sport) {
+      return fetch('data/' + sport + '/predictions.json?t=' + Date.now())
+        .then(function (res) { return res.json(); })
+        .then(function (data) { return { sport: sport, data: data }; });
+    });
+
+    Promise.allSettled(fetches).then(function (results) {
+      var allPicks = [];
+
+      results.forEach(function (result) {
+        if (result.status !== 'fulfilled') return; // skip failed fetches silently
+        var sport = result.value.sport;
+        var data  = result.value.data;
+        loadedSportsData[sport] = data;
+
+        (data.slop_locks || []).forEach(function (pick) {
+          pick.sport = sport; // tag with source sport key
+          allPicks.push(pick);
+        });
+      });
+
+      if (Object.keys(loadedSportsData).length === 0) {
+        showMessage('ERROR LOADING DATA', false);
+        statsFooter.textContent = '-- · -- · ROI --';
+        return;
+      }
+
+      // Sort by model_prob descending, take top 5
+      allPicks.sort(function (a, b) { return b.model_prob - a.model_prob; });
+      renderFeed(allPicks.slice(0, 5));
+      renderStats('all');
+    });
+  }
+
+  // Tasks 4-5 JS goes here
 
   loadAllSports(); // init — defined in Task 3
 
