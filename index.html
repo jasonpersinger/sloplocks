@@ -480,7 +480,47 @@
     });
   }
 
-  // Tasks 4-5 JS goes here
+  // ── loadSportData ─────────────────────────────────────────────────────────
+  function loadSportData(sport) {
+    currentSport = sport;
+    showMessage('LOADING...', true);
+
+    fetch('data/' + sport + '/predictions.json?t=' + Date.now())
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        loadedSportsData[sport] = data;
+        var locks = data.slop_locks || [];
+        locks.forEach(function (pick) { pick.sport = sport; });
+        renderFeed(locks);
+        renderStats(sport);
+      })
+      .catch(function () {
+        showMessage('ERROR LOADING DATA', false);
+        statsFooter.textContent = '-- · -- · ROI --';
+      });
+  }
+
+  // ── Nav pill event listeners ──────────────────────────────────────────────
+  document.querySelectorAll('.pill').forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      var sport = this.getAttribute('data-sport');
+      if (sport === currentSport) return; // no-op if already active
+
+      document.querySelectorAll('.pill').forEach(function (p) {
+        p.classList.remove('active');
+      });
+      this.classList.add('active');
+
+      if (sport === 'all') {
+        loadAllSports();
+      } else {
+        loadSportData(sport);
+      }
+    });
+  });
 
   loadAllSports(); // init — defined in Task 3
 
