@@ -1,21 +1,22 @@
 <!DOCTYPE html>
-<!-- DIAGNOSTIC: DEPLOYED 2026-03-19 17:15 UTC -->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SLOP LOCKS — Sports Predictions</title>
-  <meta name="description" content="Big Slime's minimalist sports predictions. NBA & NCAAM daily picks.">
+  <title>SLOP LOCKS</title>
+  <meta name="description" content="Daily sports picks with model edge.">
   <meta name="theme-color" content="#39FF14">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --slime: #39FF14;
       --dim: #888888;
+      --dimmer: #555555;
       --hacker: #1A1A1A;
+      --card-bg: #0d0d0d;
       --black: #000000;
       --font-mono: 'JetBrains Mono', monospace;
     }
@@ -24,7 +25,7 @@
 
     body {
       background: var(--black);
-      color: var(--slime);
+      color: #EAEAEA;
       font-family: var(--font-mono);
       font-size: 13px;
       line-height: 1.2;
@@ -32,7 +33,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow-x: hidden;
     }
 
     .container {
@@ -46,503 +46,196 @@
       background: var(--black);
     }
 
-    /* Utility Classes */
-    .border-b { border-bottom: 1px solid var(--hacker); }
-    .border-t { border-top: 1px solid var(--hacker); }
-    .dashed-b { border-bottom: 1px dashed var(--hacker); }
-    .dim { color: var(--dim); }
-    .p-1 { padding: 4px; }
-    .p-2 { padding: 8px; }
-    .p-3 { padding: 12px; }
-    .flex { display: flex; }
-    .justify-between { justify-content: space-between; }
-    .items-center { align-items: center; }
-    .text-center { text-align: center; }
-    .uppercase { text-transform: uppercase; }
-    .pitcher-tag { font-size: 10px; color: var(--dim); opacity: 0.8; margin-top: -2px; margin-bottom: 2px; }
-
-    /* Ticker */
-    #ticker-top {
-      width: 100%;
-      height: 28px;
-      background: var(--hacker);
-      color: var(--slime);
-      font-size: 10px;
+    /* ── Header ── */
+    .site-header {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      letter-spacing: 0.05em;
-      white-space: nowrap;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 16px 12px 12px;
+      border-bottom: 1px solid var(--hacker);
+    }
+    .site-logo {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--slime);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .site-date {
+      font-size: 10px;
+      color: var(--dimmer);
+      text-transform: uppercase;
     }
 
-    /* Navigation */
-    #sport-nav {
+    /* ── Nav pills ── */
+    .pill-nav {
       display: flex;
       border-bottom: 1px solid var(--hacker);
-      width: 100%;
+      overflow-x: auto;
     }
-    .sport-pill {
+    .pill {
       background: none;
       border: none;
-      color: var(--dim);
+      border-right: 1px solid var(--hacker);
+      color: var(--dimmer);
       font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 16px 8px;
+      font-size: 10px;
+      padding: 10px 14px;
       cursor: pointer;
-      flex: 1;
       text-transform: uppercase;
-      transition: all 0.2s;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
       outline: none;
+      transition: color 0.15s;
     }
-    .sport-pill.active {
-      color: var(--slime);
-    }
+    .pill:last-child { border-right: none; }
+    .pill.active { color: var(--slime); }
+    .pill:hover:not(.active) { color: #888; }
 
-    /* Tape Feed */
-    #tape-feed {
+    /* ── Pick feed ── */
+    #pick-feed {
       flex: 1;
       display: flex;
       flex-direction: column;
+      gap: 1px;
+      background: var(--hacker);
+      border-bottom: 1px solid var(--hacker);
     }
 
-    /* Match Row */
-    .match-row {
-      padding: 12px;
-      border-bottom: 1px solid var(--hacker);
+    /* ── Loading / empty / error states ── */
+    .feed-message {
+      background: var(--black);
+      padding: 40px 16px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--dimmer);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .feed-message.pulse { animation: pulseAnim 2s infinite; }
+    @keyframes pulseAnim { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    /* ── Pick card ── */
+    .pick-card {
+      background: var(--card-bg);
+      border: 1px solid var(--hacker);
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
-      transition: all 0.2s;
+      gap: 8px;
     }
-    
-    .match-row.lock {
-      background: var(--slime);
-      color: var(--black);
+    .card-sport-date {
+      font-size: 9px;
+      color: var(--dimmer);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
     }
-    .match-row.lock .dim { color: var(--black); opacity: 0.6; }
-    .match-row.lock .dashed-line { border-color: var(--black); opacity: 0.3; }
-    .match-row.lock .pick-badge { background: var(--black); color: var(--slime); }
-    .match-row.lock .pos-edge { color: var(--black); font-weight: bold; }
-    .match-row.lock .slime { color: var(--black); }
-
-    .match-row.grinder {
-      border: 1px solid var(--slime);
-      margin: 4px;
+    .card-pick-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
     }
-
-    .match-row.completed {
-      opacity: 0.5;
-    }
-
-    .row-1 { display: flex; align-items: center; gap: 8px; font-size: 10px; }
-    .dashed-line { flex: 1; border-bottom: 1px dashed var(--hacker); height: 1px; }
-    
-    .team-line { display: flex; justify-content: space-between; align-items: center; }
-    .team-name { font-weight: 600; font-size: 14px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .team-info { display: flex; gap: 16px; font-size: 12px; min-width: 160px; justify-content: flex-end; }
-    .pos-edge { color: var(--slime); font-weight: 600; }
-    .neg-edge { color: var(--dim); opacity: 0.5; }
-
-    .row-4 { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
-    .pick-badge {
-      background: var(--hacker);
+    .card-team {
+      font-size: 18px;
+      font-weight: 700;
       color: var(--slime);
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .card-odds {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .card-opponent {
+      font-size: 12px;
+      color: var(--dim);
       text-transform: uppercase;
     }
-    .odds-stars { display: flex; gap: 12px; align-items: center; }
-    .slime { color: var(--slime); }
-    .section-label {
-      background: var(--hacker);
-      color: var(--dim);
-      padding: 6px;
+    .card-stats {
+      display: flex;
+      gap: 18px;
       font-size: 10px;
-      font-weight: bold;
-      letter-spacing: 0.1em;
-      border-bottom: 1px solid var(--hacker);
+    }
+    .stat-model  { color: var(--slime); }
+    .stat-market { color: var(--dim); }
+    .stat-edge   { color: var(--slime); }
+
+    /* ── Edge bar ── */
+    .edge-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 9px;
+      color: var(--dimmer);
+      margin-bottom: 3px;
       text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .edge-bar-outer {
+      width: 100%;
+      height: 4px;
+      background: var(--hacker);
+      display: flex;
+    }
+    .edge-bar-market {
+      height: 4px;
+      background: #333;
+      flex-shrink: 0;
+    }
+    .edge-bar-edge {
+      height: 4px;
+      background: var(--slime);
+      flex-shrink: 0;
     }
 
-    /* Logs Footer */
-    #logs-footer {
+    /* ── Blurb ── */
+    .card-blurb {
+      font-size: 10px;
+      color: #666;
+      line-height: 1.5;
+      border-top: 1px dashed var(--hacker);
+      padding-top: 8px;
+    }
+
+    /* ── Stats footer ── */
+    .stats-footer {
+      padding: 12px;
+      text-align: center;
+      font-size: 10px;
+      color: var(--dimmer);
       border-top: 1px solid var(--hacker);
       margin-top: auto;
     }
-    .info-toggle {
-      width: 100%;
-      padding: 12px;
-      background: var(--hacker);
-      border: none;
-      color: var(--dim);
-      font-family: var(--font-mono);
-      font-size: 11px;
-      text-align: left;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-    .info-toggle:hover {
-      background: #222;
-      color: var(--slime);
-    }
-    #reveal-btn {
-      margin-top: 8px;
-      border-top: 1px dashed var(--hacker);
-      border-bottom: 1px dashed var(--hacker);
-    }
-    .info-content {
-      display: none;
-      padding: 12px;
-      background: var(--black);
-    }
-    .expanded .info-content {
-      display: block;
-    }
-
-    .stat-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px dashed var(--hacker);
-    }
-    .stat-label { color: var(--dim); font-size: 10px; text-transform: uppercase; }
-    .stat-value { color: var(--dim); font-weight: 600; font-size: 10px; }
-
-    /* Animations */
-    .pulse { animation: pulseAnim 2s infinite; }
-    @keyframes pulseAnim { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   </style>
 </head>
 <body>
-  <div id="ticker-top">
-    [ TOP EDGE: --% ] [ TOTAL GAMES: -- ] [ BOT: OPTIMAL ]
-  </div>
-
   <div class="container">
-    <nav id="sport-nav">
-      <button class="sport-pill active" data-sport="nba">[ NBA ]</button>
-      <button class="sport-pill" data-sport="ncaam">( NCAAM )</button>
-      <button class="sport-pill" data-sport="mlb">( MLB )</button>
-      <button class="sport-pill" data-sport="mma">( MMA )</button>
+
+    <header class="site-header">
+      <div class="site-logo">SLOP LOCKS</div>
+      <div class="site-date" id="header-date"></div>
+    </header>
+
+    <nav class="pill-nav">
+      <button class="pill active" data-sport="all">ALL</button>
+      <button class="pill" data-sport="nba">NBA</button>
+      <button class="pill" data-sport="ncaam">NCAAM</button>
+      <button class="pill" data-sport="mlb">MLB</button>
+      <button class="pill" data-sport="mma">MMA</button>
     </nav>
 
-    <main id="tape-feed">
-      <div id="loading-state" class="p-3 text-center dim pulse">
-        LOADING LIVE MODELS...
-      </div>
-
-      <div id="locks-section" style="display:none;">
-        <div id="locks-container"></div>
-      </div>
-
-      <div id="slimegrinder-section" style="display:none;">
-        <div class="section-label text-center">SLIMEGRINDER TRIO</div>
-        <div id="slimegrinder-container"></div>
-      </div>
-
-      <button id="reveal-btn" style="display:none;" class="info-toggle text-center">
-        [ + ] VIEW FULL SLATE
-      </button>
-
-      <div id="slate-section" style="display:none;">
-        <div id="slate-container"></div>
-      </div>
+    <main id="pick-feed">
+      <div class="feed-message pulse" id="loading-msg">LOADING...</div>
     </main>
 
-    <footer id="logs-footer" class="info-section">
-      <button class="info-toggle" id="footer-toggle">
-        [ + ] SYSTEM LOGS / PERFORMANCE
-      </button>
-      <div class="info-content">
-        <div class="dim" style="font-size: 10px; margin-bottom: 4px; font-weight: bold;">PERFORMANCE</div>
-        <div id="pick-stats"></div>
-        
-        <div class="dim" style="font-size: 10px; margin-top: 16px; margin-bottom: 4px; font-weight: bold;">SEASON STATS</div>
-        <div id="season-stats"></div>
+    <footer class="stats-footer" id="stats-footer">-- · -- · ROI --</footer>
 
-        <div class="dim" style="font-size: 10px; margin-top: 16px; margin-bottom: 4px; font-weight: bold;">METHODOLOGY</div>
-        <div class="dim" style="font-size: 10px; line-height: 1.4; opacity: 0.8;">
-          SLOP LOCKS utilizes a weighted ensemble of ELO ratings, adjusted offensive efficiency, and four-factors modeling.
-          We compare our predicted probabilities against market odds to identify positive expected value (+EV).
-        </div>
-
-        <div id="last-updated" class="dim" style="font-size: 10px; margin-top: 16px;"></div>
-        <div id="data-sources" class="dim" style="font-size: 10px; margin-top: 4px;"></div>
-        <div class="dim" style="font-size: 9px; margin-top: 16px; opacity: 0.5;">FOR ENTERTAINMENT PURPOSES ONLY</div>
-        <div style="margin-top: 12px;">
-          <a href="https://ko-fi.com/sloplocks" target="_blank" rel="noopener" style="color:var(--slime); text-decoration: none; font-size: 10px;">[ BUY US A COFFEE ]</a>
-        </div>
-      </div>
-    </footer>
   </div>
 
   <script>
-    (function() {
-      'use strict';
-
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(function(){});
-      }
-
-      var predictionData = null;
-      var currentSport = 'nba';
-      var slateVisible = false;
-
-      var tickerTop = document.getElementById('ticker-top');
-      var loadingState = document.getElementById('loading-state');
-      var slimegrinderSection = document.getElementById('slimegrinder-section');
-      var slimegrinderContainer = document.getElementById('slimegrinder-container');
-      var locksSection = document.getElementById('locks-section');
-      var locksContainer = document.getElementById('locks-container');
-      var slateSection = document.getElementById('slate-section');
-      var slateContainer = document.getElementById('slate-container');
-      var revealBtn = document.getElementById('reveal-btn');
-      var lastUpdated = document.getElementById('last-updated');
-      var infoSection = document.getElementById('logs-footer');
-      var pickStatsDiv = document.getElementById('pick-stats');
-      var seasonStatsDiv = document.getElementById('season-stats');
-      var dataSourcesDiv = document.getElementById('data-sources');
-
-      function createEl(tag, className, textContent) {
-        var el = document.createElement(tag);
-        if (className) el.className = className;
-        if (textContent !== undefined) el.textContent = textContent;
-        return el;
-      }
-
-      function formatOdds(american) {
-        if (american == null) return '--';
-        return american >= 0 ? '+' + american : american;
-      }
-
-      function formatPct(p) { return (p * 100).toFixed(1) + '%'; }
-
-      function formatTimestamp(isoStr) {
-        var d = new Date(isoStr);
-        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) + ' ET';
-      }
-
-      function createMatchRow(match, type) {
-        var rowClass = 'match-row';
-        if (type === 'lock') rowClass += ' lock';
-        if (type === 'slimegrinder') rowClass += ' grinder';
-        if (match.completed) rowClass += ' completed';
-        
-        var container = createEl('div', rowClass);
-        
-        // Row 1: Time/Status + Dashed Line
-        var row1 = createEl('div', 'row-1');
-        var statusText = match.completed ? '[ FINAL ]' : (match.time || 'UPCOMING');
-        row1.appendChild(createEl('span', 'dim', statusText));
-        if (match.neutral) {
-          row1.appendChild(createEl('span', 'neutral-tag', '[ NEUTRAL ]'));
-        }
-        row1.appendChild(createEl('div', 'dashed-line'));
-        container.appendChild(row1);
-
-        var probs = match.model_probs || {};
-        var edges = match.edges || {};
-
-        function createTeamLine(teamName, side) {
-          var line = createEl('div', 'team-line');
-          line.appendChild(createEl('span', 'team-name', teamName.toUpperCase()));
-          
-          var info = createEl('div', 'team-info');
-          var p = probs[side] || 0;
-          var e = (edges[side] && edges[side].edge) ? edges[side].edge : 0;
-          var o = (edges[side] && edges[side].american_odds) ? edges[side].american_odds : null;
-          
-          if (o !== null) {
-            info.appendChild(createEl('span', 'dim', formatOdds(o)));
-          }
-          info.appendChild(createEl('span', 'dim', formatPct(p)));
-          if (e > 0) {
-            info.appendChild(createEl('span', 'pos-edge', '+' + (e * 100).toFixed(1) + '%'));
-          } else {
-            info.appendChild(createEl('span', 'neg-edge', (e * 100).toFixed(1) + '%'));
-          }
-          line.appendChild(info);
-          return line;
-        }
-
-        // Row 2: Home Team
-        container.appendChild(createTeamLine(match.home_team || 'HOME', 'home'));
-        if (match.home_pitcher) {
-          container.appendChild(createEl('div', 'pitcher-tag', 'P: ' + match.home_pitcher.toUpperCase()));
-        }
-        
-        // Row 3: Away Team
-        container.appendChild(createTeamLine(match.away_team || 'AWAY', 'away'));
-        if (match.away_pitcher) {
-          container.appendChild(createEl('div', 'pitcher-tag', 'P: ' + match.away_pitcher.toUpperCase()));
-        }
-
-        // Row 4: Pick Status & Confidence
-        var row4 = createEl('div', 'row-4');
-        var pick = match.pick || 'home';
-        var pickTeam = (pick === 'home' ? (match.home_team || 'HOME') : (match.away_team || 'AWAY')).toUpperCase();
-        row4.appendChild(createEl('div', 'pick-badge', '[ ' + pickTeam + ' ]'));
-        
-        var stars = '★★★★★'.substring(0, match.confidence_stars || 1);
-        row4.appendChild(createEl('div', 'slime', stars));
-        container.appendChild(row4);
-
-        return container;
-      }
-
-      function render(data) {
-        locksContainer.textContent = '';
-        slimegrinderContainer.textContent = '';
-        slateContainer.textContent = '';
-        
-        var locks = data.slop_locks || [];
-        var grinders = data.slimegrinder || [];
-        var allMatches = data.matches || [];
-        
-        // Update ticker: find max edge
-        var maxEdge = 0;
-        allMatches.forEach(function(m) {
-          var e = (m.edge) ? m.edge : 0;
-          if (e > maxEdge) maxEdge = e;
-        });
-        tickerTop.textContent = '[ TOP EDGE: +' + (maxEdge * 100).toFixed(1) + '% ] [ TOTAL GAMES: ' + allMatches.length + ' ] [ BOT: OPTIMAL ]';
-
-        // Sort matches by Edge descending for the slate
-        allMatches.sort(function(a, b) {
-          var ae = a.edge || 0;
-          var be = b.edge || 0;
-          return be - ae;
-        });
-
-        // Filter out locks and grinders from the allMatches list to avoid duplicates
-        var usedKeys = {};
-        locks.forEach(function(l) { usedKeys[l.home_team + l.away_team] = true; });
-        grinders.forEach(function(g) { usedKeys[g.home_team + g.away_team] = true; });
-        
-        var slateMatches = allMatches.filter(function(m) { return !usedKeys[m.home_team + m.away_team]; });
-
-        // FALLBACK: If no grinders found (e.g. no odds), show top 3 likeliest winners as "projected"
-        if (grinders.length === 0 && allMatches.length > 0) {
-          grinders = allMatches.slice(0, 3);
-          slimegrinderSection.querySelector('.section-label').textContent = 'PROJECTED TRIO (NO ODDS)';
-        } else {
-          slimegrinderSection.querySelector('.section-label').textContent = 'SLIMEGRINDER TRIO';
-        }
-
-        if (grinders.length > 0) {
-          grinders.forEach(function(g) { slimegrinderContainer.appendChild(createMatchRow(g, 'slimegrinder')); });
-          slimegrinderSection.style.display = 'block';
-        } else {
-          slimegrinderSection.style.display = 'none';
-        }
-
-        if (locks.length > 0) {
-          locks.forEach(function(l) { locksContainer.appendChild(createMatchRow(l, 'lock')); });
-          locksSection.style.display = 'block';
-        } else {
-          locksSection.style.display = 'none';
-        }
-
-        if (slateMatches.length > 0) {
-          slateMatches.forEach(function(m) { slateContainer.appendChild(createMatchRow(m, false)); });
-          revealBtn.style.display = 'block';
-        } else {
-          revealBtn.style.display = 'none';
-        }
-
-        if (data.generated_at) {
-          lastUpdated.textContent = 'UPDATED ' + formatTimestamp(data.generated_at).toUpperCase();
-        }
-
-        renderStats(data);
-      }
-
-      function renderStats(data) {
-        pickStatsDiv.textContent = '';
-        seasonStatsDiv.textContent = '';
-        
-        var ps = data.pick_stats || {};
-        var ss = data.season_stats || {};
-
-        function addStat(parent, label, value, isSlime) {
-          var row = createEl('div', 'stat-row');
-          row.appendChild(createEl('span', 'stat-label', label));
-          row.appendChild(createEl('span', 'stat-value' + (isSlime ? ' slime' : ''), value));
-          parent.appendChild(row);
-        }
-
-        if (ps.all) {
-          addStat(pickStatsDiv, 'Record', ps.all.wins + '-' + ps.all.losses);
-          addStat(pickStatsDiv, 'ROI', (ps.all.roi * 100).toFixed(1) + '%', ps.all.roi > 0);
-          addStat(pickStatsDiv, 'Win Rate', (ps.all.hit_rate * 100).toFixed(1) + '%');
-        }
-
-        addStat(seasonStatsDiv, 'Total Games', String(ss.total_matches || 0));
-        addStat(seasonStatsDiv, 'Home Win %', (ss.home_win_pct * 100).toFixed(1) + '%');
-        addStat(seasonStatsDiv, 'Away Win %', (ss.away_win_pct * 100).toFixed(1) + '%');
-      }
-
-      function loadSportData(sport) {
-        currentSport = sport;
-        loadingState.style.display = 'block';
-        slimegrinderSection.style.display = 'none';
-        locksSection.style.display = 'none';
-        slateSection.style.display = 'none';
-        revealBtn.style.display = 'none';
-        
-        fetch('data/' + sport + '/predictions.json?t=' + Date.now())
-          .then(function(res) { return res.json(); })
-          .then(function(data) {
-            predictionData = data;
-            loadingState.style.display = 'none';
-            render(data);
-          })
-          .catch(function(err) {
-            loadingState.textContent = 'ERROR LOADING DATA';
-            console.error(err);
-          });
-      }
-
-      document.querySelectorAll('.sport-pill').forEach(function(pill) {
-        pill.addEventListener('click', function() {
-          var s = this.getAttribute('data-sport');
-          if (s === currentSport) return;
-          
-          document.querySelectorAll('.sport-pill').forEach(function(p) {
-            p.classList.remove('active');
-            var sport = p.getAttribute('data-sport').toUpperCase();
-            p.textContent = '( ' + sport + ' )';
-          });
-          
-          this.classList.add('active');
-          var activeSport = this.getAttribute('data-sport').toUpperCase();
-          this.textContent = '[ ' + activeSport + ' ]';
-          
-          slateVisible = false;
-          slateSection.style.display = 'none';
-          loadSportData(s);
-        });
-      });
-
-      revealBtn.addEventListener('click', function() {
-        slateVisible = !slateVisible;
-        slateSection.style.display = slateVisible ? 'block' : 'none';
-        this.textContent = slateVisible ? '[ - ] HIDE SLATE' : '[ + ] VIEW FULL SLATE';
-      });
-
-      var footerToggle = document.getElementById('footer-toggle');
-      footerToggle.addEventListener('click', function() {
-        infoSection.classList.toggle('expanded');
-        var isExpanded = infoSection.classList.contains('expanded');
-        this.textContent = isExpanded ? '[ - ] SYSTEM LOGS / PERFORMANCE' : '[ + ] SYSTEM LOGS / PERFORMANCE';
-      });
-
-      dataSourcesDiv.innerHTML = 'DATA: <a href="https://espn.com" target="_blank">ESPN</a> &bull; <a href="https://the-odds-api.com" target="_blank">THE ODDS API</a>';
-
-      loadSportData('nba');
-    })();
+    // JS added in Tasks 2-5
+    document.getElementById('header-date').textContent =
+      new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).toUpperCase();
   </script>
 </body>
 </html>
