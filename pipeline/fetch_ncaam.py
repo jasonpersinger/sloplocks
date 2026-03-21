@@ -16,6 +16,59 @@ _REQUEST_DELAY = 0.5
 
 _team_map: dict[str, str] | None = None
 
+# Fallback map for Odds API team names that don't appear in ESPN's displayName list
+_ODDS_API_FALLBACK: dict[str, str] = {
+    "Michigan St Spartans": "Michigan State",
+    "Mississippi St Bulldogs": "Mississippi State",
+    "Kansas St Wildcats": "Kansas State",
+    "Iowa St Cyclones": "Iowa State",
+    "Ohio St Buckeyes": "Ohio State",
+    "Penn St Nittany Lions": "Penn State",
+    "Florida St Seminoles": "Florida State",
+    "Arizona St Sun Devils": "Arizona State",
+    "Colorado St Rams": "Colorado State",
+    "Fresno St Bulldogs": "Fresno State",
+    "San Diego St Aztecs": "San Diego State",
+    "Boise St Broncos": "Boise State",
+    "Utah St Aggies": "Utah State",
+    "Weber St Wildcats": "Weber State",
+    "Sacramento St Hornets": "Sacramento State",
+    "Portland St Vikings": "Portland State",
+    "Indiana St Sycamores": "Indiana State",
+    "Wichita St Shockers": "Wichita State",
+    "Kennesaw St Owls": "Kennesaw State",
+    "Jacksonville St Gamecocks": "Jacksonville State",
+    "McNeese St Cowboys": "McNeese State",
+    "Nicholls St Colonels": "Nicholls State",
+    "Grambling St Tigers": "Grambling State",
+    "Alcorn St Braves": "Alcorn State",
+    "Delaware St Hornets": "Delaware State",
+    "Morgan St Bears": "Morgan State",
+    "Norfolk St Spartans": "Norfolk State",
+    "Coppin St Eagles": "Coppin State",
+    "Savannah St Tigers": "Savannah State",
+    "Tennessee St Tigers": "Tennessee State",
+    "NC State Wolfpack": "NC State",
+    "UConn Huskies": "Connecticut",
+    "UNC Tar Heels": "North Carolina",
+    "UCF Knights": "Central Florida",
+    "UNLV Rebels": "UNLV",
+    "USC Trojans": "Southern California",
+    "LSU Tigers": "LSU",
+    "SMU Mustangs": "SMU",
+    "TCU Horned Frogs": "TCU",
+    "VCU Rams": "VCU",
+    "BYU Cougars": "BYU",
+    "Ole Miss Rebels": "Mississippi",
+    "Miami (OH) Redhawks": "Miami (OH)",
+    "Miami Hurricanes": "Miami",
+    "Sam Houston St Bearkats": "Sam Houston State",
+    "Middle Tennessee Blue Raiders": "Middle Tennessee",
+    "UT Arlington Mavericks": "UT Arlington",
+    "UTSA Roadrunners": "UTSA",
+    "UTEP Miners": "UTEP",
+}
+
 
 def _build_team_map() -> dict[str, str]:
     """Fetch ESPN teams endpoint and build displayName -> location map."""
@@ -39,11 +92,12 @@ def normalize_ncaam_team_name(name: str) -> str:
     """Map an ESPN full team name to its short location name.
 
     Lazily fetches the team map from ESPN on first call.
+    Falls back to a manual map for Odds API names that don't appear in ESPN's list.
     """
     global _team_map
     if _team_map is None:
         _team_map = _build_team_map()
-    return _team_map.get(name, name)
+    return _team_map.get(name, _ODDS_API_FALLBACK.get(name, name))
 
 
 # ---- box score parsing ------------------------------------------------------

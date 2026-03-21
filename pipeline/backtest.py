@@ -40,7 +40,9 @@ def evaluate_prediction(probs, home_goals, away_goals):
     else:
         actual = "away"
 
-    actual_prob = probs[actual]
+    # Guard: if actual outcome isn't in probs (e.g. "draw" for a 2-outcome sport),
+    # treat it as a miss with a near-zero probability.
+    actual_prob = probs.get(actual, 1e-15)
     # Clamp to avoid log(0).
     clamped = max(actual_prob, 1e-15)
 
