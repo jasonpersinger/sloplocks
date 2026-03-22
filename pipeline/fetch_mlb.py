@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import requests
 
-from pipeline.config import MLB_ESPN_BASE
+from pipeline.config import MLB_ESPN_BASE, SPORTS
 
 _REQUEST_DELAY = 0.5
 
@@ -49,9 +49,13 @@ def normalize_mlb_team_name(name: str) -> str:
 def _season_date_range(season: int) -> list[str]:
     """Generate list of YYYY-MM-DD date strings for a MLB season.
 
-    Season starts March 20, ends Nov 5.
+    Start date is configurable via SPORTS["mlb"] config (defaults to Feb 20
+    to capture spring training as Elo warmup). Ends Nov 5.
     """
-    start = datetime(season, 3, 20)
+    mlb_cfg = SPORTS.get("mlb", {})
+    start_month = mlb_cfg.get("season_start_month", 2)
+    start_day = mlb_cfg.get("season_start_day", 20)
+    start = datetime(season, start_month, start_day)
     end = min(datetime(season, 11, 5), datetime.now(timezone.utc).replace(tzinfo=None))
     dates = []
     current = start

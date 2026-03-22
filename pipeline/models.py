@@ -388,22 +388,38 @@ class EloRatings:
         self.ratings[home] = r_home + k * (s_home - e_home)
         self.ratings[away] = r_away + k * (s_away - e_away)
 
-    def process_season(self, matches):
+    def process_season(self, matches, recency_decay=0.003):
         """Process a DataFrame of matches in chronological order.
+
+        Recent games receive higher K-factor via exponential decay so that
+        current form matters more than early-season results.
 
         Parameters
         ----------
         matches : pd.DataFrame
             Must contain: home_team, away_team, home_goals, away_goals, date.
+        recency_decay : float
+            Decay rate for recency weighting.  0 = uniform weighting.
+            Default 0.003 means a game from 6 months ago gets ~0.58× K.
         """
         df = matches.sort_values("date").reset_index(drop=True)
-        for _, row in df.iterrows():
+
+        # Compute per-game recency multiplier (1.0 for most recent, decays older)
+        dates = pd.to_datetime(df["date"])
+        most_recent = dates.max()
+        days_ago = (most_recent - dates).dt.days.values.astype(float)
+        recency = np.clip(np.exp(-recency_decay * days_ago), 0.5, 1.0)
+
+        original_k = self.k_factor
+        for idx, (_, row) in enumerate(df.iterrows()):
+            self.k_factor = original_k * recency[idx]
             self.update(
                 row["home_team"],
                 row["away_team"],
                 int(row["home_goals"]),
                 int(row["away_goals"]),
             )
+        self.k_factor = original_k
 
 
 def elo_predict(elo, home_team, away_team, outcomes=None,

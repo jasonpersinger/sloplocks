@@ -97,11 +97,11 @@ def compute_roi(bets):
     return profit / total_staked
 
 
-def update_accuracy_log(accuracy_log, model_name, prediction_result):
+def update_accuracy_log(accuracy_log, model_name, prediction_result, window=None):
     """Append a prediction result to the rolling accuracy log.
 
-    The log is kept to the last ``ENSEMBLE_ACCURACY_WINDOW`` entries per
-    model so that only recent performance drives the ensemble weights.
+    The log is kept to the last *window* entries per model so that only
+    recent performance drives the ensemble weights.
 
     Parameters
     ----------
@@ -111,18 +111,23 @@ def update_accuracy_log(accuracy_log, model_name, prediction_result):
         Identifier for the model.
     prediction_result : dict
         A result dict (as returned by :func:`evaluate_prediction`).
+    window : int or None
+        Rolling window size. Falls back to ``ENSEMBLE_ACCURACY_WINDOW``.
     """
+    if window is None:
+        window = ENSEMBLE_ACCURACY_WINDOW
+
     if model_name not in accuracy_log:
         accuracy_log[model_name] = []
 
     accuracy_log[model_name].append(prediction_result)
 
     # Trim to the configured window size.
-    if len(accuracy_log[model_name]) > ENSEMBLE_ACCURACY_WINDOW:
-        accuracy_log[model_name] = accuracy_log[model_name][-ENSEMBLE_ACCURACY_WINDOW:]
+    if len(accuracy_log[model_name]) > window:
+        accuracy_log[model_name] = accuracy_log[model_name][-window:]
 
 
-def get_rolling_accuracy(accuracy_log, model_name):
+def get_rolling_accuracy(accuracy_log, model_name, window=None):
     """Return the fraction of correct predictions in the log for a model.
 
     Parameters
@@ -131,6 +136,8 @@ def get_rolling_accuracy(accuracy_log, model_name):
         The accuracy log (see :func:`update_accuracy_log`).
     model_name : str
         Identifier for the model.
+    window : int or None
+        Only consider the last *window* entries. Uses all entries if None.
 
     Returns
     -------
@@ -139,6 +146,8 @@ def get_rolling_accuracy(accuracy_log, model_name):
         exists for the model.
     """
     entries = accuracy_log.get(model_name, [])
+    if window is not None:
+        entries = entries[-window:]
     if not entries:
         return 0.5
 

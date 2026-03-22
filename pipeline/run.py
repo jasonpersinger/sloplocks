@@ -15,6 +15,7 @@ from pipeline.config import (
     ANTHROPIC_API_KEY,
     DATA_DIR,
     NBA_B2B_PENALTY,
+    NBA_3IN4_PENALTY,
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SLOP_LOCK_FALLBACK_MIN_ODDS,
@@ -108,6 +109,34 @@ def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) ->
 
     last_game = past_games["_dt"].max()
     return (cutoff - last_game).days
+
+
+def _games_in_window(team: str, before_date: str, matches: pd.DataFrame, days: int = 4) -> int:
+    """Count how many games a team played in a rolling window before a date.
+
+    Parameters
+    ----------
+    team : str
+        Normalised team name.
+    before_date : str
+        ISO date string of the upcoming fixture.
+    matches : pd.DataFrame
+        Historical game results with a ``date`` column.
+    days : int
+        Window size in days (e.g. 4 for 3-in-4-nights detection).
+
+    Returns
+    -------
+    int
+        Number of games played in the window.
+    """
+    cutoff = pd.to_datetime(before_date[:10])
+    window_start = cutoff - timedelta(days=days)
+    team_mask = (matches["home_team"] == team) | (matches["away_team"] == team)
+    team_games = matches[team_mask].copy()
+    team_games["_dt"] = pd.to_datetime(team_games["date"])
+    in_window = team_games[(team_games["_dt"] >= window_start) & (team_games["_dt"] < cutoff)]
+    return len(in_window)
 
 
 # ---------------------------------------------------------------------------
@@ -546,7 +575,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
     if four_factors_model is not None:
         model_names.append("four_factors")
 
-    accuracies = [get_rolling_accuracy(accuracy_log, name) for name in model_names]
+    accuracy_window = sport.get("accuracy_window", None)
+    accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
     weights = compute_model_weights(accuracies)
     model_weight_dict = dict(zip(model_names, weights))
 
@@ -607,6 +637,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     home_rest_adj = -NBA_B2B_PENALTY
                 if away_rest == 1:
                     away_rest_adj = -NBA_B2B_PENALTY
+                # 3-games-in-4-nights fatigue
+                if _games_in_window(home, fix["date"], matches, days=4) >= 3:
+                    home_rest_adj -= NBA_3IN4_PENALTY
+                if _games_in_window(away, fix["date"], matches, days=4) >= 3:
+                    away_rest_adj -= NBA_3IN4_PENALTY
             
             # Disable home advantage for neutral sites
             current_home_adv = 0.0 if is_neutral else elo.home_advantage
@@ -736,11 +771,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
             for model_name in pred.get("individual_models", {}):
                 model_probs = pred["individual_models"][model_name]
                 eval_result = evaluate_prediction(model_probs, hg, ag)
-                update_accuracy_log(accuracy_log, model_name, eval_result)
+                update_accuracy_log(accuracy_log, model_name, eval_result, window=accuracy_window)
 
             if "model_probs" in pred:
                 eval_result = evaluate_prediction(pred["model_probs"], hg, ag)
-                update_accuracy_log(accuracy_log, "ensemble", eval_result)
+                update_accuracy_log(accuracy_log, "ensemble", eval_result, window=accuracy_window)
 
         updated_past.append(pred)
 
@@ -866,9 +901,21 @@ def run_sport_pipeline(sport_key, output_dir=None):
     }
     _save_json(predictions_path, predictions_output)
 
+    # Deduplicate: only add prediction_records not already in history
+    existing_game_keys = set()
+    for p in updated_past:
+        gk = (p["home_team"], p["away_team"], str(p.get("date", ""))[:10])
+        existing_game_keys.add(gk)
+
+    new_predictions = [
+        rec for rec in prediction_records
+        if (rec["home_team"], rec["away_team"], str(rec.get("date", ""))[:10])
+        not in existing_game_keys
+    ]
+
     history_output = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "predictions": updated_past + prediction_records,
+        "predictions": updated_past + new_predictions,
     }
     _save_json(history_path, history_output)
 

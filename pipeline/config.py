@@ -30,6 +30,7 @@ CONGESTION_PENALTY = 0.05
 ELO_K_FACTOR = 20
 ELO_HOME_ADVANTAGE = 65
 NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
+NBA_3IN4_PENALTY = 15  # Elo points subtracted for 3 games in 4 nights
 VALUE_EDGE_THRESHOLD = 0.05
 SLOP_LOCK_MIN_ODDS = -150          # American odds lower bound for Slop Locks
 SLOP_LOCK_MAX_ODDS = 195           # American odds upper bound for Slop Locks
@@ -59,6 +60,7 @@ SPORTS = {
         "elo_k_factor": 20,
         "elo_home_advantage": 65,
         "efficiency_home_bonus": 3.5,
+        "accuracy_window": 40,
         "data_dir": os.path.join(DATA_DIR, "nba"),
     },
     "ncaam": {
@@ -70,6 +72,7 @@ SPORTS = {
         "elo_k_factor": 32,
         "elo_home_advantage": 125,
         "efficiency_home_bonus": 3.5,
+        "accuracy_window": 40,
         "data_dir": os.path.join(DATA_DIR, "ncaam"),
     },
     "mlb": {
@@ -80,6 +83,9 @@ SPORTS = {
         "models": ["elo"],
         "elo_k_factor": 4, # Lower K for 162 game season
         "elo_home_advantage": 24, # Standard MLB home edge
+        "accuracy_window": 80,
+        "season_start_month": 2, # Feb 20 — captures spring training as Elo warmup
+        "season_start_day": 20,
         "data_dir": os.path.join(DATA_DIR, "mlb"),
     },
     "mma": {
@@ -90,6 +96,7 @@ SPORTS = {
         "models": ["elo"],
         "elo_k_factor": 32,
         "elo_home_advantage": 0, # No home advantage in MMA generally
+        "accuracy_window": 20,
         "data_dir": os.path.join(DATA_DIR, "mma"),
     },
 }
