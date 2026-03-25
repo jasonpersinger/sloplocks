@@ -67,6 +67,13 @@ _ODDS_API_FALLBACK: dict[str, str] = {
     "UT Arlington Mavericks": "UT Arlington",
     "UTSA Roadrunners": "UTSA",
     "UTEP Miners": "UTEP",
+    "New Mexico Lobos": "New Mexico",
+    "Saint Joseph's Hawks": "Saint Joseph's",
+    "St. Joseph's (PA) Hawks": "Saint Joseph's",
+    "St. Joseph's Hawks": "Saint Joseph's",
+    "Saint Joseph's Hawks": "Saint Joseph's",
+    "Tulsa Golden Hurricane": "Tulsa",
+    "Wichita St. Shockers": "Wichita State",
 }
 
 

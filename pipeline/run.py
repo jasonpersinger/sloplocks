@@ -266,10 +266,11 @@ def _compute_slop_locks(prediction_records, outcomes):
     """Extract SLOP LOCKS: High-confidence picks meeting Phase 3 criteria.
 
     Strict Requirements:
-    - Confidence Score >= 65
-    - Edge >= 5%
-    - Win Prob > 45% (Must be competitive)
-    - Max 3 picks per sport to avoid over-exposure
+    - POTD (Pick of the Day): Always the #1 highest confidence pick.
+    - Additional Locks: Must meet Confidence Score >= 65.
+    - All must have Edge >= 3% (reduced from 5% to allow for POTD flexibility).
+    - Win Prob > 45% (Must be competitive).
+    - Max 3 picks total per sport.
     """
     candidates = []
     for rec in prediction_records:
@@ -282,12 +283,12 @@ def _compute_slop_locks(prediction_records, outcomes):
             if not e:
                 continue
             
-            # Phase 3 Thresholds
             conf = e.get("confidence_score", 0)
             edge = e.get("edge", 0)
             prob = e.get("model_prob", 0)
             
-            if conf >= 65 and edge >= 0.05 and prob > 0.45:
+            # Basic eligibility for any pick
+            if edge >= 0.03 and prob > 0.45:
                 candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -303,11 +304,20 @@ def _compute_slop_locks(prediction_records, outcomes):
                     "individual_models": rec.get("individual_models", {}),
                 })
 
-    # Sort by confidence score (primary) and edge (secondary)
+    # Sort all eligible candidates by confidence score
     candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
     
-    # Strictly limit to top 3 — do NOT fill to 5 if criteria aren't met
-    selected = candidates[:3]
+    if not candidates:
+        return []
+
+    # 1. The Pick of the Day (Always the #1 candidate)
+    selected = [candidates[0]]
+    
+    # 2. Additional Locks (Only if they meet the strict 65+ Sniper threshold)
+    for c in candidates[1:3]:
+        if c["confidence_score"] >= 65:
+            selected.append(c)
+
     return _exclude_opponent_conflicts(selected)
 
 

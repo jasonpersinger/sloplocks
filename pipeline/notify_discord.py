@@ -69,19 +69,23 @@ def _lock_field(lock: dict, sport_key: str) -> dict:
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick  = _pick_team(lock)
     date  = _display_date(lock.get("date", ""), sport_key)
-    stars = lock.get("confidence_stars", 1)
-    star_str = "⭐" * stars
+    conf_score = lock.get("confidence_score", 0)
 
-    name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}"
+    # Determine status label
+    status = ""
+    if conf_score >= 85: status = " 🔥 **MASTER LOCK**"
+    elif conf_score >= 65: status = " ✅ **VALIDATED**"
+    else: status = " ⚠️ **LEAN**"
+
+    name  = f"{emoji}  {lock['home_team']} vs {lock['away_team']}  ·  {date}{status}"
     odds  = lock.get("american_odds")
     value = (
         f"**{pick}**  ·  {_fmt_odds(odds)}"
-        f"  ·  {_fmt_pct(lock['model_prob'])} conf"
+        f"  ·  {_fmt_pct(lock['model_prob'])} win prob"
         f"  ·  {lock['edge'] * 100:+.1f}% edge"
-        f"\n{star_str} Rating"
+        f"\nConfidence: **{conf_score}/100**"
     )
     if lock.get("blurb"):
-        # Discord quote block for the blurb
         value += f"\n> {lock['blurb']}"
 
     return {"name": name, "value": value[:1024], "inline": False}
@@ -92,8 +96,7 @@ def build_payload() -> dict:
     et_now = datetime.now(ZoneInfo("America/New_York"))
     header_date = et_now.strftime("%b %d, %Y")
 
-    # --- Collect all candidates across every sport ---
-    all_candidates: list[tuple[str, dict]] = []  # (sport_key, match)
+    all_locks: list[tuple[str, dict]] = []  # (sport_key, match)
     for sport_key in ("nba", "ncaam"):
         pred_path = DATA_DIR / sport_key / "predictions.json"
         if not pred_path.exists():
@@ -101,39 +104,31 @@ def build_payload() -> dict:
         with open(pred_path) as f:
             data = json.load(f)
         
-        # Use a dict to deduplicate by (home, away)
-        seen_matches = {}
-        
-        # 1. Add Slop Locks (these already have confidence_stars from run.py)
+        # 1. Add Slop Locks (now including Pick of the Day)
         for lock in data.get("slop_locks") or []:
-            key = (lock["home_team"], lock["away_team"])
-            seen_matches[key] = lock
+            all_locks.append((sport_key, lock))
             
-        # 2. Add all other matches (all now have confidence_stars from run.py)
-        for match in data.get("matches") or []:
-            key = (match["home_team"], match["away_team"])
-            if key not in seen_matches:
-                seen_matches[key] = match
-        
-        for match in seen_matches.values():
-            all_candidates.append((sport_key, match))
+        # 2. Add Longslop (if high confidence)
+        ls = data.get("longslop")
+        if ls:
+            ls["is_longshot"] = True
+            all_locks.append((sport_key, ls))
 
-    # Sort all candidates by Edge (desc), then star rating (desc), then model prob (desc)
-    all_candidates.sort(key=lambda x: (x[1].get("edge", 0), x[1].get("confidence_stars", 0), x[1].get("model_prob", 0)), reverse=True)
-    top10 = all_candidates[:10]
+    # Sort all by confidence score
+    all_locks.sort(key=lambda x: x[1].get("confidence_score", 0), reverse=True)
 
-    if top10:
-        fields = [_lock_field(match, sport_key) for sport_key, match in top10]
+    if all_locks:
+        fields = [_lock_field(match, sport_key) for sport_key, match in all_locks]
         embeds.append({
-            "title": "\u2B50  TOP MATCHUPS",
+            "title": "🔒  TOP PICKS OF THE DAY",
             "color": COLOR_SLIME,
             "fields": fields,
-            "footer": {"text": "sloplocks.lol  ·  ranked by edge"},
+            "footer": {"text": "sloplocks.lol  ·  ranked by confidence score"},
         })
 
     return {
         "username": "BIG SLIME",
-        "content": f"🔒  **SLOP LOCKS  ·  {header_date}**",
+        "content": f"🎯  **SLOP LOCKS  ·  {header_date}**",
         "embeds": embeds[:10],
     }
 
