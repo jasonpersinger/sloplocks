@@ -263,146 +263,140 @@ def _exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
 
 
 def _compute_slop_locks(prediction_records, outcomes):
-    """Extract SLOP LOCKS: top 5 most confident picks.
+    """Extract SLOP LOCKS: High-confidence picks meeting Phase 3 criteria.
 
-    Picks within -150 to +195 are preferred. If fewer than 5 qualify, the
-    remaining slots are filled with the most confident picks outside the window
-    so there are always picks whenever odds data is available.
-    """
-    in_window = []
-    outside_window = []
-    for rec in prediction_records:
-        if rec.get("completed"):
-            continue
-        edges = rec.get("edges", {})
-        best_odds = rec.get("best_odds", {})
-        # Build candidates for this game, then keep only the most confident outcome
-        game_candidates = []
-        for outcome in outcomes:
-            e = edges.get(outcome)
-            if not e:
-                continue
-            american = best_odds.get(outcome, e.get("american_odds"))
-            if american is None:
-                continue
-            game_candidates.append({
-                "home_team": rec["home_team"],
-                "away_team": rec["away_team"],
-                "date": rec["date"],
-                "matchday": rec.get("matchday"),
-                "pick": outcome,
-                "model_prob": round(e["model_prob"], 4),
-                "implied_prob": round(e["implied_prob"], 4),
-                "edge": round(e["edge"], 4),
-                "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
-                "individual_models": rec.get("individual_models", {}),
-            })
-        game_candidates = [c for c in game_candidates if c["edge"] >= 0]
-        if not game_candidates:
-            continue
-        # One pick per game — the outcome the model is most confident in
-        best = max(game_candidates, key=lambda x: x["model_prob"])
-        if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
-            in_window.append(best)
-        elif best["american_odds"] >= SLOP_LOCK_FALLBACK_MIN_ODDS:
-            outside_window.append(best)
-
-    in_window.sort(key=lambda x: x["model_prob"], reverse=True)
-    outside_window.sort(key=lambda x: x["model_prob"], reverse=True)
-    result = in_window[:5]
-    if len(result) < 5:
-        result.extend(outside_window[:5 - len(result)])
-    return _exclude_opponent_conflicts(result)
-
-
-
-def _compute_longslop(prediction_records, outcomes):
-    """Extract LONGSLOP (best longshot the model believes may hit, +500 or better).
-
-    Ranked by model probability among +500 lines where the model is at
-    least as optimistic as the books (model_prob >= implied_prob).
-    """
-    longslop_candidates = []
-    for rec in prediction_records:
-        if rec.get("completed"):
-            continue
-        edges = rec.get("edges", {})
-        best_odds = rec.get("best_odds", {})
-        model_probs = rec.get("model_probs", {})
-        for outcome in outcomes:
-            e = edges.get(outcome)
-            american = best_odds.get(outcome, e.get("american_odds") if e else None)
-            if american is None or american < 500:
-                continue
-            # Use model probability from edges if available, else from blended probs
-            model_prob = e["model_prob"] if e else model_probs.get(outcome, 0)
-            implied_prob = e["implied_prob"] if e else 0
-            edge = e["edge"] if e else 0
-            decimal_odds = e["decimal_odds"] if e else 0
-            # Model must believe in this at least as much as the books do
-            if model_prob <= 0 or model_prob < implied_prob:
-                continue
-            longslop_candidates.append({
-                "home_team": rec["home_team"],
-                "away_team": rec["away_team"],
-                "date": rec["date"],
-                "matchday": rec.get("matchday"),
-                "pick": outcome,
-                "model_prob": round(model_prob, 4),
-                "implied_prob": round(implied_prob, 4),
-                "edge": round(edge, 4),
-                "american_odds": american,
-                "decimal_odds": decimal_odds,
-                "individual_models": rec.get("individual_models", {}),
-            })
-
-    longslop_candidates.sort(key=lambda x: x["model_prob"], reverse=True)
-    return longslop_candidates[0] if longslop_candidates else None
-
-
-def _compute_slimegrinder(prediction_records, outcomes):
-    """Extract SLIMEGRINDER: Top 3 likely winners with positive edge.
-    Odds window: -250 to +165.
+    Strict Requirements:
+    - Confidence Score >= 65
+    - Edge >= 5%
+    - Win Prob > 45% (Must be competitive)
+    - Max 3 picks per sport to avoid over-exposure
     """
     candidates = []
     for rec in prediction_records:
         if rec.get("completed"):
             continue
         edges = rec.get("edges", {})
-        best_odds = rec.get("best_odds", {})
+        
+        for outcome in outcomes:
+            e = edges.get(outcome)
+            if not e:
+                continue
+            
+            # Phase 3 Thresholds
+            conf = e.get("confidence_score", 0)
+            edge = e.get("edge", 0)
+            prob = e.get("model_prob", 0)
+            
+            if conf >= 65 and edge >= 0.05 and prob > 0.45:
+                candidates.append({
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": rec["date"],
+                    "matchday": rec.get("matchday"),
+                    "pick": outcome,
+                    "model_prob": round(prob, 4),
+                    "implied_prob": round(e["implied_prob"], 4),
+                    "edge": round(edge, 4),
+                    "american_odds": e["american_odds"],
+                    "decimal_odds": e["decimal_odds"],
+                    "confidence_score": conf,
+                    "individual_models": rec.get("individual_models", {}),
+                })
+
+    # Sort by confidence score (primary) and edge (secondary)
+    candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
+    
+    # Strictly limit to top 3 — do NOT fill to 5 if criteria aren't met
+    selected = candidates[:3]
+    return _exclude_opponent_conflicts(selected)
+
+
+
+def _compute_longslop(prediction_records, outcomes):
+    """Extract LONGSLOP: High-upside longshots (+500 or better) that pass Phase 3.
+
+    Must meet the same 65+ confidence threshold as standard locks.
+    """
+    longslop_candidates = []
+    for rec in prediction_records:
+        if rec.get("completed"):
+            continue
+        edges = rec.get("edges", {})
+        
+        for outcome in outcomes:
+            e = edges.get(outcome)
+            if not e:
+                continue
+            
+            american = e.get("american_odds", 0)
+            if american < 500:
+                continue
+            
+            # Phase 3 Thresholds
+            conf = e.get("confidence_score", 0)
+            edge = e.get("edge", 0)
+            prob = e.get("model_prob", 0)
+            
+            # For longslop, we require high confidence and positive edge
+            if conf >= 65 and edge >= 0:
+                longslop_candidates.append({
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": rec["date"],
+                    "matchday": rec.get("matchday"),
+                    "pick": outcome,
+                    "model_prob": round(prob, 4),
+                    "implied_prob": round(e["implied_prob"], 4),
+                    "edge": round(edge, 4),
+                    "american_odds": american,
+                    "decimal_odds": e["decimal_odds"],
+                    "confidence_score": conf,
+                    "individual_models": rec.get("individual_models", {}),
+                })
+
+    longslop_candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
+    return longslop_candidates[0] if longslop_candidates else None
+
+
+def _compute_slimegrinder(prediction_records, outcomes):
+    """Extract SLIMEGRINDER: High-confidence, likely winners (odds -250 to +165).
+    
+    Must meet the same 65+ confidence threshold as Locks.
+    """
+    candidates = []
+    for rec in prediction_records:
+        if rec.get("completed"):
+            continue
+        edges = rec.get("edges", {})
 
         for outcome in outcomes:
             e = edges.get(outcome)
-            # Must have odds to be a Slimegrinder
-            if not e or not best_odds.get(outcome):
+            if not e:
                 continue
 
-            american = best_odds[outcome]
+            american = e.get("american_odds", 0)
             if not (SLIMEGRINDER_MIN_ODDS <= american <= SLIMEGRINDER_MAX_ODDS):
                 continue
 
-            model_prob = e["model_prob"]
-            implied_prob = e["implied_prob"]
-            edge = e["edge"]
+            conf = e.get("confidence_score", 0)
+            edge = e.get("edge", 0)
+            prob = e.get("model_prob", 0)
 
-            # Must have positive edge
-            if edge <= 0:
-                continue
-
-            candidates.append({
-                "home_team": rec["home_team"],
-                "away_team": rec["away_team"],
-                "date": rec["date"],
-                "matchday": rec.get("matchday"),
-                "pick": outcome,
-                "model_prob": round(model_prob, 4),
-                "implied_prob": round(implied_prob, 4),
-                "edge": round(edge, 4),
-                "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
-                "confidence_stars": rec.get("confidence_stars", 1),
-            })
+            # Strict Phase 3 filter
+            if conf >= 65 and edge > 0:
+                candidates.append({
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": rec["date"],
+                    "matchday": rec.get("matchday"),
+                    "pick": outcome,
+                    "model_prob": round(prob, 4),
+                    "implied_prob": round(e["implied_prob"], 4),
+                    "edge": round(edge, 4),
+                    "american_odds": american,
+                    "decimal_odds": e["decimal_odds"],
+                    "confidence_score": conf,
+                })
 
     # Sort by raw model probability (descending) to find the likeliest winners
     candidates.sort(key=lambda x: x["model_prob"], reverse=True)
@@ -686,7 +680,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
         edges = {}
         best_odds = {}
         if match_odds:
-            edges = compute_edges(blended, match_odds)
+            # Pass individual_preds to enable Agreement Score
+            edges = compute_edges(blended, match_odds, individual_probs=individual_preds)
             best_odds = {}
             for out in outcomes:
                 odds_key = f"{out}_odds"
@@ -695,12 +690,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     best_odds[out] = decimal_to_american(dec)
 
         # Determine the best pick and its confidence rating
-        # We pick the outcome the model is most confident in (highest probability)
         pick = max(blended.keys(), key=lambda k: blended[k])
         model_prob = blended[pick]
-        edge = edges.get(pick, {}).get("edge", 0.0)
+        edge_data = edges.get(pick, {})
+        edge = edge_data.get("edge", 0.0)
+        confidence_score = edge_data.get("confidence_score", 0)
+        
+        # Legacy stars for frontend compatibility
         stars = compute_confidence_stars(model_prob, edge)
-        american_odds = best_odds.get(pick)
 
         record = {
             "home_team": home,
@@ -714,8 +711,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
+            "confidence_score": confidence_score,
             "confidence_stars": stars,
-            "american_odds": american_odds,
+            "american_odds": best_odds.get(pick),
             "model_probs": {k: round(v, 4) for k, v in blended.items()},
             "individual_models": {
                 name: {k: round(v, 4) for k, v in probs.items()}
