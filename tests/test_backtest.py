@@ -1,13 +1,19 @@
 """Tests for the backtesting and accuracy-tracking utilities."""
 
+import json
 import math
+import os
 import pytest
 
 from pipeline.backtest import (
+    build_backtest_report,
+    compute_brier_score,
     compute_model_weights,
     compute_roi,
     evaluate_prediction,
     get_rolling_accuracy,
+    summarize_pick_history,
+    summarize_prediction_history,
     update_accuracy_log,
 )
 from pipeline.config import ENSEMBLE_ACCURACY_WINDOW
@@ -70,6 +76,11 @@ class TestEvaluatePrediction:
         assert result["predicted"] == "away"
         assert result["actual"] == "away"
         assert result["correct"] is True
+
+    def test_compute_brier_score(self):
+        probs = {"home": 0.6, "away": 0.4}
+        score = compute_brier_score(probs, home_goals=110, away_goals=100)
+        assert math.isclose(score, 0.32)
 
 
 # ---------------------------------------------------------------------------
@@ -167,3 +178,59 @@ class TestGetRollingAccuracy:
     def test_returns_default_for_no_data(self):
         """With no log entries the function should return 0.5."""
         assert get_rolling_accuracy({}, "missing_model") == 0.5
+
+
+class TestBacktestSummary:
+    def test_summarize_prediction_history(self):
+        predictions = [
+            {
+                "evaluated": True,
+                "home_goals": 110,
+                "away_goals": 100,
+                "model_probs": {"home": 0.7, "away": 0.3},
+            },
+            {
+                "evaluated": True,
+                "home_goals": 95,
+                "away_goals": 102,
+                "model_probs": {"home": 0.6, "away": 0.4},
+            },
+        ]
+
+        summary = summarize_prediction_history(predictions)
+
+        assert summary["evaluated"] == 2
+        assert summary["accuracy"] == pytest.approx(0.5)
+        assert summary["avg_log_loss"] is not None
+        assert summary["avg_brier"] is not None
+
+    def test_build_backtest_report(self, tmp_path):
+        data_dir = tmp_path / "data"
+        nba_dir = data_dir / "nba"
+        nba_dir.mkdir(parents=True)
+
+        with open(nba_dir / "history.json", "w") as f:
+            json.dump({
+                "predictions": [
+                    {
+                        "evaluated": True,
+                        "home_goals": 110,
+                        "away_goals": 100,
+                        "model_probs": {"home": 0.7, "away": 0.3},
+                    }
+                ]
+            }, f)
+
+        with open(nba_dir / "pick_history.json", "w") as f:
+            json.dump({
+                "picks": [
+                    {"evaluated": True, "won": True, "decimal_odds": 2.1},
+                    {"evaluated": True, "won": False, "decimal_odds": 1.8},
+                ]
+            }, f)
+
+        report = build_backtest_report(str(data_dir), sports=["nba"])
+
+        assert report["sports"]["nba"]["predictions"]["evaluated"] == 1
+        assert report["sports"]["nba"]["picks"]["evaluated"] == 2
+        assert report["aggregate"]["picks"]["roi"] is not None

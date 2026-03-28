@@ -1,0 +1,167 @@
+"""Tests for pipeline.notify_discord."""
+
+import json
+
+import pipeline.notify_discord as notify_discord
+
+
+def _write_predictions(tmp_path, sport, payload):
+    sport_dir = tmp_path / sport
+    sport_dir.mkdir(parents=True, exist_ok=True)
+    with open(sport_dir / "predictions.json", "w") as f:
+        json.dump(payload, f)
+
+
+def _base_match(**overrides):
+    match = {
+        "home_team": "Lakers",
+        "away_team": "Celtics",
+        "date": "2026-03-28",
+        "pick": "home",
+        "model_prob": 0.62,
+        "confidence_score": 74,
+        "edge": 0.061,
+        "american_odds": 115,
+        "model_probs": {"home": 0.62, "away": 0.38},
+        "best_odds": {"home": 115, "away": -125},
+        "edges": {
+            "home": {
+                "model_prob": 0.62,
+                "implied_prob": 0.559,
+                "edge": 0.061,
+                "expected_value": 0.173,
+                "american_odds": 115,
+                "fractional_kelly": 0.041,
+            }
+        },
+        "completed": False,
+    }
+    match.update(overrides)
+    return match
+
+
+def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_path):
+    nba_match = _base_match()
+    nba_lock = {
+        "home_team": "Lakers",
+        "away_team": "Celtics",
+        "date": "2026-03-28",
+        "pick": "home",
+        "model_prob": 0.62,
+        "edge": 0.061,
+        "confidence_score": 74,
+        "american_odds": 115,
+        "blurb": "The numbers like the Lakers here.",
+    }
+    _write_predictions(
+        tmp_path,
+        "nba",
+        {
+            "slop_locks": [nba_lock],
+            "longslop": None,
+            "matches": [nba_match],
+        },
+    )
+
+    mlb_match = _base_match(
+        home_team="Dodgers",
+        away_team="Padres",
+        pick="away",
+        model_prob=0.29,
+        confidence_score=68,
+        edge=0.034,
+        american_odds=525,
+        model_probs={"home": 0.71, "away": 0.29},
+        best_odds={"home": -650, "away": 525},
+        edges={
+            "away": {
+                "model_prob": 0.29,
+                "implied_prob": 0.256,
+                "edge": 0.034,
+                "expected_value": 0.812,
+                "american_odds": 525,
+                "fractional_kelly": 0.019,
+            }
+        },
+        home_pitcher="Yamamoto",
+        away_pitcher="Cease",
+    )
+    mlb_longslop = {
+        "home_team": "Dodgers",
+        "away_team": "Padres",
+        "date": "2026-03-28",
+        "pick": "away",
+    }
+    _write_predictions(
+        tmp_path,
+        "mlb",
+        {
+            "slop_locks": [],
+            "longslop": mlb_longslop,
+            "matches": [mlb_match],
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    full_text = json.dumps(payload)
+
+    assert payload["username"] == "BIG SLIME"
+    assert "curated picks" in payload["content"]
+    assert "Lakers" in full_text
+    assert "Dodgers" in full_text
+    assert "LONGSLOP" in full_text
+    assert "EV 0.17u" in full_text
+    assert "Kelly 4.1%" in full_text
+    assert "Pitchers: Cease vs Yamamoto" in full_text
+
+
+def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
+    _write_predictions(
+        tmp_path,
+        "mma",
+        {
+            "slop_locks": [],
+            "longslop": None,
+            "matches": [
+                _base_match(
+                    home_team="Jon Jones",
+                    away_team="Tom Aspinall",
+                    confidence_score=71,
+                    model_prob=0.64,
+                    american_odds=-135,
+                    edges={},
+                    best_odds={},
+                )
+            ],
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    full_text = json.dumps(payload)
+
+    assert "radar spot" in payload["content"]
+    assert "MODEL RADAR" in full_text
+    assert "Jon Jones" in full_text
+
+
+def test_build_payload_handles_empty_day(monkeypatch, tmp_path):
+    _write_predictions(
+        tmp_path,
+        "ncaam",
+        {
+            "slop_locks": [],
+            "longslop": None,
+            "matches": [],
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+
+    assert payload["embeds"] == []
+    assert "No picks qualified today" in payload["content"]

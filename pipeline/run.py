@@ -6,6 +6,7 @@ and JSON output into a single ``run_pipeline()`` entry point.
 
 import json
 import os
+import csv
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
@@ -16,6 +17,8 @@ from pipeline.config import (
     DATA_DIR,
     NBA_B2B_PENALTY,
     NBA_3IN4_PENALTY,
+    TRACKING_DIRNAME,
+    RESULTS_LOG_FILENAME,
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SLOP_LOCK_FALLBACK_MIN_ODDS,
@@ -37,6 +40,7 @@ from pipeline.models import (
     four_factors_predict,
 )
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american, compute_confidence_stars
+from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
 from pipeline.backtest import (
     compute_model_weights,
     compute_roi,
@@ -78,6 +82,105 @@ def _save_json(path, data):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f, indent=2, cls=_NumpyEncoder)
+
+
+_RESULTS_LOG_FIELDS = [
+    "logged_at",
+    "sport",
+    "entry_type",
+    "home_team",
+    "away_team",
+    "match_date",
+    "pick",
+    "actual",
+    "won",
+    "model_prob",
+    "home_prob",
+    "away_prob",
+    "draw_prob",
+    "implied_prob",
+    "market_implied_prob",
+    "edge",
+    "expected_value",
+    "american_odds",
+    "decimal_odds",
+    "confidence_score",
+    "kelly_fraction",
+    "fractional_kelly",
+]
+
+
+def _results_log_path(base_dir: str) -> str:
+    """Return the CSV path for the persistent resolved-results log."""
+    return os.path.join(base_dir, TRACKING_DIRNAME, RESULTS_LOG_FILENAME)
+
+
+def _results_log_key(row: dict) -> tuple:
+    """Stable dedupe key for results-log rows."""
+    return (
+        row["sport"],
+        row["entry_type"],
+        row["home_team"],
+        row["away_team"],
+        row["match_date"],
+        row["pick"],
+    )
+
+
+def _build_results_log_row(sport_key: str, entry_type: str, record: dict, match_date: str, actual: str) -> dict:
+    """Normalize an evaluated prediction or pick into one CSV results-log row."""
+    model_probs = record.get("model_probs", {})
+    pick = record.get("pick", "")
+    return {
+        "logged_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sport": sport_key,
+        "entry_type": entry_type,
+        "home_team": record["home_team"],
+        "away_team": record["away_team"],
+        "match_date": match_date,
+        "pick": pick,
+        "actual": actual,
+        "won": str(pick == actual).lower(),
+        "model_prob": record.get("model_prob"),
+        "home_prob": model_probs.get("home"),
+        "away_prob": model_probs.get("away"),
+        "draw_prob": model_probs.get("draw"),
+        "implied_prob": record.get("implied_prob"),
+        "market_implied_prob": record.get("market_implied_prob"),
+        "edge": record.get("edge"),
+        "expected_value": record.get("expected_value"),
+        "american_odds": record.get("american_odds"),
+        "decimal_odds": record.get("decimal_odds"),
+        "confidence_score": record.get("confidence_score"),
+        "kelly_fraction": record.get("kelly_fraction"),
+        "fractional_kelly": record.get("fractional_kelly"),
+    }
+
+
+def _append_results_log(path: str, rows: list[dict]) -> None:
+    """Append deduped rows to the persistent results log."""
+    if not rows:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    existing_keys = set()
+    if os.path.exists(path):
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                existing_keys.add(_results_log_key(row))
+
+    file_exists = os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_RESULTS_LOG_FIELDS)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            key = _results_log_key(row)
+            if key in existing_keys:
+                continue
+            writer.writerow({field: row.get(field, "") for field in _RESULTS_LOG_FIELDS})
+            existing_keys.add(key)
 
 
 
@@ -137,6 +240,83 @@ def _games_in_window(team: str, before_date: str, matches: pd.DataFrame, days: i
     team_games["_dt"] = pd.to_datetime(team_games["date"])
     in_window = team_games[(team_games["_dt"] >= window_start) & (team_games["_dt"] < cutoff)]
     return len(in_window)
+
+
+def _recent_form_adjustment(
+    team: str,
+    before_date: str,
+    matches: pd.DataFrame,
+    window: int = 6,
+    max_adjustment: float = 0.0,
+) -> float:
+    """Return an Elo-point adjustment from a team's recent results.
+
+    The adjustment is centered on a 0.500 results score:
+    wins = 1.0, draws = 0.5, losses = 0.0.
+    It scales down automatically when fewer than ``window`` prior games exist.
+    """
+    if matches is None or matches.empty or window <= 0 or max_adjustment <= 0:
+        return 0.0
+
+    cutoff = pd.to_datetime(before_date[:10])
+    team_mask = (matches["home_team"] == team) | (matches["away_team"] == team)
+    team_games = matches[team_mask].copy()
+    if team_games.empty:
+        return 0.0
+
+    team_games["_dt"] = pd.to_datetime(team_games["date"])
+    past_games = team_games[team_games["_dt"] < cutoff].sort_values("_dt", ascending=False).head(window)
+    if past_games.empty:
+        return 0.0
+
+    scores = []
+    for _, row in past_games.iterrows():
+        if row["home_goals"] == row["away_goals"]:
+            scores.append(0.5)
+        elif row["home_team"] == team:
+            scores.append(1.0 if row["home_goals"] > row["away_goals"] else 0.0)
+        else:
+            scores.append(1.0 if row["away_goals"] > row["home_goals"] else 0.0)
+
+    form_score = sum(scores) / len(scores)
+    sample_scale = min(1.0, len(scores) / float(window))
+    return ((form_score - 0.5) * 2.0) * max_adjustment * sample_scale
+
+
+def _rest_adjustment(team: str, before_date: str, matches: pd.DataFrame, sport: dict) -> float:
+    """Return a sport-specific Elo-point rest/fatigue adjustment."""
+    if matches is None or matches.empty:
+        return 0.0
+
+    adjustment = 0.0
+    days_since = _days_since_last_game(team, before_date, matches)
+
+    back_to_back_penalty = sport.get("back_to_back_penalty", 0.0)
+    if days_since == 1 and back_to_back_penalty:
+        adjustment -= back_to_back_penalty
+
+    rest_bonus_days = sport.get("rest_bonus_days", 0)
+    rest_bonus_points = sport.get("rest_bonus_points", 0.0)
+    if (
+        rest_bonus_days
+        and rest_bonus_points
+        and days_since is not None
+        and days_since >= rest_bonus_days
+    ):
+        adjustment += rest_bonus_points
+
+    fatigue_window_days = sport.get("fatigue_window_days", 0)
+    fatigue_threshold_games = sport.get("fatigue_threshold_games", 0)
+    fatigue_penalty = sport.get("fatigue_penalty", 0.0)
+    if (
+        fatigue_window_days
+        and fatigue_threshold_games
+        and fatigue_penalty
+        and _games_in_window(team, before_date, matches, days=fatigue_window_days) >= fatigue_threshold_games
+    ):
+        adjustment -= fatigue_penalty
+
+    return adjustment
 
 
 # ---------------------------------------------------------------------------
@@ -262,15 +442,22 @@ def _exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
     return [l for l in locks if id(l) not in to_remove]
 
 
-def _compute_slop_locks(prediction_records, outcomes):
+def _compute_slop_locks(
+    prediction_records,
+    outcomes,
+    min_expected_value: float = 0.0,
+    edge_floor: float = 0.03,
+    probability_floor: float = 0.45,
+    additional_confidence_floor: float = 65.0,
+    confidence_dropoff: float = 0.0,
+    max_picks: int = 3,
+):
     """Extract SLOP LOCKS: High-confidence picks meeting Phase 3 criteria.
 
-    Strict Requirements:
-    - POTD (Pick of the Day): Always the #1 highest confidence pick.
-    - Additional Locks: Must meet Confidence Score >= 65.
-    - All must have Edge >= 3% (reduced from 5% to allow for POTD flexibility).
-    - Win Prob > 45% (Must be competitive).
-    - Max 3 picks total per sport.
+    The top eligible candidate is always included. Additional picks can qualify
+    either by clearing an absolute confidence floor or by staying close enough
+    to the slate's top score. This avoids emptying the card on slates where the
+    market compresses all scores into a narrow band.
     """
     candidates = []
     for rec in prediction_records:
@@ -286,9 +473,10 @@ def _compute_slop_locks(prediction_records, outcomes):
             conf = e.get("confidence_score", 0)
             edge = e.get("edge", 0)
             prob = e.get("model_prob", 0)
+            ev = e.get("expected_value", 0.0)
             
             # Basic eligibility for any pick
-            if edge >= 0.03 and prob > 0.45:
+            if edge >= edge_floor and prob >= probability_floor and ev >= min_expected_value:
                 candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -298,8 +486,11 @@ def _compute_slop_locks(prediction_records, outcomes):
                     "model_prob": round(prob, 4),
                     "implied_prob": round(e["implied_prob"], 4),
                     "edge": round(edge, 4),
+                    "expected_value": round(ev, 4),
                     "american_odds": e["american_odds"],
                     "decimal_odds": e["decimal_odds"],
+                    "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
+                    "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
                     "confidence_score": conf,
                     "individual_models": rec.get("individual_models", {}),
                 })
@@ -310,19 +501,30 @@ def _compute_slop_locks(prediction_records, outcomes):
     if not candidates:
         return []
 
-    # 1. The Pick of the Day (Always the #1 candidate)
+    # 1. The Pick of the Day (Always the #1 eligible candidate)
     selected = [candidates[0]]
+    top_confidence = candidates[0]["confidence_score"]
     
-    # 2. Additional Locks (Only if they meet the strict 65+ Sniper threshold)
-    for c in candidates[1:3]:
-        if c["confidence_score"] >= 65:
+    # 2. Additional Locks
+    for c in candidates[1:]:
+        if len(selected) >= max_picks:
+            break
+        if (
+            c["confidence_score"] >= additional_confidence_floor
+            or c["confidence_score"] >= (top_confidence - confidence_dropoff)
+        ):
             selected.append(c)
 
     return _exclude_opponent_conflicts(selected)
 
 
 
-def _compute_longslop(prediction_records, outcomes):
+def _compute_longslop(
+    prediction_records,
+    outcomes,
+    min_expected_value: float = 0.0,
+    confidence_floor: float = 65.0,
+):
     """Extract LONGSLOP: High-upside longshots (+500 or better) that pass Phase 3.
 
     Must meet the same 65+ confidence threshold as standard locks.
@@ -346,9 +548,10 @@ def _compute_longslop(prediction_records, outcomes):
             conf = e.get("confidence_score", 0)
             edge = e.get("edge", 0)
             prob = e.get("model_prob", 0)
+            ev = e.get("expected_value", 0.0)
             
             # For longslop, we require high confidence and positive edge
-            if conf >= 65 and edge >= 0:
+            if conf >= confidence_floor and edge >= 0 and ev >= min_expected_value:
                 longslop_candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -358,8 +561,11 @@ def _compute_longslop(prediction_records, outcomes):
                     "model_prob": round(prob, 4),
                     "implied_prob": round(e["implied_prob"], 4),
                     "edge": round(edge, 4),
+                    "expected_value": round(ev, 4),
                     "american_odds": american,
                     "decimal_odds": e["decimal_odds"],
+                    "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
+                    "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
                     "confidence_score": conf,
                     "individual_models": rec.get("individual_models", {}),
                 })
@@ -368,7 +574,12 @@ def _compute_longslop(prediction_records, outcomes):
     return longslop_candidates[0] if longslop_candidates else None
 
 
-def _compute_slimegrinder(prediction_records, outcomes):
+def _compute_slimegrinder(
+    prediction_records,
+    outcomes,
+    min_expected_value: float = 0.0,
+    confidence_floor: float = 65.0,
+):
     """Extract SLIMEGRINDER: High-confidence, likely winners (odds -250 to +165).
     
     Must meet the same 65+ confidence threshold as Locks.
@@ -391,9 +602,10 @@ def _compute_slimegrinder(prediction_records, outcomes):
             conf = e.get("confidence_score", 0)
             edge = e.get("edge", 0)
             prob = e.get("model_prob", 0)
+            ev = e.get("expected_value", 0.0)
 
             # Strict Phase 3 filter
-            if conf >= 65 and edge > 0:
+            if conf >= confidence_floor and edge > 0 and ev >= min_expected_value:
                 candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -403,8 +615,11 @@ def _compute_slimegrinder(prediction_records, outcomes):
                     "model_prob": round(prob, 4),
                     "implied_prob": round(e["implied_prob"], 4),
                     "edge": round(edge, 4),
+                    "expected_value": round(ev, 4),
                     "american_odds": american,
                     "decimal_odds": e["decimal_odds"],
+                    "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
+                    "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
                     "confidence_score": conf,
                 })
 
@@ -469,6 +684,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     predictions_path = os.path.join(sport_dir, "predictions.json")
     history_path = os.path.join(sport_dir, "history.json")
     accuracy_path = os.path.join(sport_dir, "model_accuracy.json")
+    results_log_path = _results_log_path(os.path.dirname(sport_dir))
 
     # ------------------------------------------------------------------
     # 1. Fetch data (sport-specific)
@@ -581,8 +797,21 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     accuracy_window = sport.get("accuracy_window", None)
     accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
-    weights = compute_model_weights(accuracies)
+    weights = compute_model_weights(
+        accuracies,
+        temperature=sport.get("accuracy_softmax_temperature", 2.0),
+    )
     model_weight_dict = dict(zip(model_names, weights))
+
+    history = _load_json(history_path)
+    if not isinstance(history, dict):
+        history = {}
+    past_predictions = history.get("predictions", [])
+    probability_calibrators = fit_probability_calibrators(
+        past_predictions,
+        outcomes,
+        min_samples=sport.get("probability_calibration_min_samples", 20),
+    )
 
     # ------------------------------------------------------------------
     # 4. Normalize odds team names and build lookup
@@ -632,27 +861,27 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
         # Elo (all sports)
         if elo is not None:
-            home_rest_adj = 0.0
-            away_rest_adj = 0.0
-            if sport_key == "nba":
-                home_rest = _days_since_last_game(home, fix["date"], matches)
-                away_rest = _days_since_last_game(away, fix["date"], matches)
-                if home_rest == 1:
-                    home_rest_adj = -NBA_B2B_PENALTY
-                if away_rest == 1:
-                    away_rest_adj = -NBA_B2B_PENALTY
-                # 3-games-in-4-nights fatigue
-                if _games_in_window(home, fix["date"], matches, days=4) >= 3:
-                    home_rest_adj -= NBA_3IN4_PENALTY
-                if _games_in_window(away, fix["date"], matches, days=4) >= 3:
-                    away_rest_adj -= NBA_3IN4_PENALTY
+            home_rest_adj = _rest_adjustment(home, fix["date"], matches, sport)
+            away_rest_adj = _rest_adjustment(away, fix["date"], matches, sport)
+            recent_form_window = sport.get("recent_form_window", 0)
+            recent_form_max_adjustment = sport.get("recent_form_max_adjustment", 0.0)
+            home_form_adj = _recent_form_adjustment(
+                home, fix["date"], matches,
+                window=recent_form_window,
+                max_adjustment=recent_form_max_adjustment,
+            )
+            away_form_adj = _recent_form_adjustment(
+                away, fix["date"], matches,
+                window=recent_form_window,
+                max_adjustment=recent_form_max_adjustment,
+            )
             
             # Disable home advantage for neutral sites
             current_home_adv = 0.0 if is_neutral else elo.home_advantage
             
             elo_probs = elo_predict(elo, home, away, outcomes=outcomes,
-                                    home_rest_adj=home_rest_adj,
-                                    away_rest_adj=away_rest_adj,
+                                    home_rest_adj=home_rest_adj + home_form_adj,
+                                    away_rest_adj=away_rest_adj + away_form_adj,
                                     home_advantage_override=current_home_adv)
             individual_preds.append(elo_probs)
             blend_weights.append(model_weight_dict["elo"])
@@ -684,6 +913,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
         # Blend
         blended = blend_predictions(individual_preds, blend_weights)
+        blended = apply_probability_calibration(
+            blended,
+            probability_calibrators,
+            blend=sport.get("probability_calibration_blend", 0.5),
+        )
 
         # Edges and best odds
         match_odds = odds_lookup.get((home, away))
@@ -691,7 +925,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
         best_odds = {}
         if match_odds:
             # Pass individual_preds to enable Agreement Score
-            edges = compute_edges(blended, match_odds, individual_probs=individual_preds)
+            edges = compute_edges(
+                blended,
+                match_odds,
+                individual_probs=individual_preds,
+                fractional_kelly=sport.get("kelly_fraction", 0.25),
+            )
             best_odds = {}
             for out in outcomes:
                 odds_key = f"{out}_odds"
@@ -704,6 +943,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_prob = blended[pick]
         edge_data = edges.get(pick, {})
         edge = edge_data.get("edge", 0.0)
+        expected_value_value = edge_data.get("expected_value", 0.0)
+        kelly_fraction_value = edge_data.get("kelly_fraction", 0.0)
+        fractional_kelly_value = edge_data.get("fractional_kelly", 0.0)
         confidence_score = edge_data.get("confidence_score", 0)
         
         # Legacy stars for frontend compatibility
@@ -721,6 +963,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),
+            "expected_value": round(expected_value_value, 4),
+            "kelly_fraction": round(kelly_fraction_value, 4),
+            "fractional_kelly": round(fractional_kelly_value, 4),
             "confidence_score": confidence_score,
             "confidence_stars": stars,
             "american_odds": best_odds.get(pick),
@@ -737,18 +982,33 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 5b. SLOP LOCKS + LONGSLOP
     # ------------------------------------------------------------------
-    slop_locks = _compute_slop_locks(prediction_records, outcomes)
-    longslop = _compute_longslop(prediction_records, outcomes)
-    slimegrinder = _compute_slimegrinder(prediction_records, outcomes)
+    min_expected_value = sport.get("min_expected_value", 0.0)
+    slop_locks = _compute_slop_locks(
+        prediction_records,
+        outcomes,
+        min_expected_value=min_expected_value,
+        edge_floor=sport.get("slop_lock_edge_threshold", 0.03),
+        probability_floor=sport.get("slop_lock_probability_floor", 0.45),
+        additional_confidence_floor=sport.get("slop_lock_confidence_threshold", 65.0),
+        confidence_dropoff=sport.get("slop_lock_confidence_dropoff", 0.0),
+        max_picks=sport.get("slop_lock_max_picks", 3),
+    )
+    longslop = _compute_longslop(
+        prediction_records,
+        outcomes,
+        min_expected_value=min_expected_value,
+        confidence_floor=sport.get("longslop_confidence_threshold", 65.0),
+    )
+    slimegrinder = _compute_slimegrinder(
+        prediction_records,
+        outcomes,
+        min_expected_value=min_expected_value,
+        confidence_floor=sport.get("slimegrinder_confidence_threshold", 65.0),
+    )
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
     longslop = _generate_blurbs(longslop, pick_type="longslop")
-
-    history = _load_json(history_path)
-    if not isinstance(history, dict):
-        history = {}
-    past_predictions = history.get("predictions", [])
 
     result_lookup = {}
     if matches is not None and not matches.empty:
@@ -761,6 +1021,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
             result_lookup.setdefault((row["home_team"], row["away_team"], next_date), score)
 
     updated_past = []
+    resolved_results_rows = []
     for pred in past_predictions:
         if pred.get("evaluated"):
             updated_past.append(pred)
@@ -784,6 +1045,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
             if "model_probs" in pred:
                 eval_result = evaluate_prediction(pred["model_probs"], hg, ag)
                 update_accuracy_log(accuracy_log, "ensemble", eval_result, window=accuracy_window)
+
+            resolved_results_rows.append(
+                _build_results_log_row(
+                    sport_key,
+                    "prediction",
+                    pred,
+                    date_str,
+                    eval_result["actual"],
+                )
+            )
 
         updated_past.append(pred)
 
@@ -816,6 +1087,15 @@ def run_sport_pipeline(sport_key, output_dir=None):
             pick["won"] = pick["pick"] == actual
             pick["home_goals"] = hg
             pick["away_goals"] = ag
+            resolved_results_rows.append(
+                _build_results_log_row(
+                    sport_key,
+                    pick.get("type", "pick"),
+                    pick,
+                    match_date,
+                    actual,
+                )
+            )
 
     # Append today's new picks (deduplicate by game identity, not pick_date)
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -838,6 +1118,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "model_prob": lock["model_prob"],
                 "implied_prob": lock["implied_prob"],
                 "edge": lock["edge"],
+                "expected_value": lock.get("expected_value", 0.0),
                 "american_odds": lock["american_odds"],
                 "decimal_odds": lock["decimal_odds"],
                 "evaluated": False,
@@ -857,6 +1138,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "model_prob": longslop["model_prob"],
                 "implied_prob": longslop["implied_prob"],
                 "edge": longslop["edge"],
+                "expected_value": longslop.get("expected_value", 0.0),
                 "american_odds": longslop["american_odds"],
                 "decimal_odds": longslop["decimal_odds"],
                 "evaluated": False,
@@ -867,6 +1149,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         "picks": past_picks,
     }
     _save_json(pick_history_path, pick_history)
+    _append_results_log(results_log_path, resolved_results_rows)
 
     # Compute pick stats for output
     pick_stats = _compute_pick_stats(past_picks)

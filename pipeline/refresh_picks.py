@@ -41,7 +41,7 @@ _NORMALIZERS = {
 _MAX_LOCKS = 5
 
 
-def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict]:
+def _recompute_slop_locks(matches: list[dict], outcomes: list[str], min_expected_value: float = 0.0) -> list[dict]:
     """Rebuild slop locks from current match edges.
 
     Picks within the -150/+195 window are preferred; remaining slots are
@@ -72,13 +72,16 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
                 "model_prob": round(e["model_prob"], 4),
                 "implied_prob": round(e["implied_prob"], 4),
                 "edge": round(e["edge"], 4),
+                "expected_value": round(e.get("expected_value", 0.0), 4),
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
+                "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
+                "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
                 "confidence_stars": compute_confidence_stars(e["model_prob"], e["edge"]),
                 "individual_models": m.get("individual_models", {}),
                 "blurb": "",
             })
-        game_candidates = [c for c in game_candidates if c["edge"] >= 0]
+        game_candidates = [c for c in game_candidates if c["edge"] >= 0 and c["expected_value"] >= min_expected_value]
         if not game_candidates:
             continue
         best = max(game_candidates, key=lambda x: x["model_prob"])
@@ -95,7 +98,7 @@ def _recompute_slop_locks(matches: list[dict], outcomes: list[str]) -> list[dict
     return _exclude_opponent_conflicts(result)
 
 
-def _compute_slimegrinder(matches: list[dict], outcomes: list[str]) -> list[dict]:
+def _compute_slimegrinder(matches: list[dict], outcomes: list[str], min_expected_value: float = 0.0) -> list[dict]:
     """Extract SLIMEGRINDER: Top 3 likely winners with positive edge.
     Odds window: -250 to +165.
     """
@@ -117,6 +120,8 @@ def _compute_slimegrinder(matches: list[dict], outcomes: list[str]) -> list[dict
 
             if e["edge"] <= 0:
                 continue
+            if e.get("expected_value", 0.0) < min_expected_value:
+                continue
 
             candidates.append({
                 "home_team": m["home_team"],
@@ -127,8 +132,11 @@ def _compute_slimegrinder(matches: list[dict], outcomes: list[str]) -> list[dict
                 "model_prob": round(e["model_prob"], 4),
                 "implied_prob": round(e["implied_prob"], 4),
                 "edge": round(e["edge"], 4),
+                "expected_value": round(e.get("expected_value", 0.0), 4),
                 "american_odds": american,
                 "decimal_odds": e["decimal_odds"],
+                "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
+                "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
                 "confidence_stars": m.get("confidence_stars", 1),
             })
 
@@ -170,7 +178,11 @@ def refresh_sport(sport_key: str) -> None:
     for match in matches:
         match_odds = odds_lookup.get((match["home_team"], match["away_team"]))
         if match_odds:
-            edges = compute_edges(match["model_probs"], match_odds)
+            edges = compute_edges(
+                match["model_probs"],
+                match_odds,
+                fractional_kelly=sport.get("kelly_fraction", 0.25),
+            )
             match["edges"] = edges
             match["best_odds"] = {
                 outcome: decimal_to_american(match_odds[f"{outcome}_odds"])
@@ -188,8 +200,9 @@ def refresh_sport(sport_key: str) -> None:
             match["american_odds"] = match["best_odds"].get(pick)
 
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
-    slop_locks = _recompute_slop_locks(matches, outcomes)
-    slimegrinder = _compute_slimegrinder(matches, outcomes)
+    min_expected_value = sport.get("min_expected_value", 0.0)
+    slop_locks = _recompute_slop_locks(matches, outcomes, min_expected_value=min_expected_value)
+    slimegrinder = _compute_slimegrinder(matches, outcomes, min_expected_value=min_expected_value)
     in_window = sum(
         1 for s in slop_locks
         if SLOP_LOCK_MIN_ODDS <= s["american_odds"] <= SLOP_LOCK_MAX_ODDS

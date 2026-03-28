@@ -2,11 +2,16 @@
 
 import pytest
 from pipeline.ensemble import (
+    apply_probability_calibration,
     decimal_to_american,
     implied_probability,
     blend_predictions,
     compute_edges,
+    expected_value,
+    fit_probability_calibrators,
+    kelly_fraction,
 )
+from pipeline.backtest import compute_model_weights
 
 
 # ── Odds conversion ────────────────────────────────────────────────
@@ -91,11 +96,22 @@ class TestComputeEdges:
     def test_positive_edge_flagged_as_value(self):
         model_probs = {"home": 0.70, "draw": 0.15, "away": 0.15}
         odds = {"home_odds": 1.67, "draw_odds": 3.80, "away_odds": 4.50}
-        # implied home prob = 1/1.67 ≈ 0.599, edge ≈ 0.101 -> is_value True
+        # The current code removes vig first, then calibrates toward the
+        # fair market probability before computing edge.
         edges = compute_edges(model_probs, odds)
 
-        assert edges["home"]["edge"] == pytest.approx(0.101, abs=1e-2)
-        assert edges["home"]["is_value"] is True
+        assert edges["home"]["raw_model_prob"] == pytest.approx(0.70)
+        assert edges["home"]["market_implied_prob"] == pytest.approx(0.5988, abs=1e-4)
+        assert edges["home"]["implied_prob"] == pytest.approx(0.5523, abs=1e-4)
+        assert edges["home"]["hold"] == pytest.approx(0.0842, abs=1e-4)
+        assert edges["home"]["model_prob"] == pytest.approx(0.6409, abs=1e-4)
+        assert edges["home"]["edge"] == pytest.approx(0.0886, abs=1e-2)
+        assert edges["home"]["expected_value"] == pytest.approx(0.0704, abs=1e-3)
+        assert edges["home"]["kelly_fraction"] > 0
+        assert edges["home"]["fractional_kelly"] == pytest.approx(
+            edges["home"]["kelly_fraction"] * 0.25, abs=1e-4
+        )
+        assert edges["home"]["is_value"] is False
         assert edges["home"]["american_odds"] == -149
 
     def test_negative_edge_not_flagged(self):
@@ -117,5 +133,70 @@ class TestComputeEdges:
         assert "draw" not in edges
         assert "home" in edges
         assert "away" in edges
-        # home implied = 1/2.10 ≈ 0.476, edge ≈ 0.124
-        assert edges["home"]["edge"] == pytest.approx(0.124, abs=1e-2)
+        # For 2-way markets, the implied probabilities are normalized to no-vig
+        # fair probabilities before calibration and edge computation.
+        assert edges["home"]["raw_model_prob"] == pytest.approx(0.60)
+        assert edges["home"]["market_implied_prob"] == pytest.approx(0.4762, abs=1e-4)
+        assert edges["home"]["implied_prob"] == pytest.approx(0.4545, abs=1e-4)
+        assert edges["home"]["hold"] == pytest.approx(0.0476, abs=1e-4)
+        assert edges["home"]["edge"] == pytest.approx(0.0873, abs=1e-2)
+
+
+class TestExpectedValue:
+    def test_expected_value_handles_plus_money(self):
+        assert expected_value(0.55, 2.10) == pytest.approx(0.155, abs=1e-6)
+
+    def test_expected_value_handles_negative_case(self):
+        assert expected_value(0.40, 1.75) < 0
+
+
+class TestKellyFraction:
+    def test_kelly_fraction_scales_by_fraction(self):
+        full = kelly_fraction(0.55, 2.10, fraction=1.0)
+        quarter = kelly_fraction(0.55, 2.10, fraction=0.25)
+        assert full > 0
+        assert quarter == pytest.approx(full * 0.25, abs=1e-6)
+
+    def test_kelly_fraction_is_clamped_at_zero(self):
+        assert kelly_fraction(0.40, 1.75, fraction=1.0) == 0.0
+
+
+class TestComputeModelWeights:
+    def test_higher_temperature_sharpens_weighting(self):
+        cool = compute_model_weights([0.60, 0.55], temperature=1.0)
+        hot = compute_model_weights([0.60, 0.55], temperature=4.0)
+        assert hot[0] > cool[0]
+        assert sum(hot) == pytest.approx(1.0)
+
+
+class TestProbabilityCalibration:
+    def test_fit_probability_calibrators_returns_models_with_history(self):
+        historical = [
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.20, "away": 0.80}},
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.30, "away": 0.70}},
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.40, "away": 0.60}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.80, "away": 0.20}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.90, "away": 0.10}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.95, "away": 0.05}},
+        ]
+
+        calibrators = fit_probability_calibrators(historical, ["home", "away"], min_samples=4)
+
+        assert set(calibrators.keys()) == {"home", "away"}
+
+    def test_apply_probability_calibration_shrinks_bad_probabilities(self):
+        historical = [
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.20, "away": 0.80}},
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.30, "away": 0.70}},
+            {"evaluated": True, "home_goals": 1, "away_goals": 0, "model_probs": {"home": 0.40, "away": 0.60}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.80, "away": 0.20}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.90, "away": 0.10}},
+            {"evaluated": True, "home_goals": 0, "away_goals": 1, "model_probs": {"home": 0.95, "away": 0.05}},
+        ]
+
+        calibrators = fit_probability_calibrators(historical, ["home", "away"], min_samples=4)
+        calibrated = apply_probability_calibration({"home": 0.90, "away": 0.10}, calibrators, blend=1.0)
+
+        assert calibrated["home"] < 0.90
+        assert calibrated["away"] > 0.10
+        assert sum(calibrated.values()) == pytest.approx(1.0)

@@ -1,9 +1,11 @@
 """Backtesting and accuracy-tracking utilities for SLOP LOCKS."""
 
+import argparse
+import json
 import math
-from collections import defaultdict
+import os
 
-from pipeline.config import ENSEMBLE_ACCURACY_WINDOW
+from pipeline.config import ENSEMBLE_ACCURACY_WINDOW, SPORTS
 
 
 def evaluate_prediction(probs, home_goals, away_goals):
@@ -55,7 +57,19 @@ def evaluate_prediction(probs, home_goals, away_goals):
     }
 
 
-def compute_model_weights(accuracies):
+def compute_brier_score(probs, home_goals, away_goals):
+    """Compute a one-vs-all Brier score for the available outcomes."""
+    if home_goals > away_goals:
+        actual = "home"
+    elif home_goals == away_goals:
+        actual = "draw"
+    else:
+        actual = "away"
+
+    return sum((probs.get(outcome, 0.0) - (1.0 if outcome == actual else 0.0)) ** 2 for outcome in probs)
+
+
+def compute_model_weights(accuracies, temperature: float = 2.0):
     """Convert per-model accuracies into ensemble weights via softmax scaling.
 
     Parameters
@@ -68,7 +82,7 @@ def compute_model_weights(accuracies):
     list[float]
         Weights that sum to 1.  Higher-accuracy models receive more weight.
     """
-    scaled = [math.exp(acc * 2) for acc in accuracies]
+    scaled = [math.exp(acc * temperature) for acc in accuracies]
     total = sum(scaled)
     return [s / total for s in scaled]
 
@@ -153,3 +167,119 @@ def get_rolling_accuracy(accuracy_log, model_name, window=None):
 
     correct_count = sum(1 for e in entries if e["correct"])
     return correct_count / len(entries)
+
+
+def summarize_prediction_history(predictions):
+    """Summarize evaluated historical predictions."""
+    evaluated = [p for p in predictions if p.get("evaluated") and p.get("model_probs")]
+    if not evaluated:
+        return {
+            "evaluated": 0,
+            "accuracy": None,
+            "avg_log_loss": None,
+            "avg_brier": None,
+        }
+
+    scored = [
+        evaluate_prediction(p["model_probs"], p["home_goals"], p["away_goals"])
+        for p in evaluated
+    ]
+    briers = [
+        compute_brier_score(p["model_probs"], p["home_goals"], p["away_goals"])
+        for p in evaluated
+    ]
+
+    accuracy = sum(1 for item in scored if item["correct"]) / len(scored)
+    avg_log_loss = sum(item["log_loss"] for item in scored) / len(scored)
+    avg_brier = sum(briers) / len(briers)
+
+    return {
+        "evaluated": len(evaluated),
+        "accuracy": round(accuracy, 4),
+        "avg_log_loss": round(avg_log_loss, 4),
+        "avg_brier": round(avg_brier, 4),
+    }
+
+
+def summarize_pick_history(picks):
+    """Summarize evaluated picks and their ROI."""
+    evaluated = [p for p in picks if p.get("evaluated")]
+    if not evaluated:
+        return {
+            "evaluated": 0,
+            "hit_rate": None,
+            "roi": None,
+        }
+
+    bets = [
+        {
+            "stake": 100.0,
+            "odds": p.get("decimal_odds", 0.0),
+            "won": p.get("won", False),
+        }
+        for p in evaluated
+    ]
+    wins = sum(1 for p in evaluated if p.get("won"))
+    return {
+        "evaluated": len(evaluated),
+        "hit_rate": round(wins / len(evaluated), 4),
+        "roi": round(compute_roi(bets), 4),
+    }
+
+
+def build_backtest_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+    """Build a historical performance report from saved data files."""
+    selected_sports = sports or list(SPORTS.keys())
+    report = {
+        "data_dir": data_dir,
+        "sports": {},
+        "aggregate": {
+            "predictions": {"evaluated": 0, "accuracy": None, "avg_log_loss": None, "avg_brier": None},
+            "picks": {"evaluated": 0, "hit_rate": None, "roi": None},
+        },
+    }
+
+    all_predictions = []
+    all_picks = []
+
+    for sport in selected_sports:
+        sport_dir = os.path.join(data_dir, sport)
+        history_path = os.path.join(sport_dir, "history.json")
+        pick_history_path = os.path.join(sport_dir, "pick_history.json")
+
+        predictions = []
+        picks = []
+        if os.path.exists(history_path):
+            with open(history_path) as f:
+                predictions = (json.load(f) or {}).get("predictions", [])
+        if os.path.exists(pick_history_path):
+            with open(pick_history_path) as f:
+                picks = (json.load(f) or {}).get("picks", [])
+
+        pred_summary = summarize_prediction_history(predictions)
+        pick_summary = summarize_pick_history(picks)
+        report["sports"][sport] = {
+            "predictions": pred_summary,
+            "picks": pick_summary,
+        }
+
+        all_predictions.extend(predictions)
+        all_picks.extend(picks)
+
+    report["aggregate"]["predictions"] = summarize_prediction_history(all_predictions)
+    report["aggregate"]["picks"] = summarize_pick_history(all_picks)
+    return report
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Summarize historical model and pick performance.")
+    parser.add_argument("sports", nargs="*", help="Optional sport keys to limit the report.")
+    parser.add_argument("--data-dir", default="data", help="Directory containing per-sport pipeline outputs.")
+    args = parser.parse_args()
+
+    report = build_backtest_report(data_dir=args.data_dir, sports=args.sports or None)
+    print(json.dumps(report, indent=2))
+
+
+if __name__ == "__main__":
+    main()
