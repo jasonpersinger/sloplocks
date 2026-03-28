@@ -2,6 +2,7 @@
 
 import math
 import numpy as np
+import pandas as pd
 import pytest
 
 from pipeline.config import MAX_GOALS
@@ -9,11 +10,17 @@ from pipeline.models import (
     AdjustedEfficiency,
     EloRatings,
     FourFactorsModel,
+    PitcherMatchupModel,
+    RecentBoxScoreModel,
+    ResultsFeatureModel,
     dixon_coles_predict,
     efficiency_predict,
     elo_predict,
     fit_dixon_coles,
     four_factors_predict,
+    pitcher_matchup_predict,
+    recent_boxscore_predict,
+    results_features_predict,
     scoreline_to_probabilities,
 )
 
@@ -250,3 +257,190 @@ class TestFourFactorsModel:
         probs = four_factors_predict(model, "Duke", "Kansas")
         assert 0.1 <= probs["home"] <= 0.9
         assert 0.1 <= probs["away"] <= 0.9
+
+
+# ---------------------------------------------------------------------------
+# Results Feature Logistic Regression
+# ---------------------------------------------------------------------------
+
+class TestResultsFeatureModel:
+    def _sample_results_games(self):
+        rows = []
+        base = pd.Timestamp("2026-01-01")
+        games = [
+            ("A", "B", 110, 100),
+            ("C", "D", 102, 99),
+            ("A", "C", 108, 101),
+            ("B", "D", 95, 104),
+            ("A", "D", 112, 103),
+            ("B", "C", 99, 101),
+            ("C", "A", 97, 105),
+            ("D", "B", 101, 94),
+            ("A", "B", 111, 98),
+            ("C", "D", 103, 96),
+        ]
+        for idx, (home, away, hg, ag) in enumerate(games):
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+            })
+        return pd.DataFrame(rows)
+
+    def test_fit_produces_model_when_enough_games_exist(self):
+        model = ResultsFeatureModel(self._sample_results_games(), feature_window=4, min_games=5)
+        assert model.model is not None
+
+    def test_predict_returns_two_way_probs(self):
+        model = ResultsFeatureModel(self._sample_results_games(), feature_window=4, min_games=5)
+        probs = results_features_predict(
+            model,
+            "A",
+            "B",
+            neutral_site=False,
+            game_date="2026-01-20",
+        )
+        assert set(probs.keys()) == {"home", "away"}
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+    def test_unknown_or_untrained_model_falls_back_to_coin_flip(self):
+        model = ResultsFeatureModel(
+            pd.DataFrame(
+                columns=["date", "home_team", "away_team", "home_goals", "away_goals"]
+            ),
+            feature_window=4,
+            min_games=5,
+        )
+        probs = results_features_predict(model, "A", "B", game_date="2026-03-28")
+        assert probs == {"home": 0.5, "away": 0.5}
+
+
+class TestPitcherMatchupModel:
+    def _sample_pitcher_games(self):
+        rows = []
+        base = pd.Timestamp("2026-03-01")
+        games = [
+            ("A", "B", 5, 2, "Ace A", "Scrub B", 6.0, 2, 2, 1, 8, 5.0, 5, 5, 3, 3),
+            ("C", "D", 4, 1, "Ace C", "Scrub D", 6.0, 1, 1, 2, 7, 5.0, 4, 4, 2, 4),
+            ("A", "C", 3, 2, "Ace A", "Scrub D", 6.0, 2, 2, 1, 7, 4.0, 3, 3, 2, 3),
+            ("B", "D", 2, 6, "Scrub B", "Ace C", 5.0, 4, 4, 3, 4, 6.0, 2, 2, 1, 8),
+            ("A", "D", 7, 1, "Ace A", "Scrub B", 7.0, 1, 1, 1, 9, 4.0, 6, 6, 3, 2),
+            ("B", "C", 1, 5, "Scrub D", "Ace C", 4.0, 5, 5, 2, 3, 6.0, 1, 1, 1, 8),
+        ]
+        for idx, game in enumerate(games):
+            (home, away, hg, ag, hp, ap,
+             hip, hpr, hper, hpw, hpk,
+             aip, apr, aper, apw, apk) = game
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+                "home_pitcher": hp,
+                "away_pitcher": ap,
+                "home_pitcher_ip": hip,
+                "home_pitcher_runs_allowed": hpr,
+                "home_pitcher_earned_runs": hper,
+                "home_pitcher_walks": hpw,
+                "home_pitcher_strikeouts": hpk,
+                "away_pitcher_ip": aip,
+                "away_pitcher_runs_allowed": apr,
+                "away_pitcher_earned_runs": aper,
+                "away_pitcher_walks": apw,
+                "away_pitcher_strikeouts": apk,
+            })
+        return pd.DataFrame(rows)
+
+    def test_fit_produces_model_with_pitcher_history(self):
+        model = PitcherMatchupModel(self._sample_pitcher_games(), feature_window=4, min_games=4)
+        assert model.model is not None
+
+    def test_predict_prefers_stronger_starter(self):
+        model = PitcherMatchupModel(self._sample_pitcher_games(), feature_window=4, min_games=4)
+        probs = pitcher_matchup_predict(model, "Ace A", "Scrub B")
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestRecentBoxScoreModel:
+    def test_fit_and_predict_from_recent_box_score_form(self):
+        games = []
+        box_rows = []
+        for idx in range(24):
+            game_id = f"g{idx}"
+            home_team = "A" if idx % 2 == 0 else "B"
+            away_team = "B" if idx % 2 == 0 else "A"
+            home_win = home_team == "A"
+
+            if home_win:
+                home_pts, away_pts = 88, 74
+                home_fgm, away_fgm = 31, 26
+                home_fg3m, away_fg3m = 10, 6
+                home_fta, away_fta = 20, 14
+                home_orb, away_orb = 12, 8
+                home_drb, away_drb = 26, 22
+                home_to, away_to = 9, 14
+                home_poss, away_poss = 72.0, 71.0
+            else:
+                home_pts, away_pts = 74, 88
+                home_fgm, away_fgm = 26, 31
+                home_fg3m, away_fg3m = 6, 10
+                home_fta, away_fta = 14, 20
+                home_orb, away_orb = 8, 12
+                home_drb, away_drb = 22, 26
+                home_to, away_to = 14, 9
+                home_poss, away_poss = 71.0, 72.0
+
+            date_str = f"2026-01-{idx + 1:02d}"
+            games.append({
+                "game_id": game_id,
+                "date": date_str,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_goals": home_pts,
+                "away_goals": away_pts,
+            })
+            box_rows.extend([
+                {
+                    "game_id": game_id,
+                    "team": home_team,
+                    "date": date_str,
+                    "pts": home_pts,
+                    "fgm": home_fgm,
+                    "fga": 60,
+                    "fg3m": home_fg3m,
+                    "fg3a": 24,
+                    "ftm": max(home_fta - 3, 0),
+                    "fta": home_fta,
+                    "orb": home_orb,
+                    "drb": home_drb,
+                    "to": home_to,
+                    "possessions": home_poss,
+                },
+                {
+                    "game_id": game_id,
+                    "team": away_team,
+                    "date": date_str,
+                    "pts": away_pts,
+                    "fgm": away_fgm,
+                    "fga": 60,
+                    "fg3m": away_fg3m,
+                    "fg3a": 24,
+                    "ftm": max(away_fta - 3, 0),
+                    "fta": away_fta,
+                    "orb": away_orb,
+                    "drb": away_drb,
+                    "to": away_to,
+                    "possessions": away_poss,
+                },
+            ])
+
+        model = RecentBoxScoreModel(pd.DataFrame(box_rows), pd.DataFrame(games), feature_window=6, min_games=10)
+        probs = recent_boxscore_predict(model, "A", "B")
+
+        assert model.model is not None
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)

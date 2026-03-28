@@ -1,13 +1,14 @@
 """Integration tests for the pipeline orchestrator."""
 
+from datetime import datetime, timedelta, timezone
+from unittest.mock import patch, MagicMock
 import csv
 import json
 import os
-import pytest
-from datetime import datetime, timedelta, timezone
-from unittest.mock import patch, MagicMock
+
 import pandas as pd
-from pipeline.run import run_pipeline, run_sport_pipeline
+import pytest
+from pipeline.run import _main, run_pipeline, run_sport_pipeline
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -58,6 +59,37 @@ def sample_nba_box_scores(sample_nba_matches):
             g["game_id"], g["date"], g["away_team"], g["away_goals"], False,
         ))
     return pd.DataFrame(rows)
+
+
+@pytest.fixture
+def sample_mma_matches():
+    """Minimal MMA fight history for testing."""
+    base_date = datetime(2026, 1, 4)
+    results = [
+        ("Fighter A", "Fighter B", 1, 0),
+        ("Fighter C", "Fighter D", 1, 0),
+        ("Fighter A", "Fighter C", 1, 0),
+        ("Fighter B", "Fighter D", 0, 1),
+        ("Fighter A", "Fighter D", 1, 0),
+        ("Fighter B", "Fighter C", 0, 1),
+        ("Fighter A", "Fighter B", 1, 0),
+        ("Fighter C", "Fighter D", 1, 0),
+        ("Fighter A", "Fighter C", 1, 0),
+        ("Fighter D", "Fighter B", 1, 0),
+        ("Fighter A", "Fighter D", 1, 0),
+        ("Fighter C", "Fighter B", 1, 0),
+    ]
+    fights = []
+    for i, (home, away, hg, ag) in enumerate(results):
+        fights.append({
+            "game_id": str(2000 + i),
+            "date": (base_date + timedelta(days=i * 7)).isoformat(),
+            "home_team": home,
+            "away_team": away,
+            "home_goals": hg,
+            "away_goals": ag,
+        })
+    return pd.DataFrame(fights)
 
 
 # ---------------------------------------------------------------------------
@@ -114,9 +146,53 @@ class TestRunNBAPipeline:
         assert "draws" not in stats
         assert "draw_pct" not in stats
 
-        # Only elo model for NBA
         assert "elo" in data["model_weights"]
+        assert "efficiency" in data["model_weights"]
+        assert "four_factors" in data["model_weights"]
+        assert "results_features" in data["model_weights"]
+        assert "recent_boxscore" in data["model_weights"]
         assert "dixon_coles" not in data["model_weights"]
+
+
+class TestRunMMAPipeline:
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_mma_schedule")
+    @patch("pipeline.run.fetch_mma_games")
+    def test_produces_valid_mma_predictions(
+        self, mock_games, mock_schedule, mock_odds, sample_mma_matches, tmp_path
+    ):
+        mock_games.return_value = (sample_mma_matches, None)
+        mock_schedule.return_value = [
+            {
+                "home_team": "Fighter A",
+                "away_team": "Fighter C",
+                "date": _TODAY,
+                "neutral": True,
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Fighter A",
+                "away_team": "Fighter C",
+                "commence_time": f"{_TODAY}T00:30:00Z",
+                "home_odds": 1.85,
+                "away_odds": 2.05,
+            }
+        ]
+
+        output_dir = str(tmp_path / "mma")
+        run_sport_pipeline("mma", output_dir=output_dir)
+
+        predictions_path = os.path.join(output_dir, "predictions.json")
+        assert os.path.exists(predictions_path)
+
+        with open(predictions_path) as f:
+            data = json.load(f)
+
+        assert data["sport"] == "mma"
+        assert data["outcomes"] == ["home", "away"]
+        assert "elo" in data["model_weights"]
+        assert "results_features" in data["model_weights"]
 
 
 # ---------------------------------------------------------------------------
@@ -125,12 +201,25 @@ class TestRunNBAPipeline:
 
 class TestRunPipeline:
     @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_mma_schedule")
+    @patch("pipeline.run.fetch_mma_games")
+    @patch("pipeline.run.fetch_mlb_schedule")
+    @patch("pipeline.run.fetch_mlb_games")
     @patch("pipeline.run.fetch_ncaam_schedule")
     @patch("pipeline.run.fetch_ncaam_games")
     @patch("pipeline.run.fetch_nba_espn_schedule")
     @patch("pipeline.run.fetch_nba_espn_games")
     def test_produces_per_sport_files_and_manifest(
-        self, mock_nba_games, mock_nba_schedule, mock_ncaam_games, mock_ncaam_schedule, mock_odds,
+        self,
+        mock_nba_games,
+        mock_nba_schedule,
+        mock_ncaam_games,
+        mock_ncaam_schedule,
+        mock_mlb_games,
+        mock_mlb_schedule,
+        mock_mma_games,
+        mock_mma_schedule,
+        mock_odds,
         sample_nba_matches, sample_nba_box_scores,
         ncaam_games, ncaam_box_scores, tmp_path
     ):
@@ -150,6 +239,10 @@ class TestRunPipeline:
                 "date": "2026-02-19",
             }
         ]
+        mock_mlb_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
+        mock_mlb_schedule.return_value = []
+        mock_mma_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
+        mock_mma_schedule.return_value = []
         mock_odds.return_value = []
 
         output_dir = str(tmp_path)
@@ -166,6 +259,15 @@ class TestRunPipeline:
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
         assert os.path.exists(os.path.join(output_dir, "ncaam", "predictions.json"))
+
+
+class TestRunCli:
+    @patch("pipeline.run.run_sport_pipeline")
+    def test_main_supports_single_sport(self, mock_run_sport_pipeline, tmp_path):
+        exit_code = _main(["--sport", "mlb", "--output-dir", str(tmp_path / "mlb")])
+
+        assert exit_code == 0
+        mock_run_sport_pipeline.assert_called_once_with("mlb", output_dir=str(tmp_path / "mlb"))
 
 
 # ---------------------------------------------------------------------------

@@ -481,6 +481,468 @@ def elo_predict(elo, home_team, away_team, outcomes=None,
 
 
 # ---------------------------------------------------------------------------
+# Results-based feature model
+# ---------------------------------------------------------------------------
+
+class ResultsFeatureModel:
+    """Two-way logistic model built from rolling team results features.
+
+    The model is trained walk-forward style: each historical game is featurized
+    from the teams' prior logs only, which avoids leaking future outcomes into
+    training rows. It is intended for sports where we have reliable results but
+    sparse box-score or roster data.
+    """
+
+    def __init__(self, games, feature_window=8, min_games=30):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_win_pct_diff",
+            "recent_win_pct_diff",
+            "season_margin_diff",
+            "recent_margin_diff",
+            "venue_win_pct_diff",
+            "rest_days_diff",
+            "games_played_diff",
+        ]
+        self._fit(games)
+
+    @staticmethod
+    def _days_since_last(logs, cutoff_date=None):
+        if not logs:
+            return 7.0
+        last_date = pd.to_datetime(logs[-1]["date"])
+        current_date = pd.to_datetime(cutoff_date) if cutoff_date is not None else last_date
+        days = (current_date - last_date).days
+        return float(max(0, min(days, 7)))
+
+    def _team_features(self, logs, venue=None, cutoff_date=None):
+        if not logs:
+            return {
+                "season_win_pct": 0.5,
+                "recent_win_pct": 0.5,
+                "season_margin": 0.0,
+                "recent_margin": 0.0,
+                "venue_win_pct": 0.5,
+                "rest_days": 7.0,
+                "games_played": 0.0,
+            }
+
+        season_games = logs
+        recent_games = logs[-self.feature_window :]
+        venue_games = [g for g in logs if venue is None or g["venue"] == venue]
+
+        def _win_pct(items):
+            if not items:
+                return 0.5
+            return sum(g["result"] for g in items) / len(items)
+
+        def _avg_margin(items):
+            if not items:
+                return 0.0
+            return sum(g["margin"] for g in items) / len(items)
+
+        return {
+            "season_win_pct": _win_pct(season_games),
+            "recent_win_pct": _win_pct(recent_games),
+            "season_margin": _avg_margin(season_games),
+            "recent_margin": _avg_margin(recent_games),
+            "venue_win_pct": _win_pct(venue_games),
+            "rest_days": self._days_since_last(logs, cutoff_date=cutoff_date),
+            "games_played": float(len(season_games)),
+        }
+
+    def _feature_vector(self, home_logs, away_logs, neutral_site=False, cutoff_date=None):
+        home_feats = self._team_features(
+            home_logs, venue=None if neutral_site else "home", cutoff_date=cutoff_date
+        )
+        away_feats = self._team_features(
+            away_logs, venue=None if neutral_site else "away", cutoff_date=cutoff_date
+        )
+        return np.array([
+            home_feats["season_win_pct"] - away_feats["season_win_pct"],
+            home_feats["recent_win_pct"] - away_feats["recent_win_pct"],
+            home_feats["season_margin"] - away_feats["season_margin"],
+            home_feats["recent_margin"] - away_feats["recent_margin"],
+            home_feats["venue_win_pct"] - away_feats["venue_win_pct"],
+            (home_feats["rest_days"] - away_feats["rest_days"]) / 7.0,
+            (home_feats["games_played"] - away_feats["games_played"]) / 20.0,
+        ])
+
+    def _fit(self, games):
+        if games is None or games.empty:
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs = {
+            team: []
+            for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
+        }
+
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            home = row["home_team"]
+            away = row["away_team"]
+            date_str = str(row["date"])[:10]
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            home_logs = list(team_logs.get(home, []))
+            away_logs = list(team_logs.get(away, []))
+
+            X.append(self._feature_vector(home_logs, away_logs, cutoff_date=date_str))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_margin = int(row["home_goals"]) - int(row["away_goals"])
+            away_margin = -home_margin
+            team_logs.setdefault(home, []).append({
+                "date": date_str,
+                "result": 1.0 if home_margin > 0 else 0.0,
+                "margin": float(home_margin),
+                "venue": "home",
+            })
+            team_logs.setdefault(away, []).append({
+                "date": date_str,
+                "result": 1.0 if away_margin > 0 else 0.0,
+                "margin": float(away_margin),
+                "venue": "away",
+            })
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_team, away_team, neutral_site=False, game_date=None):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+            neutral_site=neutral_site,
+            cutoff_date=game_date,
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def results_features_predict(model, home_team, away_team, neutral_site=False, game_date=None):
+    """Predict two-way win probabilities from a results-feature model."""
+    return model.predict(home_team, away_team, neutral_site=neutral_site, game_date=game_date)
+
+
+# ---------------------------------------------------------------------------
+# MLB starter matchup model
+# ---------------------------------------------------------------------------
+
+class PitcherMatchupModel:
+    """Two-way logistic model built from historical starter-level performance."""
+
+    def __init__(self, games, feature_window=8, min_games=20):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.model = None
+        self.pitcher_logs = {}
+        self.feature_names = [
+            "season_ra9_diff",
+            "recent_ra9_diff",
+            "season_kbb_diff",
+            "recent_kbb_diff",
+            "recent_margin_diff",
+            "starts_diff",
+        ]
+        self._fit(games)
+
+    def _pitcher_features(self, logs):
+        if not logs:
+            return {
+                "season_ra9": 4.5,
+                "recent_ra9": 4.5,
+                "season_kbb": 0.0,
+                "recent_kbb": 0.0,
+                "recent_margin": 0.0,
+                "starts": 0.0,
+            }
+
+        recent = logs[-self.feature_window :]
+
+        def _ra9(items):
+            innings = sum(item["innings"] for item in items)
+            if innings <= 0:
+                return 4.5
+            return 9.0 * sum(item["earned_runs"] for item in items) / innings
+
+        def _kbb(items):
+            innings = sum(item["innings"] for item in items)
+            if innings <= 0:
+                return 0.0
+            return (sum(item["strikeouts"] for item in items) - sum(item["walks"] for item in items)) / innings
+
+        def _margin(items):
+            return sum(item["margin"] for item in items) / len(items) if items else 0.0
+
+        return {
+            "season_ra9": _ra9(logs),
+            "recent_ra9": _ra9(recent),
+            "season_kbb": _kbb(logs),
+            "recent_kbb": _kbb(recent),
+            "recent_margin": _margin(recent),
+            "starts": float(len(logs)),
+        }
+
+    def _feature_vector(self, home_logs, away_logs):
+        home = self._pitcher_features(home_logs)
+        away = self._pitcher_features(away_logs)
+        return np.array([
+            away["season_ra9"] - home["season_ra9"],
+            away["recent_ra9"] - home["recent_ra9"],
+            home["season_kbb"] - away["season_kbb"],
+            home["recent_kbb"] - away["recent_kbb"],
+            home["recent_margin"] - away["recent_margin"],
+            (home["starts"] - away["starts"]) / 10.0,
+        ])
+
+    def _fit(self, games):
+        required = {
+            "home_pitcher", "away_pitcher",
+            "home_pitcher_ip", "away_pitcher_ip",
+            "home_pitcher_earned_runs", "away_pitcher_earned_runs",
+            "home_pitcher_walks", "away_pitcher_walks",
+            "home_pitcher_strikeouts", "away_pitcher_strikeouts",
+        }
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        pitcher_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            home_pitcher = row.get("home_pitcher")
+            away_pitcher = row.get("away_pitcher")
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+            if not home_pitcher or not away_pitcher or home_pitcher == "TBD" or away_pitcher == "TBD":
+                continue
+
+            home_logs = list(pitcher_logs.get(home_pitcher, []))
+            away_logs = list(pitcher_logs.get(away_pitcher, []))
+            X.append(self._feature_vector(home_logs, away_logs))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_margin = int(row["home_goals"]) - int(row["away_goals"])
+            away_margin = -home_margin
+            pitcher_logs.setdefault(home_pitcher, []).append({
+                "innings": float(row.get("home_pitcher_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("home_pitcher_earned_runs", 0.0) or 0.0),
+                "walks": float(row.get("home_pitcher_walks", 0.0) or 0.0),
+                "strikeouts": float(row.get("home_pitcher_strikeouts", 0.0) or 0.0),
+                "margin": float(home_margin),
+            })
+            pitcher_logs.setdefault(away_pitcher, []).append({
+                "innings": float(row.get("away_pitcher_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("away_pitcher_earned_runs", 0.0) or 0.0),
+                "walks": float(row.get("away_pitcher_walks", 0.0) or 0.0),
+                "strikeouts": float(row.get("away_pitcher_strikeouts", 0.0) or 0.0),
+                "margin": float(away_margin),
+            })
+
+        self.pitcher_logs = pitcher_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_pitcher, away_pitcher):
+        if self.model is None or not home_pitcher or not away_pitcher or home_pitcher == "TBD" or away_pitcher == "TBD":
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.pitcher_logs.get(home_pitcher, []),
+            self.pitcher_logs.get(away_pitcher, []),
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def pitcher_matchup_predict(model, home_pitcher, away_pitcher):
+    """Predict two-way win probabilities from the starter matchup model."""
+    return model.predict(home_pitcher, away_pitcher)
+
+
+# ---------------------------------------------------------------------------
+# Recent box-score matchup model
+# ---------------------------------------------------------------------------
+
+class RecentBoxScoreModel:
+    """Two-way logistic model built from walk-forward team box-score form.
+
+    This captures recent matchup strength more explicitly than the season-level
+    efficiency and four-factors layers. Each training row is featurized from
+    each team's prior box-score logs only.
+    """
+
+    def __init__(self, box_scores, games, feature_window=8, min_games=30):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_net_rating_diff",
+            "recent_net_rating_diff",
+            "season_efg_diff",
+            "recent_efg_diff",
+            "season_to_rate_diff",
+            "recent_rebound_pct_diff",
+            "season_ft_rate_diff",
+            "pace_diff",
+        ]
+        self._fit(box_scores, games)
+
+    @staticmethod
+    def _aggregate(items):
+        if not items:
+            return {
+                "net_rating": 0.0,
+                "efg": 0.5,
+                "to_rate": 0.14,
+                "rebound_pct": 0.5,
+                "ft_rate": 0.22,
+                "pace": 70.0,
+            }
+
+        def _avg(key):
+            return float(sum(item[key] for item in items) / len(items))
+
+        return {
+            "net_rating": _avg("net_rating"),
+            "efg": _avg("efg"),
+            "to_rate": _avg("to_rate"),
+            "rebound_pct": _avg("rebound_pct"),
+            "ft_rate": _avg("ft_rate"),
+            "pace": _avg("pace"),
+        }
+
+    def _feature_vector(self, home_logs, away_logs):
+        home_season = self._aggregate(home_logs)
+        away_season = self._aggregate(away_logs)
+        home_recent = self._aggregate(home_logs[-self.feature_window :])
+        away_recent = self._aggregate(away_logs[-self.feature_window :])
+
+        return np.array([
+            home_season["net_rating"] - away_season["net_rating"],
+            home_recent["net_rating"] - away_recent["net_rating"],
+            home_season["efg"] - away_season["efg"],
+            home_recent["efg"] - away_recent["efg"],
+            away_season["to_rate"] - home_season["to_rate"],
+            home_recent["rebound_pct"] - away_recent["rebound_pct"],
+            home_season["ft_rate"] - away_season["ft_rate"],
+            (home_recent["pace"] - away_recent["pace"]) / 20.0,
+        ])
+
+    def _fit(self, box_scores, games):
+        required_box = {"game_id", "team", "pts", "fgm", "fga", "fg3m", "fta", "orb", "drb", "to", "possessions"}
+        required_games = {"game_id", "date", "home_team", "away_team", "home_goals", "away_goals"}
+        if (
+            box_scores is None
+            or games is None
+            or box_scores.empty
+            or games.empty
+            or not required_box.issubset(set(box_scores.columns))
+            or not required_games.issubset(set(games.columns))
+        ):
+            return
+
+        bs_lookup = {}
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs = {
+            team: []
+            for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
+        }
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            home = row["home_team"]
+            away = row["away_team"]
+            home_bs = bs_lookup.get((row["game_id"], home))
+            away_bs = bs_lookup.get((row["game_id"], away))
+            if home_bs is None or away_bs is None:
+                continue
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            X.append(self._feature_vector(team_logs.get(home, []), team_logs.get(away, [])))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_log = self._boxscore_log(home_bs, away_bs)
+            away_log = self._boxscore_log(away_bs, home_bs)
+            team_logs.setdefault(home, []).append(home_log)
+            team_logs.setdefault(away, []).append(away_log)
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    @staticmethod
+    def _boxscore_log(team_bs, opp_bs):
+        fga = max(float(team_bs["fga"]), 1.0)
+        poss = max(float(team_bs["possessions"]), 1.0)
+        rebound_denom = float(team_bs["orb"]) + float(opp_bs["drb"])
+        return {
+            "net_rating": ((float(team_bs["pts"]) / poss) - (float(opp_bs["pts"]) / max(float(opp_bs["possessions"]), 1.0))) * 100.0,
+            "efg": (float(team_bs["fgm"]) + 0.5 * float(team_bs["fg3m"])) / fga,
+            "to_rate": float(team_bs["to"]) / poss,
+            "rebound_pct": float(team_bs["orb"]) / max(rebound_denom, 1.0),
+            "ft_rate": float(team_bs["fta"]) / fga,
+            "pace": poss,
+        }
+
+    def predict(self, home_team, away_team):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def recent_boxscore_predict(model, home_team, away_team):
+    """Predict two-way win probabilities from the recent box-score model."""
+    return model.predict(home_team, away_team)
+
+
+# ---------------------------------------------------------------------------
 # Adjusted Efficiency (KenPom-style)
 # ---------------------------------------------------------------------------
 

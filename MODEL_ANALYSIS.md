@@ -1,0 +1,334 @@
+# Model Analysis
+
+## Current Model Architecture
+
+### Data flow
+
+The live pipeline runs through `pipeline/run.py:647-1169`.
+
+1. Historical results and schedules are fetched per sport from ESPN in the sport-specific fetchers:
+   - NBA: `pipeline/fetch_nba.py:300-474`
+   - NCAAM: `pipeline/fetch_ncaam.py:240-440`
+   - MLB: `pipeline/fetch_mlb.py:191-243`
+   - MMA: `pipeline/fetch_mma.py:97-195`
+2. Market odds are fetched from The Odds API and reduced to best available decimal prices per outcome in `pipeline/fetch_data.py:15-68`.
+3. Sport-specific models generate per-outcome probabilities:
+   - Elo for all sports: `pipeline/models.py`
+   - Results-feature logistic model for NBA, NCAAM, MLB, and MMA: `pipeline/models.py`
+   - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
+   - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
+   - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
+   - Pitcher matchup logistic model for MLB: `pipeline/models.py`
+4. Historical model accuracy is converted into ensemble weights in `pipeline/backtest.py:72-87`, then blended in `pipeline/ensemble.py:55-69`.
+5. Historical isotonic calibration is fit from resolved `history.json` entries in `pipeline/ensemble.py:72-136` and applied in `pipeline/run.py:783-797`, `pipeline/run.py:891-897`.
+6. Odds-aware edges, EV, Kelly fractions, and confidence scores are computed in `pipeline/ensemble.py:210-276`.
+7. Picks are filtered into `slop_locks`, `longslop`, and `slimegrinder` in `pipeline/run.py:445-605`.
+8. Resolved predictions and picks feed `history.json`, `pick_history.json`, `model_accuracy.json`, and the persistent CSV log at `data/tracking/results_log.csv` through `pipeline/run.py:87-183` and `pipeline/run.py:981-1128`.
+
+### Feature inventory by sport
+
+#### NBA
+
+Configured models live in `pipeline/config.py:62-86`.
+
+- Elo features:
+  - Base team Elo and home-court advantage from historical win/loss results in `pipeline/models.py:458-469`.
+  - Rest/fatigue adjustments from recent schedule density in `pipeline/run.py:286-319`.
+  - Recent-form Elo adjustment from the last `6` games, capped at `35` Elo points, configured in `pipeline/config.py:74-83` and computed in `pipeline/run.py:245-284`.
+- Results-feature model:
+  - Walk-forward season win%, recent win%, season margin, recent margin, venue win%, rest-day differential, and games-played differential from historical results in `pipeline/models.py`.
+- Recent box-score model:
+  - Walk-forward season/recent net rating, eFG%, turnover rate, rebound rate, free-throw rate, and pace differentials from ESPN box scores in `pipeline/models.py`.
+- Adjusted Efficiency features:
+  - Weighted points scored, points allowed, possessions, and opponent-adjusted offense/defense from ESPN box scores in `pipeline/models.py:510-605`.
+  - Tempo is derived from weighted possessions and fed into expected pace in `pipeline/models.py:635-647`.
+  - Recency weighting uses exponential decay plus a boost on the most recent `FORM_WINDOW=6` games in `pipeline/models.py:59-89`.
+- Four Factors features:
+  - Offensive and defensive eFG%, turnover rate, offensive rebound rate, and free-throw rate from ESPN box scores in `pipeline/models.py:729-819`.
+  - These are season-to-date weighted aggregates, not fixture-specific snapshots.
+- Fetched but unused inputs:
+  - Raw ESPN box-score fields like `fg3a` are only used indirectly through possessions and factor calculations.
+  - No injury, lineup, travel, referee, or player-availability features are currently consumed.
+
+#### NCAAM
+
+Configured models live in `pipeline/config.py:87-111`.
+
+- Elo features:
+  - Same core Elo path as NBA, with larger home advantage and NCAAM-specific rest/form parameters in `pipeline/config.py:96-108`.
+  - Recent-form adjustment uses the last `8` games, capped at `25` Elo points.
+  - Rest logic now applies to NCAAM as well through `pipeline/run.py:286-319`.
+- Results-feature model:
+  - Same walk-forward results features as NBA, with a longer `10`-game recent window configured in `pipeline/config.py`.
+- Recent box-score model:
+  - Same walk-forward box-score form features as NBA, tuned with a `10`-game recent window in `pipeline/config.py`.
+- Adjusted Efficiency features:
+  - Same weighted offense/defense/tempo machinery as NBA, sourced from ESPN box scores in `pipeline/models.py:487-647`.
+  - Opponent adjustment is iterative and based on season-to-date weighted stats.
+- Four Factors features:
+  - Same eight offensive/defensive factor features as NBA in `pipeline/models.py:751-819`.
+- Fetched but unused inputs:
+  - Dual ESPN scoreboard groups (`50` and `100`) improve coverage in `pipeline/fetch_ncaam.py:279-304`, but no tournament- or conference-specific feature is derived from them.
+  - No roster, injury, travel, or coaching-style features are used.
+
+#### MLB
+
+Configured models live in `pipeline/config.py:112-137`.
+
+- Elo features:
+  - Base team Elo, modest home-field advantage, recent-form adjustment over the last `10` games, capped at `16` Elo points, via `pipeline/config.py:121-133` and `pipeline/run.py:245-284`.
+  - No rest penalties are applied (`back_to_back_penalty=0`, `fatigue_penalty=0`).
+- Results-feature model:
+  - Walk-forward season/recent win% and scoring-margin features from historical game results in `pipeline/models.py`.
+- Pitcher matchup model:
+  - Walk-forward starter RA9, recent RA9, K-BB per inning, recent team margin in starts, and start-count differential from ESPN summary data cached by `pipeline/fetch_mlb.py`.
+- Fetched but unused inputs:
+  - No park, weather, bullpen, handedness, or lineup features are modeled.
+
+#### MMA
+
+Configured models live in `pipeline/config.py:138-160`.
+
+- Elo features:
+  - Fighter Elo only, with no home advantage in `pipeline/config.py:147-158` and `pipeline/models.py:458-469`.
+  - Recent-form adjustment over the last `4` fights, capped at `20` Elo points, via `pipeline/run.py:245-284`.
+  - MMA historical outcomes are derived from ESPN fight winners as binary `1/0` results in `pipeline/fetch_mma.py:63-94`.
+- Results-feature model:
+  - Walk-forward recent/season win and margin features from prior fight outcomes in `pipeline/models.py`.
+- Fetched but unused inputs:
+  - No fighter-level stats such as age, reach, stance, significant strike rate, takedown rate, or layoff length are fetched or used.
+
+### Ensemble mechanics
+
+- Active model lists are sport-specific in `pipeline/config.py:62-160`.
+  - NBA and NCAAM use five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
+  - MLB uses three models: `elo`, `results_features`, `pitcher_features`.
+  - MMA uses two models: `elo`, `results_features`.
+- Historical rolling accuracy for each model is read from `model_accuracy.json` and transformed into softmax weights in `pipeline/backtest.py:72-87` and `pipeline/run.py:775-781`.
+- The softmax temperature is now configurable per sport:
+  - `3.0` for NBA and NCAAM
+  - `1.5` for MLB and MMA
+  This lives in `pipeline/config.py:68`, `pipeline/config.py:93`, `pipeline/config.py:118`, and `pipeline/config.py:144`.
+- Final blended probabilities are a weighted average in `pipeline/ensemble.py:55-69`.
+- After blending, isotonic calibrators are fit from resolved historical ensemble outputs and blended back into the live probability distribution in `pipeline/ensemble.py:72-136`.
+
+### Confidence score, odds handling, and pick gating
+
+- `compute_edges()` in `pipeline/ensemble.py:210-276` now does five things for each outcome:
+  - converts decimal odds to raw implied probability
+  - removes vig by normalizing active-outcome implied probabilities
+  - shrinks the model toward the fair no-vig market with `calibrate_probability()`
+  - computes probability edge and expected value
+  - computes full Kelly and sport-specific fractional Kelly
+- The output edge fields are:
+  - `market_implied_prob`: raw `1 / decimal_odds`
+  - `implied_prob`: fair no-vig probability after removing hold
+  - `hold`: total market hold across active outcomes
+  - `edge`: `calibrated_model_prob - implied_prob`
+  - `expected_value`: expected profit per 1 unit staked
+- Confidence is still score-based rather than a true calibrated confidence interval. `pipeline/ensemble.py:139-183` combines:
+  - model agreement via standard deviation
+  - model win probability
+  - edge size
+  - penalties for large market divergence and sub-45% underdogs
+- Pick filters in `pipeline/run.py:445-605` now gate on EV in addition to probability edge:
+  - `slop_locks`: `edge >= 0.03`, `model_prob > 0.45`, `expected_value >= min_expected_value`, maximum 3 picks, additional picks require `confidence_score >= 65`
+  - `longslop`: `american_odds >= +500`, `confidence_score >= 65`, `edge >= 0`, `expected_value >= min_expected_value`
+  - `slimegrinder`: bounded odds window, positive edge, positive EV threshold, then ranked by model probability
+
+### Calibration, validation, and tracking
+
+- Resolved predictions are evaluated with:
+  - correctness and predicted winner in `pipeline/backtest.py:11-57`
+  - Brier score in `pipeline/backtest.py:60-69`
+  - rolling hit-rate logs for model weighting in `pipeline/backtest.py:114-169`
+- Historical summaries are available via:
+  - `summarize_prediction_history()` in `pipeline/backtest.py:172-201`
+  - `summarize_pick_history()` in `pipeline/backtest.py:204-227`
+  - CLI report builder in `pipeline/backtest.py:230-285`
+- Ongoing post-result logging now persists resolved predictions and picks to `data/tracking/results_log.csv` through `pipeline/run.py:87-183`.
+- There is still no full walk-forward replay engine that reconstructs each historical day from raw inputs before making a pick. The current backtest module summarizes stored historical outputs rather than replaying the model from scratch.
+
+## Changes Implemented
+
+### Quick Wins
+
+#### 1. Added sport-specific recent-form Elo adjustments
+
+- What changed:
+  - Added `recent_form_window` and `recent_form_max_adjustment` to each sport config in `pipeline/config.py:62-160`.
+  - Added `_recent_form_adjustment()` in `pipeline/run.py:245-284`.
+  - Applied recent-form adjustments in the Elo prediction path in `pipeline/run.py:839-862`.
+- Why it matters:
+  - The original Elo path treated a team on a strong short-term run the same as one on a stale season-long baseline.
+  - This adds lightweight recency without rewriting the model stack.
+- Current settings:
+  - NBA: 6 games / 35 Elo points
+  - NCAAM: 8 games / 25 Elo points
+  - MLB: 10 games / 16 Elo points
+  - MMA: 4 fights / 20 Elo points
+
+#### 2. Replaced hardcoded NBA-only rest logic with sport-configurable rest/fatigue logic
+
+- What changed:
+  - Added `back_to_back_penalty`, `fatigue_window_days`, `fatigue_threshold_games`, `fatigue_penalty`, `rest_bonus_days`, and `rest_bonus_points` to `pipeline/config.py:62-160`.
+  - Added `_rest_adjustment()` in `pipeline/run.py:286-319`.
+  - Wired those adjustments into Elo predictions for every sport in `pipeline/run.py:839-862`.
+- Why it matters:
+  - Rest is a real signal in NBA and NCAAM, and it was previously either hardcoded or absent.
+  - Moving these values into config makes the logic tunable per sport instead of magic-number-driven.
+
+### Core Model Improvements
+
+#### 3. Added no-vig market probabilities and hold tracking
+
+- What changed:
+  - Added `no_vig_probabilities()` in `pipeline/ensemble.py:22-33`.
+  - `compute_edges()` now stores both raw market implied probability and fair no-vig probability, plus `hold`, in `pipeline/ensemble.py:231-274`.
+- Why it matters:
+  - Comparing model probabilities to vig-inflated implied probabilities understates edge and distorts ranking.
+  - The pipeline now evaluates against a fairer approximation of the market.
+
+#### 4. Added proper expected-value calculation and EV-aware pick filters
+
+- What changed:
+  - Added `expected_value()` in `pipeline/ensemble.py:36-41`.
+  - `compute_edges()` now stores `expected_value` for each outcome in `pipeline/ensemble.py:243-269`.
+  - Added `min_expected_value` to each sport in `pipeline/config.py:76`, `pipeline/config.py:101`, `pipeline/config.py:125`, `pipeline/config.py:151`.
+  - `slop_locks`, `longslop`, `slimegrinder`, and refresh-time pick rebuilding all now gate on EV in `pipeline/run.py:445-605` and `pipeline/refresh_picks.py:44-144`.
+- Why it matters:
+  - A raw probability gap is not the same as expected betting return.
+  - The selection logic now prefers spots where the payout structure actually supports the model's edge.
+
+#### 5. Added full Kelly and fractional Kelly sizing outputs
+
+- What changed:
+  - Added `kelly_fraction()` in `pipeline/ensemble.py:44-52`.
+  - `compute_edges()` now emits `kelly_fraction` and `fractional_kelly` in `pipeline/ensemble.py:245-269`.
+  - Added per-sport `kelly_fraction` config in `pipeline/config.py:77`, `pipeline/config.py:102`, `pipeline/config.py:126`, and `pipeline/config.py:152`.
+  - Those values are written into match records, picks, and refreshed outputs in `pipeline/run.py:923-956` and `pipeline/refresh_picks.py:66-140`.
+- Why it matters:
+  - Position sizing is now tied to modeled edge instead of being purely implicit.
+  - The frontend JSON schema remains compatible while exposing better bankroll guidance.
+
+#### 6. Added historical isotonic probability calibration
+
+- What changed:
+  - Added `fit_probability_calibrators()` and `apply_probability_calibration()` in `pipeline/ensemble.py:72-136`.
+  - Added per-sport calibration thresholds in `pipeline/config.py:69-70`, `pipeline/config.py:94-95`, `pipeline/config.py:119-120`, and `pipeline/config.py:145-146`.
+  - The live run now fits calibrators from resolved `history.json` and applies them after blending in `pipeline/run.py:783-797` and `pipeline/run.py:891-897`.
+- Why it matters:
+  - Raw ensemble probabilities rank outcomes, but they are not guaranteed to be well calibrated.
+  - This creates a feedback loop from realized outcomes back into probability quality.
+
+#### 7. Added sport-specific ensemble weighting temperature
+
+- What changed:
+  - `compute_model_weights()` now accepts a `temperature` argument in `pipeline/backtest.py:72-87`.
+  - `run_sport_pipeline()` passes sport-level temperatures from config in `pipeline/run.py:775-781`.
+- Why it matters:
+  - The multi-model basketball sports benefit from sharper weighting toward recent better-performing models.
+  - Single-model sports do not need the same weighting behavior.
+
+### Advanced Improvements Implemented
+
+#### 8. Added persistent resolved-results tracking
+
+- What changed:
+  - Added tracking path constants in `pipeline/config.py:5-6`.
+  - Added results-log helpers in `pipeline/run.py:87-183`.
+  - Resolved predictions and picks now append to `data/tracking/results_log.csv` during normal pipeline runs in `pipeline/run.py:981-1057`.
+- Why it matters:
+  - This creates a clean evaluation dataset for future calibration, CLV, and model-drift analysis.
+  - It also removes dependence on only semi-structured JSON history files.
+
+#### 9. Added historical reporting CLI with per-sport accuracy, log loss, Brier, and ROI
+
+- What changed:
+  - Added `compute_brier_score()`, `summarize_prediction_history()`, `summarize_pick_history()`, and `build_backtest_report()` in `pipeline/backtest.py:60-285`.
+  - The module now runs as a CLI and prints a JSON report from saved histories.
+- Why it matters:
+  - The project now has an executable reporting layer instead of only raw stored history.
+  - This is not yet a full walk-forward replay harness, but it materially improves visibility into model quality by sport.
+
+#### 10. Added walk-forward results-feature models across all four sports
+
+- What changed:
+  - Added `ResultsFeatureModel` and `results_features_predict()` in `pipeline/models.py`.
+  - Enabled it in `pipeline/config.py` for NBA, NCAAM, MLB, and MMA.
+  - Wired it into the ensemble path in `pipeline/run.py`.
+- Why it matters:
+  - NBA/NCAAM/MLB/MMA now all get a second opinion built from recent and season-long results form instead of leaning purely on Elo or season-average team stats.
+  - MMA in particular is no longer Elo-only.
+
+#### 11. Added a recency-weighted basketball box-score matchup model
+
+- What changed:
+  - Added `RecentBoxScoreModel` and `recent_boxscore_predict()` in `pipeline/models.py`.
+  - Enabled it for NBA and NCAAM in `pipeline/config.py`.
+  - Wired it into the ensemble in `pipeline/run.py`.
+- Why it matters:
+  - The existing efficiency and four-factors layers are mostly season-level snapshots.
+  - This new model gives NBA and NCAAM a walk-forward recent-form layer derived from net rating, shooting quality, turnover control, rebounding, free-throw pressure, and pace.
+
+#### 12. Added pitcher-aware MLB modeling backed by ESPN summary data
+
+- What changed:
+  - Added starter extraction helpers to `pipeline/fetch_mlb.py` so completed MLB games cache starter names and basic pitching lines.
+  - Added `PitcherMatchupModel` and `pitcher_matchup_predict()` in `pipeline/models.py`.
+  - Enabled the model in MLB config and wired it into `pipeline/run.py`.
+- Why it matters:
+  - Starting pitchers are one of the strongest MLB moneyline inputs available in the current free-data stack.
+  - This turns previously decorative probable-pitcher fields into an actual prediction signal.
+
+## Future Improvements
+
+### 1. Build a true walk-forward replay harness
+
+`pipeline/backtest.py` now summarizes stored historical outputs, but it still does not rebuild historical predictions from raw data one day at a time. A true replay script should:
+
+- reconstruct the feature state as of each historical date
+- run the live model logic against that state
+- compare generated picks to actual outcomes
+- emit ROI, Brier, log loss, and calibration curves by sport
+
+Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
+
+### 2. Add bullpen, park, and weather context to MLB
+
+Starting pitchers now influence the model, but the baseball stack still lacks:
+
+- bullpen fatigue and leverage usage
+- park-factor adjustments
+- weather context, especially wind and temperature
+- handedness or lineup-strength context
+
+### 3. Add lineup and injury freshness closer to lock
+
+The daily run still happens once per day, and `pipeline/refresh_picks.py:147-223` refreshes odds only. That leaves the model exposed to stale availability information. The highest-value follow-up is a second full rerun later in the day or a richer refresh path that refetches core inputs before recomputing probabilities.
+
+### 4. Fix training leakage in efficiency and four-factors models
+
+`AdjustedEfficiency` and `FourFactorsModel` both train on season-to-date weighted aggregates built from the full available box-score set in `pipeline/models.py:510-605` and `pipeline/models.py:674-781`. That means earlier training examples can be informed by later games in the same season. A better version would freeze features as of each game date during training.
+
+### 5. Add richer MMA features
+
+MMA remains Elo-only. The next meaningful lift would require fighter-level stats such as age, reach, striking efficiency, takedown success, takedown defense, finish rates, and layoff length.
+
+### 6. Improve odds-market consistency
+
+`pipeline/fetch_data.py:38-68` still takes the best price independently per outcome across books. That is useful for shopping, but it can create a synthetic market when home and away prices come from different bookmakers. A future version should optionally store book-consistent markets alongside best-price markets.
+
+## Discovered Issues
+
+### 1. `refresh_picks` still uses different lock-selection logic than the full run
+
+The full pipeline uses the confidence-gated Phase 3 lock selection in `pipeline/run.py:445-505`. The quick refresh path still rebuilds locks with an odds-window and fallback-fill heuristic in `pipeline/refresh_picks.py:44-99`. That means a manual odds refresh can publish different lock behavior than a full rerun.
+
+### 2. Single-model sports still get structurally high agreement scores
+
+`compute_confidence_score()` in `pipeline/ensemble.py:139-183` uses cross-model dispersion as part of confidence. For MLB and MMA, there is only one active model, so the agreement component is effectively perfect by construction. That should eventually be capped or reformulated for single-model sports.
+
+### 3. MLB and MMA remain comparatively under-modeled
+
+The current changes materially improve calibration and selection quality, but the predictive ceiling for MLB and MMA is still constrained by sparse features. The infrastructure is better; the sport-specific signal depth is still thin.

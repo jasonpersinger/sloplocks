@@ -61,6 +61,8 @@ class TestNcaamPipeline:
         assert "elo" in weights
         assert "efficiency" in weights
         assert "four_factors" in weights
+        assert "results_features" in weights
+        assert "recent_boxscore" in weights
 
     @patch("pipeline.run.fetch_odds")
     @patch("pipeline.run.fetch_ncaam_schedule")

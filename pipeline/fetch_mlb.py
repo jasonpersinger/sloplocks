@@ -129,6 +129,69 @@ def _parse_event(event: dict) -> dict | None:
     }
 
 
+def _innings_to_float(value) -> float:
+    """Convert baseball innings notation (e.g. 5.1, 6.2) to decimal innings."""
+    if value in (None, "", "-"):
+        return 0.0
+    text = str(value)
+    if "." not in text:
+        try:
+            return float(text)
+        except (TypeError, ValueError):
+            return 0.0
+    whole, frac = text.split(".", 1)
+    try:
+        innings = float(whole)
+    except (TypeError, ValueError):
+        return 0.0
+    if frac == "1":
+        return innings + (1.0 / 3.0)
+    if frac == "2":
+        return innings + (2.0 / 3.0)
+    try:
+        return float(text)
+    except (TypeError, ValueError):
+        return innings
+
+
+def _extract_mlb_starting_pitchers(summary_data: dict) -> dict[str, dict]:
+    """Extract per-team starter names and basic pitching stats from ESPN summary."""
+    starters: dict[str, dict] = {}
+    for team_group in summary_data.get("boxscore", {}).get("players", []):
+        team_name = normalize_mlb_team_name(team_group.get("team", {}).get("displayName", ""))
+        pitching_group = None
+        for stat_group in team_group.get("statistics", []):
+            athletes = stat_group.get("athletes", [])
+            if not athletes:
+                continue
+            pos = athletes[0].get("position", {})
+            if pos.get("abbreviation") == "P":
+                pitching_group = stat_group
+                break
+        if pitching_group is None:
+            continue
+
+        starter = None
+        for athlete in pitching_group.get("athletes", []):
+            if athlete.get("starter"):
+                starter = athlete
+                break
+        if starter is None:
+            continue
+
+        stats = starter.get("stats", [])
+        starters[team_name] = {
+            "name": starter.get("athlete", {}).get("displayName", "TBD"),
+            "innings_pitched": _innings_to_float(stats[0] if len(stats) > 0 else 0.0),
+            "hits_allowed": int(float(stats[1])) if len(stats) > 1 and str(stats[1]).replace(".", "", 1).isdigit() else 0,
+            "runs_allowed": int(float(stats[2])) if len(stats) > 2 and str(stats[2]).replace(".", "", 1).isdigit() else 0,
+            "earned_runs": int(float(stats[3])) if len(stats) > 3 and str(stats[3]).replace(".", "", 1).isdigit() else 0,
+            "walks": int(float(stats[4])) if len(stats) > 4 and str(stats[4]).replace(".", "", 1).isdigit() else 0,
+            "strikeouts": int(float(stats[5])) if len(stats) > 5 and str(stats[5]).replace(".", "", 1).isdigit() else 0,
+        }
+    return starters
+
+
 def fetch_mlb_games(
     season: int | None = None,
     dates: list[str] | None = None,
@@ -155,17 +218,53 @@ def fetch_mlb_games(
         except Exception:
             continue
 
+        final_events = []
         for event in data.get("events", []):
             parsed = _parse_event(event)
             if parsed is not None:
                 game_id = parsed["event_id"]
+                final_events.append(parsed)
+                existing = cache["games"].get(game_id, {})
                 cache["games"][game_id] = {
                     "date": parsed["date"],
                     "home_team": normalize_mlb_team_name(parsed["home_name"]),
                     "away_team": normalize_mlb_team_name(parsed["away_name"]),
                     "home_goals": parsed["home_score"],
                     "away_goals": parsed["away_score"],
+                    "home_pitcher": existing.get("home_pitcher", "TBD"),
+                    "away_pitcher": existing.get("away_pitcher", "TBD"),
+                    "home_pitcher_stats": existing.get("home_pitcher_stats", {}),
+                    "away_pitcher_stats": existing.get("away_pitcher_stats", {}),
                 }
+
+        for parsed in final_events:
+            game_id = parsed["event_id"]
+            entry = cache["games"].get(game_id, {})
+            if (
+                entry.get("home_pitcher")
+                and entry.get("away_pitcher")
+                and entry.get("home_pitcher") != "TBD"
+                and entry.get("away_pitcher") != "TBD"
+            ):
+                continue
+
+            time.sleep(_REQUEST_DELAY)
+            summary_url = f"{MLB_ESPN_BASE}/summary?event={game_id}"
+            try:
+                s_resp = requests.get(summary_url, timeout=30)
+                s_resp.raise_for_status()
+                starters = _extract_mlb_starting_pitchers(s_resp.json())
+            except requests.RequestException:
+                continue
+
+            home_team = entry.get("home_team")
+            away_team = entry.get("away_team")
+            home_starter = starters.get(home_team, {"name": entry.get("home_pitcher", "TBD")})
+            away_starter = starters.get(away_team, {"name": entry.get("away_pitcher", "TBD")})
+            entry["home_pitcher"] = home_starter.get("name", "TBD")
+            entry["away_pitcher"] = away_starter.get("name", "TBD")
+            entry["home_pitcher_stats"] = {k: v for k, v in home_starter.items() if k != "name"}
+            entry["away_pitcher_stats"] = {k: v for k, v in away_starter.items() if k != "name"}
         time.sleep(_REQUEST_DELAY)
 
     _save_espn_cache(cache_path, cache)
@@ -179,11 +278,30 @@ def fetch_mlb_games(
             "away_team": entry["away_team"],
             "home_goals": entry["home_goals"],
             "away_goals": entry["away_goals"],
+            "home_pitcher": entry.get("home_pitcher", "TBD"),
+            "away_pitcher": entry.get("away_pitcher", "TBD"),
+            "home_pitcher_ip": entry.get("home_pitcher_stats", {}).get("innings_pitched", 0.0),
+            "home_pitcher_runs_allowed": entry.get("home_pitcher_stats", {}).get("runs_allowed", 0),
+            "home_pitcher_earned_runs": entry.get("home_pitcher_stats", {}).get("earned_runs", 0),
+            "home_pitcher_walks": entry.get("home_pitcher_stats", {}).get("walks", 0),
+            "home_pitcher_strikeouts": entry.get("home_pitcher_stats", {}).get("strikeouts", 0),
+            "away_pitcher_ip": entry.get("away_pitcher_stats", {}).get("innings_pitched", 0.0),
+            "away_pitcher_runs_allowed": entry.get("away_pitcher_stats", {}).get("runs_allowed", 0),
+            "away_pitcher_earned_runs": entry.get("away_pitcher_stats", {}).get("earned_runs", 0),
+            "away_pitcher_walks": entry.get("away_pitcher_stats", {}).get("walks", 0),
+            "away_pitcher_strikeouts": entry.get("away_pitcher_stats", {}).get("strikeouts", 0),
         })
 
     games_df = pd.DataFrame(
         game_rows,
-        columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"],
+        columns=[
+            "game_id", "date", "home_team", "away_team", "home_goals", "away_goals",
+            "home_pitcher", "away_pitcher",
+            "home_pitcher_ip", "home_pitcher_runs_allowed", "home_pitcher_earned_runs",
+            "home_pitcher_walks", "home_pitcher_strikeouts",
+            "away_pitcher_ip", "away_pitcher_runs_allowed", "away_pitcher_earned_runs",
+            "away_pitcher_walks", "away_pitcher_strikeouts",
+        ],
     )
     return games_df, None # Box scores not yet implemented for MLB
 

@@ -35,9 +35,15 @@ from pipeline.models import (
     AdjustedEfficiency,
     EloRatings,
     FourFactorsModel,
+    PitcherMatchupModel,
+    RecentBoxScoreModel,
     efficiency_predict,
     elo_predict,
     four_factors_predict,
+    ResultsFeatureModel,
+    pitcher_matchup_predict,
+    recent_boxscore_predict,
+    results_features_predict,
 )
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american, compute_confidence_stars
 from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
@@ -779,6 +785,32 @@ def run_sport_pipeline(sport_key, output_dir=None):
     if "four_factors" in sport["models"] and box_scores_df is not None:
         four_factors_model = FourFactorsModel(box_scores_df, matches)
 
+    # Results-feature logistic model (uses only historical game outcomes)
+    results_feature_model = None
+    if "results_features" in sport["models"] and matches is not None and not matches.empty:
+        results_feature_model = ResultsFeatureModel(
+            matches,
+            feature_window=sport.get("results_feature_window", 8),
+            min_games=sport.get("results_feature_min_games", 30),
+        )
+
+    recent_boxscore_model = None
+    if "recent_boxscore" in sport["models"] and box_scores_df is not None and matches is not None:
+        recent_boxscore_model = RecentBoxScoreModel(
+            box_scores_df,
+            matches,
+            feature_window=sport.get("recent_boxscore_window", 8),
+            min_games=sport.get("recent_boxscore_min_games", 30),
+        )
+
+    pitcher_feature_model = None
+    if "pitcher_features" in sport["models"] and matches is not None and not matches.empty:
+        pitcher_feature_model = PitcherMatchupModel(
+            matches,
+            feature_window=sport.get("pitcher_feature_window", 8),
+            min_games=sport.get("pitcher_feature_min_games", 20),
+        )
+
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
@@ -794,6 +826,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("efficiency")
     if four_factors_model is not None:
         model_names.append("four_factors")
+    if results_feature_model is not None:
+        model_names.append("results_features")
+    if recent_boxscore_model is not None:
+        model_names.append("recent_boxscore")
+    if pitcher_feature_model is not None:
+        model_names.append("pitcher_features")
 
     accuracy_window = sport.get("accuracy_window", None)
     accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
@@ -907,6 +945,38 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 individual_preds.append(ff_probs)
                 blend_weights.append(model_weight_dict["four_factors"])
                 individual_models["four_factors"] = ff_probs
+
+        if results_feature_model is not None:
+            rf_probs = results_features_predict(
+                results_feature_model,
+                home,
+                away,
+                neutral_site=is_neutral,
+                game_date=fix["date"],
+            )
+            individual_preds.append(rf_probs)
+            blend_weights.append(model_weight_dict["results_features"])
+            individual_models["results_features"] = rf_probs
+
+        if recent_boxscore_model is not None:
+            recent_boxscore_probs = recent_boxscore_predict(
+                recent_boxscore_model,
+                home,
+                away,
+            )
+            individual_preds.append(recent_boxscore_probs)
+            blend_weights.append(model_weight_dict["recent_boxscore"])
+            individual_models["recent_boxscore"] = recent_boxscore_probs
+
+        if pitcher_feature_model is not None:
+            pitcher_probs = pitcher_matchup_predict(
+                pitcher_feature_model,
+                fix.get("home_pitcher"),
+                fix.get("away_pitcher"),
+            )
+            individual_preds.append(pitcher_probs)
+            blend_weights.append(model_weight_dict["pitcher_features"])
+            individual_models["pitcher_features"] = pitcher_probs
 
         if not individual_preds:
             continue
@@ -1258,12 +1328,29 @@ def run_pipeline(output_dir=None):
     return manifest
 
 
-if __name__ == "__main__":
+def _main(argv=None):
+    """CLI entry point for the pipeline module."""
+    import argparse
     import sys
-    manifest = run_pipeline()
-    # Check if any sport has an error
+
+    parser = argparse.ArgumentParser(description="Run the SLOP LOCKS pipeline.")
+    parser.add_argument("--sport", choices=sorted(SPORTS.keys()))
+    parser.add_argument("--output-dir")
+    args = parser.parse_args(argv)
+
+    if args.sport:
+        run_sport_pipeline(args.sport, output_dir=args.output_dir)
+        return 0
+
+    manifest = run_pipeline(output_dir=args.output_dir)
     errors = [s["error"] for s in manifest["sports"].values() if s["status"] == "error"]
     if errors:
         for err in errors:
             print(f"Error in pipeline: {err}", file=sys.stderr)
-        sys.exit(1)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+    sys.exit(_main())
