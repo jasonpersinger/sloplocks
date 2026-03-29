@@ -7,11 +7,14 @@ import pytest
 
 from pipeline.backtest import (
     build_backtest_report,
+    build_threshold_guidance,
     compute_brier_score,
     compute_model_weights,
     compute_roi,
     evaluate_prediction,
     get_rolling_accuracy,
+    summarize_closing_line_value,
+    summarize_pick_breakdowns,
     summarize_pick_history,
     summarize_prediction_history,
     update_accuracy_log,
@@ -181,6 +184,70 @@ class TestGetRollingAccuracy:
 
 
 class TestBacktestSummary:
+    def test_summarize_pick_history_includes_confidence_and_ev(self):
+        picks = [
+            {
+                "evaluated": True,
+                "won": True,
+                "decimal_odds": 2.1,
+                "confidence_score": 70,
+                "expected_value": 0.12,
+            },
+            {
+                "evaluated": True,
+                "won": False,
+                "decimal_odds": 1.8,
+                "confidence_score": 50,
+                "expected_value": 0.04,
+            },
+        ]
+
+        summary = summarize_pick_history(picks)
+
+        assert summary["total_picks"] == 2
+        assert summary["wins"] == 1
+        assert summary["losses"] == 1
+        assert summary["avg_confidence"] == pytest.approx(60.0)
+        assert summary["avg_expected_value"] == pytest.approx(0.08)
+
+    def test_summarize_closing_line_value(self):
+        picks = [
+            {"closing_line_value": 0.03},
+            {"closing_line_value": -0.02},
+            {"closing_line_value": 0.00},
+            {},
+        ]
+
+        summary = summarize_closing_line_value(picks)
+
+        assert summary["tracked"] == 3
+        assert summary["avg_clv"] == pytest.approx(0.0033, abs=1e-4)
+        assert summary["positive_rate"] == pytest.approx(1 / 3, abs=1e-4)
+        assert summary["non_negative_rate"] == pytest.approx(2 / 3, abs=1e-4)
+
+    def test_summarize_pick_breakdowns(self):
+        picks = [
+            {"type": "slop_lock", "market_type": "moneyline", "evaluated": True, "won": True, "decimal_odds": 2.1, "closing_line_value": 0.01},
+            {"type": "total_lock", "market_type": "total", "evaluated": True, "won": False, "decimal_odds": 1.9, "closing_line_value": -0.02},
+        ]
+
+        breakdowns = summarize_pick_breakdowns(picks)
+
+        assert breakdowns["type"]["slop_lock"]["evaluated"] == 1
+        assert breakdowns["type"]["slop_lock"]["clv"]["avg_clv"] == pytest.approx(0.01)
+        assert breakdowns["market_type"]["total"]["evaluated"] == 1
+        assert breakdowns["market_type"]["moneyline"]["hit_rate"] == 1.0
+
+    def test_build_threshold_guidance_handles_small_sample(self):
+        guidance = build_threshold_guidance({
+            "evaluated": 6,
+            "roi": 0.12,
+            "clv": {"tracked": 3, "avg_clv": 0.01},
+        })
+
+        assert guidance
+        assert "Insufficient settled pick volume" in guidance[0]
+
     def test_summarize_prediction_history(self):
         predictions = [
             {
@@ -224,13 +291,18 @@ class TestBacktestSummary:
         with open(nba_dir / "pick_history.json", "w") as f:
             json.dump({
                 "picks": [
-                    {"evaluated": True, "won": True, "decimal_odds": 2.1},
-                    {"evaluated": True, "won": False, "decimal_odds": 1.8},
+                    {"type": "slop_lock", "market_type": "moneyline", "evaluated": True, "won": True, "decimal_odds": 2.1, "closing_line_value": 0.02},
+                    {"type": "total_lock", "market_type": "total", "evaluated": True, "won": False, "decimal_odds": 1.8, "closing_line_value": -0.03},
                 ]
             }, f)
 
         report = build_backtest_report(str(data_dir), sports=["nba"])
 
         assert report["sports"]["nba"]["predictions"]["evaluated"] == 1
+        assert report["sports"]["nba"]["picks"]["total_picks"] == 2
         assert report["sports"]["nba"]["picks"]["evaluated"] == 2
+        assert report["sports"]["nba"]["picks"]["clv"]["tracked"] == 2
+        assert "type" in report["sports"]["nba"]["picks"]["breakdowns"]
+        assert report["sports"]["nba"]["picks"]["breakdowns"]["market_type"]["total"]["evaluated"] == 1
+        assert report["sports"]["nba"]["threshold_guidance"]
         assert report["aggregate"]["picks"]["roi"] is not None

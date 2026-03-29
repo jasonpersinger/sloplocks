@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import os
+from collections import defaultdict
 
 from pipeline.config import ENSEMBLE_ACCURACY_WINDOW, SPORTS
 
@@ -209,12 +210,23 @@ def summarize_prediction_history(predictions):
 
 def summarize_pick_history(picks):
     """Summarize evaluated picks and their ROI."""
+    total_picks = len(picks)
     evaluated = [p for p in picks if p.get("evaluated")]
+    pending = total_picks - len(evaluated)
+    confidence_values = [float(p["confidence_score"]) for p in picks if p.get("confidence_score") is not None]
+    expected_values = [float(p["expected_value"]) for p in picks if p.get("expected_value") is not None]
     if not evaluated:
         return {
+            "total_picks": total_picks,
             "evaluated": 0,
+            "pending": pending,
             "hit_rate": None,
             "roi": None,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": round(sum(confidence_values) / len(confidence_values), 4) if confidence_values else None,
+            "avg_expected_value": round(sum(expected_values) / len(expected_values), 4) if expected_values else None,
         }
 
     bets = [
@@ -228,12 +240,96 @@ def summarize_pick_history(picks):
     ]
     wins = sum(1 for p in evaluated if p.get("won"))
     pushes = sum(1 for p in evaluated if p.get("push"))
+    losses = sum(1 for p in evaluated if not p.get("won") and not p.get("push"))
     return {
+        "total_picks": total_picks,
         "evaluated": len(evaluated),
+        "pending": pending,
         "hit_rate": round(wins / len(evaluated), 4),
         "roi": round(compute_roi(bets), 4),
         "push_rate": round(pushes / len(evaluated), 4),
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "avg_confidence": round(sum(confidence_values) / len(confidence_values), 4) if confidence_values else None,
+        "avg_expected_value": round(sum(expected_values) / len(expected_values), 4) if expected_values else None,
     }
+
+
+def summarize_closing_line_value(picks):
+    """Summarize CLV-style movement from saved pick records."""
+    tracked = [p for p in picks if p.get("closing_line_value") is not None]
+    if not tracked:
+        return {
+            "tracked": 0,
+            "avg_clv": None,
+            "positive_rate": None,
+            "non_negative_rate": None,
+        }
+
+    values = [float(p["closing_line_value"]) for p in tracked]
+    positives = sum(1 for value in values if value > 0)
+    non_negative = sum(1 for value in values if value >= 0)
+    return {
+        "tracked": len(tracked),
+        "avg_clv": round(sum(values) / len(values), 4),
+        "positive_rate": round(positives / len(values), 4),
+        "non_negative_rate": round(non_negative / len(values), 4),
+    }
+
+
+def _pick_lane_key(pick: dict, lane: str) -> str:
+    """Return the grouping key for one pick lane."""
+    if lane == "type":
+        return str(pick.get("type") or "unknown")
+    if lane == "market_type":
+        return str(pick.get("market_type") or "moneyline")
+    raise ValueError(f"Unsupported lane: {lane}")
+
+
+def summarize_pick_breakdowns(picks):
+    """Return per-type and per-market summaries."""
+    breakdowns = {}
+    for lane in ("type", "market_type"):
+        groups = defaultdict(list)
+        for pick in picks:
+            groups[_pick_lane_key(pick, lane)].append(pick)
+        breakdowns[lane] = {
+            key: {
+                **summarize_pick_history(group),
+                "clv": summarize_closing_line_value(group),
+            }
+            for key, group in sorted(groups.items())
+        }
+    return breakdowns
+
+
+def build_threshold_guidance(pick_summary: dict) -> list[str]:
+    """Generate simple evidence-based threshold guidance from report metrics."""
+    guidance = []
+    evaluated = int(pick_summary.get("evaluated") or 0)
+    tracked = int(((pick_summary.get("clv") or {}).get("tracked")) or 0)
+    roi = pick_summary.get("roi")
+    avg_clv = (pick_summary.get("clv") or {}).get("avg_clv")
+
+    if evaluated < 20:
+        guidance.append("Insufficient settled pick volume to retune thresholds confidently; hold current gates for now.")
+        return guidance
+
+    if tracked < 15:
+        guidance.append("CLV sample is still thin; use ROI and hit rate cautiously before loosening any lane.")
+
+    if roi is not None and avg_clv is not None:
+        if roi > 0.05 and avg_clv > 0:
+            guidance.append("Current thresholds look healthy; do not loosen until a larger tracked sample confirms the edge.")
+        elif roi < 0 and avg_clv < 0:
+            guidance.append("Results and CLV are both negative; tighten thresholds or reduce low-confidence volume.")
+        elif roi > 0 and avg_clv < 0:
+            guidance.append("Results are positive but CLV is weak; keep thresholds steady and watch for regression.")
+        elif roi < 0 and avg_clv > 0:
+            guidance.append("CLV is positive but realized ROI is lagging; avoid reactive threshold cuts until the sample matures.")
+
+    return guidance
 
 
 def build_backtest_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
@@ -269,14 +365,24 @@ def build_backtest_report(data_dir: str = "data", sports: list[str] | None = Non
         pick_summary = summarize_pick_history(picks)
         report["sports"][sport] = {
             "predictions": pred_summary,
-            "picks": pick_summary,
+            "picks": {
+                **pick_summary,
+                "clv": summarize_closing_line_value(picks),
+                "breakdowns": summarize_pick_breakdowns(picks),
+            },
         }
+        report["sports"][sport]["threshold_guidance"] = build_threshold_guidance(report["sports"][sport]["picks"])
 
         all_predictions.extend(predictions)
         all_picks.extend(picks)
 
     report["aggregate"]["predictions"] = summarize_prediction_history(all_predictions)
-    report["aggregate"]["picks"] = summarize_pick_history(all_picks)
+    report["aggregate"]["picks"] = {
+        **summarize_pick_history(all_picks),
+        "clv": summarize_closing_line_value(all_picks),
+        "breakdowns": summarize_pick_breakdowns(all_picks),
+    }
+    report["aggregate"]["threshold_guidance"] = build_threshold_guidance(report["aggregate"]["picks"])
     return report
 
 
