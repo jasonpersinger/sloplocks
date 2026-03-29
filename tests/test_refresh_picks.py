@@ -170,3 +170,75 @@ def test_refresh_nhl_updates_goalie_metadata(monkeypatch, tmp_path):
     assert match["home_goalie"] == "Linus Ullmark"
     assert match["away_goalie_status"] == "projected"
     assert match["base_model_probs"] == {"home": 0.52, "away": 0.48}
+
+
+def test_refresh_skips_invalid_live_odds_without_crashing(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    payload = {
+        "outcomes": ["home", "away"],
+        "model_weights": {"elo": 1.0},
+        "matches": [
+            {
+                "home_team": "Duke",
+                "away_team": "UConn",
+                "date": "2026-03-29",
+                "model_probs": {"home": 0.52, "away": 0.48},
+                "individual_models": {"elo": {"home": 0.52, "away": 0.48}},
+                "pick": "home",
+                "edges": {},
+            }
+        ],
+        "totals_matches": [],
+        "slop_locks": [],
+        "totals_locks": [],
+        "slimegrinder": [],
+        "diagnostics": {"historical_matches": 20},
+    }
+    _write_predictions(tmp_path, "ncaam", payload)
+
+    monkeypatch.setattr(
+        refresh_picks,
+        "fetch_odds",
+        lambda sport_key, include_totals=False: [{
+            "home_team": "Duke",
+            "away_team": "UConn",
+            "commence_time": "2026-03-29T23:00:00Z",
+            "home_odds": 1.0,
+            "away_odds": 1.92,
+        }],
+    )
+    monkeypatch.setattr(refresh_picks, "_append_odds_snapshot_log", lambda *args, **kwargs: None)
+    monkeypatch.setattr(refresh_picks, "_load_latest_odds_snapshots", lambda *args, **kwargs: {})
+    monkeypatch.setattr(refresh_picks, "_apply_latest_market_snapshots", lambda *args, **kwargs: None)
+    monkeypatch.setattr(refresh_picks, "_save_json", lambda path, data: None)
+
+    refresh_picks.refresh_sport("ncaam")
+
+    with open(tmp_path / "data" / "ncaam" / "predictions.json") as f:
+        data = json.load(f)
+
+    assert data["matches"][0]["edges"]["away"]["american_odds"] < 0
+
+
+def test_main_continues_when_one_sport_refresh_fails(monkeypatch, tmp_path, capsys):
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "data").mkdir()
+    calls = []
+
+    def fake_refresh(sport_key):
+        calls.append(sport_key)
+        if sport_key == "nhl":
+            raise RuntimeError("bad live payload")
+
+    monkeypatch.setattr(refresh_picks, "refresh_sport", fake_refresh)
+    monkeypatch.setattr(refresh_picks, "build_dashboard_data", lambda base_dir: {"ok": True})
+    monkeypatch.setattr(refresh_picks, "_save_json", lambda path, data: None)
+    monkeypatch.setattr(refresh_picks, "SPORTS", {"nba": {}, "nhl": {}})
+    monkeypatch.setattr(refresh_picks, "sys", type("SysProxy", (), {"argv": ["refresh_picks.py"]}))
+
+    refresh_picks.main()
+
+    out = capsys.readouterr().out
+    assert calls == ["nba", "nhl"]
+    assert "Refresh failures:" in out
+    assert "nhl: bad live payload" in out

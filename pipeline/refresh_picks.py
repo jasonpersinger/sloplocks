@@ -163,7 +163,10 @@ def refresh_sport(sport_key: str) -> None:
 
     tracking_dir = data_path.parent.parent / "tracking"
     odds_history_path = str(tracking_dir / "odds_history.csv")
-    _append_odds_snapshot_log(odds_history_path, _build_odds_snapshot_rows(sport_key, odds_list))
+    try:
+        _append_odds_snapshot_log(odds_history_path, _build_odds_snapshot_rows(sport_key, odds_list))
+    except Exception as exc:
+        print(f"  {sport_key}: odds snapshot logging skipped ({exc})")
 
     # Patch edges onto matches where we have fresh odds and refreshed live inputs.
     model_weights = data.get("model_weights") or {}
@@ -217,16 +220,20 @@ def refresh_sport(sport_key: str) -> None:
             match["away_team"],
         )
         if match_odds:
-            edges = compute_edges(
-                refreshed_probs,
-                match_odds,
-                fractional_kelly=sport.get("kelly_fraction", 0.25),
-            )
+            try:
+                edges = compute_edges(
+                    refreshed_probs,
+                    match_odds,
+                    fractional_kelly=sport.get("kelly_fraction", 0.25),
+                )
+            except Exception as exc:
+                print(f"  {sport_key}: edge refresh skipped for {match['away_team']} @ {match['home_team']} ({exc})")
+                continue
             match["edges"] = edges
             match["best_odds"] = {
                 outcome: decimal_to_american(match_odds[f"{outcome}_odds"])
                 for outcome in outcomes
-                if match_odds.get(f"{outcome}_odds", 0) > 0
+                if match_odds.get(f"{outcome}_odds", 0) > 1.0
             }
             # Recompute top-level pick/stars based on new odds
             pick = max(match["model_probs"].keys(), key=lambda k: match["model_probs"][k])
@@ -275,16 +282,23 @@ def refresh_sport(sport_key: str) -> None:
                 max_runs_delta=sport.get("lineup_total_adjustment_max_runs", 0.35),
             )
         sigma = max(1.5, float(total_match.get("total_stddev", sport.get("totals_default_stddev", 3.1))))
-        current_line = float(match_odds["total_line"])
+        try:
+            current_line = float(match_odds["total_line"])
+        except (TypeError, ValueError):
+            continue
         over_prob = float(1.0 - norm.cdf(current_line, loc=expected_total, scale=sigma))
         over_prob = max(0.01, min(0.99, over_prob))
         total_probs = {"over": over_prob, "under": 1.0 - over_prob}
-        total_edges = compute_totals_edges(
-            total_probs,
-            match_odds,
-            individual_probs=[total_probs],
-            fractional_kelly=sport.get("kelly_fraction", 0.25),
-        )
+        try:
+            total_edges = compute_totals_edges(
+                total_probs,
+                match_odds,
+                individual_probs=[total_probs],
+                fractional_kelly=sport.get("kelly_fraction", 0.25),
+            )
+        except Exception as exc:
+            print(f"  {sport_key}: totals refresh skipped for {total_match['away_team']} @ {total_match['home_team']} ({exc})")
+            continue
         total_pick = max(total_probs, key=total_probs.get)
         total_match["start_time"] = match_odds.get("commence_time", total_match.get("start_time"))
         total_match["total_line"] = current_line
@@ -377,10 +391,23 @@ def refresh_sport(sport_key: str) -> None:
 def main() -> None:
     sports = sys.argv[1:] if len(sys.argv) > 1 else list(SPORTS.keys())
     print(f"Refreshing picks for: {', '.join(sports)}")
+    succeeded = 0
+    failed = []
     for sport_key in sports:
-        refresh_sport(sport_key)
+        try:
+            refresh_sport(sport_key)
+            succeeded += 1
+        except Exception as exc:
+            failed.append((sport_key, str(exc)))
+            print(f"  {sport_key}: refresh failed ({exc})")
     dashboard = build_dashboard_data(str(DATA_DIR))
     _save_json(str(Path(DATA_DIR) / "dashboard.json"), dashboard)
+    if failed:
+        print("Refresh failures:")
+        for sport_key, error in failed:
+            print(f"  - {sport_key}: {error}")
+    if succeeded == 0 and failed:
+        raise SystemExit(1)
     print("Done.")
 
 
