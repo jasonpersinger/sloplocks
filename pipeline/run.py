@@ -30,6 +30,7 @@ from pipeline.config import (
 )
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
+from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
 from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
@@ -42,6 +43,7 @@ from pipeline.models import (
     MlbTotalsModel,
     NbaMatchupModel,
     NbaTotalsModel,
+    NhlMatchupModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
@@ -52,6 +54,7 @@ from pipeline.models import (
     mlb_totals_predict,
     nba_matchup_predict,
     nba_totals_predict,
+    nhl_matchup_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
@@ -1369,6 +1372,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
+    elif sport_key == "nhl":
+        games_df, box_scores_df = fetch_nhl_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        fixtures = fetch_nhl_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        matches = games_df
     elif sport_key == "ncaam":
         games_df, box_scores_df = fetch_ncaam_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
@@ -1483,6 +1494,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
             min_games=sport.get("nba_matchup_min_games", 30),
         )
 
+    nhl_matchup_model = None
+    if sport_key == "nhl" and "nhl_matchup" in sport["models"] and matches is not None and not matches.empty:
+        nhl_matchup_model = NhlMatchupModel(
+            matches,
+            feature_window=sport.get("nhl_matchup_window", 10),
+            min_games=sport.get("nhl_matchup_min_games", 40),
+        )
+
     pitcher_feature_model = None
     if "pitcher_features" in sport["models"] and matches is not None and not matches.empty:
         pitcher_feature_model = PitcherMatchupModel(
@@ -1554,6 +1573,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("recent_boxscore")
     if nba_matchup_model is not None:
         model_names.append("nba_matchup")
+    if nhl_matchup_model is not None:
+        model_names.append("nhl_matchup")
     if pitcher_feature_model is not None:
         model_names.append("pitcher_features")
     if bullpen_feature_model is not None:
@@ -1592,6 +1613,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
         normalizer = normalize_mlb_team_name
     elif sport_key == "mma":
         normalizer = normalize_mma_name
+    elif sport_key == "nhl":
+        normalizer = normalize_nhl_team_name
     else:
         normalizer = lambda x: x
     for o in odds_list:
@@ -1712,6 +1735,17 @@ def run_sport_pipeline(sport_key, output_dir=None):
             individual_preds.append(nba_matchup_probs)
             blend_weights.append(model_weight_dict["nba_matchup"])
             individual_models["nba_matchup"] = nba_matchup_probs
+
+        if nhl_matchup_model is not None:
+            nhl_matchup_probs = nhl_matchup_predict(
+                nhl_matchup_model,
+                home,
+                away,
+                game_date=fix.get("date"),
+            )
+            individual_preds.append(nhl_matchup_probs)
+            blend_weights.append(model_weight_dict["nhl_matchup"])
+            individual_models["nhl_matchup"] = nhl_matchup_probs
 
         if pitcher_feature_model is not None:
             pitcher_probs = pitcher_matchup_predict(

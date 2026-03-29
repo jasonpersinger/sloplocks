@@ -24,6 +24,7 @@ NCAAM_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens
 NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
 MMA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc"
+NHL_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl"
 MLB_CORE_API_BASE = "https://sports.core.api.espn.com/v2/sports/baseball/leagues/mlb"
 OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast"
 
@@ -177,6 +178,41 @@ SPORTS = {
         "rest_bonus_points": 8,
         "accuracy_window": 40,
         "data_dir": os.path.join(DATA_DIR, "nba"),
+    },
+    "nhl": {
+        "name": "NHL",
+        "display_name": "NHL",
+        "odds_sport": "icehockey_nhl",
+        "outcomes": ["home", "away"],
+        "models": ["elo", "results_features", "nhl_matchup"],
+        "accuracy_softmax_temperature": 2.5,
+        "probability_calibration_min_samples": 20,
+        "probability_calibration_blend": 0.4,
+        "elo_k_factor": 18,
+        "elo_home_advantage": 28,
+        "results_feature_window": 10,
+        "results_feature_min_games": 40,
+        "nhl_matchup_window": 10,
+        "nhl_matchup_min_games": 40,
+        "recent_form_window": 8,
+        "recent_form_max_adjustment": 24,
+        "min_expected_value": 0.0,
+        "kelly_fraction": 0.2,
+        "slop_lock_edge_threshold": 0.015,
+        "slop_lock_probability_floor": 0.5,
+        "slop_lock_confidence_threshold": 50,
+        "slop_lock_confidence_dropoff": 7,
+        "slop_lock_max_picks": 4,
+        "longslop_confidence_threshold": 54,
+        "slimegrinder_confidence_threshold": 52,
+        "back_to_back_penalty": 14,
+        "fatigue_window_days": 4,
+        "fatigue_threshold_games": 3,
+        "fatigue_penalty": 8,
+        "rest_bonus_days": 3,
+        "rest_bonus_points": 6,
+        "accuracy_window": 40,
+        "data_dir": os.path.join(DATA_DIR, "nhl"),
     },
     "ncaam": {
         "name": "NCAAM",

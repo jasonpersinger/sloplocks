@@ -25,13 +25,14 @@ COLOR_RADAR = 0x1F8B4C
 
 SPORT_EMOJIS = {
     "nba": "🏀",
+    "nhl": "🏒",
     "ncaam": "🎓",
     "mlb": "⚾",
     "mma": "🥊",
 }
 PICK_LABELS = {"draw": "DRAW"}
 DATA_DIR = Path("data")
-SPORT_ORDER = ("nba", "ncaam", "mlb", "mma")
+SPORT_ORDER = ("nba", "nhl", "ncaam", "mlb", "mma")
 MAX_CURATED_FIELDS = 8
 MAX_RADAR_FIELDS = 5
 MAX_DIAGNOSTIC_FIELDS = 4

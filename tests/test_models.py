@@ -15,6 +15,7 @@ from pipeline.models import (
     MlbTotalsModel,
     NbaMatchupModel,
     NbaTotalsModel,
+    NhlMatchupModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     ResultsFeatureModel,
@@ -29,6 +30,7 @@ from pipeline.models import (
     mlb_totals_predict,
     nba_matchup_predict,
     nba_totals_predict,
+    nhl_matchup_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
     run_environment_predict,
@@ -776,3 +778,37 @@ class TestNbaTotalsModel:
         assert result["expected_total"] > 210.0
         assert 0.0 < result["over"] < 1.0
         assert math.isclose(result["over"] + result["under"], 1.0, abs_tol=1e-9)
+
+
+class TestNhlMatchupModel:
+    def test_predicts_home_edge_for_stronger_team(self):
+        games = []
+        base = pd.Timestamp("2026-01-01")
+        for idx in range(48):
+            home_team = "Bruins" if idx % 2 == 0 else "Canadiens"
+            away_team = "Canadiens" if idx % 2 == 0 else "Bruins"
+            strong_home = home_team == "Bruins"
+            date_str = (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d")
+            home_goals = 4 if strong_home else 2
+            away_goals = 2 if strong_home else 4
+            games.append({
+                "game_id": f"nhl-{idx}",
+                "date": date_str,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_goals": home_goals,
+                "away_goals": away_goals,
+                "home_saves": 28 if strong_home else 24,
+                "away_saves": 24 if strong_home else 28,
+                "home_save_pct": 0.925 if strong_home else 0.895,
+                "away_save_pct": 0.895 if strong_home else 0.925,
+                "home_shots": 32 if strong_home else 27,
+                "away_shots": 27 if strong_home else 32,
+            })
+
+        model = NhlMatchupModel(pd.DataFrame(games), feature_window=8, min_games=20)
+        probs = nhl_matchup_predict(model, "Bruins", "Canadiens", game_date="2026-03-10")
+
+        assert model.model is not None
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)

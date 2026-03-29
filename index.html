@@ -238,6 +238,7 @@
     <nav class="pill-nav">
       <button class="pill active" data-sport="all">ALL</button>
       <button class="pill" data-sport="nba">NBA</button>
+      <button class="pill" data-sport="nhl">NHL</button>
       <button class="pill" data-sport="ncaam">NCAAM</button>
       <button class="pill" data-sport="mlb">MLB</button>
       <button class="pill" data-sport="mma">MMA</button>
@@ -289,7 +290,7 @@
     return formatDate(fallbackDate);
   }
 
-  var SPORT_LABELS = { nba: 'NBA', ncaam: 'NCAAM', mlb: 'MLB', mma: 'MMA' };
+  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', ncaam: 'NCAAM', mlb: 'MLB', mma: 'MMA' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }

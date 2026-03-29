@@ -103,6 +103,32 @@ def sample_mma_matches():
 
 
 @pytest.fixture
+def sample_nhl_matches():
+    """Minimal NHL history with shot/save context."""
+    base_date = datetime(2026, 1, 1)
+    rows = []
+    for i in range(24):
+        home_team = "Bruins" if i % 2 == 0 else "Canadiens"
+        away_team = "Canadiens" if i % 2 == 0 else "Bruins"
+        strong_home = home_team == "Bruins"
+        rows.append({
+            "game_id": str(2500 + i),
+            "date": (base_date + timedelta(days=i)).strftime("%Y-%m-%d"),
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_goals": 4 if strong_home else 2,
+            "away_goals": 2 if strong_home else 4,
+            "home_saves": 29 if strong_home else 24,
+            "away_saves": 24 if strong_home else 29,
+            "home_save_pct": 0.928 if strong_home else 0.896,
+            "away_save_pct": 0.896 if strong_home else 0.928,
+            "home_shots": 33 if strong_home else 27,
+            "away_shots": 27 if strong_home else 33,
+        })
+    return pd.DataFrame(rows)
+
+
+@pytest.fixture
 def sample_mlb_matches():
     """Minimal MLB history with starter and bullpen context."""
     base_date = datetime(2026, 3, 1)
@@ -336,6 +362,48 @@ class TestRunMMAPipeline:
         assert match["american_odds"] is not None
 
 
+class TestRunNHLPipeline:
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_nhl_schedule")
+    @patch("pipeline.run.fetch_nhl_games")
+    def test_produces_valid_nhl_predictions(
+        self, mock_games, mock_schedule, mock_odds, sample_nhl_matches, tmp_path
+    ):
+        mock_games.return_value = (sample_nhl_matches, None)
+        mock_schedule.return_value = [
+            {
+                "home_team": "Bruins",
+                "away_team": "Canadiens",
+                "date": _TODAY,
+                "start_time": f"{_TODAY}T23:00:00Z",
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Bruins",
+                "away_team": "Canadiens",
+                "commence_time": f"{_TODAY}T23:00:00Z",
+                "home_odds": 1.72,
+                "draw_odds": 0.0,
+                "away_odds": 2.2,
+            }
+        ]
+
+        output_dir = str(tmp_path / "nhl")
+        run_sport_pipeline("nhl", output_dir=output_dir)
+
+        with open(os.path.join(output_dir, "predictions.json")) as f:
+            data = json.load(f)
+
+        assert data["sport"] == "nhl"
+        assert data["outcomes"] == ["home", "away"]
+        assert len(data["matches"]) == 1
+        assert data["matches"][0]["pick"] in {"home", "away"}
+        assert "elo" in data["model_weights"]
+        assert "results_features" in data["model_weights"]
+        assert "nhl_matchup" in data["model_weights"]
+
+
 class TestRunMLBPipeline:
     @patch("pipeline.run.fetch_odds")
     @patch("pipeline.run.fetch_mlb_schedule")
@@ -557,6 +625,8 @@ class TestRunPipeline:
     @patch("pipeline.run.fetch_mma_games")
     @patch("pipeline.run.fetch_mlb_schedule")
     @patch("pipeline.run.fetch_mlb_games")
+    @patch("pipeline.run.fetch_nhl_schedule")
+    @patch("pipeline.run.fetch_nhl_games")
     @patch("pipeline.run.fetch_ncaam_schedule")
     @patch("pipeline.run.fetch_ncaam_games")
     @patch("pipeline.run.fetch_nba_espn_schedule")
@@ -567,12 +637,14 @@ class TestRunPipeline:
         mock_nba_schedule,
         mock_ncaam_games,
         mock_ncaam_schedule,
+        mock_nhl_games,
+        mock_nhl_schedule,
         mock_mlb_games,
         mock_mlb_schedule,
         mock_mma_games,
         mock_mma_schedule,
         mock_odds,
-        sample_nba_matches, sample_nba_box_scores,
+        sample_nba_matches, sample_nba_box_scores, sample_nhl_matches,
         ncaam_games, ncaam_box_scores, tmp_path
     ):
         mock_nba_games.return_value = (sample_nba_matches, sample_nba_box_scores)
@@ -591,6 +663,14 @@ class TestRunPipeline:
                 "date": "2026-02-19",
             }
         ]
+        mock_nhl_games.return_value = (sample_nhl_matches, None)
+        mock_nhl_schedule.return_value = [
+            {
+                "home_team": "Bruins",
+                "away_team": "Canadiens",
+                "date": "2026-02-19",
+            }
+        ]
         mock_mlb_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
         mock_mlb_schedule.return_value = []
         mock_mma_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
@@ -604,14 +684,18 @@ class TestRunPipeline:
         manifest_path = os.path.join(output_dir, "manifest.json")
         assert os.path.exists(manifest_path)
         assert "nba" in manifest["sports"]
+        assert "nhl" in manifest["sports"]
         assert "ncaam" in manifest["sports"]
         assert manifest["sports"]["nba"]["status"] == "ok"
+        assert manifest["sports"]["nhl"]["status"] == "ok"
         assert manifest["sports"]["ncaam"]["status"] == "ok"
         assert "diagnostics" in manifest["sports"]["nba"]
+        assert "diagnostics" in manifest["sports"]["nhl"]
         assert "diagnostics" in manifest["sports"]["ncaam"]
 
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
+        assert os.path.exists(os.path.join(output_dir, "nhl", "predictions.json"))
         assert os.path.exists(os.path.join(output_dir, "ncaam", "predictions.json"))
 
 
