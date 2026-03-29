@@ -1752,6 +1752,10 @@ class NhlMatchupModel:
             "recent_shot_diff",
             "season_save_pct_diff",
             "recent_save_pct_diff",
+            "recent_faceoff_pct_diff",
+            "recent_power_play_pct_diff",
+            "recent_takeaway_diff",
+            "recent_penalty_minutes_edge",
             "rest_diff",
         ]
         self._fit(games)
@@ -1762,6 +1766,10 @@ class NhlMatchupModel:
             "goal_diff": 0.0,
             "shot_diff": 0.0,
             "save_pct": 0.91,
+            "faceoff_pct": 0.5,
+            "power_play_pct": 0.18,
+            "takeaway_diff": 0.0,
+            "penalty_minutes": 8.0,
         }
 
     def _aggregate(self, logs):
@@ -1775,6 +1783,10 @@ class NhlMatchupModel:
             "goal_diff": _avg("goal_diff"),
             "shot_diff": _avg("shot_diff"),
             "save_pct": _avg("save_pct"),
+            "faceoff_pct": _avg("faceoff_pct"),
+            "power_play_pct": _avg("power_play_pct"),
+            "takeaway_diff": _avg("takeaway_diff"),
+            "penalty_minutes": _avg("penalty_minutes"),
         }
 
     def _rest_days(self, logs, game_date):
@@ -1806,17 +1818,38 @@ class NhlMatchupModel:
             home_recent["shot_diff"] - away_recent["shot_diff"],
             home_season["save_pct"] - away_season["save_pct"],
             home_recent["save_pct"] - away_recent["save_pct"],
+            home_recent["faceoff_pct"] - away_recent["faceoff_pct"],
+            home_recent["power_play_pct"] - away_recent["power_play_pct"],
+            home_recent["takeaway_diff"] - away_recent["takeaway_diff"],
+            (away_recent["penalty_minutes"] - home_recent["penalty_minutes"]) / 10.0,
             (self._rest_days(home_logs, game_date) - self._rest_days(away_logs, game_date)) / 3.0,
         ])
 
     @staticmethod
-    def _game_log(row, venue, goals_for, goals_against, shots_for, shots_against, save_pct):
+    def _game_log(
+        row,
+        venue,
+        goals_for,
+        goals_against,
+        shots_for,
+        shots_against,
+        save_pct,
+        faceoff_pct,
+        power_play_pct,
+        takeaways,
+        giveaways,
+        penalty_minutes,
+    ):
         return {
             "date": row["date"],
             "venue": venue,
             "goal_diff": float(goals_for - goals_against),
             "shot_diff": float(shots_for - shots_against),
             "save_pct": float(save_pct),
+            "faceoff_pct": float(faceoff_pct),
+            "power_play_pct": float(power_play_pct),
+            "takeaway_diff": float(takeaways - giveaways),
+            "penalty_minutes": float(penalty_minutes),
         }
 
     def _fit(self, games):
@@ -1853,6 +1886,11 @@ class NhlMatchupModel:
                     int(row.get("home_shots", 0)),
                     int(row.get("away_shots", 0)),
                     float(row.get("home_save_pct", 0.91)),
+                    float(row.get("home_faceoff_pct", 0.5)),
+                    float(row.get("home_power_play_pct", 0.18)),
+                    float(row.get("home_takeaways", 0.0)),
+                    float(row.get("home_giveaways", 0.0)),
+                    float(row.get("home_penalty_minutes", 8.0)),
                 )
             )
             team_logs.setdefault(away, []).append(
@@ -1864,6 +1902,11 @@ class NhlMatchupModel:
                     int(row.get("away_shots", 0)),
                     int(row.get("home_shots", 0)),
                     float(row.get("away_save_pct", 0.91)),
+                    float(row.get("away_faceoff_pct", 0.5)),
+                    float(row.get("away_power_play_pct", 0.18)),
+                    float(row.get("away_takeaways", 0.0)),
+                    float(row.get("away_giveaways", 0.0)),
+                    float(row.get("away_penalty_minutes", 8.0)),
                 )
             )
 

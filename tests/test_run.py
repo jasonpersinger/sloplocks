@@ -124,6 +124,16 @@ def sample_nhl_matches():
             "away_save_pct": 0.896 if strong_home else 0.928,
             "home_shots": 33 if strong_home else 27,
             "away_shots": 27 if strong_home else 33,
+            "home_faceoff_pct": 0.57 if strong_home else 0.45,
+            "away_faceoff_pct": 0.45 if strong_home else 0.57,
+            "home_power_play_pct": 0.23 if strong_home else 0.12,
+            "away_power_play_pct": 0.12 if strong_home else 0.23,
+            "home_takeaways": 8 if strong_home else 4,
+            "away_takeaways": 4 if strong_home else 8,
+            "home_giveaways": 4 if strong_home else 7,
+            "away_giveaways": 7 if strong_home else 4,
+            "home_penalty_minutes": 6.0 if strong_home else 10.0,
+            "away_penalty_minutes": 10.0 if strong_home else 6.0,
         })
     return pd.DataFrame(rows)
 

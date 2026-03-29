@@ -55,7 +55,37 @@ class TestFetchNhlGames:
         scoreboard_resp.json.return_value = {
             "events": [_make_nhl_event("1", "Boston Bruins", "Toronto Maple Leafs", 4, 2)]
         }
-        mock_get.return_value = scoreboard_resp
+        summary_resp = MagicMock()
+        summary_resp.raise_for_status = MagicMock()
+        summary_resp.json.return_value = {
+            "boxscore": {
+                "teams": [
+                    {
+                        "team": {"displayName": "Boston Bruins"},
+                        "statistics": [
+                            {"name": "shotsTotal", "displayValue": "31"},
+                            {"name": "faceoffPercent", "displayValue": "57.3"},
+                            {"name": "powerPlayPct", "displayValue": "25.0"},
+                            {"name": "takeaways", "displayValue": "8"},
+                            {"name": "giveaways", "displayValue": "5"},
+                            {"name": "penaltyMinutes", "displayValue": "6"},
+                        ],
+                    },
+                    {
+                        "team": {"displayName": "Toronto Maple Leafs"},
+                        "statistics": [
+                            {"name": "shotsTotal", "displayValue": "26"},
+                            {"name": "faceoffPercent", "displayValue": "42.7"},
+                            {"name": "powerPlayPct", "displayValue": "12.5"},
+                            {"name": "takeaways", "displayValue": "5"},
+                            {"name": "giveaways", "displayValue": "7"},
+                            {"name": "penaltyMinutes", "displayValue": "10"},
+                        ],
+                    },
+                ]
+            }
+        }
+        mock_get.side_effect = [scoreboard_resp, summary_resp]
 
         games_df, box_df = fetch_nhl_games(season=2025, dates=["2026-03-29"])
 
@@ -63,8 +93,11 @@ class TestFetchNhlGames:
         assert len(games_df) == 1
         assert games_df.iloc[0]["home_team"] == "Bruins"
         assert games_df.iloc[0]["away_team"] == "Maple Leafs"
-        assert games_df.iloc[0]["home_shots"] == 24 + 4
+        assert games_df.iloc[0]["home_shots"] == 31
         assert games_df.iloc[0]["away_save_pct"] == 0.889
+        assert games_df.iloc[0]["home_faceoff_pct"] == 0.573
+        assert games_df.iloc[0]["away_power_play_pct"] == 0.125
+        assert games_df.iloc[0]["away_penalty_minutes"] == 10.0
 
 
 class TestFetchNhlSchedule:

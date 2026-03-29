@@ -2,6 +2,7 @@
 
 import json as _json
 import os
+import time
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
@@ -9,7 +10,7 @@ import requests
 
 from pipeline.config import NHL_ESPN_BASE
 
-_REQUEST_DELAY = 0.0
+_REQUEST_DELAY = 0.25
 
 _team_map: dict[str, str] | None = None
 
@@ -111,6 +112,45 @@ def _parse_save_pct(value) -> float:
         return 0.91
 
 
+def _parse_float(value, default=0.0) -> float:
+    """Best-effort float parsing for ESPN stat payloads."""
+    if value in (None, ""):
+        return float(default)
+    text = str(value).strip()
+    if text.endswith("%"):
+        text = text[:-1]
+    try:
+        return float(text)
+    except ValueError:
+        return float(default)
+
+
+def _extract_summary_team_stats(summary: dict) -> dict[str, dict]:
+    """Extract team-level NHL summary stats keyed by normalized team name."""
+    stats_by_team = {}
+    for team_entry in summary.get("boxscore", {}).get("teams", []):
+        team = team_entry.get("team", {})
+        team_name = normalize_nhl_team_name(team.get("displayName", ""))
+        if not team_name:
+            continue
+        stat_map = _stat_map(team_entry)
+        stats_by_team[team_name] = {
+            "shots": int(_parse_float(stat_map.get("shotsTotal"), 0.0)),
+            "blocked_shots": int(_parse_float(stat_map.get("blockedShots"), 0.0)),
+            "hits": int(_parse_float(stat_map.get("hits"), 0.0)),
+            "takeaways": int(_parse_float(stat_map.get("takeaways"), 0.0)),
+            "power_play_goals": int(_parse_float(stat_map.get("powerPlayGoals"), 0.0)),
+            "power_play_opportunities": int(_parse_float(stat_map.get("powerPlayOpportunities"), 0.0)),
+            "power_play_pct": _parse_float(stat_map.get("powerPlayPct"), 0.0) / 100.0,
+            "faceoffs_won": int(_parse_float(stat_map.get("faceoffsWon"), 0.0)),
+            "faceoff_pct": _parse_float(stat_map.get("faceoffPercent"), 50.0) / 100.0,
+            "giveaways": int(_parse_float(stat_map.get("giveaways"), 0.0)),
+            "penalties": int(_parse_float(stat_map.get("penalties"), 0.0)),
+            "penalty_minutes": _parse_float(stat_map.get("penaltyMinutes"), 0.0),
+        }
+    return stats_by_team
+
+
 def _parse_final_event(event: dict) -> dict | None:
     """Parse one final NHL scoreboard event into a cached game row."""
     comp = event.get("competitions", [{}])[0]
@@ -146,6 +186,28 @@ def _parse_final_event(event: dict) -> dict | None:
         "away_save_pct": _parse_save_pct(away_stats.get("savePct")),
         "home_shots": home_goals + away_saves,
         "away_shots": away_goals + home_saves,
+        "home_blocked_shots": 0,
+        "away_blocked_shots": 0,
+        "home_hits": 0,
+        "away_hits": 0,
+        "home_takeaways": 0,
+        "away_takeaways": 0,
+        "home_power_play_goals": 0,
+        "away_power_play_goals": 0,
+        "home_power_play_opportunities": 0,
+        "away_power_play_opportunities": 0,
+        "home_power_play_pct": 0.0,
+        "away_power_play_pct": 0.0,
+        "home_faceoffs_won": 0,
+        "away_faceoffs_won": 0,
+        "home_faceoff_pct": 0.5,
+        "away_faceoff_pct": 0.5,
+        "home_giveaways": 0,
+        "away_giveaways": 0,
+        "home_penalties": 0,
+        "away_penalties": 0,
+        "home_penalty_minutes": 0.0,
+        "away_penalty_minutes": 0.0,
     }
 
 
@@ -174,7 +236,70 @@ def fetch_nhl_games(
             parsed = _parse_final_event(event)
             if parsed is None:
                 continue
-            cache["games"][event["id"]] = parsed
+            existing = cache["games"].get(event["id"], {})
+            cache["games"][event["id"]] = {
+                **parsed,
+                "home_blocked_shots": existing.get("home_blocked_shots", parsed["home_blocked_shots"]),
+                "away_blocked_shots": existing.get("away_blocked_shots", parsed["away_blocked_shots"]),
+                "home_hits": existing.get("home_hits", parsed["home_hits"]),
+                "away_hits": existing.get("away_hits", parsed["away_hits"]),
+                "home_takeaways": existing.get("home_takeaways", parsed["home_takeaways"]),
+                "away_takeaways": existing.get("away_takeaways", parsed["away_takeaways"]),
+                "home_power_play_goals": existing.get("home_power_play_goals", parsed["home_power_play_goals"]),
+                "away_power_play_goals": existing.get("away_power_play_goals", parsed["away_power_play_goals"]),
+                "home_power_play_opportunities": existing.get(
+                    "home_power_play_opportunities", parsed["home_power_play_opportunities"]
+                ),
+                "away_power_play_opportunities": existing.get(
+                    "away_power_play_opportunities", parsed["away_power_play_opportunities"]
+                ),
+                "home_power_play_pct": existing.get("home_power_play_pct", parsed["home_power_play_pct"]),
+                "away_power_play_pct": existing.get("away_power_play_pct", parsed["away_power_play_pct"]),
+                "home_faceoffs_won": existing.get("home_faceoffs_won", parsed["home_faceoffs_won"]),
+                "away_faceoffs_won": existing.get("away_faceoffs_won", parsed["away_faceoffs_won"]),
+                "home_faceoff_pct": existing.get("home_faceoff_pct", parsed["home_faceoff_pct"]),
+                "away_faceoff_pct": existing.get("away_faceoff_pct", parsed["away_faceoff_pct"]),
+                "home_giveaways": existing.get("home_giveaways", parsed["home_giveaways"]),
+                "away_giveaways": existing.get("away_giveaways", parsed["away_giveaways"]),
+                "home_penalties": existing.get("home_penalties", parsed["home_penalties"]),
+                "away_penalties": existing.get("away_penalties", parsed["away_penalties"]),
+                "home_penalty_minutes": existing.get("home_penalty_minutes", parsed["home_penalty_minutes"]),
+                "away_penalty_minutes": existing.get("away_penalty_minutes", parsed["away_penalty_minutes"]),
+            }
+
+        for event in data.get("events", []):
+            game_id = event.get("id")
+            entry = cache["games"].get(game_id)
+            if not entry:
+                continue
+            if entry.get("home_faceoffs_won") or entry.get("away_faceoffs_won"):
+                continue
+
+            time.sleep(_REQUEST_DELAY)
+            summary_url = f"{NHL_ESPN_BASE}/summary?event={game_id}"
+            try:
+                summary_resp = requests.get(summary_url, timeout=30)
+                summary_resp.raise_for_status()
+                summary = summary_resp.json()
+            except requests.RequestException:
+                continue
+
+            team_stats = _extract_summary_team_stats(summary)
+            home_stats = team_stats.get(entry["home_team"], {})
+            away_stats = team_stats.get(entry["away_team"], {})
+            for prefix, stats in (("home", home_stats), ("away", away_stats)):
+                entry[f"{prefix}_shots"] = int(stats.get("shots", entry.get(f"{prefix}_shots", 0)))
+                entry[f"{prefix}_blocked_shots"] = int(stats.get("blocked_shots", 0))
+                entry[f"{prefix}_hits"] = int(stats.get("hits", 0))
+                entry[f"{prefix}_takeaways"] = int(stats.get("takeaways", 0))
+                entry[f"{prefix}_power_play_goals"] = int(stats.get("power_play_goals", 0))
+                entry[f"{prefix}_power_play_opportunities"] = int(stats.get("power_play_opportunities", 0))
+                entry[f"{prefix}_power_play_pct"] = float(stats.get("power_play_pct", 0.0))
+                entry[f"{prefix}_faceoffs_won"] = int(stats.get("faceoffs_won", 0))
+                entry[f"{prefix}_faceoff_pct"] = float(stats.get("faceoff_pct", 0.5))
+                entry[f"{prefix}_giveaways"] = int(stats.get("giveaways", 0))
+                entry[f"{prefix}_penalties"] = int(stats.get("penalties", 0))
+                entry[f"{prefix}_penalty_minutes"] = float(stats.get("penalty_minutes", 0.0))
 
     _save_espn_cache(cache_path, cache)
 
@@ -193,6 +318,28 @@ def fetch_nhl_games(
             "away_save_pct": entry.get("away_save_pct", 0.91),
             "home_shots": entry.get("home_shots", 0),
             "away_shots": entry.get("away_shots", 0),
+            "home_blocked_shots": entry.get("home_blocked_shots", 0),
+            "away_blocked_shots": entry.get("away_blocked_shots", 0),
+            "home_hits": entry.get("home_hits", 0),
+            "away_hits": entry.get("away_hits", 0),
+            "home_takeaways": entry.get("home_takeaways", 0),
+            "away_takeaways": entry.get("away_takeaways", 0),
+            "home_power_play_goals": entry.get("home_power_play_goals", 0),
+            "away_power_play_goals": entry.get("away_power_play_goals", 0),
+            "home_power_play_opportunities": entry.get("home_power_play_opportunities", 0),
+            "away_power_play_opportunities": entry.get("away_power_play_opportunities", 0),
+            "home_power_play_pct": entry.get("home_power_play_pct", 0.0),
+            "away_power_play_pct": entry.get("away_power_play_pct", 0.0),
+            "home_faceoffs_won": entry.get("home_faceoffs_won", 0),
+            "away_faceoffs_won": entry.get("away_faceoffs_won", 0),
+            "home_faceoff_pct": entry.get("home_faceoff_pct", 0.5),
+            "away_faceoff_pct": entry.get("away_faceoff_pct", 0.5),
+            "home_giveaways": entry.get("home_giveaways", 0),
+            "away_giveaways": entry.get("away_giveaways", 0),
+            "home_penalties": entry.get("home_penalties", 0),
+            "away_penalties": entry.get("away_penalties", 0),
+            "home_penalty_minutes": entry.get("home_penalty_minutes", 0.0),
+            "away_penalty_minutes": entry.get("away_penalty_minutes", 0.0),
         })
 
     games_df = pd.DataFrame(
@@ -200,6 +347,13 @@ def fetch_nhl_games(
         columns=[
             "game_id", "date", "home_team", "away_team", "home_goals", "away_goals",
             "home_saves", "away_saves", "home_save_pct", "away_save_pct", "home_shots", "away_shots",
+            "home_blocked_shots", "away_blocked_shots", "home_hits", "away_hits",
+            "home_takeaways", "away_takeaways", "home_power_play_goals", "away_power_play_goals",
+            "home_power_play_opportunities", "away_power_play_opportunities",
+            "home_power_play_pct", "away_power_play_pct",
+            "home_faceoffs_won", "away_faceoffs_won", "home_faceoff_pct", "away_faceoff_pct",
+            "home_giveaways", "away_giveaways", "home_penalties", "away_penalties",
+            "home_penalty_minutes", "away_penalty_minutes",
         ],
     )
     return games_df, None

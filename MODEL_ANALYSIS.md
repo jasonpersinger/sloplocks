@@ -418,6 +418,16 @@ Configured models live in `pipeline/config.py:138-160`.
   - Not every absence has the same impact.
   - This makes the live NBA pregame adjustment more sensitive to who is missing, not just how many players are listed.
 
+#### 25. Deepened the NHL matchup model with summary-level possession and special-teams context
+
+- What changed:
+  - Extended `pipeline/fetch_nhl.py` so final historical NHL games are enriched from ESPN `summary` data with shots, faceoff percentage, power-play rate, takeaways, giveaways, and penalty minutes.
+  - Expanded `NhlMatchupModel` in `pipeline/models.py` to use those signals alongside goal differential, shooting, save percentage, and rest.
+  - Added coverage in `tests/test_fetch_nhl.py`, `tests/test_models.py`, and `tests/test_run.py`.
+- Why it matters:
+  - The first NHL pass mostly saw goals, shots, and save percentage, which is too thin for a real hockey model.
+  - This gives NHL a more credible read on puck-control and special-teams strength without changing the public output contract.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness

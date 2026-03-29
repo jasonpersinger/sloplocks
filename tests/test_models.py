@@ -804,6 +804,16 @@ class TestNhlMatchupModel:
                 "away_save_pct": 0.895 if strong_home else 0.925,
                 "home_shots": 32 if strong_home else 27,
                 "away_shots": 27 if strong_home else 32,
+                "home_faceoff_pct": 0.56 if strong_home else 0.46,
+                "away_faceoff_pct": 0.46 if strong_home else 0.56,
+                "home_power_play_pct": 0.24 if strong_home else 0.14,
+                "away_power_play_pct": 0.14 if strong_home else 0.24,
+                "home_takeaways": 7 if strong_home else 4,
+                "away_takeaways": 4 if strong_home else 7,
+                "home_giveaways": 4 if strong_home else 7,
+                "away_giveaways": 7 if strong_home else 4,
+                "home_penalty_minutes": 6.0 if strong_home else 10.0,
+                "away_penalty_minutes": 10.0 if strong_home else 6.0,
             })
 
         model = NhlMatchupModel(pd.DataFrame(games), feature_window=8, min_games=20)
