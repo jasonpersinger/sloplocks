@@ -652,7 +652,7 @@
   function loadDashboard() {
     currentSport = 'dashboard';
     showMessage('[ LOADING DASHBOARD ]', true);
-    fetch('dashboard.json?t=' + Date.now())
+    fetch('data/dashboard.json?t=' + Date.now())
       .then(function (res) {
         if (!res.ok) throw new Error(res.status);
         return res.json();
