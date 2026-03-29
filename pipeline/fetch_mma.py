@@ -2,7 +2,9 @@
 
 import json as _json
 import os
+import re
 import time
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
@@ -12,11 +14,47 @@ from pipeline.config import MMA_ESPN_BASE
 
 _REQUEST_DELAY = 0.5
 
+_MMA_NAME_ALIASES = {
+    "abdul rakhman yakhyaev": "Abdulrakhman Yakhyaev",
+    "abdulrakhman yakhyaev": "Abdulrakhman Yakhyaev",
+    "charles radtke": "Charlie Radtke",
+    "charlie radtke": "Charlie Radtke",
+    "jiri prochazka": "Jiri Prochazka",
+    "jose henrique": "Jose Henrique",
+    "jose delano": "Jose Delano",
+    "lando vannata": "Landon Vannata",
+    "landon vannata": "Landon Vannata",
+    "loopy godinez": "Lupita Godinez",
+    "lupita godinez": "Lupita Godinez",
+    "paulo costa": "Paulo Henrique Costa",
+    "paulo henrique costa": "Paulo Henrique Costa",
+    "robert ruchaa": "Robert Ruchala",
+    "robert ruchala": "Robert Ruchala",
+}
+
 # ---- name normalisation -----------------------------------------------------
+
+def _ascii_mma_name(name: str) -> str:
+    """Return an ASCII-cleaned fighter name while preserving readable casing."""
+    normalized = unicodedata.normalize("NFKD", name or "")
+    ascii_name = normalized.encode("ascii", "ignore").decode("ascii")
+    ascii_name = ascii_name.replace("\u2019", "'").replace("\u2018", "'")
+    return " ".join(ascii_name.strip().split())
+
+
+def _mma_name_key(name: str) -> str:
+    """Return a canonical comparison key for fighter-name matching."""
+    cleaned = _ascii_mma_name(name).lower()
+    cleaned = re.sub(r"[^a-z0-9]+", " ", cleaned)
+    return " ".join(cleaned.split())
+
 
 def normalize_mma_name(name: str) -> str:
     """Standardize fighter names."""
-    return name.strip()
+    display_name = _ascii_mma_name(name)
+    if not display_name:
+        return ""
+    return _MMA_NAME_ALIASES.get(_mma_name_key(display_name), display_name)
 
 
 def _competitor_display_name(competitor: dict) -> str:

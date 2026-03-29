@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock, patch
 
-from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule
+from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
 
 
 def _make_mma_scoreboard(completed: bool) -> dict:
@@ -84,3 +84,13 @@ class TestFetchMMAGames:
         assert row["home_goals"] == 1
         assert row["away_goals"] == 0
         mock_sleep.assert_called_once()
+
+
+def test_normalize_mma_name_handles_aliases_and_accents():
+    assert normalize_mma_name("Jiří Procházka") == "Jiri Prochazka"
+    assert normalize_mma_name("Lando Vannata") == "Landon Vannata"
+    assert normalize_mma_name("Charles Radtke") == "Charlie Radtke"
+    assert normalize_mma_name("Loopy Godínez") == "Lupita Godinez"
+    assert normalize_mma_name("Paulo Costa") == "Paulo Henrique Costa"
+    assert normalize_mma_name("Abdul-Rakhman Yakhyaev") == "Abdulrakhman Yakhyaev"
+    assert normalize_mma_name("Robert Ruchała") == "Robert Ruchala"
