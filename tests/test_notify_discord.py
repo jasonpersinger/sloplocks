@@ -62,6 +62,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
             "slop_locks": [nba_lock],
             "longslop": None,
             "matches": [nba_match],
+            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1"},
         },
     )
 
@@ -120,6 +121,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
             "totals_locks": [mlb_total_lock],
             "longslop": mlb_longslop,
             "matches": [mlb_match],
+            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=0"},
         },
     )
 
@@ -139,6 +141,9 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "Kelly 4.1%" in full_text
     assert "Pitchers: Cease vs Yamamoto" in full_text
     assert "Mar 28 07:00 PM ET" in full_text
+    assert "SLATE DIAGNOSTICS" in full_text
+    assert "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1" in full_text
+    assert "totals=1" in full_text
 
 
 def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
@@ -160,6 +165,7 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
                     best_odds={},
                 )
             ],
+            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=0 | locks=0"},
         },
     )
 
@@ -172,6 +178,7 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     assert "MODEL RADAR" in full_text
     assert "Jon Jones" in full_text
     assert "Mar 28 11:00 PM ET" in full_text
+    assert "SLATE DIAGNOSTICS" in full_text
 
 
 def test_build_payload_handles_empty_day(monkeypatch, tmp_path):

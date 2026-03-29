@@ -411,10 +411,35 @@
       generated = formatStamp(data.generated_at || data.updated_at || '');
     }
 
+    var diagnosticLines = [];
+    if (mode === 'all') {
+      ALL_SPORTS.forEach(function (sport) {
+        var sportData = loadedSportsData[sport] || {};
+        var diagnostics = sportData.diagnostics || {};
+        if (!diagnostics.summary) return;
+        var line = formatSportLabel(sport) + ': ' + diagnostics.summary;
+        if ((sportData.totals_locks || []).length) {
+          line += ' | totals=' + sportData.totals_locks.length;
+        }
+        diagnosticLines.push(line);
+      });
+    } else {
+      var currentData = loadedSportsData[mode] || {};
+      var currentDiagnostics = currentData.diagnostics || {};
+      if (currentDiagnostics.summary) {
+        var currentLine = currentDiagnostics.summary;
+        if ((currentData.totals_locks || []).length) {
+          currentLine += ' | totals=' + currentData.totals_locks.length;
+        }
+        diagnosticLines.push(currentLine);
+      }
+    }
+
     el.textContent =
       '> MODE: ' + label + '\n' +
       '> PICKS LOADED: ' + (picks ? picks.length : 0) + '\n' +
-      '> LAST BUILD: ' + generated;
+      '> LAST BUILD: ' + generated +
+      (diagnosticLines.length ? '\n> DIAGNOSTICS\n> ' + diagnosticLines.join('\n> ') : '');
 
     return el;
   }

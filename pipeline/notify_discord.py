@@ -34,6 +34,7 @@ DATA_DIR = Path("data")
 SPORT_ORDER = ("nba", "ncaam", "mlb", "mma")
 MAX_CURATED_FIELDS = 8
 MAX_RADAR_FIELDS = 5
+MAX_DIAGNOSTIC_FIELDS = 4
 
 _ET_OFFSET_SPORTS = {"nba", "ncaam"}
 
@@ -223,6 +224,24 @@ def _build_radar_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> li
     return radar
 
 
+def _diagnostic_field(sport_key: str, data: dict) -> dict | None:
+    diagnostics = data.get("diagnostics") or {}
+    summary = diagnostics.get("summary")
+    if not summary:
+        return None
+
+    totals_locks = len(data.get("totals_locks") or [])
+    lines = [summary]
+    if totals_locks:
+        lines.append(f"totals={totals_locks}")
+
+    return {
+        "name": f"{SPORT_EMOJIS.get(sport_key, '🎯')}  {sport_key.upper()}",
+        "value": "\n".join(lines)[:1024],
+        "inline": True,
+    }
+
+
 def _status_label(item: dict) -> str:
     if item.get("source") == "longslop":
         return " 🎯 **LONGSLOP**"
@@ -306,6 +325,19 @@ def build_payload() -> dict:
             "color": COLOR_SLIME,
             "fields": [_lock_field(item, item["sport"]) for item in curated[:MAX_CURATED_FIELDS]],
             "footer": {"text": "sloplocks.lol  ·  curated by confidence, EV, and edge"},
+        })
+
+    diagnostic_fields = []
+    for sport_key, data in _iter_sport_data():
+        field = _diagnostic_field(sport_key, data)
+        if field is not None:
+            diagnostic_fields.append(field)
+    if diagnostic_fields:
+        embeds.append({
+            "title": "🧪  SLATE DIAGNOSTICS",
+            "color": COLOR_RADAR,
+            "fields": diagnostic_fields[:MAX_DIAGNOSTIC_FIELDS],
+            "footer": {"text": "modeled | odds | +ev | eligible | locks"},
         })
 
     curated_keys = {_pick_key(item) for item in curated}
