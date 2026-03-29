@@ -8,6 +8,7 @@ import os
 
 import pandas as pd
 import pytest
+from pipeline.config import SPORTS
 from pipeline.run import _main, run_pipeline, run_sport_pipeline
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -90,6 +91,55 @@ def sample_mma_matches():
             "away_goals": ag,
         })
     return pd.DataFrame(fights)
+
+
+@pytest.fixture
+def sample_mlb_matches():
+    """Minimal MLB history with starter and bullpen context."""
+    base_date = datetime(2026, 3, 1)
+    teams = [("Aces", "Bruins"), ("Caps", "Dragons"), ("Aces", "Dragons"), ("Caps", "Bruins")]
+    rows = []
+    for i in range(12):
+        home_team, away_team = teams[i % len(teams)]
+        strong_home = home_team in {"Aces", "Caps"}
+        strong_away = away_team in {"Aces", "Caps"}
+        home_goals = 5 if strong_home else 2
+        away_goals = 2 if strong_away else 5
+        if strong_home and not strong_away:
+            home_goals, away_goals = 5, 2
+        elif strong_away and not strong_home:
+            home_goals, away_goals = 2, 5
+        rows.append({
+            "game_id": str(3000 + i),
+            "date": (base_date + timedelta(days=i)).strftime("%Y-%m-%d"),
+            "home_team": home_team,
+            "away_team": away_team,
+            "home_goals": home_goals,
+            "away_goals": away_goals,
+            "home_pitcher": f"{home_team} Starter",
+            "away_pitcher": f"{away_team} Starter",
+            "home_pitcher_ip": 6.0 if strong_home else 5.0,
+            "home_pitcher_runs_allowed": 2 if strong_home else 4,
+            "home_pitcher_earned_runs": 2 if strong_home else 4,
+            "home_pitcher_walks": 1 if strong_home else 3,
+            "home_pitcher_strikeouts": 7 if strong_home else 4,
+            "home_bullpen_ip": 3.0 if strong_home else 4.0,
+            "home_bullpen_runs_allowed": 1 if strong_home else 3,
+            "home_bullpen_earned_runs": 1 if strong_home else 3,
+            "home_bullpen_walks": 1 if strong_home else 3,
+            "home_bullpen_strikeouts": 4 if strong_home else 2,
+            "away_pitcher_ip": 6.0 if strong_away else 5.0,
+            "away_pitcher_runs_allowed": 2 if strong_away else 4,
+            "away_pitcher_earned_runs": 2 if strong_away else 4,
+            "away_pitcher_walks": 1 if strong_away else 3,
+            "away_pitcher_strikeouts": 7 if strong_away else 4,
+            "away_bullpen_ip": 3.0 if strong_away else 4.0,
+            "away_bullpen_runs_allowed": 1 if strong_away else 3,
+            "away_bullpen_earned_runs": 1 if strong_away else 3,
+            "away_bullpen_walks": 1 if strong_away else 3,
+            "away_bullpen_strikeouts": 4 if strong_away else 2,
+        })
+    return pd.DataFrame(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -241,6 +291,50 @@ class TestRunMMAPipeline:
         match = data["matches"][0]
         assert match["best_odds"]
         assert match["american_odds"] is not None
+
+
+class TestRunMLBPipeline:
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_mlb_schedule")
+    @patch("pipeline.run.fetch_mlb_games")
+    def test_includes_bullpen_model_in_mlb_ensemble(
+        self, mock_games, mock_schedule, mock_odds, sample_mlb_matches, tmp_path, monkeypatch
+    ):
+        mock_games.return_value = (sample_mlb_matches, None)
+        mock_schedule.return_value = [
+            {
+                "home_team": "Aces",
+                "away_team": "Bruins",
+                "date": _TODAY,
+                "start_time": f"{_TODAY}T20:10:00Z",
+                "home_pitcher": "Aces Starter",
+                "away_pitcher": "Bruins Starter",
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Aces",
+                "away_team": "Bruins",
+                "commence_time": f"{_TODAY}T20:10:00Z",
+                "home_odds": 1.85,
+                "away_odds": 2.05,
+            }
+        ]
+
+        monkeypatch.setitem(SPORTS["mlb"], "bullpen_feature_min_games", 4)
+        monkeypatch.setitem(SPORTS["mlb"], "pitcher_feature_min_games", 4)
+        monkeypatch.setitem(SPORTS["mlb"], "run_environment_min_games", 4)
+        monkeypatch.setitem(SPORTS["mlb"], "results_feature_min_games", 50)
+
+        output_dir = str(tmp_path / "mlb")
+        run_sport_pipeline("mlb", output_dir=output_dir)
+
+        with open(os.path.join(output_dir, "predictions.json")) as f:
+            data = json.load(f)
+
+        match = data["matches"][0]
+        assert "bullpen_features" in match["individual_models"]
+        assert "run_environment" in match["individual_models"]
 
 
 # ---------------------------------------------------------------------------

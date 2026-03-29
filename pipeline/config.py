@@ -24,6 +24,41 @@ NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
 MMA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc"
 
+# MLB park factors are coarse run-environment multipliers keyed by ESPN short
+# team names. 1.00 is neutral; above 1.00 boosts offense slightly.
+MLB_PARK_FACTORS = {
+    "Angels": 1.01,
+    "Astros": 0.98,
+    "Athletics": 1.03,
+    "Blue Jays": 1.02,
+    "Braves": 1.01,
+    "Brewers": 1.00,
+    "Cardinals": 0.96,
+    "Cubs": 1.04,
+    "D-backs": 1.05,
+    "Dodgers": 0.97,
+    "Giants": 0.93,
+    "Guardians": 0.99,
+    "Mariners": 0.95,
+    "Marlins": 0.94,
+    "Mets": 0.97,
+    "Nationals": 1.01,
+    "Orioles": 1.02,
+    "Padres": 0.98,
+    "Phillies": 1.03,
+    "Pirates": 0.98,
+    "Rangers": 1.04,
+    "Rays": 0.97,
+    "Red Sox": 1.05,
+    "Reds": 1.08,
+    "Rockies": 1.12,
+    "Royals": 1.00,
+    "Tigers": 0.96,
+    "Twins": 1.01,
+    "White Sox": 1.03,
+    "Yankees": 1.02,
+}
+
 # Model parameters
 TIME_DECAY_RATE = 0.005
 FORM_WINDOW = 6
@@ -136,7 +171,7 @@ SPORTS = {
         "display_name": "MLB",
         "odds_sport": "baseball_mlb",
         "outcomes": ["home", "away"],
-        "models": ["elo", "results_features", "pitcher_features"],
+        "models": ["elo", "results_features", "pitcher_features", "bullpen_features", "run_environment"],
         "accuracy_softmax_temperature": 1.5,
         "probability_calibration_min_samples": 20,
         "probability_calibration_blend": 0.35,
@@ -144,6 +179,11 @@ SPORTS = {
         "elo_home_advantage": 24, # Standard MLB home edge
         "pitcher_feature_window": 8,
         "pitcher_feature_min_games": 20,
+        "bullpen_feature_window": 12,
+        "bullpen_recent_usage_window": 5,
+        "bullpen_feature_min_games": 20,
+        "run_environment_window": 12,
+        "run_environment_min_games": 20,
         "results_feature_window": 12,
         "results_feature_min_games": 50,
         "recent_form_window": 10,

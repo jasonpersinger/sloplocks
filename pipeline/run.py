@@ -33,16 +33,20 @@ from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_ml
 from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
 from pipeline.models import (
     AdjustedEfficiency,
+    BullpenMatchupModel,
     EloRatings,
     FourFactorsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
+    bullpen_matchup_predict,
     efficiency_predict,
     elo_predict,
     four_factors_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
+    RunEnvironmentModel,
+    run_environment_predict,
     results_features_predict,
 )
 from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american, compute_confidence_stars
@@ -937,6 +941,23 @@ def run_sport_pipeline(sport_key, output_dir=None):
             min_games=sport.get("pitcher_feature_min_games", 20),
         )
 
+    bullpen_feature_model = None
+    if "bullpen_features" in sport["models"] and matches is not None and not matches.empty:
+        bullpen_feature_model = BullpenMatchupModel(
+            matches,
+            feature_window=sport.get("bullpen_feature_window", 12),
+            recent_usage_window=sport.get("bullpen_recent_usage_window", 5),
+            min_games=sport.get("bullpen_feature_min_games", 20),
+        )
+
+    run_environment_model = None
+    if "run_environment" in sport["models"] and matches is not None and not matches.empty:
+        run_environment_model = RunEnvironmentModel(
+            matches,
+            feature_window=sport.get("run_environment_window", 12),
+            min_games=sport.get("run_environment_min_games", 20),
+        )
+
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
@@ -958,6 +979,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("recent_boxscore")
     if pitcher_feature_model is not None:
         model_names.append("pitcher_features")
+    if bullpen_feature_model is not None:
+        model_names.append("bullpen_features")
+    if run_environment_model is not None:
+        model_names.append("run_environment")
 
     accuracy_window = sport.get("accuracy_window", None)
     accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
@@ -1100,10 +1125,31 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 pitcher_feature_model,
                 fix.get("home_pitcher"),
                 fix.get("away_pitcher"),
+                game_date=fix.get("date"),
             )
             individual_preds.append(pitcher_probs)
             blend_weights.append(model_weight_dict["pitcher_features"])
             individual_models["pitcher_features"] = pitcher_probs
+
+        if bullpen_feature_model is not None:
+            bullpen_probs = bullpen_matchup_predict(
+                bullpen_feature_model,
+                home,
+                away,
+            )
+            individual_preds.append(bullpen_probs)
+            blend_weights.append(model_weight_dict["bullpen_features"])
+            individual_models["bullpen_features"] = bullpen_probs
+
+        if run_environment_model is not None:
+            run_environment_probs = run_environment_predict(
+                run_environment_model,
+                home,
+                away,
+            )
+            individual_preds.append(run_environment_probs)
+            blend_weights.append(model_weight_dict["run_environment"])
+            individual_models["run_environment"] = run_environment_probs
 
         if not individual_preds:
             continue

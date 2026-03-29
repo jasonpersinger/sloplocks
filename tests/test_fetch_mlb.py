@@ -1,7 +1,7 @@
 """Tests for MLB fetch helpers."""
 
 import pipeline.fetch_mlb as fetch_mlb
-from pipeline.fetch_mlb import _extract_mlb_starting_pitchers, _innings_to_float
+from pipeline.fetch_mlb import _extract_mlb_starting_pitchers, _extract_mlb_team_pitching, _innings_to_float
 
 
 class TestInningsToFloat:
@@ -81,3 +81,53 @@ class TestExtractMlbStartingPitchers:
         assert starters["Yankees"]["earned_runs"] == 2
         assert starters["Yankees"]["strikeouts"] == 8
         assert starters["Red Sox"]["name"] == "Garrett Crochet"
+
+
+class TestExtractMlbTeamPitching:
+    def test_extracts_bullpen_aggregate_stats(self):
+        fetch_mlb._team_map = {
+            "New York Yankees": "Yankees",
+            "Boston Red Sox": "Red Sox",
+        }
+        summary = {
+            "boxscore": {
+                "players": [
+                    {
+                        "team": {"displayName": "New York Yankees"},
+                        "statistics": [
+                            {
+                                "athletes": [
+                                    {
+                                        "athlete": {"displayName": "Gerrit Cole"},
+                                        "starter": True,
+                                        "position": {"abbreviation": "P"},
+                                        "stats": ["6.0", "4", "2", "2", "1", "8"],
+                                    },
+                                    {
+                                        "athlete": {"displayName": "Reliever One"},
+                                        "starter": False,
+                                        "position": {"abbreviation": "P"},
+                                        "stats": ["1.2", "1", "0", "0", "1", "2"],
+                                    },
+                                    {
+                                        "athlete": {"displayName": "Reliever Two"},
+                                        "starter": False,
+                                        "position": {"abbreviation": "P"},
+                                        "stats": ["1.1", "0", "1", "1", "0", "1"],
+                                    },
+                                ]
+                            }
+                        ],
+                    }
+                ]
+            }
+        }
+
+        teams = _extract_mlb_team_pitching(summary)
+
+        assert teams["Yankees"]["starter"]["name"] == "Gerrit Cole"
+        assert teams["Yankees"]["bullpen"]["innings_pitched"] == 3.0
+        assert teams["Yankees"]["bullpen"]["runs_allowed"] == 1
+        assert teams["Yankees"]["bullpen"]["earned_runs"] == 1
+        assert teams["Yankees"]["bullpen"]["walks"] == 1
+        assert teams["Yankees"]["bullpen"]["strikeouts"] == 3

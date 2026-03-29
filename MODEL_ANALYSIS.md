@@ -18,7 +18,7 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
    - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
    - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
    - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
-   - Pitcher matchup logistic model for MLB: `pipeline/models.py`
+   - Pitcher matchup, bullpen matchup, and run-environment models for MLB: `pipeline/models.py`
 4. Historical model accuracy is converted into ensemble weights in `pipeline/backtest.py:72-87`, then blended in `pipeline/ensemble.py:55-69`.
 5. Historical isotonic calibration is fit from resolved `history.json` entries in `pipeline/ensemble.py:72-136` and applied in `pipeline/run.py:783-797`, `pipeline/run.py:891-897`.
 6. Odds-aware edges, EV, Kelly fractions, and confidence scores are computed in `pipeline/ensemble.py:210-276`.
@@ -81,9 +81,13 @@ Configured models live in `pipeline/config.py:112-137`.
 - Results-feature model:
   - Walk-forward season/recent win% and scoring-margin features from historical game results in `pipeline/models.py`.
 - Pitcher matchup model:
-  - Walk-forward starter RA9, recent RA9, K-BB per inning, recent team margin in starts, and start-count differential from ESPN summary data cached by `pipeline/fetch_mlb.py`.
+  - Walk-forward starter RA9, recent RA9, K-BB per inning, recent team margin in starts, recent innings workload, days-rest differential, and start-count differential from ESPN summary data cached by `pipeline/fetch_mlb.py`.
+- Bullpen matchup model:
+  - Walk-forward bullpen RA9, K-BB per inning, recent innings workload, and team margin support from aggregated non-starter pitching lines in `pipeline/fetch_mlb.py` and `pipeline/models.py`.
+- Run-environment model:
+  - Walk-forward team runs scored, runs allowed, recent scoring form, recent prevention form, recent margin, and home park-factor context using `MLB_PARK_FACTORS` in `pipeline/config.py` and `pipeline/models.py`.
 - Fetched but unused inputs:
-  - No park, weather, bullpen, handedness, or lineup features are modeled.
+  - Weather, handedness, lineup strength, and bullpen leverage roles are still not modeled.
 
 #### MMA
 
@@ -102,7 +106,7 @@ Configured models live in `pipeline/config.py:138-160`.
 
 - Active model lists are sport-specific in `pipeline/config.py:62-160`.
   - NBA and NCAAM use five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
-  - MLB uses three models: `elo`, `results_features`, `pitcher_features`.
+  - MLB uses five models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`.
   - MMA uses two models: `elo`, `results_features`.
 - Historical rolling accuracy for each model is read from `model_accuracy.json` and transformed into softmax weights in `pipeline/backtest.py:72-87` and `pipeline/run.py:775-781`.
 - The softmax temperature is now configurable per sport:
@@ -281,6 +285,35 @@ Configured models live in `pipeline/config.py:138-160`.
   - Starting pitchers are one of the strongest MLB moneyline inputs available in the current free-data stack.
   - This turns previously decorative probable-pitcher fields into an actual prediction signal.
 
+#### 13. Added bullpen-aware MLB modeling from ESPN summary data
+
+- What changed:
+  - Extended `pipeline/fetch_mlb.py` to aggregate non-starter pitching lines into per-team bullpen innings, runs, earned runs, walks, and strikeouts.
+  - Added `BullpenMatchupModel` and `bullpen_matchup_predict()` in `pipeline/models.py`.
+  - Enabled the model in MLB config and wired it into `pipeline/run.py`.
+- Why it matters:
+  - MLB moneylines are not decided by starters alone, especially when starters work shorter outings.
+  - This gives the ensemble an explicit view of bullpen quality and recent bullpen workload instead of treating every post-starter inning as noise.
+
+#### 14. Added MLB run-environment modeling with park context
+
+- What changed:
+  - Added `MLB_PARK_FACTORS` to `pipeline/config.py`.
+  - Added `RunEnvironmentModel` and `run_environment_predict()` in `pipeline/models.py`.
+  - Enabled the model in MLB config and wired it into `pipeline/run.py`.
+- Why it matters:
+  - Baseball outcomes are more sensitive to scoring environment than the other sports in the stack.
+  - This adds a baseball-specific offense/prevention layer and makes the home venue part of the forecast instead of pure decoration.
+
+#### 15. Added starter rest and workload context to the MLB pitcher model
+
+- What changed:
+  - Extended `PitcherMatchupModel` in `pipeline/models.py` to track recent innings workload and days since last start.
+  - Updated `pipeline/run.py` to pass fixture dates into starter predictions so rest is evaluated in the live path.
+- Why it matters:
+  - A pitcher on normal rest and a pitcher on a short or irregular turnaround should not be treated identically.
+  - This improves the existing starter model without requiring another data source.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -294,14 +327,13 @@ Configured models live in `pipeline/config.py:138-160`.
 
 Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
 
-### 2. Add bullpen, park, and weather context to MLB
+### 2. Add weather, handedness, and lineup context to MLB
 
-Starting pitchers now influence the model, but the baseball stack still lacks:
+The MLB stack now covers starters, bullpens, and basic park context, but it still lacks:
 
-- bullpen fatigue and leverage usage
-- park-factor adjustments
 - weather context, especially wind and temperature
 - handedness or lineup-strength context
+- bullpen leverage role quality beyond simple aggregate workload
 
 ### 3. Add lineup and injury freshness closer to lock
 
@@ -327,8 +359,8 @@ The full pipeline uses the confidence-gated Phase 3 lock selection in `pipeline/
 
 ### 2. Single-model sports still get structurally high agreement scores
 
-`compute_confidence_score()` in `pipeline/ensemble.py:139-183` uses cross-model dispersion as part of confidence. For MLB and MMA, there is only one active model, so the agreement component is effectively perfect by construction. That should eventually be capped or reformulated for single-model sports.
+`compute_confidence_score()` in `pipeline/ensemble.py:139-183` uses cross-model dispersion as part of confidence. MMA still has only two relatively similar models, so its agreement component can look better calibrated than it really is. That should eventually be capped or reformulated for sparse-model sports.
 
-### 3. MLB and MMA remain comparatively under-modeled
+### 3. MMA remains comparatively under-modeled
 
-The current changes materially improve calibration and selection quality, but the predictive ceiling for MLB and MMA is still constrained by sparse features. The infrastructure is better; the sport-specific signal depth is still thin.
+The MLB stack is substantially better than before, but MMA is still constrained by sparse features. The infrastructure is better; the sport-specific signal depth is still thin where fighter-level data is absent.

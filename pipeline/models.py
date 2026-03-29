@@ -15,6 +15,7 @@ from pipeline.config import (
     FORM_WEIGHT_MULTIPLIER,
     FORM_WINDOW,
     MAX_GOALS,
+    MLB_PARK_FACTORS,
     TIME_DECAY_RATE,
 )
 
@@ -660,11 +661,13 @@ class PitcherMatchupModel:
             "season_kbb_diff",
             "recent_kbb_diff",
             "recent_margin_diff",
+            "recent_workload_diff",
+            "days_rest_diff",
             "starts_diff",
         ]
         self._fit(games)
 
-    def _pitcher_features(self, logs):
+    def _pitcher_features(self, logs, game_date=None):
         if not logs:
             return {
                 "season_ra9": 4.5,
@@ -672,10 +675,13 @@ class PitcherMatchupModel:
                 "season_kbb": 0.0,
                 "recent_kbb": 0.0,
                 "recent_margin": 0.0,
+                "recent_workload": 0.0,
+                "days_rest": 5.0,
                 "starts": 0.0,
             }
 
         recent = logs[-self.feature_window :]
+        workload_slice = logs[-3:]
 
         def _ra9(items):
             innings = sum(item["innings"] for item in items)
@@ -692,24 +698,39 @@ class PitcherMatchupModel:
         def _margin(items):
             return sum(item["margin"] for item in items) / len(items) if items else 0.0
 
+        def _workload(items):
+            return sum(item["innings"] for item in items) / len(items) if items else 0.0
+
+        days_rest = 5.0
+        if game_date is not None and logs:
+            try:
+                last_date = pd.to_datetime(logs[-1]["date"])
+                days_rest = float(max(0, (pd.to_datetime(game_date) - last_date).days))
+            except Exception:
+                days_rest = 5.0
+
         return {
             "season_ra9": _ra9(logs),
             "recent_ra9": _ra9(recent),
             "season_kbb": _kbb(logs),
             "recent_kbb": _kbb(recent),
             "recent_margin": _margin(recent),
+            "recent_workload": _workload(workload_slice),
+            "days_rest": days_rest,
             "starts": float(len(logs)),
         }
 
-    def _feature_vector(self, home_logs, away_logs):
-        home = self._pitcher_features(home_logs)
-        away = self._pitcher_features(away_logs)
+    def _feature_vector(self, home_logs, away_logs, game_date=None):
+        home = self._pitcher_features(home_logs, game_date=game_date)
+        away = self._pitcher_features(away_logs, game_date=game_date)
         return np.array([
             away["season_ra9"] - home["season_ra9"],
             away["recent_ra9"] - home["recent_ra9"],
             home["season_kbb"] - away["season_kbb"],
             home["recent_kbb"] - away["recent_kbb"],
             home["recent_margin"] - away["recent_margin"],
+            away["recent_workload"] - home["recent_workload"],
+            (home["days_rest"] - away["days_rest"]) / 5.0,
             (home["starts"] - away["starts"]) / 10.0,
         ])
 
@@ -739,12 +760,13 @@ class PitcherMatchupModel:
 
             home_logs = list(pitcher_logs.get(home_pitcher, []))
             away_logs = list(pitcher_logs.get(away_pitcher, []))
-            X.append(self._feature_vector(home_logs, away_logs))
+            X.append(self._feature_vector(home_logs, away_logs, game_date=row["date"]))
             y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
 
             home_margin = int(row["home_goals"]) - int(row["away_goals"])
             away_margin = -home_margin
             pitcher_logs.setdefault(home_pitcher, []).append({
+                "date": row["date"],
                 "innings": float(row.get("home_pitcher_ip", 0.0) or 0.0),
                 "earned_runs": float(row.get("home_pitcher_earned_runs", 0.0) or 0.0),
                 "walks": float(row.get("home_pitcher_walks", 0.0) or 0.0),
@@ -752,6 +774,7 @@ class PitcherMatchupModel:
                 "margin": float(home_margin),
             })
             pitcher_logs.setdefault(away_pitcher, []).append({
+                "date": row["date"],
                 "innings": float(row.get("away_pitcher_ip", 0.0) or 0.0),
                 "earned_runs": float(row.get("away_pitcher_earned_runs", 0.0) or 0.0),
                 "walks": float(row.get("away_pitcher_walks", 0.0) or 0.0),
@@ -767,13 +790,14 @@ class PitcherMatchupModel:
         self.model = LogisticRegression(max_iter=1000)
         self.model.fit(np.array(X), np.array(y))
 
-    def predict(self, home_pitcher, away_pitcher):
+    def predict(self, home_pitcher, away_pitcher, game_date=None):
         if self.model is None or not home_pitcher or not away_pitcher or home_pitcher == "TBD" or away_pitcher == "TBD":
             return {"home": 0.5, "away": 0.5}
 
         X = np.array([self._feature_vector(
             self.pitcher_logs.get(home_pitcher, []),
             self.pitcher_logs.get(away_pitcher, []),
+            game_date=game_date,
         )])
         proba = self.model.predict_proba(X)[0]
         classes = list(self.model.classes_)
@@ -782,9 +806,279 @@ class PitcherMatchupModel:
         return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
 
 
-def pitcher_matchup_predict(model, home_pitcher, away_pitcher):
+def pitcher_matchup_predict(model, home_pitcher, away_pitcher, game_date=None):
     """Predict two-way win probabilities from the starter matchup model."""
-    return model.predict(home_pitcher, away_pitcher)
+    return model.predict(home_pitcher, away_pitcher, game_date=game_date)
+
+
+# ---------------------------------------------------------------------------
+# MLB bullpen matchup model
+# ---------------------------------------------------------------------------
+
+class BullpenMatchupModel:
+    """Two-way logistic model built from historical team bullpen performance."""
+
+    def __init__(self, games, feature_window=12, recent_usage_window=5, min_games=20):
+        self.feature_window = feature_window
+        self.recent_usage_window = recent_usage_window
+        self.min_games = min_games
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_ra9_diff",
+            "recent_ra9_diff",
+            "season_kbb_diff",
+            "recent_kbb_diff",
+            "recent_workload_diff",
+            "recent_margin_support_diff",
+        ]
+        self._fit(games)
+
+    def _bullpen_features(self, logs):
+        if not logs:
+            return {
+                "season_ra9": 4.2,
+                "recent_ra9": 4.2,
+                "season_kbb": 0.0,
+                "recent_kbb": 0.0,
+                "recent_workload": 0.0,
+                "recent_margin_support": 0.0,
+            }
+
+        recent = logs[-self.feature_window :]
+        usage_slice = logs[-self.recent_usage_window :]
+
+        def _ra9(items):
+            innings = sum(item["innings"] for item in items)
+            if innings <= 0:
+                return 4.2
+            return 9.0 * sum(item["earned_runs"] for item in items) / innings
+
+        def _kbb(items):
+            innings = sum(item["innings"] for item in items)
+            if innings <= 0:
+                return 0.0
+            return (sum(item["strikeouts"] for item in items) - sum(item["walks"] for item in items)) / innings
+
+        def _workload(items):
+            return sum(item["innings"] for item in items) / max(1.0, float(len(items)))
+
+        def _margin(items):
+            return sum(item["margin"] for item in items) / len(items) if items else 0.0
+
+        return {
+            "season_ra9": _ra9(logs),
+            "recent_ra9": _ra9(recent),
+            "season_kbb": _kbb(logs),
+            "recent_kbb": _kbb(recent),
+            "recent_workload": _workload(usage_slice),
+            "recent_margin_support": _margin(recent),
+        }
+
+    def _feature_vector(self, home_logs, away_logs):
+        home = self._bullpen_features(home_logs)
+        away = self._bullpen_features(away_logs)
+        return np.array([
+            away["season_ra9"] - home["season_ra9"],
+            away["recent_ra9"] - home["recent_ra9"],
+            home["season_kbb"] - away["season_kbb"],
+            home["recent_kbb"] - away["recent_kbb"],
+            away["recent_workload"] - home["recent_workload"],
+            home["recent_margin_support"] - away["recent_margin_support"],
+        ])
+
+    def _fit(self, games):
+        required = {
+            "home_team", "away_team",
+            "home_bullpen_ip", "away_bullpen_ip",
+            "home_bullpen_earned_runs", "away_bullpen_earned_runs",
+            "home_bullpen_walks", "away_bullpen_walks",
+            "home_bullpen_strikeouts", "away_bullpen_strikeouts",
+        }
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+            home_logs = list(team_logs.get(home_team, []))
+            away_logs = list(team_logs.get(away_team, []))
+            X.append(self._feature_vector(home_logs, away_logs))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_margin = int(row["home_goals"]) - int(row["away_goals"])
+            away_margin = -home_margin
+            team_logs.setdefault(home_team, []).append({
+                "innings": float(row.get("home_bullpen_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("home_bullpen_earned_runs", 0.0) or 0.0),
+                "walks": float(row.get("home_bullpen_walks", 0.0) or 0.0),
+                "strikeouts": float(row.get("home_bullpen_strikeouts", 0.0) or 0.0),
+                "margin": float(home_margin),
+            })
+            team_logs.setdefault(away_team, []).append({
+                "innings": float(row.get("away_bullpen_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("away_bullpen_earned_runs", 0.0) or 0.0),
+                "walks": float(row.get("away_bullpen_walks", 0.0) or 0.0),
+                "strikeouts": float(row.get("away_bullpen_strikeouts", 0.0) or 0.0),
+                "margin": float(away_margin),
+            })
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_team, away_team):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def bullpen_matchup_predict(model, home_team, away_team):
+    """Predict two-way win probabilities from the bullpen matchup model."""
+    return model.predict(home_team, away_team)
+
+
+# ---------------------------------------------------------------------------
+# MLB run-environment model
+# ---------------------------------------------------------------------------
+
+class RunEnvironmentModel:
+    """Two-way logistic model using scoring form plus park context for MLB."""
+
+    def __init__(self, games, feature_window=12, min_games=20, park_factors=None):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.park_factors = park_factors or MLB_PARK_FACTORS
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_runs_for_diff",
+            "season_runs_against_diff",
+            "recent_runs_for_diff",
+            "recent_runs_against_diff",
+            "recent_margin_diff",
+            "home_park_factor",
+        ]
+        self._fit(games)
+
+    def _team_features(self, logs):
+        if not logs:
+            return {
+                "season_runs_for": 4.4,
+                "season_runs_against": 4.4,
+                "recent_runs_for": 4.4,
+                "recent_runs_against": 4.4,
+                "recent_margin": 0.0,
+            }
+
+        recent = logs[-self.feature_window :]
+
+        def _avg(items, key, default):
+            return float(sum(item[key] for item in items) / len(items)) if items else default
+
+        return {
+            "season_runs_for": _avg(logs, "runs_for", 4.4),
+            "season_runs_against": _avg(logs, "runs_against", 4.4),
+            "recent_runs_for": _avg(recent, "runs_for", 4.4),
+            "recent_runs_against": _avg(recent, "runs_against", 4.4),
+            "recent_margin": _avg(recent, "margin", 0.0),
+        }
+
+    def _feature_vector(self, home_logs, away_logs, home_team):
+        home = self._team_features(home_logs)
+        away = self._team_features(away_logs)
+        park_factor = float(self.park_factors.get(home_team, 1.0))
+        return np.array([
+            home["season_runs_for"] - away["season_runs_for"],
+            away["season_runs_against"] - home["season_runs_against"],
+            home["recent_runs_for"] - away["recent_runs_for"],
+            away["recent_runs_against"] - home["recent_runs_against"],
+            home["recent_margin"] - away["recent_margin"],
+            park_factor - 1.0,
+        ])
+
+    def _fit(self, games):
+        required = {"home_team", "away_team", "home_goals", "away_goals"}
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+            home_logs = list(team_logs.get(home_team, []))
+            away_logs = list(team_logs.get(away_team, []))
+            X.append(self._feature_vector(home_logs, away_logs, home_team))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_margin = int(row["home_goals"]) - int(row["away_goals"])
+            away_margin = -home_margin
+            team_logs.setdefault(home_team, []).append({
+                "runs_for": float(row["home_goals"]),
+                "runs_against": float(row["away_goals"]),
+                "margin": float(home_margin),
+            })
+            team_logs.setdefault(away_team, []).append({
+                "runs_for": float(row["away_goals"]),
+                "runs_against": float(row["home_goals"]),
+                "margin": float(away_margin),
+            })
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_team, away_team):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+            home_team,
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def run_environment_predict(model, home_team, away_team):
+    """Predict two-way win probabilities from the MLB run-environment model."""
+    return model.predict(home_team, away_team)
 
 
 # ---------------------------------------------------------------------------

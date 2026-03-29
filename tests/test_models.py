@@ -8,11 +8,14 @@ import pytest
 from pipeline.config import MAX_GOALS
 from pipeline.models import (
     AdjustedEfficiency,
+    BullpenMatchupModel,
     EloRatings,
     FourFactorsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     ResultsFeatureModel,
+    RunEnvironmentModel,
+    bullpen_matchup_predict,
     dixon_coles_predict,
     efficiency_predict,
     elo_predict,
@@ -20,6 +23,7 @@ from pipeline.models import (
     four_factors_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
+    run_environment_predict,
     results_features_predict,
     scoreline_to_probabilities,
 )
@@ -346,11 +350,19 @@ class TestPitcherMatchupModel:
                 "home_pitcher_earned_runs": hper,
                 "home_pitcher_walks": hpw,
                 "home_pitcher_strikeouts": hpk,
+                "home_bullpen_ip": 3.0 if home in {"A", "C"} else 4.0,
+                "home_bullpen_earned_runs": 1 if home in {"A", "C"} else 3,
+                "home_bullpen_walks": 1 if home in {"A", "C"} else 3,
+                "home_bullpen_strikeouts": 4 if home in {"A", "C"} else 2,
                 "away_pitcher_ip": aip,
                 "away_pitcher_runs_allowed": apr,
                 "away_pitcher_earned_runs": aper,
                 "away_pitcher_walks": apw,
                 "away_pitcher_strikeouts": apk,
+                "away_bullpen_ip": 3.0 if away in {"A", "C"} else 4.0,
+                "away_bullpen_earned_runs": 1 if away in {"A", "C"} else 3,
+                "away_bullpen_walks": 1 if away in {"A", "C"} else 3,
+                "away_bullpen_strikeouts": 4 if away in {"A", "C"} else 2,
             })
         return pd.DataFrame(rows)
 
@@ -361,6 +373,95 @@ class TestPitcherMatchupModel:
     def test_predict_prefers_stronger_starter(self):
         model = PitcherMatchupModel(self._sample_pitcher_games(), feature_window=4, min_games=4)
         probs = pitcher_matchup_predict(model, "Ace A", "Scrub B")
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+    def test_tracks_pitcher_rest_days(self):
+        model = PitcherMatchupModel(self._sample_pitcher_games(), feature_window=4, min_games=4)
+        features = model._pitcher_features(
+            [
+                {
+                    "date": "2026-03-01",
+                    "innings": 6.0,
+                    "earned_runs": 2.0,
+                    "walks": 1.0,
+                    "strikeouts": 8.0,
+                    "margin": 3.0,
+                }
+            ],
+            game_date="2026-03-06",
+        )
+
+        assert features["days_rest"] == 5.0
+
+
+class TestBullpenMatchupModel:
+    def _sample_bullpen_games(self):
+        rows = []
+        base = pd.Timestamp("2026-03-01")
+        games = [
+            ("A", "B", 5, 2, 3.0, 1, 1, 4, 4.0, 3, 3, 2),
+            ("C", "D", 4, 1, 3.0, 1, 1, 5, 4.0, 4, 3, 2),
+            ("A", "D", 6, 3, 3.0, 0, 1, 4, 4.0, 2, 3, 2),
+            ("C", "B", 5, 2, 3.0, 1, 1, 5, 4.0, 3, 4, 2),
+            ("A", "C", 4, 3, 3.0, 1, 1, 4, 3.0, 1, 1, 5),
+            ("B", "D", 2, 6, 4.0, 4, 3, 2, 3.0, 1, 1, 5),
+        ]
+        for idx, game in enumerate(games):
+            home, away, hg, ag, h_ip, h_er, h_bb, h_k, a_ip, a_er, a_bb, a_k = game
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+                "home_bullpen_ip": h_ip,
+                "home_bullpen_earned_runs": h_er,
+                "home_bullpen_walks": h_bb,
+                "home_bullpen_strikeouts": h_k,
+                "away_bullpen_ip": a_ip,
+                "away_bullpen_earned_runs": a_er,
+                "away_bullpen_walks": a_bb,
+                "away_bullpen_strikeouts": a_k,
+            })
+        return pd.DataFrame(rows)
+
+    def test_fit_and_predict_prefers_stronger_bullpen(self):
+        model = BullpenMatchupModel(self._sample_bullpen_games(), feature_window=4, recent_usage_window=3, min_games=4)
+        probs = bullpen_matchup_predict(model, "A", "B")
+
+        assert model.model is not None
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestRunEnvironmentModel:
+    def _sample_games(self):
+        rows = []
+        base = pd.Timestamp("2026-03-01")
+        games = [
+            ("Reds", "Giants", 7, 3),
+            ("Red Sox", "Cardinals", 6, 2),
+            ("Reds", "Cardinals", 5, 2),
+            ("Giants", "Red Sox", 3, 4),
+            ("Reds", "Giants", 8, 4),
+            ("Cardinals", "Red Sox", 2, 5),
+        ]
+        for idx, (home, away, hg, ag) in enumerate(games):
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+            })
+        return pd.DataFrame(rows)
+
+    def test_fit_and_predict_uses_run_environment_context(self):
+        model = RunEnvironmentModel(self._sample_games(), feature_window=4, min_games=4)
+        probs = run_environment_predict(model, "Reds", "Giants")
+
+        assert model.model is not None
         assert probs["home"] > 0.5
         assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
 
