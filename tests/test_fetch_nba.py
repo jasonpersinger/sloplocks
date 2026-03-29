@@ -365,9 +365,47 @@ class TestNbaAvailabilityProfile:
         assert first["injured_players"] == 2
         assert first["key_absence_score"] == 1.0
         assert first["injury_burden"] == 1.35
+        assert first["leader_absence_burden"] == 1.0
         assert first["available_core_players"] == 1
         assert second == first
         assert mock_get.call_count == 1
+
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_leader_weights_raise_penalty_for_primary_scorer_absence(self, mock_get):
+        roster_resp = MagicMock()
+        roster_resp.raise_for_status = MagicMock()
+        roster_resp.json.return_value = {
+            "athletes": [
+                {
+                    "id": "1",
+                    "displayName": "Primary Scorer",
+                    "status": {"type": "active"},
+                    "injuries": [{"status": "Out"}],
+                },
+                {
+                    "id": "2",
+                    "displayName": "Rebound Leader",
+                    "status": {"type": "active"},
+                    "injuries": [{"status": "Day-To-Day"}],
+                },
+                {
+                    "id": "3",
+                    "displayName": "Healthy Guard",
+                    "status": {"type": "active"},
+                    "injuries": [],
+                },
+            ]
+        }
+        mock_get.return_value = roster_resp
+
+        profile = _fetch_nba_team_availability_profile(
+            "13",
+            leader_weights={"1": 1.0, "2": 0.65},
+            cache={"games": {}, "rosters": {}},
+        )
+
+        assert profile["key_absence_score"] == 1.35
+        assert profile["leader_absence_burden"] == 1.228
 
 
 # ---------------------------------------------------------------------------

@@ -162,7 +162,7 @@ class TestRunNBAPipeline:
     @patch("pipeline.run.fetch_nba_espn_games")
     def test_produces_valid_nba_predictions(
         self, mock_games, mock_schedule, mock_odds,
-        sample_nba_matches, sample_nba_box_scores, tmp_path
+        sample_nba_matches, sample_nba_box_scores, tmp_path, monkeypatch
     ):
         mock_games.return_value = (sample_nba_matches, sample_nba_box_scores)
         mock_schedule.return_value = [
@@ -176,6 +176,7 @@ class TestRunNBAPipeline:
                     "injured_players": 0,
                     "injury_burden": 0.0,
                     "key_absence_score": 0.0,
+                    "leader_absence_burden": 0.0,
                     "available_core_players": 12,
                 },
                 "away_availability_profile": {
@@ -183,6 +184,7 @@ class TestRunNBAPipeline:
                     "injured_players": 2,
                     "injury_burden": 1.25,
                     "key_absence_score": 1.0,
+                    "leader_absence_burden": 1.25,
                     "available_core_players": 9,
                 },
             }
@@ -195,8 +197,12 @@ class TestRunNBAPipeline:
                 "home_odds": 2.10,
                 "draw_odds": 0.0,
                 "away_odds": 1.75,
+                "total_line": 224.5,
+                "over_odds": 1.91,
+                "under_odds": 1.95,
             }
         ]
+        monkeypatch.setitem(SPORTS["nba"], "totals_feature_min_games", 4)
 
         output_dir = str(tmp_path / "nba")
         run_sport_pipeline("nba", output_dir=output_dir)
@@ -217,6 +223,8 @@ class TestRunNBAPipeline:
         assert "draw" not in match["model_probs"]
         assert set(match["model_probs"].keys()) == {"home", "away"}
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
+        assert data["totals_matches"][0]["total_line"] == 224.5
+        assert data["totals_matches"][0]["pick"] in {"over", "under"}
 
         diagnostics = data["diagnostics"]
         assert diagnostics["fixtures_fetched"] == 1
@@ -488,6 +496,7 @@ class TestNbaAvailabilityAdjustment:
                 "injured_players": 0,
                 "injury_burden": 0.0,
                 "key_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
                 "available_core_players": 12,
             },
             {
@@ -495,6 +504,7 @@ class TestNbaAvailabilityAdjustment:
                 "injured_players": 2,
                 "injury_burden": 1.25,
                 "key_absence_score": 1.0,
+                "leader_absence_burden": 1.25,
                 "available_core_players": 9,
             },
             max_delta=0.02,

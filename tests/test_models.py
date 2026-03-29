@@ -14,6 +14,7 @@ from pipeline.models import (
     FourFactorsModel,
     MlbTotalsModel,
     NbaMatchupModel,
+    NbaTotalsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     ResultsFeatureModel,
@@ -27,6 +28,7 @@ from pipeline.models import (
     handedness_matchup_predict,
     mlb_totals_predict,
     nba_matchup_predict,
+    nba_totals_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
     run_environment_predict,
@@ -706,3 +708,71 @@ class TestNbaMatchupModel:
         assert model.model is not None
         assert probs["home"] > 0.5
         assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestNbaTotalsModel:
+    def test_predicts_expected_total_and_market_probabilities(self):
+        games = []
+        box_rows = []
+        base = pd.Timestamp("2026-01-01")
+        for idx in range(24):
+            game_id = f"nt-{idx}"
+            home_team = "A" if idx % 2 == 0 else "B"
+            away_team = "B" if idx % 2 == 0 else "A"
+            home_pts = 118 if home_team == "A" else 108
+            away_pts = 108 if away_team == "B" else 118
+            date_str = (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d")
+            games.append({
+                "game_id": game_id,
+                "date": date_str,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_goals": home_pts,
+                "away_goals": away_pts,
+            })
+            box_rows.extend([
+                {
+                    "game_id": game_id,
+                    "team": home_team,
+                    "date": date_str,
+                    "pts": home_pts,
+                    "fgm": 42,
+                    "fga": 87,
+                    "fg3m": 14,
+                    "fg3a": 37,
+                    "ftm": 20,
+                    "fta": 24,
+                    "orb": 11,
+                    "drb": 31,
+                    "to": 11,
+                    "possessions": 100.0,
+                },
+                {
+                    "game_id": game_id,
+                    "team": away_team,
+                    "date": date_str,
+                    "pts": away_pts,
+                    "fgm": 39,
+                    "fga": 84,
+                    "fg3m": 12,
+                    "fg3a": 34,
+                    "ftm": 18,
+                    "fta": 22,
+                    "orb": 9,
+                    "drb": 29,
+                    "to": 12,
+                    "possessions": 99.0,
+                },
+            ])
+
+        model = NbaTotalsModel(pd.DataFrame(box_rows), pd.DataFrame(games), feature_window=6, min_games=10)
+        result = nba_totals_predict(
+            model,
+            {"home_team": "A", "away_team": "B"},
+            total_line=225.5,
+        )
+
+        assert model.model is not None
+        assert result["expected_total"] > 210.0
+        assert 0.0 < result["over"] < 1.0
+        assert math.isclose(result["over"] + result["under"], 1.0, abs_tol=1e-9)

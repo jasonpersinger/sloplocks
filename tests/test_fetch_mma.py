@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock, patch
+from datetime import datetime, timezone
 
+import pipeline.fetch_mma as fetch_mma
 from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
 
 
@@ -58,6 +60,24 @@ class TestFetchMMASchedule:
                 "neutral": True,
             }
         ]
+
+    @patch("pipeline.fetch_mma.requests.get")
+    def test_includes_previous_et_day_in_scoreboard_window(self, mock_get, monkeypatch):
+        class FixedDateTime:
+            @classmethod
+            def now(cls, tz=None):
+                return datetime(2026, 3, 29, 14, 0, tzinfo=timezone.utc)
+
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = {"events": []}
+        mock_get.return_value = resp
+        monkeypatch.setattr(fetch_mma, "datetime", FixedDateTime)
+
+        fetch_mma_schedule()
+
+        url = mock_get.call_args.args[0]
+        assert "dates=20260328-20260412" in url
 
 
 class TestFetchMMAGames:

@@ -259,59 +259,99 @@ def _injury_weight(status: str | None) -> float:
     return 0.0
 
 
-def _fetch_nba_team_availability_profile(team_id: str | int | None, leader_ids=None, cache: dict | None = None) -> dict:
+def _leader_weight(stat_name: str | None) -> float:
+    """Assign extra importance to key leader categories."""
+    mapping = {
+        "pointsPerGame": 1.0,
+        "assistsPerGame": 0.9,
+        "reboundsPerGame": 0.65,
+        "stealsPerGame": 0.4,
+        "blocksPerGame": 0.4,
+    }
+    return mapping.get(str(stat_name or ""), 0.5)
+
+
+def _fetch_nba_team_availability_profile(
+    team_id: str | int | None,
+    leader_ids=None,
+    leader_weights: dict[str, float] | None = None,
+    cache: dict | None = None,
+) -> dict:
     """Fetch and cache a coarse NBA roster availability profile."""
     default = {
         "active_players": 0,
         "injured_players": 0,
         "injury_burden": 0.0,
         "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
         "available_core_players": 0,
     }
     if not team_id:
         return default
 
-    leader_set = {str(player_id) for player_id in (leader_ids or []) if player_id}
+    weight_map = {
+        str(player_id): float(weight)
+        for player_id, weight in (leader_weights or {}).items()
+        if player_id
+    }
+    if not weight_map:
+        weight_map = {str(player_id): 1.0 for player_id in (leader_ids or []) if player_id}
+
     cache_store = None
     cache_key = str(team_id)
+    roster_rows = None
     if cache is not None:
         cache_store = cache.setdefault("rosters", {})
         cached = cache_store.get(cache_key)
-        if cached is not None:
-            return cached
+        if isinstance(cached, dict) and cached.get("player_rows") is not None:
+            roster_rows = cached.get("player_rows")
 
-    url = f"{NBA_ESPN_BASE}/teams/{team_id}/roster"
-    try:
-        resp = requests.get(url, timeout=30)
-        resp.raise_for_status()
-        data = resp.json()
-    except requests.RequestException:
-        return default
+    if roster_rows is None:
+        url = f"{NBA_ESPN_BASE}/teams/{team_id}/roster"
+        try:
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException:
+            return default
+
+        roster_rows = []
+        for athlete in data.get("athletes", []):
+            if not isinstance(athlete, dict):
+                continue
+            status_type = athlete.get("status", {}).get("type")
+            injuries = athlete.get("injuries") or []
+            player_penalty = 0.0
+            for injury in injuries:
+                player_penalty = max(player_penalty, _injury_weight(injury.get("status")))
+            roster_rows.append({
+                "id": str(athlete.get("id")),
+                "active": status_type == "active",
+                "penalty": round(player_penalty, 3),
+            })
+        if cache_store is not None:
+            cache_store[cache_key] = {"player_rows": roster_rows}
 
     active_players = 0
     injured_players = 0
     injury_burden = 0.0
     key_absence_score = 0.0
+    leader_absence_burden = 0.0
     available_core_players = 0
 
-    for athlete in data.get("athletes", []):
-        if not isinstance(athlete, dict):
-            continue
-        status_type = athlete.get("status", {}).get("type")
-        is_active = status_type == "active"
+    for athlete in roster_rows:
+        is_active = bool(athlete.get("active"))
         if is_active:
             active_players += 1
 
-        injuries = athlete.get("injuries") or []
-        player_penalty = 0.0
-        for injury in injuries:
-            player_penalty = max(player_penalty, _injury_weight(injury.get("status")))
-
+        player_penalty = float(athlete.get("penalty", 0.0) or 0.0)
         if player_penalty > 0:
             injured_players += 1
             injury_burden += player_penalty
-            if str(athlete.get("id")) in leader_set:
+            leader_weight_value = float(weight_map.get(str(athlete.get("id")), 0.0) or 0.0)
+            if leader_weight_value > 0:
                 key_absence_score += player_penalty
+                leader_absence_burden += player_penalty * leader_weight_value
         elif is_active:
             available_core_players += 1
 
@@ -320,10 +360,9 @@ def _fetch_nba_team_availability_profile(team_id: str | int | None, leader_ids=N
         "injured_players": injured_players,
         "injury_burden": round(injury_burden, 3),
         "key_absence_score": round(key_absence_score, 3),
+        "leader_absence_burden": round(leader_absence_burden, 3),
         "available_core_players": available_core_players,
     }
-    if cache_store is not None:
-        cache_store[cache_key] = profile
     return profile
 
 
@@ -548,16 +587,26 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
         if home is None or away is None:
             continue
 
-        home_leader_ids = []
-        away_leader_ids = []
+        home_leader_weights = {}
+        away_leader_weights = {}
         for leader_group in home.get("leaders", []):
             leaders = leader_group.get("leaders", [])
             if leaders:
-                home_leader_ids.append(leaders[0].get("athlete", {}).get("id"))
+                athlete_id = leaders[0].get("athlete", {}).get("id")
+                if athlete_id:
+                    home_leader_weights[str(athlete_id)] = (
+                        home_leader_weights.get(str(athlete_id), 0.0) +
+                        _leader_weight(leader_group.get("name"))
+                    )
         for leader_group in away.get("leaders", []):
             leaders = leader_group.get("leaders", [])
             if leaders:
-                away_leader_ids.append(leaders[0].get("athlete", {}).get("id"))
+                athlete_id = leaders[0].get("athlete", {}).get("id")
+                if athlete_id:
+                    away_leader_weights[str(athlete_id)] = (
+                        away_leader_weights.get(str(athlete_id), 0.0) +
+                        _leader_weight(leader_group.get("name"))
+                    )
 
         fixtures.append({
             "home_team": normalize_nba_team_name(home["team"]["displayName"]),
@@ -567,8 +616,16 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
             "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
-            "home_availability_profile": _fetch_nba_team_availability_profile(home["team"].get("id"), leader_ids=home_leader_ids, cache=cache),
-            "away_availability_profile": _fetch_nba_team_availability_profile(away["team"].get("id"), leader_ids=away_leader_ids, cache=cache),
+            "home_availability_profile": _fetch_nba_team_availability_profile(
+                home["team"].get("id"),
+                leader_weights=home_leader_weights,
+                cache=cache,
+            ),
+            "away_availability_profile": _fetch_nba_team_availability_profile(
+                away["team"].get("id"),
+                leader_weights=away_leader_weights,
+                cache=cache,
+            ),
         })
 
     _save_espn_cache(cache_path, cache)

@@ -40,6 +40,7 @@ from pipeline.models import (
     HandednessMatchupModel,
     MlbTotalsModel,
     NbaMatchupModel,
+    NbaTotalsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
@@ -49,6 +50,7 @@ from pipeline.models import (
     handedness_matchup_predict,
     mlb_totals_predict,
     nba_matchup_predict,
+    nba_totals_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
@@ -517,13 +519,20 @@ def _compute_nba_availability_index(profile: dict | None) -> float:
     available_core_players = float(profile.get("available_core_players", 0.0) or 0.0)
     injury_burden = float(profile.get("injury_burden", 0.0) or 0.0)
     key_absence_score = float(profile.get("key_absence_score", 0.0) or 0.0)
+    leader_absence_burden = float(profile.get("leader_absence_burden", 0.0) or 0.0)
 
     depth_term = max(-1.0, min(1.0, (available_core_players - 9.0) / 4.0))
     active_term = 0.0
     if active_players > 0:
         active_term = max(-1.0, min(1.0, (available_core_players / active_players) - 0.75))
 
-    return (0.35 * depth_term) + (0.25 * active_term) - (0.45 * injury_burden) - (0.75 * key_absence_score)
+    return (
+        (0.35 * depth_term)
+        + (0.25 * active_term)
+        - (0.35 * injury_burden)
+        - (0.45 * key_absence_score)
+        - (0.7 * leader_absence_burden)
+    )
 
 
 def _apply_nba_availability_adjustment(
@@ -1134,7 +1143,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     try:
         odds_list = fetch_odds(
             sport_key=sport["odds_sport"],
-            include_totals=(sport_key == "mlb"),
+            include_totals=(sport_key in {"mlb", "nba"}),
         )
     except Exception:
         pass
@@ -1244,6 +1253,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
             feature_window=sport.get("totals_feature_window", 12),
             min_games=sport.get("totals_feature_min_games", 20),
             default_stddev=sport.get("totals_default_stddev", 3.1),
+        )
+    elif sport_key == "nba" and box_scores_df is not None and matches is not None and not matches.empty:
+        totals_model = NbaTotalsModel(
+            box_scores_df,
+            matches,
+            feature_window=sport.get("totals_feature_window", 8),
+            min_games=sport.get("totals_feature_min_games", 30),
+            default_stddev=sport.get("totals_default_stddev", 13.5),
         )
 
     # ------------------------------------------------------------------
@@ -1570,24 +1587,31 @@ def run_sport_pipeline(sport_key, output_dir=None):
         }
         prediction_records.append(record)
 
-        if sport_key == "mlb" and totals_model is not None and match_odds and match_odds.get("total_line") is not None:
-            total_projection = mlb_totals_predict(
-                totals_model,
-                fix,
-                total_line=float(match_odds["total_line"]),
-            )
-            total_projection["expected_total"] = _apply_mlb_weather_total_adjustment(
-                total_projection["expected_total"],
-                fix.get("weather"),
-            )
-            total_projection["expected_total"] = _apply_mlb_lineup_total_adjustment(
-                total_projection["expected_total"],
-                fix.get("home_lineup_profile"),
-                fix.get("away_lineup_profile"),
-                fix.get("home_pitcher_hand"),
-                fix.get("away_pitcher_hand"),
-                max_runs_delta=sport.get("lineup_total_adjustment_max_delta", 0.35),
-            )
+        if totals_model is not None and match_odds and match_odds.get("total_line") is not None:
+            if sport_key == "mlb":
+                total_projection = mlb_totals_predict(
+                    totals_model,
+                    fix,
+                    total_line=float(match_odds["total_line"]),
+                )
+                total_projection["expected_total"] = _apply_mlb_weather_total_adjustment(
+                    total_projection["expected_total"],
+                    fix.get("weather"),
+                )
+                total_projection["expected_total"] = _apply_mlb_lineup_total_adjustment(
+                    total_projection["expected_total"],
+                    fix.get("home_lineup_profile"),
+                    fix.get("away_lineup_profile"),
+                    fix.get("home_pitcher_hand"),
+                    fix.get("away_pitcher_hand"),
+                    max_runs_delta=sport.get("lineup_total_adjustment_max_delta", 0.35),
+                )
+            else:
+                total_projection = nba_totals_predict(
+                    totals_model,
+                    fix,
+                    total_line=float(match_odds["total_line"]),
+                )
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(
                 1.0 - norm.cdf(

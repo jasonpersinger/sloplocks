@@ -1714,6 +1714,172 @@ def nba_matchup_predict(model, home_team, away_team, game_date=None):
 
 
 # ---------------------------------------------------------------------------
+# NBA totals model
+# ---------------------------------------------------------------------------
+
+class NbaTotalsModel:
+    """Walk-forward regression model for NBA game totals."""
+
+    def __init__(self, box_scores, games, feature_window=8, min_games=30, default_stddev=13.5):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.default_stddev = default_stddev
+        self.model = None
+        self.team_logs = {}
+        self.residual_std = default_stddev
+        self.feature_names = [
+            "home_recent_points_for",
+            "away_recent_points_for",
+            "home_recent_points_allowed",
+            "away_recent_points_allowed",
+            "home_recent_pace",
+            "away_recent_pace",
+            "home_home_points_for",
+            "away_away_points_for",
+            "combined_recent_total",
+        ]
+        self._fit(box_scores, games)
+
+    @staticmethod
+    def _default_summary():
+        return {
+            "points_for": 112.0,
+            "points_allowed": 112.0,
+            "pace": 98.0,
+        }
+
+    def _aggregate(self, logs):
+        if not logs:
+            return self._default_summary()
+
+        def _avg(key):
+            return float(sum(item[key] for item in logs) / len(logs))
+
+        return {
+            "points_for": _avg("points_for"),
+            "points_allowed": _avg("points_allowed"),
+            "pace": _avg("pace"),
+        }
+
+    def _feature_vector(self, home_team, away_team, team_logs):
+        home_logs = team_logs.get(home_team, [])
+        away_logs = team_logs.get(away_team, [])
+        home_recent = self._aggregate(home_logs[-self.feature_window :])
+        away_recent = self._aggregate(away_logs[-self.feature_window :])
+        home_home = self._aggregate([item for item in home_logs if item.get("venue") == "home"][-self.feature_window :])
+        away_away = self._aggregate([item for item in away_logs if item.get("venue") == "away"][-self.feature_window :])
+
+        combined_recent_total = (
+            home_recent["points_for"] +
+            away_recent["points_for"] +
+            away_recent["points_allowed"] +
+            home_recent["points_allowed"]
+        ) / 2.0
+
+        return np.array([
+            home_recent["points_for"],
+            away_recent["points_for"],
+            home_recent["points_allowed"],
+            away_recent["points_allowed"],
+            home_recent["pace"],
+            away_recent["pace"],
+            home_home["points_for"],
+            away_away["points_for"],
+            combined_recent_total,
+        ])
+
+    @staticmethod
+    def _boxscore_log(team_bs, opp_bs, venue):
+        team_poss = max(float(team_bs["possessions"]), 1.0)
+        opp_poss = max(float(opp_bs["possessions"]), 1.0)
+        return {
+            "venue": venue,
+            "points_for": float(team_bs["pts"]),
+            "points_allowed": float(opp_bs["pts"]),
+            "pace": (team_poss + opp_poss) / 2.0,
+        }
+
+    def _fit(self, box_scores, games):
+        required_box = {"game_id", "team", "pts", "possessions"}
+        required_games = {"game_id", "date", "home_team", "away_team", "home_goals", "away_goals"}
+        if (
+            box_scores is None
+            or games is None
+            or box_scores.empty
+            or games.empty
+            or not required_box.issubset(set(box_scores.columns))
+            or not required_games.issubset(set(games.columns))
+        ):
+            return
+
+        bs_lookup = {}
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs = {
+            team: []
+            for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
+        }
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            home = row["home_team"]
+            away = row["away_team"]
+            home_bs = bs_lookup.get((row["game_id"], home))
+            away_bs = bs_lookup.get((row["game_id"], away))
+            if home_bs is None or away_bs is None:
+                continue
+
+            X.append(self._feature_vector(home, away, team_logs))
+            y.append(float(row["home_goals"]) + float(row["away_goals"]))
+
+            team_logs.setdefault(home, []).append(self._boxscore_log(home_bs, away_bs, "home"))
+            team_logs.setdefault(away, []).append(self._boxscore_log(away_bs, home_bs, "away"))
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games:
+            return
+
+        self.model = LinearRegression()
+        self.model.fit(np.array(X), np.array(y))
+        preds = self.model.predict(np.array(X))
+        residuals = np.array(y) - preds
+        if len(residuals) >= 5:
+            self.residual_std = max(7.5, float(np.std(residuals)))
+
+    def predict_total(self, fixture: dict) -> float:
+        if self.model is None:
+            return 224.0
+        features = self._feature_vector(
+            fixture["home_team"],
+            fixture["away_team"],
+            self.team_logs,
+        )
+        total = float(self.model.predict(np.array([features]))[0])
+        return max(180.0, min(270.0, total))
+
+    def predict_market(self, fixture: dict, total_line: float) -> dict[str, float]:
+        expected_total = self.predict_total(fixture)
+        sigma = max(7.5, float(self.residual_std or self.default_stddev))
+        over_prob = float(1.0 - norm.cdf(total_line, loc=expected_total, scale=sigma))
+        over_prob = max(0.01, min(0.99, over_prob))
+        return {
+            "expected_total": expected_total,
+            "stddev": sigma,
+            "over": over_prob,
+            "under": 1.0 - over_prob,
+        }
+
+
+def nba_totals_predict(model, fixture: dict, total_line: float) -> dict[str, float]:
+    """Predict NBA over/under probabilities and expected total."""
+    return model.predict_market(fixture, total_line)
+
+
+# ---------------------------------------------------------------------------
 # Adjusted Efficiency (KenPom-style)
 # ---------------------------------------------------------------------------
 

@@ -17,6 +17,7 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
    - Results-feature logistic model for NBA, NCAAM, MLB, and MMA: `pipeline/models.py`
    - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
    - NBA matchup-context model for venue splits, rest, and pace/style interaction: `pipeline/models.py`
+   - NBA totals model for projected game totals and over/under pricing: `pipeline/models.py`
    - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
    - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
    - Pitcher matchup, bullpen matchup, handedness matchup, run-environment, and totals models for MLB: `pipeline/models.py`
@@ -42,8 +43,10 @@ Configured models live in `pipeline/config.py:62-86`.
   - Walk-forward season/recent net rating, eFG%, turnover rate, rebound rate, free-throw rate, and pace differentials from ESPN box scores in `pipeline/models.py`.
 - NBA matchup model:
   - Walk-forward season and recent net-rating differentials, home-versus-road split strength, offense-vs-defense interaction, pace mismatch, recent margin, and rest-day differential from ESPN box scores plus game dates in `pipeline/models.py`.
+- NBA totals model:
+  - Walk-forward recent scoring, recent prevention, pace, and home/road scoring form from ESPN box scores to project game totals and price over/under markets in `pipeline/models.py` and `pipeline/run.py`.
 - Live availability features:
-  - Current roster injury burden, available core-player count, and absence of current scoring/rebounding/assist leaders from ESPN scoreboard plus roster data in `pipeline/fetch_nba.py` and `pipeline/run.py`.
+  - Current roster injury burden, available core-player count, and weighted absence of current scoring/playmaking/rebounding leaders from ESPN scoreboard plus roster data in `pipeline/fetch_nba.py` and `pipeline/run.py`.
 - Adjusted Efficiency features:
   - Weighted points scored, points allowed, possessions, and opponent-adjusted offense/defense from ESPN box scores in `pipeline/models.py:510-605`.
   - Tempo is derived from weighted possessions and fed into expected pace in `pipeline/models.py:635-647`.
@@ -114,7 +117,8 @@ Configured models live in `pipeline/config.py:138-160`.
 ### Ensemble mechanics
 
 - Active model lists are sport-specific in `pipeline/config.py:62-160`.
-  - NBA uses six models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`, `nba_matchup`.
+  - NBA uses six side models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`, `nba_matchup`.
+  - NBA now also has a totals lane driven by `NbaTotalsModel` plus live totals-market pricing.
   - NCAAM uses five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
   - MLB uses six side models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`, `handedness_features`.
   - MLB also now has a separate totals lane driven by `MlbTotalsModel` plus live totals-market pricing.
@@ -386,6 +390,33 @@ Configured models live in `pipeline/config.py:138-160`.
 - Why it matters:
   - A team missing its current high-usage scorer or playmaker should not be treated like a full-strength roster.
   - This improves the live NBA path without requiring a fragile player-projection or beat-reporter feed.
+
+#### 22. Fixed MMA slate windowing so recent UFC cards survive the daily run
+
+- What changed:
+  - Expanded the MMA schedule fetch window in `pipeline/fetch_mma.py` to include the previous ET day, not just “today forward.”
+- Why it matters:
+  - UFC cards were falling out of the live slate too early, producing `fixtures_fetched > 0` but `fixtures_in_window = 0`.
+  - This is an operational fix that allows real cards to reach the model instead of disappearing before pricing.
+
+#### 23. Added NBA over/under market support
+
+- What changed:
+  - Added `NbaTotalsModel` and `nba_totals_predict()` in `pipeline/models.py`.
+  - Enabled NBA totals fetches in `pipeline/run.py` by requesting totals markets from The Odds API.
+  - Wired NBA into the existing `totals_matches` / `totals_locks` pipeline lane in `pipeline/run.py`.
+- Why it matters:
+  - NBA now supports a second real betting market besides moneyline sides.
+  - The totals lane reuses the live box-score and pace data the project already fetches instead of depending on a new source.
+
+#### 24. Deepened the NBA availability signal with weighted leader absences
+
+- What changed:
+  - Extended `pipeline/fetch_nba.py` so roster availability is cached as reusable player-status rows, then scored with weighted leader categories from the ESPN scoreboard.
+  - Updated the live availability adjustment in `pipeline/run.py` to penalize missing scoring and playmaking leaders more heavily than minor-category leaders.
+- Why it matters:
+  - Not every absence has the same impact.
+  - This makes the live NBA pregame adjustment more sensitive to who is missing, not just how many players are listed.
 
 ## Future Improvements
 

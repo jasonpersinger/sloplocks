@@ -213,7 +213,7 @@ def fetch_mma_schedule() -> list[dict]:
     """Fetch upcoming UFC fights."""
     et_offset = timedelta(hours=5)
     today_et = (datetime.now(timezone.utc) - et_offset).date()
-    start_date = today_et.strftime("%Y%m%d")
+    start_date = (today_et - timedelta(days=1)).strftime("%Y%m%d")
     end_date = (today_et + timedelta(days=14)).strftime("%Y%m%d")
     url = f"{MMA_ESPN_BASE}/scoreboard?dates={start_date}-{end_date}&limit=100"
     
