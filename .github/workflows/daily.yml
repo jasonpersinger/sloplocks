@@ -2,7 +2,7 @@ name: Daily Predictions
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # 6am UTC daily (captures NBA games from previous night)
+    - cron: '0 12 * * *'  # 12pm UTC daily (~8am New York during DST)
   workflow_dispatch:  # Manual trigger
 
 permissions:
