@@ -6,6 +6,7 @@ import os
 import pytest
 
 from pipeline.backtest import (
+    build_dashboard_data,
     build_backtest_report,
     build_threshold_guidance,
     compute_brier_score,
@@ -306,3 +307,48 @@ class TestBacktestSummary:
         assert report["sports"]["nba"]["picks"]["breakdowns"]["market_type"]["total"]["evaluated"] == 1
         assert report["sports"]["nba"]["threshold_guidance"]
         assert report["aggregate"]["picks"]["roi"] is not None
+
+    def test_build_dashboard_data(self, tmp_path):
+        data_dir = tmp_path / "data"
+        nba_dir = data_dir / "nba"
+        nhl_dir = data_dir / "nhl"
+        nba_dir.mkdir(parents=True)
+        nhl_dir.mkdir(parents=True)
+
+        with open(data_dir / "manifest.json", "w") as f:
+            json.dump({
+                "updated_at": "2026-03-29T18:25:18Z",
+                "sports": {
+                    "nba": {"status": "ok", "diagnostics": {"matches_modeled": 4, "fixtures_in_window": 4, "fixtures_with_odds": 4, "matches_with_positive_ev": 2, "lock_eligible_matches": 1, "slop_locks_posted": 1}},
+                    "nhl": {"status": "ok", "diagnostics": {"matches_modeled": 3, "fixtures_in_window": 3, "fixtures_with_odds": 2, "matches_with_positive_ev": 1, "lock_eligible_matches": 1, "slop_locks_posted": 1}},
+                },
+            }, f)
+
+        with open(nba_dir / "history.json", "w") as f:
+            json.dump({"predictions": []}, f)
+        with open(nhl_dir / "history.json", "w") as f:
+            json.dump({"predictions": []}, f)
+
+        with open(nba_dir / "pick_history.json", "w") as f:
+            json.dump({
+                "picks": [
+                    {"pick_date": "2026-03-29", "type": "slop_lock", "market_type": "moneyline", "evaluated": True, "won": True, "decimal_odds": 2.1, "closing_line_value": 0.02},
+                    {"pick_date": "2026-03-23", "type": "total_lock", "market_type": "total", "evaluated": True, "won": False, "decimal_odds": 1.8, "closing_line_value": -0.03},
+                ]
+            }, f)
+        with open(nhl_dir / "pick_history.json", "w") as f:
+            json.dump({
+                "picks": [
+                    {"pick_date": "2026-03-29", "type": "slop_lock", "market_type": "moneyline", "evaluated": True, "won": True, "decimal_odds": 1.9, "closing_line_value": 0.01},
+                ]
+            }, f)
+
+        dashboard = build_dashboard_data(str(data_dir), sports=["nba", "nhl"], as_of="2026-03-29")
+
+        assert dashboard["aggregate"]["record"]["record"] == "2-1"
+        assert dashboard["aggregate"]["slate"]["modeled"] == 7
+        assert dashboard["windows"]["7d"]["evaluated"] == 3
+        assert dashboard["windows"]["30d"]["evaluated"] == 3
+        assert dashboard["sports"][0]["current"]["summary"] is None or "summary" in dashboard["sports"][0]["current"]
+        assert dashboard["leaders"]["best_roi_sport"]["sport"] in {"nba", "nhl"}
+        assert dashboard["insights"]

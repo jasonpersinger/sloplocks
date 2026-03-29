@@ -704,7 +704,9 @@ class TestRunPipeline:
 
         # Manifest
         manifest_path = os.path.join(output_dir, "manifest.json")
+        dashboard_path = os.path.join(output_dir, "dashboard.json")
         assert os.path.exists(manifest_path)
+        assert os.path.exists(dashboard_path)
         assert "nba" in manifest["sports"]
         assert "nhl" in manifest["sports"]
         assert "ncaam" in manifest["sports"]
@@ -714,6 +716,12 @@ class TestRunPipeline:
         assert "diagnostics" in manifest["sports"]["nba"]
         assert "diagnostics" in manifest["sports"]["nhl"]
         assert "diagnostics" in manifest["sports"]["ncaam"]
+
+        with open(dashboard_path) as f:
+            dashboard = json.load(f)
+        assert "aggregate" in dashboard
+        assert "sports" in dashboard
+        assert dashboard["aggregate"]["slate"]["modeled"] >= 0
 
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))

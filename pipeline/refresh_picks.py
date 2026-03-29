@@ -15,6 +15,7 @@ from pathlib import Path
 
 from scipy.stats import norm
 
+from pipeline.backtest import build_dashboard_data
 from pipeline.config import (
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
@@ -219,6 +220,8 @@ def main() -> None:
     print(f"Refreshing picks for: {', '.join(sports)}")
     for sport_key in sports:
         refresh_sport(sport_key)
+    dashboard = build_dashboard_data(str(DATA_DIR))
+    _save_json(str(Path(DATA_DIR) / "dashboard.json"), dashboard)
     print("Done.")
 
 

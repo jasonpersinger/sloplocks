@@ -438,6 +438,16 @@ Configured models live in `pipeline/config.py:138-160`.
   - Hockey moneylines are unusually sensitive to the crease.
   - This gives the NHL model a direct goaltending signal instead of forcing it to infer everything from team-level save percentage.
 
+#### 27. Added a generated reporting dashboard for the site
+
+- What changed:
+  - Added `build_dashboard_data()` and recent-window helpers to `pipeline/backtest.py`.
+  - The full pipeline now writes `data/dashboard.json` in `pipeline/run.py`, and the refresh path updates it in `pipeline/refresh_picks.py`.
+  - The site now has a dedicated `DASHBOARD` view in `index.html` with aggregate record, recent windows, sport splits, leaders, and threshold guidance.
+- Why it matters:
+  - The tracking stack was already collecting useful information, but it was buried in JSON and CSV files.
+  - This turns the reporting layer into an operational surface you can actually use to diagnose quality, volume, and live slate coverage.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness

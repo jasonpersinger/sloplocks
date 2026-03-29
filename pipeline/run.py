@@ -72,6 +72,7 @@ from pipeline.ensemble import (
 )
 from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
 from pipeline.backtest import (
+    build_dashboard_data,
     compute_model_weights,
     compute_roi,
     evaluate_prediction,
@@ -2328,6 +2329,7 @@ def run_pipeline(output_dir=None):
             }
 
     _save_json(os.path.join(base_dir, "manifest.json"), manifest)
+    _save_json(os.path.join(base_dir, "dashboard.json"), build_dashboard_data(base_dir))
 
     return manifest
 
