@@ -90,6 +90,16 @@ def _save_json(path, data):
         json.dump(data, f, indent=2, cls=_NumpyEncoder)
 
 
+def _lookup_match_odds(odds_lookup: dict, sport_key: str, home_team: str, away_team: str) -> dict | None:
+    """Return odds for a fixture, with MMA-specific reversed-order fallback."""
+    match_odds = odds_lookup.get((home_team, away_team))
+    if match_odds is not None:
+        return match_odds
+    if sport_key == "mma":
+        return odds_lookup.get((away_team, home_team))
+    return None
+
+
 _RESULTS_LOG_FIELDS = [
     "logged_at",
     "sport",
@@ -990,7 +1000,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         )
 
         # Edges and best odds
-        match_odds = odds_lookup.get((home, away))
+        match_odds = _lookup_match_odds(odds_lookup, sport_key, home, away)
         edges = {}
         best_odds = {}
         if match_odds:

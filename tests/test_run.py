@@ -194,6 +194,41 @@ class TestRunMMAPipeline:
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
 
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_mma_schedule")
+    @patch("pipeline.run.fetch_mma_games")
+    def test_matches_mma_odds_when_fighter_order_is_reversed(
+        self, mock_games, mock_schedule, mock_odds, sample_mma_matches, tmp_path
+    ):
+        mock_games.return_value = (sample_mma_matches, None)
+        mock_schedule.return_value = [
+            {
+                "home_team": "Fighter A",
+                "away_team": "Fighter C",
+                "date": _TODAY,
+                "neutral": True,
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Fighter C",
+                "away_team": "Fighter A",
+                "commence_time": f"{_TODAY}T00:30:00Z",
+                "home_odds": 2.05,
+                "away_odds": 1.85,
+            }
+        ]
+
+        output_dir = str(tmp_path / "mma")
+        run_sport_pipeline("mma", output_dir=output_dir)
+
+        with open(os.path.join(output_dir, "predictions.json")) as f:
+            data = json.load(f)
+
+        match = data["matches"][0]
+        assert match["best_odds"]
+        assert match["american_odds"] is not None
+
 
 # ---------------------------------------------------------------------------
 # Multi-sport orchestrator

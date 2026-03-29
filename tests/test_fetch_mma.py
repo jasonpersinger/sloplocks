@@ -1,0 +1,85 @@
+from unittest.mock import MagicMock, patch
+
+from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule
+
+
+def _make_mma_scoreboard(completed: bool) -> dict:
+    return {
+        "events": [
+            {
+                "id": "600057366",
+                "name": "UFC Fight Night: Adesanya vs. Pyfer",
+                "date": "2026-03-28T21:00Z",
+                "competitions": [
+                    {
+                        "id": "401863938",
+                        "date": "2026-03-28T21:00Z",
+                        "status": {
+                            "type": {
+                                "completed": completed,
+                            }
+                        },
+                        "competitors": [
+                            {
+                                "order": 2,
+                                "winner": False,
+                                "athlete": {"displayName": "Bruna Brasil"},
+                            },
+                            {
+                                "order": 1,
+                                "winner": True,
+                                "athlete": {"displayName": "Alexia Thainara"},
+                            },
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+
+
+class TestFetchMMASchedule:
+    @patch("pipeline.fetch_mma.requests.get")
+    def test_parses_upcoming_fight_from_athlete_payload(self, mock_get):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = _make_mma_scoreboard(completed=False)
+        mock_get.return_value = resp
+
+        fixtures = fetch_mma_schedule()
+
+        assert fixtures == [
+            {
+                "home_team": "Alexia Thainara",
+                "away_team": "Bruna Brasil",
+                "date": "2026-03-28",
+                "completed": False,
+                "neutral": True,
+            }
+        ]
+
+
+class TestFetchMMAGames:
+    @patch("pipeline.fetch_mma.time.sleep")
+    @patch("pipeline.fetch_mma.requests.get")
+    def test_parses_completed_fight_from_athlete_payload(self, mock_get, mock_sleep):
+        resp = MagicMock()
+        resp.raise_for_status = MagicMock()
+        resp.json.return_value = _make_mma_scoreboard(completed=True)
+        mock_get.return_value = resp
+
+        games_df, box_scores_df = fetch_mma_games(
+            dates=["2026-03-28"],
+            cache_path=None,
+        )
+
+        assert box_scores_df is None
+        assert len(games_df) == 1
+        row = games_df.iloc[0].to_dict()
+        assert row["game_id"] == "401863938"
+        assert row["date"] == "2026-03-28"
+        assert row["home_team"] == "Alexia Thainara"
+        assert row["away_team"] == "Bruna Brasil"
+        assert row["home_goals"] == 1
+        assert row["away_goals"] == 0
+        mock_sleep.assert_called_once()

@@ -19,6 +19,31 @@ def normalize_mma_name(name: str) -> str:
     return name.strip()
 
 
+def _competitor_display_name(competitor: dict) -> str:
+    """Return the best available display name for a UFC competitor."""
+    athlete_name = competitor.get("athlete", {}).get("displayName")
+    if athlete_name:
+        return normalize_mma_name(athlete_name)
+    team_name = competitor.get("team", {}).get("displayName")
+    if team_name:
+        return normalize_mma_name(team_name)
+    return ""
+
+
+def _ordered_competitors(comp: dict) -> list[dict]:
+    """Return the two competitors in a stable fight order.
+
+    ESPN UFC payloads typically expose fighters as ``athlete`` entries with an
+    ``order`` field rather than team-style ``homeAway`` markers.
+    """
+    competitors = [c for c in comp.get("competitors", []) if _competitor_display_name(c)]
+    if any(c.get("homeAway") for c in competitors):
+        competitors.sort(key=lambda c: 0 if c.get("homeAway") == "home" else 1)
+    else:
+        competitors.sort(key=lambda c: c.get("order", 99))
+    return competitors[:2]
+
+
 # ---- season date range -------------------------------------------------------
 
 
@@ -65,29 +90,23 @@ def _parse_event(event: dict) -> list[dict]:
     fights = []
     if "competitions" not in event:
         return []
-    
-    date_str = event["date"][:10]
-    
+
     for comp in event["competitions"]:
         status_type = comp.get("status", {}).get("type", {})
         if not status_type.get("completed", False):
             continue
 
-        home = away = None # Home = Favorite/Winner generally
-        for competitor in comp.get("competitors", []):
-            if competitor.get("homeAway") == "home":
-                home = competitor
-            elif competitor.get("homeAway") == "away":
-                away = competitor
-
-        if home is None or away is None:
+        competitors = _ordered_competitors(comp)
+        if len(competitors) != 2:
             continue
+        home, away = competitors
+        date_str = comp.get("date", event["date"])[:10]
 
         fights.append({
             "event_id": comp["id"],
             "date": date_str,
-            "home_name": home["team"]["displayName"],
-            "away_name": away["team"]["displayName"],
+            "home_name": _competitor_display_name(home),
+            "away_name": _competitor_display_name(away),
             "home_score": 1 if home.get("winner") else 0,
             "away_score": 1 if away.get("winner") else 0,
         })
@@ -168,25 +187,19 @@ def fetch_mma_schedule() -> list[dict]:
     for event in data.get("events", []):
         if "competitions" not in event:
             continue
-        
-        date_str = event["date"][:10]
+
         for comp in event["competitions"]:
             status_type = comp.get("status", {}).get("type", {})
             is_completed = status_type.get("completed", False)
-
-            home = away = None
-            for competitor in comp.get("competitors", []):
-                if competitor.get("homeAway") == "home":
-                    home = competitor
-                elif competitor.get("homeAway") == "away":
-                    away = competitor
-
-            if home is None or away is None:
+            competitors = _ordered_competitors(comp)
+            if len(competitors) != 2:
                 continue
+            home, away = competitors
+            date_str = comp.get("date", event["date"])[:10]
 
             fixtures.append({
-                "home_team": normalize_mma_name(home["team"]["displayName"]),
-                "away_team": normalize_mma_name(away["team"]["displayName"]),
+                "home_team": _competitor_display_name(home),
+                "away_team": _competitor_display_name(away),
                 "date": date_str,
                 "completed": is_completed,
                 "neutral": True, # Fights are always neutral site effectively

@@ -47,8 +47,13 @@ jobs:
           git pull --rebase origin master -X ours
           git push origin master
 
+      - name: Deploy Site To Netlify
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: npx netlify deploy --prod --dir . --site "$NETLIFY_SITE_ID" --message "daily predictions $(date -u +%Y-%m-%d)"
+
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python -m pipeline.notify_discord
-

@@ -29,7 +29,7 @@ from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
 from pipeline.fetch_mlb import normalize_mlb_team_name
 from pipeline.fetch_mma import normalize_mma_name
-from pipeline.run import _exclude_opponent_conflicts
+from pipeline.run import _exclude_opponent_conflicts, _lookup_match_odds
 
 _NORMALIZERS = {
     "nba": normalize_nba_team_name,
@@ -176,7 +176,12 @@ def refresh_sport(sport_key: str) -> None:
 
     # Patch edges onto matches where we have fresh odds
     for match in matches:
-        match_odds = odds_lookup.get((match["home_team"], match["away_team"]))
+        match_odds = _lookup_match_odds(
+            odds_lookup,
+            sport_key,
+            match["home_team"],
+            match["away_team"],
+        )
         if match_odds:
             edges = compute_edges(
                 match["model_probs"],
