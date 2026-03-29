@@ -12,6 +12,11 @@ def _write_predictions(tmp_path, sport, payload):
         json.dump(payload, f)
 
 
+def _write_dashboard(tmp_path, payload):
+    with open(tmp_path / "dashboard.json", "w") as f:
+        json.dump(payload, f)
+
+
 def _base_match(**overrides):
     match = {
         "home_team": "Lakers",
@@ -124,6 +129,14 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
             "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=0"},
         },
     )
+    _write_dashboard(
+        tmp_path,
+        {
+            "recommended_actions": [
+                {"priority": "high", "title": "Fix Live Coverage Gaps", "detail": "Odds coverage is missing in NHL 5/6."}
+            ]
+        },
+    )
 
     monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
 
@@ -142,6 +155,8 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "Pitchers: Cease vs Yamamoto" in full_text
     assert "Mar 28 07:00 PM ET" in full_text
     assert "SLATE DIAGNOSTICS" in full_text
+    assert "CONTROL PANEL" in full_text
+    assert "Fix Live Coverage Gaps" in full_text
     assert "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1" in full_text
     assert "totals=1" in full_text
     assert "SLOP LOCK" in full_text

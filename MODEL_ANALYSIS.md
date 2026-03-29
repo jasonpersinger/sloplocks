@@ -448,6 +448,38 @@ Configured models live in `pipeline/config.py:138-160`.
   - The tracking stack was already collecting useful information, but it was buried in JSON and CSV files.
   - This turns the reporting layer into an operational surface you can actually use to diagnose quality, volume, and live slate coverage.
 
+#### 28. Made the dashboard operational with ranked recommended actions
+
+- What changed:
+  - Added `_build_recommended_actions()` in `pipeline/backtest.py`.
+  - The dashboard payload now includes ranked operating actions derived from live odds coverage gaps, lane performance, recent-vs-baseline ROI drift, and CLV tension.
+  - The site renders those recommendations in `index.html`, and Discord posts them as a `CONTROL PANEL` embed in `pipeline/notify_discord.py`.
+- Why it matters:
+  - The dashboard now tells you what to do, not just what happened.
+  - This reduces the number of “why is today’s card thin?” debugging passes needed during live operation.
+
+#### 29. Upgraded the late-day refresh into a live-input refresh path
+
+- What changed:
+  - `pipeline/refresh_picks.py` now refetches live schedule metadata for NBA, MLB, and NHL instead of refreshing odds only.
+  - The refresh path reapplies the same live adjustments used in the full run:
+    - NBA availability side and totals adjustments
+    - MLB weather and lineup side and totals adjustments
+    - NHL goalie-status adjustment
+  - It now preserves `base_model_probs` / `base_expected_total`, rebuilds diagnostics, updates `dashboard.json`, and refreshes saved market snapshots.
+- Why it matters:
+  - Late-day runs now react to more than line movement.
+  - This closes a real gap between the morning full pipeline and the afternoon refresh/deploy path.
+
+#### 30. Added a live NHL goalie-confirmation adjustment and deeper special-teams context
+
+- What changed:
+  - Added `_apply_nhl_goalie_status_adjustment()` in `pipeline/run.py` and applied it in both the full pipeline and `pipeline/refresh_picks.py`.
+  - Expanded `NhlMatchupModel` in `pipeline/models.py` with recent shot suppression, blocked-shot differential, and penalty-kill differential on top of the earlier goalie-aware feature set.
+- Why it matters:
+  - NHL sides are sensitive not just to who the probable goalie is, but also to how certain that goalie information is and how the teams are defending recently.
+  - This gives the live NHL lane more hockey-specific context without changing the public data contract.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -469,9 +501,13 @@ The MLB stack now covers starters, bullpens, park context, handedness, live weat
 - bullpen leverage role quality beyond simple aggregate workload
 - totals-specific bullpen availability and umpire context
 
-### 3. Add lineup and injury freshness closer to lock
+### 3. Add deeper late-day confirmed news closer to lock
 
-The daily run still happens once per day, and `pipeline/refresh_picks.py:147-223` refreshes odds only. That leaves the model exposed to stale availability information. The highest-value follow-up is a second full rerun later in the day or a richer refresh path that refetches core inputs before recomputing probabilities.
+The refresh path now refetches core live metadata in `pipeline/refresh_picks.py`, but it still does not fully rebuild each sport from scratch. The next step is to push closer to confirmed pregame information, especially:
+
+- MLB confirmed batting orders rather than roster-level lineup proxies
+- NBA late scratches and minute-allocation expectations closer to tip
+- NHL confirmed starters and special-teams usage closer to puck drop
 
 ### 4. Fix training leakage in efficiency and four-factors models
 

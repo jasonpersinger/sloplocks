@@ -351,4 +351,5 @@ class TestBacktestSummary:
         assert dashboard["windows"]["30d"]["evaluated"] == 3
         assert dashboard["sports"][0]["current"]["summary"] is None or "summary" in dashboard["sports"][0]["current"]
         assert dashboard["leaders"]["best_roi_sport"]["sport"] in {"nba", "nhl"}
+        assert dashboard["recommended_actions"]
         assert dashboard["insights"]

@@ -487,6 +487,89 @@ def _build_dashboard_insights(report: dict, manifest: dict, windows: dict, leade
     return insights
 
 
+def _build_recommended_actions(report: dict, manifest: dict, windows: dict, leaders: dict) -> list[dict]:
+    """Build ranked, user-facing operating recommendations."""
+    actions = []
+    aggregate = report.get("aggregate", {}).get("picks", {})
+    aggregate_clv = aggregate.get("clv", {})
+    sports_manifest = manifest.get("sports", {})
+
+    coverage_gaps = []
+    for sport_key, sport_meta in sports_manifest.items():
+        diagnostics = sport_meta.get("diagnostics", {})
+        in_window = int(diagnostics.get("fixtures_in_window") or 0)
+        with_odds = int(diagnostics.get("fixtures_with_odds") or 0)
+        if in_window > with_odds:
+            coverage_gaps.append((sport_key, with_odds, in_window))
+    if coverage_gaps:
+        coverage_gaps.sort(key=lambda item: (item[2] - item[1], item[2]), reverse=True)
+        labels = ", ".join(
+            f"{SPORTS.get(s, {}).get('display_name', s.upper())} {got}/{total}"
+            for s, got, total in coverage_gaps[:3]
+        )
+        actions.append({
+            "priority": "high",
+            "title": "Fix Live Coverage Gaps",
+            "detail": f"Late-day value is still being lost to missing odds or schedule coverage in {labels}.",
+        })
+
+    best_lane = leaders.get("best_lane")
+    if best_lane and best_lane.get("evaluated", 0) >= 5:
+        lane_name = f"{best_lane['lane']}:{best_lane['key']}"
+        actions.append({
+            "priority": "medium",
+            "title": "Lean Into The Strongest Lane",
+            "detail": f"{lane_name} is currently the best settled lane at {best_lane['roi']:+.1%} ROI.",
+        })
+
+    recent7 = windows.get("7d", {})
+    recent30 = windows.get("30d", {})
+    if recent7.get("evaluated", 0) >= 5 and recent30.get("evaluated", 0) >= 15:
+        r7 = recent7.get("roi")
+        r30 = recent30.get("roi")
+        if r7 is not None and r30 is not None:
+            if r7 < 0 <= r30:
+                actions.append({
+                    "priority": "medium",
+                    "title": "Stay Selective This Week",
+                    "detail": "The 7-day window is trailing the broader 30-day baseline. Do not loosen thresholds.",
+                })
+            elif r7 > r30 and r7 > 0:
+                actions.append({
+                    "priority": "low",
+                    "title": "Current Form Is Strong",
+                    "detail": "Recent results are ahead of the 30-day baseline. Hold thresholds steady and let the sample build.",
+                })
+
+    if aggregate.get("evaluated", 0) >= 20:
+        roi = aggregate.get("roi")
+        avg_clv = aggregate_clv.get("avg_clv")
+        if roi is not None and avg_clv is not None:
+            if roi > 0 and avg_clv < 0:
+                actions.append({
+                    "priority": "medium",
+                    "title": "Watch CLV Before Expanding",
+                    "detail": "Realized ROI is positive, but closing-line value is lagging. Avoid adding volume until the market read improves.",
+                })
+            elif roi < 0 and avg_clv > 0:
+                actions.append({
+                    "priority": "medium",
+                    "title": "Hold Nerve On Thresholds",
+                    "detail": "CLV is positive even though realized ROI is down. The model may be right before the results catch up.",
+                })
+
+    if not actions:
+        actions.append({
+            "priority": "low",
+            "title": "Hold Current Gates",
+            "detail": "The current sample does not justify a threshold change yet. Keep collecting settled picks.",
+        })
+
+    priority_order = {"high": 0, "medium": 1, "low": 2}
+    actions.sort(key=lambda item: (priority_order.get(item["priority"], 9), item["title"]))
+    return actions[:4]
+
+
 def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None, as_of: str | None = None) -> dict:
     """Build a site-friendly reporting dashboard payload."""
     selected_sports = sports or list(SPORTS.keys())
@@ -561,6 +644,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
         "windows": windows,
         "sports": sports_summary,
         "leaders": leaders,
+        "recommended_actions": _build_recommended_actions(report, manifest, windows, leaders),
         "insights": _build_dashboard_insights(report, manifest, windows, leaders),
     }
 

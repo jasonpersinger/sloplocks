@@ -119,6 +119,14 @@ def _iter_sport_data() -> list[tuple[str, dict]]:
     return rows
 
 
+def _load_dashboard_data() -> dict:
+    path = DATA_DIR / "dashboard.json"
+    if not path.exists():
+        return {}
+    with open(path) as f:
+        return json.load(f) or {}
+
+
 def _match_lookup(matches: list[dict]) -> dict[tuple[str, str, str, str], dict]:
     lookup = {}
     for match in matches or []:
@@ -348,6 +356,23 @@ def build_payload() -> dict:
             "color": COLOR_RADAR,
             "fields": diagnostic_fields[:MAX_DIAGNOSTIC_FIELDS],
             "footer": {"text": "modeled | odds | +ev | eligible | locks"},
+        })
+
+    dashboard = _load_dashboard_data()
+    actions = (dashboard.get("recommended_actions") or [])[:3]
+    if actions:
+        embeds.append({
+            "title": "🧭  CONTROL PANEL",
+            "color": COLOR_RADAR,
+            "fields": [
+                {
+                    "name": action.get("title", "Action"),
+                    "value": f"{action.get('priority', 'low').upper()}  ·  {action.get('detail', '')}"[:1024],
+                    "inline": False,
+                }
+                for action in actions
+            ],
+            "footer": {"text": "operating guidance from settled results, clv, and live coverage"},
         })
 
     curated_keys = {_pick_key(item) for item in curated}

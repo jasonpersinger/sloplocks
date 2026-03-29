@@ -814,6 +814,8 @@ class TestNhlMatchupModel:
                 "away_faceoff_pct": 0.46 if strong_home else 0.56,
                 "home_power_play_pct": 0.24 if strong_home else 0.14,
                 "away_power_play_pct": 0.14 if strong_home else 0.24,
+                "home_blocked_shots": 17 if strong_home else 12,
+                "away_blocked_shots": 12 if strong_home else 17,
                 "home_takeaways": 7 if strong_home else 4,
                 "away_takeaways": 4 if strong_home else 7,
                 "home_giveaways": 4 if strong_home else 7,
@@ -833,5 +835,7 @@ class TestNhlMatchupModel:
         )
 
         assert model.model is not None
+        assert "recent_penalty_kill_pct_diff" in model.feature_names
+        assert "recent_blocked_shot_diff" in model.feature_names
         assert probs["home"] > 0.5
         assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)

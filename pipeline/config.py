@@ -196,6 +196,7 @@ SPORTS = {
         "nhl_matchup_min_games": 40,
         "recent_form_window": 8,
         "recent_form_max_adjustment": 24,
+        "goalie_status_adjustment_max_delta": 0.012,
         "min_expected_value": 0.0,
         "kelly_fraction": 0.2,
         "slop_lock_edge_threshold": 0.015,

@@ -824,6 +824,34 @@ def _apply_nba_availability_total_adjustment(
     return max(180.0, min(270.0, expected_total + delta))
 
 
+def _apply_nhl_goalie_status_adjustment(
+    blended: dict[str, float],
+    home_status: str | None,
+    away_status: str | None,
+    max_delta: float = 0.012,
+) -> dict[str, float]:
+    """Apply a tiny NHL live adjustment from goalie confirmation certainty."""
+    status_scale = {
+        "confirmed": 1.0,
+        "expected": 0.45,
+        "projected": 0.35,
+        "likely": 0.55,
+        "unconfirmed": 0.2,
+    }
+    home_score = status_scale.get(str(home_status or "").strip().lower(), 0.0)
+    away_score = status_scale.get(str(away_status or "").strip().lower(), 0.0)
+    differential = home_score - away_score
+    if abs(differential) < 0.05:
+        return blended
+
+    delta = max(-max_delta, min(max_delta, differential * max_delta * 0.8))
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
+
+
 # ---------------------------------------------------------------------------
 # Blurb generation (via Claude API)
 # ---------------------------------------------------------------------------
@@ -1821,6 +1849,13 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 fix.get("home_availability_profile"),
                 fix.get("away_availability_profile"),
                 max_delta=sport.get("availability_adjustment_max_delta", 0.02),
+            )
+        if sport_key == "nhl":
+            blended = _apply_nhl_goalie_status_adjustment(
+                blended,
+                fix.get("home_goalie_status"),
+                fix.get("away_goalie_status"),
+                max_delta=sport.get("goalie_status_adjustment_max_delta", 0.012),
             )
         blended = apply_probability_calibration(
             blended,

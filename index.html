@@ -372,6 +372,12 @@
     return card;
   }
 
+  function createActionPrefix(priority) {
+    if (priority === 'high') return '[!]'
+    if (priority === 'medium') return '[+]'
+    return '[-]'
+  }
+
   function createPickCard(pick) {
     var isTotal = pick.market_type === 'total';
     var pickedTeam = isTotal
@@ -528,6 +534,7 @@
     var slate = aggregate.slate || {};
     var leaders = dashboardData.leaders || {};
     var windows = dashboardData.windows || {};
+    var actions = dashboardData.recommended_actions || [];
 
     feed.appendChild(createDashboardBlock('Board', [
       'RECORD      ' + fmtRecord(record),
@@ -547,6 +554,12 @@
       '7D CLV      ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
       '30D CLV     ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
     ], 'RECENCY'));
+
+    if (actions.length) {
+      feed.appendChild(createDashboardBlock('Recommended Actions', actions.map(function (action, idx) {
+        return createActionPrefix(action.priority) + ' ' + action.title.toUpperCase() + '\n    ' + action.detail;
+      }), 'OPERATE'));
+    }
 
     var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE'];
     (dashboardData.sports || []).forEach(function (sport) {
