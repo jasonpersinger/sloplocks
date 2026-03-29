@@ -346,7 +346,7 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
         moneyline_decimals = {
             outcome: odds.get(f"{outcome}_odds", 0.0)
             for outcome in ("home", "away", "draw")
-            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 0
+            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 1.0
         }
         _, fair_probs, raw_probs = None, None, None
         if moneyline_decimals:
@@ -371,7 +371,7 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
         totals_decimals = {
             outcome: odds.get(f"{outcome}_odds", 0.0)
             for outcome in ("over", "under")
-            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 0
+            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 1.0
         }
         if totals_decimals and odds.get("total_line") is not None:
             raw_probs, fair_probs, _ = no_vig_probabilities(totals_decimals)

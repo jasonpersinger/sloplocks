@@ -1185,6 +1185,20 @@ class TestOddsTracking:
         assert len(rows) == 1
         assert rows[0]["outcome"] == "home"
 
+    def test_build_odds_snapshot_rows_skips_invalid_even_money_placeholders(self):
+        from pipeline.run import _build_odds_snapshot_rows
+
+        rows = _build_odds_snapshot_rows("ncaam", [{
+            "home_team": "Duke",
+            "away_team": "UConn",
+            "commence_time": "2026-03-29T23:00:00Z",
+            "home_odds": 1.91,
+            "away_odds": 1.0,
+        }])
+
+        assert len(rows) == 1
+        assert rows[0]["outcome"] == "home"
+
     def test_apply_latest_market_snapshots_sets_moneyline_and_total_clv(self):
         from pipeline.run import _apply_latest_market_snapshots
 
