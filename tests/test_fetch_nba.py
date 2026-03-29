@@ -306,7 +306,7 @@ class TestFetchNbaEspnSchedule:
         assert re.match(r"\d{4}-\d{2}-\d{2}$", fixtures[0]["date"])
 
     @patch("pipeline.fetch_nba.requests.get")
-    def test_excludes_completed_games(self, mock_get):
+    def test_includes_completed_games_with_flag(self, mock_get):
         resp = MagicMock()
         resp.raise_for_status = MagicMock()
         resp.json.return_value = {
@@ -320,7 +320,11 @@ class TestFetchNbaEspnSchedule:
         mock_get.return_value = resp
 
         fixtures = fetch_nba_espn_schedule()
-        assert all(f["home_team"] != "Lakers" for f in fixtures)
+        assert len(fixtures) == 2
+        completed = next(f for f in fixtures if f["home_team"] == "Lakers")
+        pending = next(f for f in fixtures if f["home_team"] == "Heat")
+        assert completed["completed"] is True
+        assert pending["completed"] is False
 
 
 # ---------------------------------------------------------------------------

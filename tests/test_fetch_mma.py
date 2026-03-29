@@ -53,6 +53,7 @@ class TestFetchMMASchedule:
                 "home_team": "Alexia Thainara",
                 "away_team": "Bruna Brasil",
                 "date": "2026-03-28",
+                "start_time": "2026-03-28T21:00Z",
                 "completed": False,
                 "neutral": True,
             }

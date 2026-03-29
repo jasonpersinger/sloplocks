@@ -195,11 +195,15 @@ class TestFetchNcaamGames:
         }
         scoreboard_resp.raise_for_status = MagicMock()
 
+        empty_scoreboard_resp = MagicMock()
+        empty_scoreboard_resp.json.return_value = {"events": []}
+        empty_scoreboard_resp.raise_for_status = MagicMock()
+
         summary_resp = MagicMock()
         summary_resp.json.return_value = _make_summary_response(SAMPLE_TOTALS, SAMPLE_TOTALS)
         summary_resp.raise_for_status = MagicMock()
 
-        mock_get.side_effect = [scoreboard_resp, summary_resp]
+        mock_get.side_effect = [scoreboard_resp, empty_scoreboard_resp, summary_resp]
 
         games_df, box_df = fetch_ncaam_games(season=2025, dates=["2026-02-15"])
 
@@ -231,11 +235,15 @@ class TestFetchNcaamGames:
         }
         scoreboard_resp.raise_for_status = MagicMock()
 
+        empty_scoreboard_resp = MagicMock()
+        empty_scoreboard_resp.json.return_value = {"events": []}
+        empty_scoreboard_resp.raise_for_status = MagicMock()
+
         summary_resp = MagicMock()
         summary_resp.json.return_value = _make_summary_response(SAMPLE_TOTALS, SAMPLE_TOTALS)
         summary_resp.raise_for_status = MagicMock()
 
-        mock_get.side_effect = [scoreboard_resp, summary_resp]
+        mock_get.side_effect = [scoreboard_resp, empty_scoreboard_resp, summary_resp]
 
         games_df, box_df = fetch_ncaam_games(season=2025, dates=["2026-02-15"])
         assert len(games_df) == 1
@@ -251,11 +259,19 @@ class TestFetchNcaamGames:
         }
         resp1.raise_for_status = MagicMock()
 
+        empty_resp1 = MagicMock()
+        empty_resp1.json.return_value = {"events": []}
+        empty_resp1.raise_for_status = MagicMock()
+
         resp2 = MagicMock()
         resp2.json.return_value = {
             "events": [_make_espn_event("2", "Kansas Jayhawks", "Duke Blue Devils", 90, 85, date="2026-02-16T00:00Z")]
         }
         resp2.raise_for_status = MagicMock()
+
+        empty_resp2 = MagicMock()
+        empty_resp2.json.return_value = {"events": []}
+        empty_resp2.raise_for_status = MagicMock()
 
         summary1 = MagicMock()
         summary1.json.return_value = _make_summary_response(SAMPLE_TOTALS, SAMPLE_TOTALS)
@@ -265,7 +281,7 @@ class TestFetchNcaamGames:
         summary2.json.return_value = _make_summary_response(SAMPLE_TOTALS, SAMPLE_TOTALS)
         summary2.raise_for_status = MagicMock()
 
-        mock_get.side_effect = [resp1, summary1, resp2, summary2]
+        mock_get.side_effect = [resp1, empty_resp1, summary1, resp2, empty_resp2, summary2]
 
         games_df, box_df = fetch_ncaam_games(season=2025, dates=["2026-02-15", "2026-02-16"])
         assert len(games_df) == 2
@@ -297,11 +313,15 @@ class TestFetchNcaamGames:
         }
         scoreboard_resp.raise_for_status = MagicMock()
 
+        empty_scoreboard_resp = MagicMock()
+        empty_scoreboard_resp.json.return_value = {"events": []}
+        empty_scoreboard_resp.raise_for_status = MagicMock()
+
         summary_resp = MagicMock()
         summary_resp.json.return_value = {"boxscore": {"teams": []}}
         summary_resp.raise_for_status = MagicMock()
 
-        mock_get.side_effect = [scoreboard_resp, summary_resp]
+        mock_get.side_effect = [scoreboard_resp, empty_scoreboard_resp, summary_resp]
 
         games_df, box_df = fetch_ncaam_games(season=2025, dates=["2026-02-15"])
         assert len(games_df) == 1
@@ -339,7 +359,7 @@ class TestFetchNcaamSchedule:
 
     @patch("pipeline.fetch_ncaam._team_map", {"Duke Blue Devils": "Duke", "Kansas Jayhawks": "Kansas", "UConn Huskies": "UConn"})
     @patch("pipeline.fetch_ncaam.requests.get")
-    def test_excludes_final_games(self, mock_get):
+    def test_includes_final_games_with_completed_flag(self, mock_get):
         mixed_resp = MagicMock()
         mixed_resp.json.return_value = {
             "events": [
@@ -351,8 +371,11 @@ class TestFetchNcaamSchedule:
         mock_get.return_value = mixed_resp
 
         fixtures = fetch_ncaam_schedule()
-        assert len(fixtures) == 1
-        assert fixtures[0]["home_team"] == "Kansas"
+        assert len(fixtures) == 2
+        completed = next(f for f in fixtures if f["home_team"] == "Duke")
+        pending = next(f for f in fixtures if f["home_team"] == "Kansas")
+        assert completed["completed"] is True
+        assert pending["completed"] is False
 
     @patch("pipeline.fetch_ncaam._team_map", {})
     @patch("pipeline.fetch_ncaam.requests.get")
@@ -416,14 +439,18 @@ class TestFetchNcaamGamesCache:
         }
         scoreboard_resp.raise_for_status = MagicMock()
 
-        # Only one HTTP request should be made (the scoreboard); no summary call
-        mock_get.side_effect = [scoreboard_resp]
+        empty_scoreboard_resp = MagicMock()
+        empty_scoreboard_resp.json.return_value = {"events": []}
+        empty_scoreboard_resp.raise_for_status = MagicMock()
+
+        # Two scoreboard requests (groups 50 and 100); no summary call.
+        mock_get.side_effect = [scoreboard_resp, empty_scoreboard_resp]
 
         games_df, box_df = fetch_ncaam_games(
             season=2025, dates=["2026-02-15"], cache_path=cache_path
         )
 
-        assert mock_get.call_count == 1
+        assert mock_get.call_count == 2
         assert len(games_df) == 1
         assert len(box_df) == 2
 
@@ -449,7 +476,11 @@ class TestFetchNcaamGamesCache:
         )
         summary_resp.raise_for_status = MagicMock()
 
-        mock_get.side_effect = [scoreboard_resp, summary_resp]
+        empty_scoreboard_resp = MagicMock()
+        empty_scoreboard_resp.json.return_value = {"events": []}
+        empty_scoreboard_resp.raise_for_status = MagicMock()
+
+        mock_get.side_effect = [scoreboard_resp, empty_scoreboard_resp, summary_resp]
 
         fetch_ncaam_games(season=2025, dates=["2026-02-15"], cache_path=cache_path)
 
@@ -490,10 +521,10 @@ class TestFetchNcaamGamesCache:
         empty_resp.json.return_value = {"events": []}
         empty_resp.raise_for_status = MagicMock()
 
-        # 5 dates from 2026-02-16 onward → 5 scoreboard requests
-        mock_get.side_effect = [empty_resp] * 5
+        # 5 dates from 2026-02-16 onward × 2 groups → 10 scoreboard requests
+        mock_get.side_effect = [empty_resp] * 10
 
         fetch_ncaam_games(season=2025, dates=all_dates, cache_path=cache_path)
 
-        # Only 5 scoreboard requests (2026-02-16 through 2026-02-20)
-        assert mock_get.call_count == 5
+        # Only dates 2026-02-16 through 2026-02-20 are fetched, but with 2 groups each.
+        assert mock_get.call_count == 10
