@@ -1199,6 +1199,35 @@ class TestOddsTracking:
         assert len(rows) == 1
         assert rows[0]["outcome"] == "home"
 
+
+class TestSlimegrinderSelection:
+    def test_skips_outcomes_with_invalid_american_odds(self):
+        from pipeline.run import _compute_slimegrinder
+
+        picks = _compute_slimegrinder(
+            [{
+                "home_team": "Duke",
+                "away_team": "UConn",
+                "date": "2026-03-29",
+                "edges": {
+                    "home": {
+                        "american_odds": None,
+                        "implied_prob": 0.5,
+                        "edge": 0.03,
+                        "expected_value": 0.02,
+                        "model_prob": 0.53,
+                        "decimal_odds": 1.0,
+                        "confidence_score": 70,
+                    }
+                },
+            }],
+            ["home", "away"],
+            min_expected_value=0.0,
+            confidence_floor=65.0,
+        )
+
+        assert picks == []
+
     def test_apply_latest_market_snapshots_sets_moneyline_and_total_clv(self):
         from pipeline.run import _apply_latest_market_snapshots
 

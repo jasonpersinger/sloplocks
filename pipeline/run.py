@@ -1259,7 +1259,9 @@ def _compute_slimegrinder(
             if not e:
                 continue
 
-            american = e.get("american_odds", 0)
+            american = e.get("american_odds")
+            if american is None:
+                continue
             if not (SLIMEGRINDER_MIN_ODDS <= american <= SLIMEGRINDER_MAX_ODDS):
                 continue
 
