@@ -222,6 +222,8 @@ SPORTS = {
         "run_environment_window": 12,
         "run_environment_min_games": 20,
         "weather_adjustment_max_delta": 0.02,
+        "lineup_adjustment_max_delta": 0.015,
+        "lineup_total_adjustment_max_delta": 0.35,
         "totals_feature_window": 12,
         "totals_feature_min_games": 20,
         "totals_min_expected_value": 0.0,

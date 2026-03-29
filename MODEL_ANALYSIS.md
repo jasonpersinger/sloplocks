@@ -352,6 +352,16 @@ Configured models live in `pipeline/config.py:138-160`.
   - MLB now supports a second real betting market besides moneyline sides.
   - The totals lane reuses the current run-environment, pitcher, bullpen, park, and weather work instead of requiring a separate product.
 
+#### 19. Added current-roster MLB lineup strength and platoon adjustments
+
+- What changed:
+  - Added ESPN roster fetching/caching plus active-hitter handedness summaries in `pipeline/fetch_mlb.py`.
+  - Added config-driven lineup adjustment caps in `pipeline/config.py`.
+  - Added roster-based side and totals adjustments in `pipeline/run.py` that use active hitter availability, injury count, and handedness mix versus the opposing probable starter.
+- Why it matters:
+  - The previous MLB live path knew the starter and the weather, but it still treated the batting side too generically at lock time.
+  - This adds a real pregame roster-health and platoon-composition signal without pretending ESPN gives a perfectly confirmed batting order.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -365,12 +375,11 @@ Configured models live in `pipeline/config.py:138-160`.
 
 Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
 
-### 2. Add confirmed lineup strength and platoon context to MLB
+### 2. Add confirmed batting-order quality and bullpen-role context to MLB
 
-The MLB stack now covers starters, bullpens, park context, handedness, and live weather, but it still lacks:
+The MLB stack now covers starters, bullpens, park context, handedness, live weather, and current roster platoon balance, but it still lacks:
 
-- confirmed batting-order strength
-- platoon-heavy lineup composition versus the opposing starter
+- confirmed batting-order quality rather than roster-level hitter availability
 - bullpen leverage role quality beyond simple aggregate workload
 - totals-specific bullpen availability and umpire context
 

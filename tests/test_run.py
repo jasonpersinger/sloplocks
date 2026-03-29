@@ -9,7 +9,14 @@ import os
 import pandas as pd
 import pytest
 from pipeline.config import SPORTS
-from pipeline.run import _apply_mlb_weather_adjustment, _main, run_pipeline, run_sport_pipeline
+from pipeline.run import (
+    _apply_mlb_lineup_adjustment,
+    _apply_mlb_lineup_total_adjustment,
+    _apply_mlb_weather_adjustment,
+    _main,
+    run_pipeline,
+    run_sport_pipeline,
+)
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -313,6 +320,28 @@ class TestRunMLBPipeline:
                 "home_pitcher_hand": "R",
                 "away_pitcher": "Bruins Starter",
                 "away_pitcher_hand": "L",
+                "home_lineup_profile": {
+                    "active_hitters": 13,
+                    "available_hitters": 13,
+                    "injured_hitters": 0,
+                    "left_handed_batters": 5,
+                    "right_handed_batters": 6,
+                    "switch_hitters": 2,
+                    "lefty_share": 0.3846,
+                    "righty_share": 0.4615,
+                    "switch_share": 0.1538,
+                },
+                "away_lineup_profile": {
+                    "active_hitters": 12,
+                    "available_hitters": 11,
+                    "injured_hitters": 1,
+                    "left_handed_batters": 2,
+                    "right_handed_batters": 8,
+                    "switch_hitters": 1,
+                    "lefty_share": 0.1818,
+                    "righty_share": 0.7273,
+                    "switch_share": 0.0909,
+                },
                 "weather": {
                     "weather_exposed": True,
                     "temperature_f": 82.0,
@@ -351,9 +380,11 @@ class TestRunMLBPipeline:
         assert "bullpen_features" in match["individual_models"]
         assert "run_environment" in match["individual_models"]
         assert "handedness_features" in match["individual_models"]
+        assert match["home_lineup_profile"]["active_hitters"] == 13
         assert match["weather"]["temperature_f"] == 82.0
         total_market = data["totals_matches"][0]
         assert total_market["total_line"] == 8.5
+        assert total_market["home_lineup_profile"]["available_hitters"] == 13
         assert total_market["pick"] in {"over", "under"}
         assert "over" in total_market["edges"]
 
@@ -374,6 +405,61 @@ class TestMlbWeatherAdjustment:
 
         assert adjusted["home"] > 0.54
         assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
+
+
+class TestMlbLineupAdjustment:
+    def test_healthy_platoon_friendly_home_lineup_gets_small_boost(self):
+        adjusted = _apply_mlb_lineup_adjustment(
+            {"home": 0.54, "away": 0.46},
+            {
+                "active_hitters": 13,
+                "available_hitters": 13,
+                "injured_hitters": 0,
+                "lefty_share": 0.42,
+                "righty_share": 0.42,
+                "switch_share": 0.16,
+            },
+            {
+                "active_hitters": 12,
+                "available_hitters": 10,
+                "injured_hitters": 2,
+                "lefty_share": 0.10,
+                "righty_share": 0.80,
+                "switch_share": 0.10,
+            },
+            home_pitcher_hand="R",
+            away_pitcher_hand="R",
+            max_delta=0.015,
+        )
+
+        assert adjusted["home"] > 0.54
+        assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
+
+    def test_lineup_adjustment_can_raise_total_for_live_bats(self):
+        adjusted = _apply_mlb_lineup_total_adjustment(
+            8.2,
+            {
+                "active_hitters": 13,
+                "available_hitters": 13,
+                "injured_hitters": 0,
+                "lefty_share": 0.40,
+                "righty_share": 0.44,
+                "switch_share": 0.16,
+            },
+            {
+                "active_hitters": 13,
+                "available_hitters": 12,
+                "injured_hitters": 0,
+                "lefty_share": 0.18,
+                "righty_share": 0.64,
+                "switch_share": 0.18,
+            },
+            home_pitcher_hand="L",
+            away_pitcher_hand="R",
+            max_runs_delta=0.35,
+        )
+
+        assert adjusted > 8.2
 
 
 # ---------------------------------------------------------------------------

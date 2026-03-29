@@ -71,14 +71,16 @@ def _season_date_range(season: int) -> list[str]:
 def _load_espn_cache(cache_path: str | None) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
-        return {"games": {}, "pitchers": {}, "weather": {}}
+        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}}
     with open(cache_path) as f:
         cache = _json.load(f)
     if not isinstance(cache, dict):
-        return {"games": {}, "pitchers": {}, "weather": {}}
+        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}}
     cache.setdefault("games", {})
     cache.setdefault("pitchers", {})
+    cache.setdefault("players", {})
     cache.setdefault("weather", {})
+    cache.setdefault("rosters", {})
     return cache
 
 
@@ -91,15 +93,15 @@ def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
         _json.dump(cache, f)
 
 
-def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
-    """Fetch and cache MLB pitcher handedness metadata from ESPN core API."""
+def _fetch_player_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
+    """Fetch and cache handedness metadata for an MLB player."""
     default = {"throws": None, "bats": None}
     if not player_id:
         return default
 
     cache_store = None
     if cache is not None:
-        cache_store = cache.setdefault("pitchers", {})
+        cache_store = cache.setdefault("players", {})
         cached = cache_store.get(str(player_id))
         if cached is not None:
             return cached
@@ -118,6 +120,94 @@ def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = Non
     }
     if cache_store is not None:
         cache_store[str(player_id)] = profile
+    return profile
+
+
+def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
+    """Fetch and cache MLB pitcher handedness metadata from ESPN core API."""
+    profile = _fetch_player_profile(player_id, cache)
+    if cache is not None and player_id:
+        cache.setdefault("pitchers", {})[str(player_id)] = profile
+    return profile
+
+
+def _fetch_team_lineup_profile(team_id: str | int | None, cache: dict | None = None) -> dict:
+    """Fetch and cache a coarse current-roster lineup profile for one MLB team."""
+    default = {
+        "active_hitters": 0,
+        "available_hitters": 0,
+        "injured_hitters": 0,
+        "left_handed_batters": 0,
+        "right_handed_batters": 0,
+        "switch_hitters": 0,
+        "lefty_share": 0.0,
+        "righty_share": 0.0,
+        "switch_share": 0.0,
+    }
+    if not team_id:
+        return default
+
+    cache_store = None
+    if cache is not None:
+        cache_store = cache.setdefault("rosters", {})
+        cached = cache_store.get(str(team_id))
+        if cached is not None:
+            return cached
+
+    url = f"{MLB_ESPN_BASE}/teams/{team_id}/roster"
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException:
+        return default
+
+    active_hitters = 0
+    injured_hitters = 0
+    available_hitters = 0
+    left_handed_batters = 0
+    right_handed_batters = 0
+    switch_hitters = 0
+
+    for group in data.get("athletes", []):
+        if not isinstance(group, dict) or group.get("position") == "Pitchers":
+            continue
+        for athlete in group.get("items", []):
+            if not isinstance(athlete, dict):
+                continue
+            status_type = athlete.get("status", {}).get("type")
+            injuries = athlete.get("injuries") or []
+            is_active = status_type == "active"
+            if is_active:
+                active_hitters += 1
+            if injuries:
+                injured_hitters += 1
+            if not is_active or injuries:
+                continue
+
+            available_hitters += 1
+            bats = _fetch_player_profile(athlete.get("id"), cache).get("bats")
+            if bats == "L":
+                left_handed_batters += 1
+            elif bats == "S":
+                switch_hitters += 1
+            else:
+                right_handed_batters += 1
+
+    denominator = max(1, available_hitters)
+    profile = {
+        "active_hitters": active_hitters,
+        "available_hitters": available_hitters,
+        "injured_hitters": injured_hitters,
+        "left_handed_batters": left_handed_batters,
+        "right_handed_batters": right_handed_batters,
+        "switch_hitters": switch_hitters,
+        "lefty_share": round(left_handed_batters / denominator, 4),
+        "righty_share": round(right_handed_batters / denominator, 4),
+        "switch_share": round(switch_hitters / denominator, 4),
+    }
+    if cache_store is not None:
+        cache_store[str(team_id)] = profile
     return profile
 
 
@@ -546,11 +636,15 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
                     away_pitcher_hand = profile.get("throws")
 
         start_time = comp.get("date", event.get("date"))
+        home_team_id = home["team"].get("id")
+        away_team_id = away["team"].get("id")
         weather = _fetch_ballpark_weather(
             normalize_mlb_team_name(home["team"]["displayName"]),
             start_time,
             cache,
         )
+        home_lineup_profile = _fetch_team_lineup_profile(home_team_id, cache)
+        away_lineup_profile = _fetch_team_lineup_profile(away_team_id, cache)
 
         fixtures.append({
             "home_team": normalize_mlb_team_name(home["team"]["displayName"]),
@@ -563,6 +657,8 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
             "home_pitcher_hand": home_pitcher_hand,
             "away_pitcher": away_pitcher,
             "away_pitcher_hand": away_pitcher_hand,
+            "home_lineup_profile": home_lineup_profile,
+            "away_lineup_profile": away_lineup_profile,
             "weather": weather,
         })
 

@@ -435,6 +435,78 @@ def _apply_mlb_weather_total_adjustment(
     return max(4.5, min(16.0, expected_total + delta))
 
 
+def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand: str | None) -> float:
+    """Score a current MLB roster profile for the handedness of today's matchup."""
+    if not lineup_profile:
+        return 0.0
+
+    lefty_share = float(lineup_profile.get("lefty_share", 0.0) or 0.0)
+    righty_share = float(lineup_profile.get("righty_share", 0.0) or 0.0)
+    switch_share = float(lineup_profile.get("switch_share", 0.0) or 0.0)
+    active_hitters = float(lineup_profile.get("active_hitters", 0.0) or 0.0)
+    available_hitters = float(lineup_profile.get("available_hitters", 0.0) or 0.0)
+    injured_hitters = float(lineup_profile.get("injured_hitters", 0.0) or 0.0)
+
+    pitcher_hand = (opposing_pitcher_hand or "R").upper()
+    if pitcher_hand == "L":
+        platoon_term = righty_share + (0.6 * switch_share) - 0.5
+    else:
+        platoon_term = lefty_share + (0.6 * switch_share) - 0.5
+
+    depth_term = max(-1.0, min(1.0, (available_hitters - 11.0) / 3.0))
+    availability_rate = 0.0
+    if active_hitters > 0:
+        availability_rate = max(-1.0, min(1.0, (available_hitters / active_hitters) - 1.0))
+    injury_term = max(-1.0, min(1.0, injured_hitters / 4.0))
+
+    return (0.65 * platoon_term) + (0.2 * depth_term) + (0.15 * availability_rate) - (0.2 * injury_term)
+
+
+def _apply_mlb_lineup_adjustment(
+    blended: dict[str, float],
+    home_lineup_profile: dict | None,
+    away_lineup_profile: dict | None,
+    home_pitcher_hand: str | None,
+    away_pitcher_hand: str | None,
+    max_delta: float = 0.015,
+) -> dict[str, float]:
+    """Apply a small MLB side adjustment from current roster platoon/health context."""
+    home_index = _compute_mlb_lineup_index(home_lineup_profile, away_pitcher_hand)
+    away_index = _compute_mlb_lineup_index(away_lineup_profile, home_pitcher_hand)
+    differential = home_index - away_index
+    if abs(differential) < 0.05:
+        return blended
+
+    delta = max(-max_delta, min(max_delta, differential * max_delta * 0.85))
+    if abs(delta) < 0.001:
+        return blended
+
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
+
+
+def _apply_mlb_lineup_total_adjustment(
+    expected_total: float,
+    home_lineup_profile: dict | None,
+    away_lineup_profile: dict | None,
+    home_pitcher_hand: str | None,
+    away_pitcher_hand: str | None,
+    max_runs_delta: float = 0.35,
+) -> float:
+    """Shift an MLB total modestly for current platoon-friendly or depleted rosters."""
+    home_index = _compute_mlb_lineup_index(home_lineup_profile, away_pitcher_hand)
+    away_index = _compute_mlb_lineup_index(away_lineup_profile, home_pitcher_hand)
+    combined = home_index + away_index
+    if abs(combined) < 0.05:
+        return expected_total
+
+    delta = max(-max_runs_delta, min(max_runs_delta, combined * max_runs_delta * 0.7))
+    return max(4.5, min(16.0, expected_total + delta))
+
+
 # ---------------------------------------------------------------------------
 # Blurb generation (via Claude API)
 # ---------------------------------------------------------------------------
@@ -1344,6 +1416,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 fix.get("weather"),
                 max_delta=sport.get("weather_adjustment_max_delta", 0.02),
             )
+            blended = _apply_mlb_lineup_adjustment(
+                blended,
+                fix.get("home_lineup_profile"),
+                fix.get("away_lineup_profile"),
+                fix.get("home_pitcher_hand"),
+                fix.get("away_pitcher_hand"),
+                max_delta=sport.get("lineup_adjustment_max_delta", 0.015),
+            )
         blended = apply_probability_calibration(
             blended,
             probability_calibrators,
@@ -1394,6 +1474,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "home_pitcher_hand": fix.get("home_pitcher_hand"),
             "away_pitcher": fix.get("away_pitcher"),
             "away_pitcher_hand": fix.get("away_pitcher_hand"),
+            "home_lineup_profile": fix.get("home_lineup_profile"),
+            "away_lineup_profile": fix.get("away_lineup_profile"),
             "weather": fix.get("weather"),
             "pick": pick,
             "model_prob": round(model_prob, 4),
@@ -1424,6 +1506,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 total_projection["expected_total"],
                 fix.get("weather"),
             )
+            total_projection["expected_total"] = _apply_mlb_lineup_total_adjustment(
+                total_projection["expected_total"],
+                fix.get("home_lineup_profile"),
+                fix.get("away_lineup_profile"),
+                fix.get("home_pitcher_hand"),
+                fix.get("away_pitcher_hand"),
+                max_runs_delta=sport.get("lineup_total_adjustment_max_delta", 0.35),
+            )
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(
                 1.0 - norm.cdf(
@@ -1450,6 +1540,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "completed": fix.get("completed", False),
                 "home_pitcher": fix.get("home_pitcher"),
                 "away_pitcher": fix.get("away_pitcher"),
+                "home_lineup_profile": fix.get("home_lineup_profile"),
+                "away_lineup_profile": fix.get("away_lineup_profile"),
                 "weather": fix.get("weather"),
                 "total_line": float(match_odds["total_line"]),
                 "expected_total": round(total_projection["expected_total"], 3),
