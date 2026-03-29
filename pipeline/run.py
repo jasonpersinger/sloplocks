@@ -692,6 +692,109 @@ def _compute_pick_stats(picks):
     return stats
 
 
+def _match_key(record: dict) -> tuple[str, str, str]:
+    """Return a stable key for one matchup record."""
+    return (
+        record["home_team"],
+        record["away_team"],
+        str(record.get("date", ""))[:10],
+    )
+
+
+def _build_pipeline_diagnostics(
+    matches: pd.DataFrame,
+    fixtures_fetched: list[dict],
+    fixtures_in_window: list[dict],
+    odds_list: list[dict],
+    odds_lookup: dict,
+    prediction_records: list[dict],
+    outcomes: list[str],
+    sport_key: str,
+    sport: dict,
+    slop_locks: list[dict],
+    longslop: dict | None,
+    slimegrinder: list[dict],
+) -> dict:
+    """Summarize why a slate did or did not produce picks."""
+    min_expected_value = sport.get("min_expected_value", 0.0)
+    edge_floor = sport.get("slop_lock_edge_threshold", 0.03)
+    probability_floor = sport.get("slop_lock_probability_floor", 0.45)
+
+    fixtures_with_odds = 0
+    for fixture in fixtures_in_window:
+        if _lookup_match_odds(odds_lookup, sport_key, fixture["home_team"], fixture["away_team"]):
+            fixtures_with_odds += 1
+
+    matches_with_market = 0
+    matches_with_positive_ev = set()
+    lock_eligible_matches = set()
+    lock_eligible_outcomes = 0
+
+    for record in prediction_records:
+        edges = record.get("edges") or {}
+        if edges:
+            matches_with_market += 1
+
+        has_positive_ev = False
+        has_lock_eligible_outcome = False
+        for outcome in outcomes:
+            edge_data = edges.get(outcome)
+            if not edge_data:
+                continue
+            edge_value = edge_data.get("edge", 0.0)
+            expected_value = edge_data.get("expected_value", 0.0)
+            model_prob = edge_data.get("model_prob", 0.0)
+
+            if edge_value > 0 and expected_value >= min_expected_value:
+                has_positive_ev = True
+            if (
+                edge_value >= edge_floor
+                and model_prob >= probability_floor
+                and expected_value >= min_expected_value
+            ):
+                has_lock_eligible_outcome = True
+                lock_eligible_outcomes += 1
+
+        key = _match_key(record)
+        if has_positive_ev:
+            matches_with_positive_ev.add(key)
+        if has_lock_eligible_outcome:
+            lock_eligible_matches.add(key)
+
+    completed_fixtures = sum(1 for fixture in fixtures_in_window if fixture.get("completed"))
+    diagnostics = {
+        "historical_matches": int(len(matches) if matches is not None else 0),
+        "fixtures_fetched": len(fixtures_fetched),
+        "fixtures_in_window": len(fixtures_in_window),
+        "fixtures_completed": completed_fixtures,
+        "fixtures_pending": len(fixtures_in_window) - completed_fixtures,
+        "odds_events_fetched": len(odds_list),
+        "fixtures_with_odds": fixtures_with_odds,
+        "fixtures_without_odds": len(fixtures_in_window) - fixtures_with_odds,
+        "matches_modeled": len(prediction_records),
+        "matches_with_market": matches_with_market,
+        "matches_with_positive_ev": len(matches_with_positive_ev),
+        "lock_eligible_matches": len(lock_eligible_matches),
+        "lock_eligible_outcomes": lock_eligible_outcomes,
+        "slop_locks_posted": len(slop_locks),
+        "longslop_posted": 1 if longslop else 0,
+        "slimegrinders_posted": len(slimegrinder),
+    }
+    diagnostics["summary"] = (
+        f"modeled={diagnostics['matches_modeled']} | "
+        f"odds={diagnostics['fixtures_with_odds']}/{diagnostics['fixtures_in_window']} | "
+        f"+ev={diagnostics['matches_with_positive_ev']} | "
+        f"eligible={diagnostics['lock_eligible_matches']} | "
+        f"locks={diagnostics['slop_locks_posted']}"
+    )
+    return diagnostics
+
+
+def _print_pipeline_diagnostics(sport_key: str, diagnostics: dict) -> None:
+    """Emit a concise per-sport diagnostics line for CLI / Actions logs."""
+    print(f"[{sport_key}] {diagnostics.get('summary', '')}")
+
+
 # ---------------------------------------------------------------------------
 # Per-sport pipeline
 # ---------------------------------------------------------------------------
@@ -907,6 +1010,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         today_utc.strftime("%Y-%m-%d"),
         (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
     }
+    fixtures_fetched = list(fixtures)
     fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] in allowed_dates]
 
     prediction_records = []
@@ -1284,6 +1388,20 @@ def run_sport_pipeline(sport_key, output_dir=None):
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
         "pick_stats": pick_stats,
     }
+    predictions_output["diagnostics"] = _build_pipeline_diagnostics(
+        matches=matches,
+        fixtures_fetched=fixtures_fetched,
+        fixtures_in_window=fixtures,
+        odds_list=odds_list,
+        odds_lookup=odds_lookup,
+        prediction_records=prediction_records,
+        outcomes=outcomes,
+        sport_key=sport_key,
+        sport=sport,
+        slop_locks=slop_locks,
+        longslop=longslop,
+        slimegrinder=slimegrinder,
+    )
     _save_json(predictions_path, predictions_output)
 
     # Deduplicate: only add prediction_records not already in history
@@ -1305,6 +1423,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
     _save_json(history_path, history_output)
 
     _save_json(accuracy_path, accuracy_log)
+
+    _print_pipeline_diagnostics(sport_key, predictions_output["diagnostics"])
 
     return predictions_output
 
@@ -1333,11 +1453,12 @@ def run_pipeline(output_dir=None):
     for sport_key in SPORTS:
         sport_dir = os.path.join(base_dir, sport_key) if output_dir else None
         try:
-            run_sport_pipeline(sport_key, output_dir=sport_dir)
+            sport_output = run_sport_pipeline(sport_key, output_dir=sport_dir)
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
                 "status": "ok",
                 "updated_at": now,
+                "diagnostics": sport_output.get("diagnostics", {}),
             }
         except Exception as exc:
             manifest["sports"][sport_key] = {

@@ -143,6 +143,13 @@ class TestRunNBAPipeline:
         assert set(match["model_probs"].keys()) == {"home", "away"}
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
 
+        diagnostics = data["diagnostics"]
+        assert diagnostics["fixtures_fetched"] == 1
+        assert diagnostics["fixtures_in_window"] == 1
+        assert diagnostics["odds_events_fetched"] == 1
+        assert diagnostics["fixtures_with_odds"] == 1
+        assert diagnostics["matches_modeled"] >= 1
+
         # Season stats should not have draw fields
         stats = data["season_stats"]
         assert "draws" not in stats
@@ -195,6 +202,8 @@ class TestRunMMAPipeline:
         assert data["sport"] == "mma"
         assert data["outcomes"] == ["home", "away"]
         assert data["matches"][0]["start_time"] == f"{_TODAY}T03:00:00Z"
+        assert data["diagnostics"]["fixtures_fetched"] == 1
+        assert data["diagnostics"]["fixtures_with_odds"] == 1
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
 
@@ -294,6 +303,8 @@ class TestRunPipeline:
         assert "ncaam" in manifest["sports"]
         assert manifest["sports"]["nba"]["status"] == "ok"
         assert manifest["sports"]["ncaam"]["status"] == "ok"
+        assert "diagnostics" in manifest["sports"]["nba"]
+        assert "diagnostics" in manifest["sports"]["ncaam"]
 
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
