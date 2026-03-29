@@ -100,6 +100,16 @@ def _lookup_match_odds(odds_lookup: dict, sport_key: str, home_team: str, away_t
     return None
 
 
+def _resolve_start_time(fixture: dict, match_odds: dict | None) -> str | None:
+    """Return the best available start time for a fixture."""
+    start_time = fixture.get("start_time")
+    if start_time:
+        return start_time
+    if match_odds:
+        return match_odds.get("commence_time")
+    return None
+
+
 _RESULTS_LOG_FIELDS = [
     "logged_at",
     "sport",
@@ -497,6 +507,7 @@ def _compute_slop_locks(
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
                     "date": rec["date"],
+                    "start_time": rec.get("start_time"),
                     "matchday": rec.get("matchday"),
                     "pick": outcome,
                     "model_prob": round(prob, 4),
@@ -572,6 +583,7 @@ def _compute_longslop(
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
                     "date": rec["date"],
+                    "start_time": rec.get("start_time"),
                     "matchday": rec.get("matchday"),
                     "pick": outcome,
                     "model_prob": round(prob, 4),
@@ -626,6 +638,7 @@ def _compute_slimegrinder(
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
                     "date": rec["date"],
+                    "start_time": rec.get("start_time"),
                     "matchday": rec.get("matchday"),
                     "pick": outcome,
                     "model_prob": round(prob, 4),
@@ -1035,6 +1048,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "home_team": home,
             "away_team": away,
             "date": fix["date"],
+            "start_time": _resolve_start_time(fix, match_odds),
             "matchday": fix.get("matchday"),
             "completed": fix.get("completed", False),
             "neutral": is_neutral,

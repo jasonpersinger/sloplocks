@@ -352,6 +352,7 @@ def fetch_mlb_schedule() -> list[dict]:
             "home_team": normalize_mlb_team_name(home["team"]["displayName"]),
             "away_team": normalize_mlb_team_name(away["team"]["displayName"]),
             "date": game_date_str,
+            "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
             "home_pitcher": home_pitcher,

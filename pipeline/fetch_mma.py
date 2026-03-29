@@ -201,6 +201,7 @@ def fetch_mma_schedule() -> list[dict]:
                 "home_team": _competitor_display_name(home),
                 "away_team": _competitor_display_name(away),
                 "date": date_str,
+                "start_time": comp.get("date", event.get("date")),
                 "completed": is_completed,
                 "neutral": True, # Fights are always neutral site effectively
             })

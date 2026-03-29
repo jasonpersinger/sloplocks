@@ -272,6 +272,23 @@
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase();
   }
 
+  function formatWhen(startTime, fallbackDate) {
+    if (startTime) {
+      var stamp = new Date(startTime);
+      if (!isNaN(stamp.getTime())) {
+        return stamp.toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+          timeZone: 'America/New_York'
+        }).toUpperCase() + ' ET';
+      }
+    }
+    return formatDate(fallbackDate);
+  }
+
   var SPORT_LABELS = { nba: 'NBA', ncaam: 'NCAAM', mlb: 'MLB', mma: 'MMA' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
@@ -311,7 +328,7 @@
     var head = document.createElement('div');
     head.className = 'card-head';
     head.innerHTML =
-      '<span class="label">[' + formatSportLabel(pick.sport) + ' // ' + formatDate(pick.date) + ']</span>' +
+      '<span class="label">[' + formatSportLabel(pick.sport) + ' // ' + formatWhen(pick.start_time, pick.date) + ']</span>' +
       '<span class="label">ODDS ' + formatOdds(pick.american_odds) + '</span>';
     box.appendChild(head);
 

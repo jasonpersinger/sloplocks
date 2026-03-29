@@ -433,6 +433,7 @@ def fetch_ncaam_schedule() -> list[dict]:
             "away_team": normalize_ncaam_team_name(away["team"]["displayName"]),
             # Use the local scoreboard date, not event["date"] (UTC timestamp)
             "date": game_date_str,
+            "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
         })

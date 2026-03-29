@@ -110,6 +110,7 @@ class TestRunNBAPipeline:
                 "home_team": "Lakers",
                 "away_team": "Warriors",
                 "date": _TODAY,
+                "start_time": f"{_TODAY}T00:30:00Z",
             }
         ]
         mock_odds.return_value = [
@@ -137,6 +138,7 @@ class TestRunNBAPipeline:
         assert len(data["matches"]) >= 1
 
         match = data["matches"][0]
+        assert match["start_time"] == f"{_TODAY}T00:30:00Z"
         assert "draw" not in match["model_probs"]
         assert set(match["model_probs"].keys()) == {"home", "away"}
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
@@ -167,6 +169,7 @@ class TestRunMMAPipeline:
                 "home_team": "Fighter A",
                 "away_team": "Fighter C",
                 "date": _TODAY,
+                "start_time": f"{_TODAY}T03:00:00Z",
                 "neutral": True,
             }
         ]
@@ -191,6 +194,7 @@ class TestRunMMAPipeline:
 
         assert data["sport"] == "mma"
         assert data["outcomes"] == ["home", "away"]
+        assert data["matches"][0]["start_time"] == f"{_TODAY}T03:00:00Z"
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
 

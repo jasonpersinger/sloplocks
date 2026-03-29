@@ -17,6 +17,7 @@ def _base_match(**overrides):
         "home_team": "Lakers",
         "away_team": "Celtics",
         "date": "2026-03-28",
+        "start_time": "2026-03-28T23:00:00Z",
         "pick": "home",
         "model_prob": 0.62,
         "confidence_score": 74,
@@ -46,6 +47,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
         "home_team": "Lakers",
         "away_team": "Celtics",
         "date": "2026-03-28",
+        "start_time": "2026-03-28T23:00:00Z",
         "pick": "home",
         "model_prob": 0.62,
         "edge": 0.061,
@@ -90,6 +92,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
         "home_team": "Dodgers",
         "away_team": "Padres",
         "date": "2026-03-28",
+        "start_time": "2026-03-29T02:00:00Z",
         "pick": "away",
     }
     _write_predictions(
@@ -115,6 +118,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "EV 0.17u" in full_text
     assert "Kelly 4.1%" in full_text
     assert "Pitchers: Cease vs Yamamoto" in full_text
+    assert "Mar 28 07:00 PM ET" in full_text
 
 
 def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
@@ -128,6 +132,7 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
                 _base_match(
                     home_team="Jon Jones",
                     away_team="Tom Aspinall",
+                    start_time="2026-03-29T03:00:00Z",
                     confidence_score=71,
                     model_prob=0.64,
                     american_odds=-135,
@@ -146,6 +151,7 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     assert "radar spot" in payload["content"]
     assert "MODEL RADAR" in full_text
     assert "Jon Jones" in full_text
+    assert "Mar 28 11:00 PM ET" in full_text
 
 
 def test_build_payload_handles_empty_day(monkeypatch, tmp_path):

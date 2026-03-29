@@ -38,8 +38,15 @@ MAX_RADAR_FIELDS = 5
 _ET_OFFSET_SPORTS = {"nba", "ncaam"}
 
 
-def _display_date(date_str: str, sport_key: str) -> str:
-    """Return a human-readable date, correcting for UTC->ET shift on NBA/NCAAM."""
+def _display_when(start_time: str | None, date_str: str, sport_key: str) -> str:
+    """Return a human-readable ET date/time with a date-only fallback."""
+    if start_time:
+        try:
+            stamp = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+            return stamp.astimezone(ZoneInfo("America/New_York")).strftime("%b %d %I:%M %p ET")
+        except ValueError:
+            pass
+
     if not date_str:
         return ""
     game_date = datetime.strptime(date_str[:10], "%Y-%m-%d").date()
@@ -150,6 +157,8 @@ def _enrich_item(item: dict, sport_key: str, source: str, match: dict | None = N
         enriched["home_pitcher"] = match.get("home_pitcher")
     if enriched.get("away_pitcher") is None:
         enriched["away_pitcher"] = match.get("away_pitcher")
+    if enriched.get("start_time") is None:
+        enriched["start_time"] = match.get("start_time")
 
     return enriched
 
@@ -245,10 +254,10 @@ def _lock_field(item: dict, sport_key: str) -> dict:
     """Build one Discord embed field for a pick or radar matchup."""
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick = _pick_team(item)
-    date = _display_date(item.get("date", ""), sport_key)
+    when = _display_when(item.get("start_time"), item.get("date", ""), sport_key)
     conf_score = item.get("confidence_score", 0) or 0
 
-    name = f"{emoji}  {item['home_team']} vs {item['away_team']}  ·  {date}{_status_label(item)}"
+    name = f"{emoji}  {item['home_team']} vs {item['away_team']}  ·  {when}{_status_label(item)}"
 
     parts = [
         f"**{pick}**  ·  {_fmt_odds(item.get('american_odds'))}",
