@@ -303,6 +303,15 @@
     if (v == null) return '--';
     return (v >= 0 ? '+' : '') + (v * 100).toFixed(1) + '%';
   }
+  function confidenceText(score, stars) {
+    if (score != null && score !== '') {
+      return Math.round(Number(score)) + '/100';
+    }
+    if (stars != null && stars !== '') {
+      return Math.round(Number(stars) * 20) + '/100';
+    }
+    return '--';
+  }
   function formatStamp(stamp) {
     if (!stamp) return '--';
     var d = new Date(stamp);
@@ -359,7 +368,7 @@
     footer.className = 'footer-grid';
     footer.innerHTML =
       '<span><span class="label">' + (isTotal ? 'PROJ' : 'EV') + '</span> ' + (isTotal ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--') : units(pick.expected_value)) + '</span>' +
-      '<span><span class="label">CONF</span> ' + (pick.confidence_score != null ? pick.confidence_score + '/100' : '--') + '</span>' +
+      '<span><span class="label">CONF</span> ' + confidenceText(pick.confidence_score, pick.confidence_stars) + '</span>' +
       '<span><span class="label">KELLY</span> ' + (pick.fractional_kelly != null ? (pick.fractional_kelly * 100).toFixed(1) + '%' : '--') + '</span>';
     box.appendChild(footer);
 

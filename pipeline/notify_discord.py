@@ -70,6 +70,13 @@ def _fmt_pct(probability: float | None) -> str:
     return f"{probability * 100:.1f}%"
 
 
+def _fmt_confidence(score: float | None) -> str:
+    """Format confidence consistently for embeds."""
+    if score is None:
+        return "--"
+    return str(int(round(float(score))))
+
+
 def _fmt_units(value: float | None) -> str:
     if value is None:
         return "N/A"
@@ -245,6 +252,10 @@ def _diagnostic_field(sport_key: str, data: dict) -> dict | None:
 def _status_label(item: dict) -> str:
     if item.get("source") == "longslop":
         return " 🎯 **LONGSLOP**"
+    if item.get("source") == "slop_lock":
+        return " 🔒 **SLOP LOCK**"
+    if item.get("source") == "total_lock":
+        return " 📈 **TOTAL LOCK**"
 
     conf_score = item.get("confidence_score", 0) or 0
     if conf_score >= 85:
@@ -288,8 +299,6 @@ def _lock_field(item: dict, sport_key: str) -> dict:
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick = _pick_team(item)
     when = _display_when(item.get("start_time"), item.get("date", ""), sport_key)
-    conf_score = item.get("confidence_score", 0) or 0
-
     name = f"{emoji}  {item['home_team']} vs {item['away_team']}  ·  {when}{_status_label(item)}"
 
     parts = [
@@ -302,7 +311,7 @@ def _lock_field(item: dict, sport_key: str) -> dict:
         parts.append(f"{item['edge'] * 100:+.1f}% edge")
 
     value = "  ·  ".join(parts)
-    value += f"\nConfidence: **{conf_score}/100**  ·  {_pick_subtitle(item)}"
+    value += f"\nConfidence: **{_fmt_confidence(item.get('confidence_score'))}/100**  ·  {_pick_subtitle(item)}"
 
     pitcher_note = _pitcher_note(item)
     if pitcher_note:

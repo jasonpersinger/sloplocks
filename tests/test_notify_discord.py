@@ -144,6 +144,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "SLATE DIAGNOSTICS" in full_text
     assert "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1" in full_text
     assert "totals=1" in full_text
+    assert "SLOP LOCK" in full_text
 
 
 def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
