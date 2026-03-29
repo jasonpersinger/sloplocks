@@ -960,6 +960,138 @@ def bullpen_matchup_predict(model, home_team, away_team):
 
 
 # ---------------------------------------------------------------------------
+# MLB handedness matchup model
+# ---------------------------------------------------------------------------
+
+class HandednessMatchupModel:
+    """Two-way logistic model using team offense splits versus pitcher hand."""
+
+    def __init__(self, games, feature_window=18, min_games=20):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_runs_split_diff",
+            "recent_runs_split_diff",
+            "season_margin_split_diff",
+            "recent_margin_split_diff",
+        ]
+        self._fit(games)
+
+    def _split_features(self, logs, pitcher_hand):
+        if not logs:
+            return {
+                "season_runs": 4.4,
+                "recent_runs": 4.4,
+                "season_margin": 0.0,
+                "recent_margin": 0.0,
+            }
+
+        split_logs = [item for item in logs if item.get("opponent_hand") == pitcher_hand]
+        if not split_logs:
+            split_logs = list(logs)
+        recent = split_logs[-self.feature_window :]
+
+        def _avg(items, key, default):
+            return float(sum(item[key] for item in items) / len(items)) if items else default
+
+        return {
+            "season_runs": _avg(split_logs, "runs", 4.4),
+            "recent_runs": _avg(recent, "runs", 4.4),
+            "season_margin": _avg(split_logs, "margin", 0.0),
+            "recent_margin": _avg(recent, "margin", 0.0),
+        }
+
+    def _feature_vector(self, home_logs, away_logs, home_pitcher_hand, away_pitcher_hand):
+        home = self._split_features(home_logs, away_pitcher_hand)
+        away = self._split_features(away_logs, home_pitcher_hand)
+        return np.array([
+            home["season_runs"] - away["season_runs"],
+            home["recent_runs"] - away["recent_runs"],
+            home["season_margin"] - away["season_margin"],
+            home["recent_margin"] - away["recent_margin"],
+        ])
+
+    def _fit(self, games):
+        required = {
+            "home_team", "away_team", "home_goals", "away_goals",
+            "home_pitcher_hand", "away_pitcher_hand",
+        }
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            home_hand = row.get("home_pitcher_hand") or "R"
+            away_hand = row.get("away_pitcher_hand") or "R"
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+
+            X.append(self._feature_vector(
+                team_logs.get(home_team, []),
+                team_logs.get(away_team, []),
+                home_hand,
+                away_hand,
+            ))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            home_margin = int(row["home_goals"]) - int(row["away_goals"])
+            away_margin = -home_margin
+            team_logs.setdefault(home_team, []).append({
+                "runs": float(row["home_goals"]),
+                "margin": float(home_margin),
+                "opponent_hand": away_hand,
+            })
+            team_logs.setdefault(away_team, []).append({
+                "runs": float(row["away_goals"]),
+                "margin": float(away_margin),
+                "opponent_hand": home_hand,
+            })
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_team, away_team, home_pitcher_hand=None, away_pitcher_hand=None):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+            home_pitcher_hand or "R",
+            away_pitcher_hand or "R",
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def handedness_matchup_predict(model, home_team, away_team, home_pitcher_hand=None, away_pitcher_hand=None):
+    """Predict two-way probabilities from the MLB handedness matchup model."""
+    return model.predict(
+        home_team,
+        away_team,
+        home_pitcher_hand=home_pitcher_hand,
+        away_pitcher_hand=away_pitcher_hand,
+    )
+
+
+# ---------------------------------------------------------------------------
 # MLB run-environment model
 # ---------------------------------------------------------------------------
 

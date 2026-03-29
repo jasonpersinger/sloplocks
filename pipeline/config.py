@@ -23,6 +23,8 @@ NCAAM_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens
 NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
 MMA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc"
+MLB_CORE_API_BASE = "https://sports.core.api.espn.com/v2/sports/baseball/leagues/mlb"
+OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast"
 
 # MLB park factors are coarse run-environment multipliers keyed by ESPN short
 # team names. 1.00 is neutral; above 1.00 boosts offense slightly.
@@ -57,6 +59,39 @@ MLB_PARK_FACTORS = {
     "Twins": 1.01,
     "White Sox": 1.03,
     "Yankees": 1.02,
+}
+
+MLB_BALLPARKS = {
+    "Angels": {"latitude": 33.8003, "longitude": -117.8827, "weather_exposed": True},
+    "Astros": {"latitude": 29.7573, "longitude": -95.3555, "weather_exposed": False},
+    "Athletics": {"latitude": 38.5804, "longitude": -121.5139, "weather_exposed": True},
+    "Blue Jays": {"latitude": 43.6414, "longitude": -79.3894, "weather_exposed": False},
+    "Braves": {"latitude": 33.8907, "longitude": -84.4677, "weather_exposed": True},
+    "Brewers": {"latitude": 43.0280, "longitude": -87.9712, "weather_exposed": False},
+    "Cardinals": {"latitude": 38.6226, "longitude": -90.1928, "weather_exposed": True},
+    "Cubs": {"latitude": 41.9484, "longitude": -87.6553, "weather_exposed": True},
+    "D-backs": {"latitude": 33.4453, "longitude": -112.0667, "weather_exposed": False},
+    "Dodgers": {"latitude": 34.0739, "longitude": -118.2400, "weather_exposed": True},
+    "Giants": {"latitude": 37.7786, "longitude": -122.3893, "weather_exposed": True},
+    "Guardians": {"latitude": 41.4962, "longitude": -81.6852, "weather_exposed": True},
+    "Mariners": {"latitude": 47.5914, "longitude": -122.3326, "weather_exposed": False},
+    "Marlins": {"latitude": 25.7781, "longitude": -80.2197, "weather_exposed": False},
+    "Mets": {"latitude": 40.7571, "longitude": -73.8458, "weather_exposed": True},
+    "Nationals": {"latitude": 38.8730, "longitude": -77.0074, "weather_exposed": True},
+    "Orioles": {"latitude": 39.2838, "longitude": -76.6217, "weather_exposed": True},
+    "Padres": {"latitude": 32.7073, "longitude": -117.1573, "weather_exposed": True},
+    "Phillies": {"latitude": 39.9061, "longitude": -75.1665, "weather_exposed": True},
+    "Pirates": {"latitude": 40.4469, "longitude": -80.0057, "weather_exposed": True},
+    "Rangers": {"latitude": 32.7513, "longitude": -97.0825, "weather_exposed": False},
+    "Rays": {"latitude": 27.7682, "longitude": -82.6534, "weather_exposed": False},
+    "Red Sox": {"latitude": 42.3467, "longitude": -71.0972, "weather_exposed": True},
+    "Reds": {"latitude": 39.0979, "longitude": -84.5083, "weather_exposed": True},
+    "Rockies": {"latitude": 39.7562, "longitude": -104.9942, "weather_exposed": True},
+    "Royals": {"latitude": 39.0517, "longitude": -94.4803, "weather_exposed": True},
+    "Tigers": {"latitude": 42.3390, "longitude": -83.0485, "weather_exposed": True},
+    "Twins": {"latitude": 44.9817, "longitude": -93.2776, "weather_exposed": True},
+    "White Sox": {"latitude": 41.8300, "longitude": -87.6338, "weather_exposed": True},
+    "Yankees": {"latitude": 40.8296, "longitude": -73.9262, "weather_exposed": True},
 }
 
 # Model parameters
@@ -171,7 +206,7 @@ SPORTS = {
         "display_name": "MLB",
         "odds_sport": "baseball_mlb",
         "outcomes": ["home", "away"],
-        "models": ["elo", "results_features", "pitcher_features", "bullpen_features", "run_environment"],
+        "models": ["elo", "results_features", "pitcher_features", "bullpen_features", "run_environment", "handedness_features"],
         "accuracy_softmax_temperature": 1.5,
         "probability_calibration_min_samples": 20,
         "probability_calibration_blend": 0.35,
@@ -182,8 +217,11 @@ SPORTS = {
         "bullpen_feature_window": 12,
         "bullpen_recent_usage_window": 5,
         "bullpen_feature_min_games": 20,
+        "handedness_feature_window": 18,
+        "handedness_feature_min_games": 20,
         "run_environment_window": 12,
         "run_environment_min_games": 20,
+        "weather_adjustment_max_delta": 0.02,
         "results_feature_window": 12,
         "results_feature_min_games": 50,
         "recent_form_window": 10,

@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import requests
 
-from pipeline.config import MLB_ESPN_BASE, SPORTS
+from pipeline.config import MLB_BALLPARKS, MLB_CORE_API_BASE, MLB_ESPN_BASE, OPEN_METEO_BASE, SPORTS
 
 _REQUEST_DELAY = 0.5
 
@@ -71,9 +71,15 @@ def _season_date_range(season: int) -> list[str]:
 def _load_espn_cache(cache_path: str | None) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
-        return {"games": {}}
+        return {"games": {}, "pitchers": {}, "weather": {}}
     with open(cache_path) as f:
-        return _json.load(f)
+        cache = _json.load(f)
+    if not isinstance(cache, dict):
+        return {"games": {}, "pitchers": {}, "weather": {}}
+    cache.setdefault("games", {})
+    cache.setdefault("pitchers", {})
+    cache.setdefault("weather", {})
+    return cache
 
 
 def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
@@ -83,6 +89,110 @@ def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
     os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
     with open(cache_path, "w") as f:
         _json.dump(cache, f)
+
+
+def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
+    """Fetch and cache MLB pitcher handedness metadata from ESPN core API."""
+    default = {"throws": None, "bats": None}
+    if not player_id:
+        return default
+
+    cache_store = None
+    if cache is not None:
+        cache_store = cache.setdefault("pitchers", {})
+        cached = cache_store.get(str(player_id))
+        if cached is not None:
+            return cached
+
+    url = f"{MLB_CORE_API_BASE}/athletes/{player_id}"
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException:
+        return default
+
+    profile = {
+        "throws": data.get("throws", {}).get("abbreviation"),
+        "bats": data.get("bats", {}).get("abbreviation"),
+    }
+    if cache_store is not None:
+        cache_store[str(player_id)] = profile
+    return profile
+
+
+def _weather_cache_key(home_team: str, start_time: str | None) -> str:
+    """Build a stable weather-cache key for one MLB fixture."""
+    return f"{home_team}|{str(start_time or '')[:13]}"
+
+
+def _fetch_ballpark_weather(home_team: str, start_time: str | None, cache: dict | None = None) -> dict:
+    """Fetch hourly Open-Meteo weather for an MLB ballpark at first pitch."""
+    park = MLB_BALLPARKS.get(home_team)
+    if not park:
+        return {}
+
+    weather_exposed = bool(park.get("weather_exposed", True))
+    if not weather_exposed:
+        return {
+            "weather_exposed": False,
+            "temperature_f": None,
+            "wind_mph": None,
+            "precipitation_probability": None,
+        }
+
+    key = _weather_cache_key(home_team, start_time)
+    cache_store = None
+    if cache is not None:
+        cache_store = cache.setdefault("weather", {})
+        cached = cache_store.get(key)
+        if cached is not None:
+            return cached
+
+    try:
+        event_dt = datetime.fromisoformat(str(start_time).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return {"weather_exposed": True}
+
+    try:
+        resp = requests.get(
+            OPEN_METEO_BASE,
+            params={
+                "latitude": park["latitude"],
+                "longitude": park["longitude"],
+                "hourly": "temperature_2m,wind_speed_10m,precipitation_probability",
+                "forecast_days": 2,
+                "timezone": "UTC",
+            },
+            timeout=30,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException:
+        return {"weather_exposed": True}
+
+    hourly = data.get("hourly", {})
+    times = hourly.get("time", [])
+    if not times:
+        return {"weather_exposed": True}
+
+    target_hour = event_dt.replace(minute=0, second=0, microsecond=0)
+    best_index = min(
+        range(len(times)),
+        key=lambda idx: abs(
+            datetime.fromisoformat(times[idx]).replace(tzinfo=timezone.utc) - target_hour
+        ),
+    )
+
+    weather = {
+        "weather_exposed": True,
+        "temperature_f": round((float(hourly.get("temperature_2m", [0])[best_index]) * 9.0 / 5.0) + 32.0, 1),
+        "wind_mph": round(float(hourly.get("wind_speed_10m", [0])[best_index]) * 0.621371, 1),
+        "precipitation_probability": int(round(float(hourly.get("precipitation_probability", [0])[best_index]))),
+    }
+    if cache_store is not None:
+        cache_store[key] = weather
+    return weather
 
 
 def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 3) -> list[str]:
@@ -201,6 +311,7 @@ def _extract_mlb_team_pitching(summary_data: dict) -> dict[str, dict]:
         if starter is not None:
             stats = starter.get("stats", [])
             starter_stats = {
+                "id": starter.get("athlete", {}).get("id"),
                 "name": starter.get("athlete", {}).get("displayName", "TBD"),
                 "innings_pitched": _innings_to_float(stats[0] if len(stats) > 0 else 0.0),
                 "hits_allowed": _safe_stat_int(stats[1] if len(stats) > 1 else 0),
@@ -285,6 +396,8 @@ def fetch_mlb_games(
                     "away_pitcher": existing.get("away_pitcher", "TBD"),
                     "home_pitcher_stats": existing.get("home_pitcher_stats", {}),
                     "away_pitcher_stats": existing.get("away_pitcher_stats", {}),
+                    "home_pitcher_hand": existing.get("home_pitcher_hand"),
+                    "away_pitcher_hand": existing.get("away_pitcher_hand"),
                     "home_bullpen_stats": existing.get("home_bullpen_stats", {}),
                     "away_bullpen_stats": existing.get("away_bullpen_stats", {}),
                 }
@@ -315,10 +428,14 @@ def fetch_mlb_games(
             away_pitching = team_pitching.get(away_team, {})
             home_starter = home_pitching.get("starter", {"name": entry.get("home_pitcher", "TBD")})
             away_starter = away_pitching.get("starter", {"name": entry.get("away_pitcher", "TBD")})
+            home_profile = _fetch_pitcher_profile(home_starter.get("id"), cache)
+            away_profile = _fetch_pitcher_profile(away_starter.get("id"), cache)
             entry["home_pitcher"] = home_starter.get("name", "TBD")
             entry["away_pitcher"] = away_starter.get("name", "TBD")
-            entry["home_pitcher_stats"] = {k: v for k, v in home_starter.items() if k != "name"}
-            entry["away_pitcher_stats"] = {k: v for k, v in away_starter.items() if k != "name"}
+            entry["home_pitcher_stats"] = {k: v for k, v in home_starter.items() if k not in {"name", "id"}}
+            entry["away_pitcher_stats"] = {k: v for k, v in away_starter.items() if k not in {"name", "id"}}
+            entry["home_pitcher_hand"] = home_profile.get("throws")
+            entry["away_pitcher_hand"] = away_profile.get("throws")
             entry["home_bullpen_stats"] = home_pitching.get("bullpen", {})
             entry["away_bullpen_stats"] = away_pitching.get("bullpen", {})
         time.sleep(_REQUEST_DELAY)
@@ -336,6 +453,8 @@ def fetch_mlb_games(
             "away_goals": entry["away_goals"],
             "home_pitcher": entry.get("home_pitcher", "TBD"),
             "away_pitcher": entry.get("away_pitcher", "TBD"),
+            "home_pitcher_hand": entry.get("home_pitcher_hand"),
+            "away_pitcher_hand": entry.get("away_pitcher_hand"),
             "home_pitcher_ip": entry.get("home_pitcher_stats", {}).get("innings_pitched", 0.0),
             "home_pitcher_runs_allowed": entry.get("home_pitcher_stats", {}).get("runs_allowed", 0),
             "home_pitcher_earned_runs": entry.get("home_pitcher_stats", {}).get("earned_runs", 0),
@@ -363,6 +482,7 @@ def fetch_mlb_games(
         columns=[
             "game_id", "date", "home_team", "away_team", "home_goals", "away_goals",
             "home_pitcher", "away_pitcher",
+            "home_pitcher_hand", "away_pitcher_hand",
             "home_pitcher_ip", "home_pitcher_runs_allowed", "home_pitcher_earned_runs",
             "home_pitcher_walks", "home_pitcher_strikeouts",
             "home_bullpen_ip", "home_bullpen_runs_allowed", "home_bullpen_earned_runs",
@@ -376,8 +496,9 @@ def fetch_mlb_games(
     return games_df, None # Box scores not yet implemented for MLB
 
 
-def fetch_mlb_schedule() -> list[dict]:
+def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
     """Fetch today's MLB games including probable pitchers."""
+    cache = _load_espn_cache(cache_path)
     et_offset = timedelta(hours=5)
     today_et = (datetime.now(timezone.utc) - et_offset).date()
     game_date_str = today_et.strftime("%Y-%m-%d")
@@ -409,24 +530,41 @@ def fetch_mlb_schedule() -> list[dict]:
         # MLB specific: probable pitchers
         home_pitcher = "TBD"
         away_pitcher = "TBD"
+        home_pitcher_hand = None
+        away_pitcher_hand = None
         for competitor in comp.get("competitors", []):
             prob = competitor.get("probables")
             if prob:
+                player_id = prob[0].get("playerId") or prob[0].get("athlete", {}).get("id")
                 p_name = prob[0].get("athlete", {}).get("displayName", "TBD")
+                profile = _fetch_pitcher_profile(player_id, cache)
                 if competitor.get("homeAway") == "home":
                     home_pitcher = p_name
+                    home_pitcher_hand = profile.get("throws")
                 elif competitor.get("homeAway") == "away":
                     away_pitcher = p_name
+                    away_pitcher_hand = profile.get("throws")
+
+        start_time = comp.get("date", event.get("date"))
+        weather = _fetch_ballpark_weather(
+            normalize_mlb_team_name(home["team"]["displayName"]),
+            start_time,
+            cache,
+        )
 
         fixtures.append({
             "home_team": normalize_mlb_team_name(home["team"]["displayName"]),
             "away_team": normalize_mlb_team_name(away["team"]["displayName"]),
             "date": game_date_str,
-            "start_time": comp.get("date", event.get("date")),
+            "start_time": start_time,
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
             "home_pitcher": home_pitcher,
+            "home_pitcher_hand": home_pitcher_hand,
             "away_pitcher": away_pitcher,
+            "away_pitcher_hand": away_pitcher_hand,
+            "weather": weather,
         })
 
+    _save_espn_cache(cache_path, cache)
     return fixtures

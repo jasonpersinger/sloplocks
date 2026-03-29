@@ -9,6 +9,7 @@ from pipeline.config import MAX_GOALS
 from pipeline.models import (
     AdjustedEfficiency,
     BullpenMatchupModel,
+    HandednessMatchupModel,
     EloRatings,
     FourFactorsModel,
     PitcherMatchupModel,
@@ -21,6 +22,7 @@ from pipeline.models import (
     elo_predict,
     fit_dixon_coles,
     four_factors_predict,
+    handedness_matchup_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
     run_environment_predict,
@@ -345,6 +347,8 @@ class TestPitcherMatchupModel:
                 "away_goals": ag,
                 "home_pitcher": hp,
                 "away_pitcher": ap,
+                "home_pitcher_hand": "R" if "Ace" in hp else "L",
+                "away_pitcher_hand": "R" if "Ace" in ap else "L",
                 "home_pitcher_ip": hip,
                 "home_pitcher_runs_allowed": hpr,
                 "home_pitcher_earned_runs": hper,
@@ -460,6 +464,39 @@ class TestRunEnvironmentModel:
     def test_fit_and_predict_uses_run_environment_context(self):
         model = RunEnvironmentModel(self._sample_games(), feature_window=4, min_games=4)
         probs = run_environment_predict(model, "Reds", "Giants")
+
+        assert model.model is not None
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestHandednessMatchupModel:
+    def _sample_games(self):
+        rows = []
+        base = pd.Timestamp("2026-03-01")
+        games = [
+            ("Mashers", "Gloves", 7, 3, "R", "L"),
+            ("Mashers", "Gloves", 6, 2, "R", "L"),
+            ("Mashers", "Gloves", 3, 4, "L", "R"),
+            ("Mashers", "Gloves", 2, 5, "L", "R"),
+            ("Mashers", "Gloves", 8, 4, "R", "L"),
+            ("Mashers", "Gloves", 3, 6, "L", "R"),
+        ]
+        for idx, (home, away, hg, ag, hh, ah) in enumerate(games):
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+                "home_pitcher_hand": hh,
+                "away_pitcher_hand": ah,
+            })
+        return pd.DataFrame(rows)
+
+    def test_fit_and_predict_uses_pitcher_hand_splits(self):
+        model = HandednessMatchupModel(self._sample_games(), feature_window=4, min_games=4)
+        probs = handedness_matchup_predict(model, "Mashers", "Gloves", home_pitcher_hand="R", away_pitcher_hand="L")
 
         assert model.model is not None
         assert probs["home"] > 0.5

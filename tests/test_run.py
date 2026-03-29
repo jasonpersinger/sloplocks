@@ -9,7 +9,7 @@ import os
 import pandas as pd
 import pytest
 from pipeline.config import SPORTS
-from pipeline.run import _main, run_pipeline, run_sport_pipeline
+from pipeline.run import _apply_mlb_weather_adjustment, _main, run_pipeline, run_sport_pipeline
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
@@ -118,6 +118,8 @@ def sample_mlb_matches():
             "away_goals": away_goals,
             "home_pitcher": f"{home_team} Starter",
             "away_pitcher": f"{away_team} Starter",
+            "home_pitcher_hand": "R" if strong_home else "L",
+            "away_pitcher_hand": "R" if strong_away else "L",
             "home_pitcher_ip": 6.0 if strong_home else 5.0,
             "home_pitcher_runs_allowed": 2 if strong_home else 4,
             "home_pitcher_earned_runs": 2 if strong_home else 4,
@@ -308,7 +310,15 @@ class TestRunMLBPipeline:
                 "date": _TODAY,
                 "start_time": f"{_TODAY}T20:10:00Z",
                 "home_pitcher": "Aces Starter",
+                "home_pitcher_hand": "R",
                 "away_pitcher": "Bruins Starter",
+                "away_pitcher_hand": "L",
+                "weather": {
+                    "weather_exposed": True,
+                    "temperature_f": 82.0,
+                    "wind_mph": 14.0,
+                    "precipitation_probability": 0,
+                },
             }
         ]
         mock_odds.return_value = [
@@ -324,6 +334,7 @@ class TestRunMLBPipeline:
         monkeypatch.setitem(SPORTS["mlb"], "bullpen_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "pitcher_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "run_environment_min_games", 4)
+        monkeypatch.setitem(SPORTS["mlb"], "handedness_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "results_feature_min_games", 50)
 
         output_dir = str(tmp_path / "mlb")
@@ -335,6 +346,26 @@ class TestRunMLBPipeline:
         match = data["matches"][0]
         assert "bullpen_features" in match["individual_models"]
         assert "run_environment" in match["individual_models"]
+        assert "handedness_features" in match["individual_models"]
+        assert match["weather"]["temperature_f"] == 82.0
+
+
+class TestMlbWeatherAdjustment:
+    def test_hitter_friendly_weather_amplifies_run_environment_edge(self):
+        adjusted = _apply_mlb_weather_adjustment(
+            {"home": 0.54, "away": 0.46},
+            {"home": 0.60, "away": 0.40},
+            {
+                "weather_exposed": True,
+                "temperature_f": 82.0,
+                "wind_mph": 15.0,
+                "precipitation_probability": 0,
+            },
+            max_delta=0.02,
+        )
+
+        assert adjusted["home"] > 0.54
+        assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
 
 
 # ---------------------------------------------------------------------------

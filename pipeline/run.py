@@ -36,12 +36,14 @@ from pipeline.models import (
     BullpenMatchupModel,
     EloRatings,
     FourFactorsModel,
+    HandednessMatchupModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
     efficiency_predict,
     elo_predict,
     four_factors_predict,
+    handedness_matchup_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
@@ -347,6 +349,58 @@ def _rest_adjustment(team: str, before_date: str, matches: pd.DataFrame, sport: 
         adjustment -= fatigue_penalty
 
     return adjustment
+
+
+def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
+    """Renormalize two-way probabilities after a heuristic adjustment."""
+    total = max(1e-9, probs.get("home", 0.0) + probs.get("away", 0.0))
+    return {
+        "home": probs.get("home", 0.0) / total,
+        "away": probs.get("away", 0.0) / total,
+    }
+
+
+def _apply_mlb_weather_adjustment(
+    blended: dict[str, float],
+    run_environment_probs: dict[str, float] | None,
+    weather: dict | None,
+    max_delta: float = 0.02,
+) -> dict[str, float]:
+    """Apply a modest MLB weather adjustment using offense-environment context.
+
+    Warm, windy outdoor conditions amplify run-environment edges. Cold or wet
+    conditions compress them slightly. The adjustment is intentionally small so
+    weather informs the projection without dominating pitcher and bullpen data.
+    """
+    if not run_environment_probs or not weather or not weather.get("weather_exposed"):
+        return blended
+
+    temperature_f = weather.get("temperature_f")
+    wind_mph = weather.get("wind_mph")
+    precip_probability = weather.get("precipitation_probability")
+    if temperature_f is None or wind_mph is None:
+        return blended
+
+    warm_term = max(-1.0, min(1.0, (float(temperature_f) - 68.0) / 18.0))
+    wind_term = max(-1.0, min(1.0, (float(wind_mph) - 10.0) / 15.0))
+    precip_term = 0.0
+    if precip_probability is not None:
+        precip_term = max(0.0, min(1.0, (float(precip_probability) - 20.0) / 50.0))
+
+    environment_index = max(-1.0, min(1.0, (0.55 * warm_term) + (0.35 * wind_term) - (0.45 * precip_term)))
+    if abs(environment_index) < 0.05:
+        return blended
+
+    run_bias = float(run_environment_probs.get("home", 0.5)) - 0.5
+    delta = max(-max_delta, min(max_delta, environment_index * run_bias * 0.8))
+    if abs(delta) < 0.001:
+        return blended
+
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
 
 
 # ---------------------------------------------------------------------------
@@ -859,7 +913,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
         games_df, box_scores_df = fetch_mlb_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
-        fixtures = fetch_mlb_schedule()
+        fixtures = fetch_mlb_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
         matches = games_df
     elif sport_key == "mma":
         games_df, box_scores_df = fetch_mma_games(
@@ -958,6 +1014,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
             min_games=sport.get("run_environment_min_games", 20),
         )
 
+    handedness_feature_model = None
+    if "handedness_features" in sport["models"] and matches is not None and not matches.empty:
+        handedness_feature_model = HandednessMatchupModel(
+            matches,
+            feature_window=sport.get("handedness_feature_window", 18),
+            min_games=sport.get("handedness_feature_min_games", 20),
+        )
+
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
@@ -983,6 +1047,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("bullpen_features")
     if run_environment_model is not None:
         model_names.append("run_environment")
+    if handedness_feature_model is not None:
+        model_names.append("handedness_features")
 
     accuracy_window = sport.get("accuracy_window", None)
     accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
@@ -1150,12 +1216,33 @@ def run_sport_pipeline(sport_key, output_dir=None):
             individual_preds.append(run_environment_probs)
             blend_weights.append(model_weight_dict["run_environment"])
             individual_models["run_environment"] = run_environment_probs
+        else:
+            run_environment_probs = None
+
+        if handedness_feature_model is not None:
+            handedness_probs = handedness_matchup_predict(
+                handedness_feature_model,
+                home,
+                away,
+                home_pitcher_hand=fix.get("home_pitcher_hand"),
+                away_pitcher_hand=fix.get("away_pitcher_hand"),
+            )
+            individual_preds.append(handedness_probs)
+            blend_weights.append(model_weight_dict["handedness_features"])
+            individual_models["handedness_features"] = handedness_probs
 
         if not individual_preds:
             continue
 
         # Blend
         blended = blend_predictions(individual_preds, blend_weights)
+        if sport_key == "mlb":
+            blended = _apply_mlb_weather_adjustment(
+                blended,
+                run_environment_probs,
+                fix.get("weather"),
+                max_delta=sport.get("weather_adjustment_max_delta", 0.02),
+            )
         blended = apply_probability_calibration(
             blended,
             probability_calibrators,
@@ -1203,7 +1290,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "completed": fix.get("completed", False),
             "neutral": is_neutral,
             "home_pitcher": fix.get("home_pitcher"),
+            "home_pitcher_hand": fix.get("home_pitcher_hand"),
             "away_pitcher": fix.get("away_pitcher"),
+            "away_pitcher_hand": fix.get("away_pitcher_hand"),
+            "weather": fix.get("weather"),
             "pick": pick,
             "model_prob": round(model_prob, 4),
             "edge": round(edge, 4),

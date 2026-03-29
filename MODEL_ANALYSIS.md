@@ -18,7 +18,7 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
    - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
    - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
    - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
-   - Pitcher matchup, bullpen matchup, and run-environment models for MLB: `pipeline/models.py`
+   - Pitcher matchup, bullpen matchup, handedness matchup, and run-environment models for MLB: `pipeline/models.py`
 4. Historical model accuracy is converted into ensemble weights in `pipeline/backtest.py:72-87`, then blended in `pipeline/ensemble.py:55-69`.
 5. Historical isotonic calibration is fit from resolved `history.json` entries in `pipeline/ensemble.py:72-136` and applied in `pipeline/run.py:783-797`, `pipeline/run.py:891-897`.
 6. Odds-aware edges, EV, Kelly fractions, and confidence scores are computed in `pipeline/ensemble.py:210-276`.
@@ -84,10 +84,12 @@ Configured models live in `pipeline/config.py:112-137`.
   - Walk-forward starter RA9, recent RA9, K-BB per inning, recent team margin in starts, recent innings workload, days-rest differential, and start-count differential from ESPN summary data cached by `pipeline/fetch_mlb.py`.
 - Bullpen matchup model:
   - Walk-forward bullpen RA9, K-BB per inning, recent innings workload, and team margin support from aggregated non-starter pitching lines in `pipeline/fetch_mlb.py` and `pipeline/models.py`.
+- Handedness matchup model:
+  - Walk-forward team run and margin splits versus left-handed and right-handed starters using cached starter throwing-hand metadata from ESPN core athlete records in `pipeline/fetch_mlb.py` and `pipeline/models.py`.
 - Run-environment model:
   - Walk-forward team runs scored, runs allowed, recent scoring form, recent prevention form, recent margin, and home park-factor context using `MLB_PARK_FACTORS` in `pipeline/config.py` and `pipeline/models.py`.
 - Fetched but unused inputs:
-  - Weather, handedness, lineup strength, and bullpen leverage roles are still not modeled.
+  - Full batting-order strength, confirmed starting lineups, platoon-heavy lineup composition, and bullpen leverage roles are still not modeled.
 
 #### MMA
 
@@ -106,7 +108,7 @@ Configured models live in `pipeline/config.py:138-160`.
 
 - Active model lists are sport-specific in `pipeline/config.py:62-160`.
   - NBA and NCAAM use five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
-  - MLB uses five models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`.
+  - MLB uses six models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`, `handedness_features`.
   - MMA uses two models: `elo`, `results_features`.
 - Historical rolling accuracy for each model is read from `model_accuracy.json` and transformed into softmax weights in `pipeline/backtest.py:72-87` and `pipeline/run.py:775-781`.
 - The softmax temperature is now configurable per sport:
@@ -314,6 +316,26 @@ Configured models live in `pipeline/config.py:138-160`.
   - A pitcher on normal rest and a pitcher on a short or irregular turnaround should not be treated identically.
   - This improves the existing starter model without requiring another data source.
 
+#### 16. Added live MLB weather context
+
+- What changed:
+  - Added `MLB_BALLPARKS` and `OPEN_METEO_BASE` in `pipeline/config.py`.
+  - Added weather fetching/caching helpers in `pipeline/fetch_mlb.py`.
+  - Added a modest live weather adjustment in `pipeline/run.py` that uses the run-environment model as directionality rather than pretending weather alone predicts a winner.
+- Why it matters:
+  - Outdoor baseball behaves differently on warm, windy nights than it does in cold, suppressive conditions.
+  - This gives the live MLB path real environment awareness without inventing a fake historical-weather training set.
+
+#### 17. Added handedness-aware MLB matchup modeling
+
+- What changed:
+  - Added ESPN core-player handedness fetch/caching in `pipeline/fetch_mlb.py`.
+  - Added `HandednessMatchupModel` and `handedness_matchup_predict()` in `pipeline/models.py`.
+  - Enabled the model in MLB config and wired it into `pipeline/run.py`.
+- Why it matters:
+  - Team offenses do not perform identically into lefties and righties.
+  - This adds a real baseball-specific split layer using data already accessible from the current free stack.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -327,12 +349,12 @@ Configured models live in `pipeline/config.py:138-160`.
 
 Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
 
-### 2. Add weather, handedness, and lineup context to MLB
+### 2. Add confirmed lineup strength and platoon context to MLB
 
-The MLB stack now covers starters, bullpens, and basic park context, but it still lacks:
+The MLB stack now covers starters, bullpens, park context, handedness, and live weather, but it still lacks:
 
-- weather context, especially wind and temperature
-- handedness or lineup-strength context
+- confirmed batting-order strength
+- platoon-heavy lineup composition versus the opposing starter
 - bullpen leverage role quality beyond simple aggregate workload
 
 ### 3. Add lineup and injury freshness closer to lock
