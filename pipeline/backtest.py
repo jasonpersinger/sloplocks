@@ -94,7 +94,8 @@ def compute_roi(bets):
     ----------
     bets : list[dict]
         Each dict must have ``stake`` (float), ``odds`` (decimal float),
-        and ``won`` (bool).
+        and ``won`` (bool). Optional ``push`` entries return stake with no
+        profit or loss.
 
     Returns
     -------
@@ -106,7 +107,12 @@ def compute_roi(bets):
         return 0.0
 
     total_staked = sum(b["stake"] for b in bets)
-    total_return = sum(b["stake"] * b["odds"] if b["won"] else 0.0 for b in bets)
+    total_return = 0.0
+    for bet in bets:
+        if bet.get("push"):
+            total_return += bet["stake"]
+        elif bet["won"]:
+            total_return += bet["stake"] * bet["odds"]
     profit = total_return - total_staked
     return profit / total_staked
 
@@ -216,14 +222,17 @@ def summarize_pick_history(picks):
             "stake": 100.0,
             "odds": p.get("decimal_odds", 0.0),
             "won": p.get("won", False),
+            "push": p.get("push", False),
         }
         for p in evaluated
     ]
     wins = sum(1 for p in evaluated if p.get("won"))
+    pushes = sum(1 for p in evaluated if p.get("push"))
     return {
         "evaluated": len(evaluated),
         "hit_rate": round(wins / len(evaluated), 4),
         "roi": round(compute_roi(bets), 4),
+        "push_rate": round(pushes / len(evaluated), 4),
     }
 
 

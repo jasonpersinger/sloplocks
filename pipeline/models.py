@@ -1543,6 +1543,10 @@ class NbaMatchupModel:
             "venue_net_rating_diff",
             "offense_defense_edge",
             "efg_diff",
+            "turnover_edge",
+            "rebound_edge",
+            "ft_rate_diff",
+            "three_point_rate_diff",
             "pace_delta",
             "rest_diff",
             "home_recent_margin",
@@ -1556,6 +1560,10 @@ class NbaMatchupModel:
             "def_rating": 110.0,
             "net_rating": 0.0,
             "efg": 0.53,
+            "to_rate": 0.13,
+            "rebound_pct": 0.23,
+            "ft_rate": 0.22,
+            "three_point_rate": 0.38,
             "pace": 98.0,
             "margin": 0.0,
         }
@@ -1572,6 +1580,10 @@ class NbaMatchupModel:
             "def_rating": _avg("def_rating"),
             "net_rating": _avg("net_rating"),
             "efg": _avg("efg"),
+            "to_rate": _avg("to_rate"),
+            "rebound_pct": _avg("rebound_pct"),
+            "ft_rate": _avg("ft_rate"),
+            "three_point_rate": _avg("three_point_rate"),
             "pace": _avg("pace"),
             "margin": _avg("margin"),
         }
@@ -1604,6 +1616,10 @@ class NbaMatchupModel:
             home_home["net_rating"] - away_away["net_rating"],
             (home_recent["off_rating"] - away_recent["def_rating"]) - (away_recent["off_rating"] - home_recent["def_rating"]),
             home_recent["efg"] - away_recent["efg"],
+            away_recent["to_rate"] - home_recent["to_rate"],
+            home_recent["rebound_pct"] - away_recent["rebound_pct"],
+            home_recent["ft_rate"] - away_recent["ft_rate"],
+            home_recent["three_point_rate"] - away_recent["three_point_rate"],
             (home_recent["pace"] - away_recent["pace"]) / 18.0,
             (self._rest_days(home_logs, game_date) - self._rest_days(away_logs, game_date)) / 3.0,
             home_recent["margin"],
@@ -1621,6 +1637,10 @@ class NbaMatchupModel:
             "def_rating": (float(opp_bs["pts"]) / opp_poss) * 100.0,
             "net_rating": ((float(team_bs["pts"]) / team_poss) - (float(opp_bs["pts"]) / opp_poss)) * 100.0,
             "efg": (float(team_bs["fgm"]) + (0.5 * float(team_bs["fg3m"]))) / fga,
+            "to_rate": float(team_bs["to"]) / team_poss,
+            "rebound_pct": float(team_bs["orb"]) / max(float(team_bs["orb"]) + float(opp_bs["drb"]), 1.0),
+            "ft_rate": float(team_bs["fta"]) / fga,
+            "three_point_rate": float(team_bs["fg3a"]) / fga,
             "pace": (team_poss + opp_poss) / 2.0,
             "margin": float(team_points - opp_points),
         }
@@ -1734,9 +1754,16 @@ class NbaTotalsModel:
             "away_recent_points_allowed",
             "home_recent_pace",
             "away_recent_pace",
+            "home_recent_efg",
+            "away_recent_efg",
+            "home_recent_ft_rate",
+            "away_recent_ft_rate",
+            "home_recent_to_rate",
+            "away_recent_to_rate",
             "home_home_points_for",
             "away_away_points_for",
             "combined_recent_total",
+            "combined_rest",
         ]
         self._fit(box_scores, games)
 
@@ -1746,6 +1773,9 @@ class NbaTotalsModel:
             "points_for": 112.0,
             "points_allowed": 112.0,
             "pace": 98.0,
+            "efg": 0.53,
+            "ft_rate": 0.22,
+            "to_rate": 0.13,
         }
 
     def _aggregate(self, logs):
@@ -1759,9 +1789,25 @@ class NbaTotalsModel:
             "points_for": _avg("points_for"),
             "points_allowed": _avg("points_allowed"),
             "pace": _avg("pace"),
+            "efg": _avg("efg"),
+            "ft_rate": _avg("ft_rate"),
+            "to_rate": _avg("to_rate"),
         }
 
-    def _feature_vector(self, home_team, away_team, team_logs):
+    def _rest_days(self, logs, game_date):
+        if not logs or game_date is None:
+            return 2.0
+        try:
+            current = pd.Timestamp(game_date)
+        except (TypeError, ValueError):
+            return 2.0
+        dated_logs = [item for item in logs if item.get("date") is not None]
+        if not dated_logs:
+            return 2.0
+        last_date = max(pd.Timestamp(item["date"]) for item in dated_logs)
+        return max(0.0, float((current - last_date).days))
+
+    def _feature_vector(self, home_team, away_team, team_logs, game_date=None):
         home_logs = team_logs.get(home_team, [])
         away_logs = team_logs.get(away_team, [])
         home_recent = self._aggregate(home_logs[-self.feature_window :])
@@ -1775,6 +1821,7 @@ class NbaTotalsModel:
             away_recent["points_allowed"] +
             home_recent["points_allowed"]
         ) / 2.0
+        combined_rest = (self._rest_days(home_logs, game_date) + self._rest_days(away_logs, game_date)) / 4.0
 
         return np.array([
             home_recent["points_for"],
@@ -1783,20 +1830,32 @@ class NbaTotalsModel:
             away_recent["points_allowed"],
             home_recent["pace"],
             away_recent["pace"],
+            home_recent["efg"],
+            away_recent["efg"],
+            home_recent["ft_rate"],
+            away_recent["ft_rate"],
+            home_recent["to_rate"],
+            away_recent["to_rate"],
             home_home["points_for"],
             away_away["points_for"],
             combined_recent_total,
+            combined_rest,
         ])
 
     @staticmethod
-    def _boxscore_log(team_bs, opp_bs, venue):
+    def _boxscore_log(team_bs, opp_bs, venue, game_date):
         team_poss = max(float(team_bs["possessions"]), 1.0)
         opp_poss = max(float(opp_bs["possessions"]), 1.0)
+        fga = max(float(team_bs["fga"]), 1.0)
         return {
+            "date": game_date,
             "venue": venue,
             "points_for": float(team_bs["pts"]),
             "points_allowed": float(opp_bs["pts"]),
             "pace": (team_poss + opp_poss) / 2.0,
+            "efg": (float(team_bs["fgm"]) + (0.5 * float(team_bs["fg3m"]))) / fga,
+            "ft_rate": float(team_bs["fta"]) / fga,
+            "to_rate": float(team_bs["to"]) / team_poss,
         }
 
     def _fit(self, box_scores, games):
@@ -1832,11 +1891,11 @@ class NbaTotalsModel:
             if home_bs is None or away_bs is None:
                 continue
 
-            X.append(self._feature_vector(home, away, team_logs))
+            X.append(self._feature_vector(home, away, team_logs, game_date=row["date"]))
             y.append(float(row["home_goals"]) + float(row["away_goals"]))
 
-            team_logs.setdefault(home, []).append(self._boxscore_log(home_bs, away_bs, "home"))
-            team_logs.setdefault(away, []).append(self._boxscore_log(away_bs, home_bs, "away"))
+            team_logs.setdefault(home, []).append(self._boxscore_log(home_bs, away_bs, "home", row["date"]))
+            team_logs.setdefault(away, []).append(self._boxscore_log(away_bs, home_bs, "away", row["date"]))
 
         self.team_logs = team_logs
 
@@ -1857,6 +1916,7 @@ class NbaTotalsModel:
             fixture["home_team"],
             fixture["away_team"],
             self.team_logs,
+            game_date=fixture.get("date"),
         )
         total = float(self.model.predict(np.array([features]))[0])
         return max(180.0, min(270.0, total))

@@ -11,6 +11,7 @@ import pytest
 from pipeline.config import SPORTS
 from pipeline.run import (
     _apply_nba_availability_adjustment,
+    _apply_nba_availability_total_adjustment,
     _apply_mlb_lineup_adjustment,
     _apply_mlb_lineup_total_adjustment,
     _apply_mlb_weather_adjustment,
@@ -203,6 +204,9 @@ class TestRunNBAPipeline:
             }
         ]
         monkeypatch.setitem(SPORTS["nba"], "totals_feature_min_games", 4)
+        monkeypatch.setitem(SPORTS["nba"], "totals_edge_threshold", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "totals_probability_floor", 0.5)
+        monkeypatch.setitem(SPORTS["nba"], "totals_confidence_threshold", 0.0)
 
         output_dir = str(tmp_path / "nba")
         run_sport_pipeline("nba", output_dir=output_dir)
@@ -225,6 +229,7 @@ class TestRunNBAPipeline:
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
         assert data["totals_matches"][0]["total_line"] == 224.5
         assert data["totals_matches"][0]["pick"] in {"over", "under"}
+        assert len(data["totals_locks"]) == 1
 
         diagnostics = data["diagnostics"]
         assert diagnostics["fixtures_fetched"] == 1
@@ -245,6 +250,10 @@ class TestRunNBAPipeline:
         assert "recent_boxscore" in data["model_weights"]
         assert "nba_matchup" in data["model_weights"]
         assert "dixon_coles" not in data["model_weights"]
+
+        with open(os.path.join(output_dir, "pick_history.json")) as f:
+            pick_history = json.load(f)
+        assert any(pick["type"] == "total_lock" for pick in pick_history["picks"])
 
 
 class TestRunMMAPipeline:
@@ -512,6 +521,30 @@ class TestNbaAvailabilityAdjustment:
 
         assert adjusted["home"] > 0.54
         assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
+
+    def test_missing_key_scorers_can_pull_total_down(self):
+        adjusted_total = _apply_nba_availability_total_adjustment(
+            228.5,
+            {
+                "active_players": 15,
+                "injured_players": 0,
+                "injury_burden": 0.0,
+                "key_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "available_core_players": 12,
+            },
+            {
+                "active_players": 13,
+                "injured_players": 2,
+                "injury_burden": 1.25,
+                "key_absence_score": 1.0,
+                "leader_absence_burden": 1.4,
+                "available_core_players": 8,
+            },
+            max_points_delta=2.2,
+        )
+
+        assert adjusted_total < 228.5
 
 
 # ---------------------------------------------------------------------------
@@ -916,3 +949,78 @@ class TestResultsLog:
         assert len(rows) == 1
         assert rows[0]["sport"] == "nba"
         assert rows[0]["expected_value"] == "0.07"
+
+
+class TestOddsTracking:
+    def test_append_odds_snapshot_log_dedupes_same_market_state(self, tmp_path):
+        from pipeline.run import _append_odds_snapshot_log
+
+        path = str(tmp_path / "tracking" / "odds_history.csv")
+        row = {
+            "logged_at": "2026-03-29T12:00:00Z",
+            "sport": "nba",
+            "market_type": "moneyline",
+            "home_team": "Lakers",
+            "away_team": "Celtics",
+            "match_date": "2026-03-29",
+            "start_time": "2026-03-29T23:00:00Z",
+            "outcome": "home",
+            "total_line": "",
+            "decimal_odds": 2.1,
+            "american_odds": 110,
+            "implied_prob": 0.5,
+            "market_implied_prob": 0.52,
+        }
+
+        _append_odds_snapshot_log(path, [row, row])
+
+        with open(path, newline="") as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) == 1
+        assert rows[0]["outcome"] == "home"
+
+    def test_apply_latest_market_snapshots_sets_moneyline_and_total_clv(self):
+        from pipeline.run import _apply_latest_market_snapshots
+
+        picks = [
+            {
+                "market_type": "moneyline",
+                "home_team": "Lakers",
+                "away_team": "Celtics",
+                "match_date": "2026-03-29",
+                "pick": "home",
+                "market_implied_prob": 0.48,
+            },
+            {
+                "market_type": "total",
+                "home_team": "Dodgers",
+                "away_team": "Padres",
+                "match_date": "2026-03-29",
+                "pick": "over",
+                "total_line": 8.5,
+            },
+        ]
+        snapshots = {
+            ("moneyline", "Lakers", "Celtics", "2026-03-29", "home"): {
+                "logged_at": "2026-03-29T17:00:00Z",
+                "decimal_odds": "1.95",
+                "american_odds": "-105",
+                "implied_prob": "0.512",
+                "market_implied_prob": "0.525",
+            },
+            ("total", "Dodgers", "Padres", "2026-03-29", "over"): {
+                "logged_at": "2026-03-29T17:00:00Z",
+                "decimal_odds": "1.91",
+                "american_odds": "-110",
+                "implied_prob": "0.5",
+                "market_implied_prob": "0.5236",
+                "total_line": "9.0",
+            },
+        }
+
+        _apply_latest_market_snapshots(picks, snapshots)
+
+        assert picks[0]["closing_american_odds"] == -105
+        assert picks[0]["closing_line_value"] == pytest.approx(0.032, abs=1e-6)
+        assert picks[1]["closing_total_line"] == 9.0
+        assert picks[1]["closing_line_value"] == pytest.approx(0.5, abs=1e-6)

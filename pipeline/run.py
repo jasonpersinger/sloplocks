@@ -20,6 +20,7 @@ from pipeline.config import (
     NBA_3IN4_PENALTY,
     TRACKING_DIRNAME,
     RESULTS_LOG_FILENAME,
+    ODDS_HISTORY_FILENAME,
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SLOP_LOCK_FALLBACK_MIN_ODDS,
@@ -58,7 +59,14 @@ from pipeline.models import (
     run_environment_predict,
     results_features_predict,
 )
-from pipeline.ensemble import blend_predictions, compute_edges, compute_totals_edges, decimal_to_american, compute_confidence_stars
+from pipeline.ensemble import (
+    blend_predictions,
+    compute_edges,
+    compute_totals_edges,
+    decimal_to_american,
+    compute_confidence_stars,
+    no_vig_probabilities,
+)
 from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
 from pipeline.backtest import (
     compute_model_weights,
@@ -127,12 +135,14 @@ _RESULTS_LOG_FIELDS = [
     "logged_at",
     "sport",
     "entry_type",
+    "market_type",
     "home_team",
     "away_team",
     "match_date",
     "pick",
     "actual",
     "won",
+    "push",
     "model_prob",
     "home_prob",
     "away_prob",
@@ -143,15 +153,43 @@ _RESULTS_LOG_FIELDS = [
     "expected_value",
     "american_odds",
     "decimal_odds",
+    "total_line",
     "confidence_score",
     "kelly_fraction",
     "fractional_kelly",
+    "closing_american_odds",
+    "closing_decimal_odds",
+    "closing_implied_prob",
+    "closing_market_implied_prob",
+    "closing_total_line",
+    "closing_line_value",
+]
+
+_ODDS_HISTORY_FIELDS = [
+    "logged_at",
+    "sport",
+    "market_type",
+    "home_team",
+    "away_team",
+    "match_date",
+    "start_time",
+    "outcome",
+    "total_line",
+    "decimal_odds",
+    "american_odds",
+    "implied_prob",
+    "market_implied_prob",
 ]
 
 
 def _results_log_path(base_dir: str) -> str:
     """Return the CSV path for the persistent resolved-results log."""
     return os.path.join(base_dir, TRACKING_DIRNAME, RESULTS_LOG_FILENAME)
+
+
+def _odds_history_path(base_dir: str) -> str:
+    """Return the CSV path for tracked odds snapshots."""
+    return os.path.join(base_dir, TRACKING_DIRNAME, ODDS_HISTORY_FILENAME)
 
 
 def _results_log_key(row: dict) -> tuple:
@@ -170,16 +208,20 @@ def _build_results_log_row(sport_key: str, entry_type: str, record: dict, match_
     """Normalize an evaluated prediction or pick into one CSV results-log row."""
     model_probs = record.get("model_probs", {})
     pick = record.get("pick", "")
+    market_type = record.get("market_type", "moneyline")
+    push = actual == "push" or bool(record.get("push"))
     return {
         "logged_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "sport": sport_key,
         "entry_type": entry_type,
+        "market_type": market_type,
         "home_team": record["home_team"],
         "away_team": record["away_team"],
         "match_date": match_date,
         "pick": pick,
         "actual": actual,
-        "won": str(pick == actual).lower(),
+        "won": str((pick == actual) and not push).lower(),
+        "push": str(push).lower(),
         "model_prob": record.get("model_prob"),
         "home_prob": model_probs.get("home"),
         "away_prob": model_probs.get("away"),
@@ -190,9 +232,16 @@ def _build_results_log_row(sport_key: str, entry_type: str, record: dict, match_
         "expected_value": record.get("expected_value"),
         "american_odds": record.get("american_odds"),
         "decimal_odds": record.get("decimal_odds"),
+        "total_line": record.get("total_line"),
         "confidence_score": record.get("confidence_score"),
         "kelly_fraction": record.get("kelly_fraction"),
         "fractional_kelly": record.get("fractional_kelly"),
+        "closing_american_odds": record.get("closing_american_odds"),
+        "closing_decimal_odds": record.get("closing_decimal_odds"),
+        "closing_implied_prob": record.get("closing_implied_prob"),
+        "closing_market_implied_prob": record.get("closing_market_implied_prob"),
+        "closing_total_line": record.get("closing_total_line"),
+        "closing_line_value": record.get("closing_line_value"),
     }
 
 
@@ -220,6 +269,189 @@ def _append_results_log(path: str, rows: list[dict]) -> None:
                 continue
             writer.writerow({field: row.get(field, "") for field in _RESULTS_LOG_FIELDS})
             existing_keys.add(key)
+
+
+def _odds_snapshot_key(row: dict) -> tuple:
+    """Stable dedupe key for one odds snapshot state."""
+    return (
+        row["sport"],
+        row["market_type"],
+        row["home_team"],
+        row["away_team"],
+        row["match_date"],
+        row["outcome"],
+        str(row.get("total_line", "")),
+        str(row.get("decimal_odds", "")),
+    )
+
+
+def _append_odds_snapshot_log(path: str, rows: list[dict]) -> None:
+    """Append deduped odds snapshots for later CLV analysis."""
+    if not rows:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    existing_keys = set()
+    if os.path.exists(path):
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                existing_keys.add(_odds_snapshot_key(row))
+
+    file_exists = os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_ODDS_HISTORY_FIELDS)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            key = _odds_snapshot_key(row)
+            if key in existing_keys:
+                continue
+            writer.writerow({field: row.get(field, "") for field in _ODDS_HISTORY_FIELDS})
+            existing_keys.add(key)
+
+
+def _safe_float(value):
+    """Convert CSV-ish scalar values to float when possible."""
+    if value in (None, "", "None"):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_int(value):
+    """Convert CSV-ish scalar values to int when possible."""
+    if value in (None, "", "None"):
+        return None
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dict]:
+    """Normalize current odds into per-outcome snapshot rows."""
+    logged_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    rows = []
+
+    for odds in odds_list:
+        match_date = str(odds.get("commence_time", ""))[:10]
+
+        moneyline_decimals = {
+            outcome: odds.get(f"{outcome}_odds", 0.0)
+            for outcome in ("home", "away", "draw")
+            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 0
+        }
+        _, fair_probs, raw_probs = None, None, None
+        if moneyline_decimals:
+            raw_probs, fair_probs, _ = no_vig_probabilities(moneyline_decimals)
+            for outcome, decimal_odds in moneyline_decimals.items():
+                rows.append({
+                    "logged_at": logged_at,
+                    "sport": sport_key,
+                    "market_type": "moneyline",
+                    "home_team": odds["home_team"],
+                    "away_team": odds["away_team"],
+                    "match_date": match_date,
+                    "start_time": odds.get("commence_time"),
+                    "outcome": outcome,
+                    "total_line": "",
+                    "decimal_odds": round(float(decimal_odds), 4),
+                    "american_odds": decimal_to_american(float(decimal_odds)),
+                    "implied_prob": round(float(fair_probs.get(outcome, 0.0)), 4),
+                    "market_implied_prob": round(float(raw_probs.get(outcome, 0.0)), 4),
+                })
+
+        totals_decimals = {
+            outcome: odds.get(f"{outcome}_odds", 0.0)
+            for outcome in ("over", "under")
+            if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 0
+        }
+        if totals_decimals and odds.get("total_line") is not None:
+            raw_probs, fair_probs, _ = no_vig_probabilities(totals_decimals)
+            for outcome, decimal_odds in totals_decimals.items():
+                rows.append({
+                    "logged_at": logged_at,
+                    "sport": sport_key,
+                    "market_type": "total",
+                    "home_team": odds["home_team"],
+                    "away_team": odds["away_team"],
+                    "match_date": match_date,
+                    "start_time": odds.get("commence_time"),
+                    "outcome": outcome,
+                    "total_line": round(float(odds["total_line"]), 3),
+                    "decimal_odds": round(float(decimal_odds), 4),
+                    "american_odds": decimal_to_american(float(decimal_odds)),
+                    "implied_prob": round(float(fair_probs.get(outcome, 0.0)), 4),
+                    "market_implied_prob": round(float(raw_probs.get(outcome, 0.0)), 4),
+                })
+
+    return rows
+
+
+def _load_latest_odds_snapshots(path: str, sport_key: str) -> dict[tuple, dict]:
+    """Load the latest stored odds snapshot per market/outcome."""
+    if not os.path.exists(path):
+        return {}
+
+    latest = {}
+    with open(path, newline="") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row.get("sport") != sport_key:
+                continue
+            key = (
+                row.get("market_type", "moneyline"),
+                row.get("home_team"),
+                row.get("away_team"),
+                row.get("match_date"),
+                row.get("outcome"),
+            )
+            current = latest.get(key)
+            if current is None or row.get("logged_at", "") > current.get("logged_at", ""):
+                latest[key] = row
+    return latest
+
+
+def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tuple, dict]) -> None:
+    """Annotate picks with the latest tracked odds snapshot for CLV analysis."""
+    for pick in picks:
+        market_type = pick.get("market_type", "moneyline")
+        key = (
+            market_type,
+            pick.get("home_team"),
+            pick.get("away_team"),
+            str(pick.get("match_date") or pick.get("date") or "")[:10],
+            pick.get("pick"),
+        )
+        snapshot = snapshot_lookup.get(key)
+        if not snapshot:
+            continue
+
+        pick["closing_decimal_odds"] = _safe_float(snapshot.get("decimal_odds"))
+        pick["closing_american_odds"] = _safe_int(snapshot.get("american_odds"))
+        pick["closing_implied_prob"] = _safe_float(snapshot.get("implied_prob"))
+        pick["closing_market_implied_prob"] = _safe_float(snapshot.get("market_implied_prob"))
+
+        if market_type == "total":
+            closing_total_line = _safe_float(snapshot.get("total_line"))
+            pick["closing_total_line"] = closing_total_line
+            opening_total_line = _safe_float(pick.get("total_line"))
+            if closing_total_line is not None and opening_total_line is not None:
+                if pick.get("pick") == "over":
+                    pick["closing_line_value"] = round(closing_total_line - opening_total_line, 3)
+                elif pick.get("pick") == "under":
+                    pick["closing_line_value"] = round(opening_total_line - closing_total_line, 3)
+        else:
+            opening_prob = pick.get("market_implied_prob")
+            if opening_prob is None:
+                opening_prob = pick.get("implied_prob")
+            opening_prob = _safe_float(opening_prob)
+            closing_prob = _safe_float(snapshot.get("implied_prob"))
+            if opening_prob is not None and closing_prob is not None:
+                pick["closing_line_value"] = round(closing_prob - opening_prob, 4)
 
 
 
@@ -557,6 +789,37 @@ def _apply_nba_availability_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
+def _apply_nba_availability_total_adjustment(
+    expected_total: float,
+    home_profile: dict | None,
+    away_profile: dict | None,
+    max_points_delta: float = 2.2,
+) -> float:
+    """Adjust an NBA total modestly for current roster depletion."""
+    if not home_profile and not away_profile:
+        return expected_total
+
+    def _offense_drag(profile: dict | None) -> float:
+        if not profile:
+            return 0.0
+        leader_absence = float(profile.get("leader_absence_burden", 0.0) or 0.0)
+        injury_burden = float(profile.get("injury_burden", 0.0) or 0.0)
+        active_players = float(profile.get("active_players", 0.0) or 0.0)
+        available_core = float(profile.get("available_core_players", 0.0) or 0.0)
+        depth_gap = max(0.0, 10.0 - available_core)
+        active_gap = 0.0
+        if active_players > 0:
+            active_gap = max(0.0, 0.75 - (available_core / active_players))
+        return (0.65 * leader_absence) + (0.25 * injury_burden) + (0.2 * depth_gap) + (0.35 * active_gap)
+
+    combined_drag = _offense_drag(home_profile) + _offense_drag(away_profile)
+    if combined_drag <= 0.05:
+        return expected_total
+
+    delta = max(-max_points_delta, min(0.0, -combined_drag * max_points_delta * 0.45))
+    return max(180.0, min(270.0, expected_total + delta))
+
+
 # ---------------------------------------------------------------------------
 # Blurb generation (via Claude API)
 # ---------------------------------------------------------------------------
@@ -724,6 +987,7 @@ def _compute_slop_locks(
                     "pick": outcome,
                     "model_prob": round(prob, 4),
                     "implied_prob": round(e["implied_prob"], 4),
+                    "market_implied_prob": round(e.get("market_implied_prob", e["implied_prob"]), 4),
                     "edge": round(edge, 4),
                     "expected_value": round(ev, 4),
                     "american_odds": e["american_odds"],
@@ -800,6 +1064,7 @@ def _compute_longslop(
                     "pick": outcome,
                     "model_prob": round(prob, 4),
                     "implied_prob": round(e["implied_prob"], 4),
+                    "market_implied_prob": round(e.get("market_implied_prob", e["implied_prob"]), 4),
                     "edge": round(edge, 4),
                     "expected_value": round(ev, 4),
                     "american_odds": american,
@@ -850,6 +1115,7 @@ def _compute_totals_locks(
                     "weather": rec.get("weather"),
                     "model_prob": round(edge_data["model_prob"], 4),
                     "implied_prob": round(edge_data["implied_prob"], 4),
+                    "market_implied_prob": round(edge_data.get("market_implied_prob", edge_data["implied_prob"]), 4),
                     "edge": round(edge_data["edge"], 4),
                     "expected_value": round(edge_data["expected_value"], 4),
                     "american_odds": edge_data["american_odds"],
@@ -928,14 +1194,15 @@ def _compute_slimegrinder(
 def _compute_pick_stats(picks):
     """Compute aggregate stats from evaluated picks.
 
-    Returns a dict with stats broken out by pick type (slop_lock, longslop, all).
+    Returns a dict with stats broken out by pick type.
     """
     stats = {}
-    for pick_type in ("slop_lock", "longslop", "all"):
+    for pick_type in ("slop_lock", "total_lock", "longslop", "all"):
         subset = [p for p in picks if pick_type == "all" or p["type"] == pick_type]
         evaluated = [p for p in subset if p.get("evaluated")]
         wins = [p for p in evaluated if p.get("won")]
-        losses = [p for p in evaluated if not p.get("won")]
+        pushes = [p for p in evaluated if p.get("push")]
+        losses = [p for p in evaluated if not p.get("won") and not p.get("push")]
 
         # ROI: flat $100 bet per pick
         bets = []
@@ -944,6 +1211,7 @@ def _compute_pick_stats(picks):
                 "stake": 100.0,
                 "odds": p.get("decimal_odds", 0),
                 "won": p.get("won", False),
+                "push": p.get("push", False),
             })
         roi = compute_roi(bets)
 
@@ -952,6 +1220,7 @@ def _compute_pick_stats(picks):
             "evaluated": len(evaluated),
             "wins": len(wins),
             "losses": len(losses),
+            "pushes": len(pushes),
             "pending": len(subset) - len(evaluated),
             "hit_rate": round(len(wins) / max(len(evaluated), 1), 3) if evaluated else None,
             "roi": round(roi, 3) if evaluated else None,
@@ -1085,6 +1354,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     history_path = os.path.join(sport_dir, "history.json")
     accuracy_path = os.path.join(sport_dir, "model_accuracy.json")
     results_log_path = _results_log_path(os.path.dirname(sport_dir))
+    odds_history_path = _odds_history_path(os.path.dirname(sport_dir))
 
     # ------------------------------------------------------------------
     # 1. Fetch data (sport-specific)
@@ -1332,6 +1602,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
     for o in odds_list:
         key = (o["home_team"], o["away_team"])
         odds_lookup[key] = o
+    _append_odds_snapshot_log(odds_history_path, _build_odds_snapshot_rows(sport_key, odds_list))
+    latest_snapshot_lookup = _load_latest_odds_snapshots(odds_history_path, sport_key)
 
     # ------------------------------------------------------------------
     # 5. Predict each fixture
@@ -1612,6 +1884,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     fix,
                     total_line=float(match_odds["total_line"]),
                 )
+                total_projection["expected_total"] = _apply_nba_availability_total_adjustment(
+                    total_projection["expected_total"],
+                    fix.get("home_availability_profile"),
+                    fix.get("away_availability_profile"),
+                    max_points_delta=sport.get("availability_total_adjustment_max_points", 2.2),
+                )
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(
                 1.0 - norm.cdf(
@@ -1686,7 +1964,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
         probability_floor=sport.get("totals_probability_floor", 0.53),
         confidence_floor=sport.get("totals_confidence_threshold", 54.0),
         max_picks=sport.get("totals_max_picks", 3),
-    ) if sport_key == "mlb" else []
+    ) if totals_prediction_records else []
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
@@ -1748,9 +2026,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
     if not isinstance(pick_history, dict):
         pick_history = {}
     past_picks = pick_history.get("picks", [])
+    _apply_latest_market_snapshots(past_picks, latest_snapshot_lookup)
 
     # Evaluate unevaluated past picks against results
     for pick in past_picks:
+        pick.setdefault("market_type", "moneyline")
         if pick.get("evaluated"):
             continue
         match_date = str(pick.get("match_date", ""))[:10]
@@ -1758,15 +2038,26 @@ def run_sport_pipeline(sport_key, output_dir=None):
         result = result_lookup.get(key)
         if result is not None:
             hg, ag = result
-            if hg > ag:
-                actual = "home"
-            elif hg == ag:
-                actual = "draw"
+            if pick.get("market_type") == "total":
+                total_line = float(pick.get("total_line", 0.0))
+                total_score = hg + ag
+                if total_score > total_line:
+                    actual = "over"
+                elif total_score < total_line:
+                    actual = "under"
+                else:
+                    actual = "push"
             else:
-                actual = "away"
+                if hg > ag:
+                    actual = "home"
+                elif hg == ag:
+                    actual = "draw"
+                else:
+                    actual = "away"
             pick["evaluated"] = True
             pick["actual"] = actual
-            pick["won"] = pick["pick"] == actual
+            pick["push"] = actual == "push"
+            pick["won"] = pick["pick"] == actual and not pick["push"]
             pick["home_goals"] = hg
             pick["away_goals"] = ag
             resolved_results_rows.append(
@@ -1793,16 +2084,22 @@ def run_sport_pipeline(sport_key, output_dir=None):
             past_picks.append({
                 "pick_date": today_str,
                 "type": "slop_lock",
+                "market_type": "moneyline",
                 "home_team": lock["home_team"],
                 "away_team": lock["away_team"],
                 "match_date": str(lock["date"])[:10],
+                "start_time": lock.get("start_time"),
                 "pick": lock["pick"],
                 "model_prob": lock["model_prob"],
                 "implied_prob": lock["implied_prob"],
+                "market_implied_prob": lock.get("market_implied_prob"),
                 "edge": lock["edge"],
                 "expected_value": lock.get("expected_value", 0.0),
                 "american_odds": lock["american_odds"],
                 "decimal_odds": lock["decimal_odds"],
+                "confidence_score": lock.get("confidence_score"),
+                "kelly_fraction": lock.get("kelly_fraction"),
+                "fractional_kelly": lock.get("fractional_kelly"),
                 "evaluated": False,
             })
 
@@ -1813,18 +2110,54 @@ def run_sport_pipeline(sport_key, output_dir=None):
             past_picks.append({
                 "pick_date": today_str,
                 "type": "longslop",
+                "market_type": "moneyline",
                 "home_team": longslop["home_team"],
                 "away_team": longslop["away_team"],
                 "match_date": str(longslop["date"])[:10],
+                "start_time": longslop.get("start_time"),
                 "pick": longslop["pick"],
                 "model_prob": longslop["model_prob"],
                 "implied_prob": longslop["implied_prob"],
+                "market_implied_prob": longslop.get("market_implied_prob"),
                 "edge": longslop["edge"],
                 "expected_value": longslop.get("expected_value", 0.0),
                 "american_odds": longslop["american_odds"],
                 "decimal_odds": longslop["decimal_odds"],
+                "confidence_score": longslop.get("confidence_score"),
+                "kelly_fraction": longslop.get("kelly_fraction"),
+                "fractional_kelly": longslop.get("fractional_kelly"),
                 "evaluated": False,
             })
+
+    for total_lock in totals_locks:
+        pk = ("total_lock", total_lock["home_team"], total_lock["away_team"],
+              str(total_lock["date"])[:10], total_lock["pick"])
+        if pk not in existing_keys:
+            past_picks.append({
+                "pick_date": today_str,
+                "type": "total_lock",
+                "market_type": "total",
+                "home_team": total_lock["home_team"],
+                "away_team": total_lock["away_team"],
+                "match_date": str(total_lock["date"])[:10],
+                "start_time": total_lock.get("start_time"),
+                "pick": total_lock["pick"],
+                "total_line": total_lock.get("total_line"),
+                "expected_total": total_lock.get("expected_total"),
+                "model_prob": total_lock["model_prob"],
+                "implied_prob": total_lock["implied_prob"],
+                "market_implied_prob": total_lock.get("market_implied_prob"),
+                "edge": total_lock["edge"],
+                "expected_value": total_lock.get("expected_value", 0.0),
+                "american_odds": total_lock["american_odds"],
+                "decimal_odds": total_lock["decimal_odds"],
+                "confidence_score": total_lock.get("confidence_score"),
+                "kelly_fraction": total_lock.get("kelly_fraction"),
+                "fractional_kelly": total_lock.get("fractional_kelly"),
+                "evaluated": False,
+            })
+
+    _apply_latest_market_snapshots(past_picks, latest_snapshot_lookup)
 
     pick_history = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),

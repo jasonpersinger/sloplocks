@@ -13,6 +13,8 @@ import json
 import sys
 from pathlib import Path
 
+from scipy.stats import norm
+
 from pipeline.config import (
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
@@ -23,13 +25,30 @@ from pipeline.config import (
     DATA_DIR,
 )
 
-from pipeline.ensemble import compute_edges, decimal_to_american, compute_confidence_stars
+from pipeline.ensemble import (
+    compute_edges,
+    compute_totals_edges,
+    decimal_to_american,
+    compute_confidence_stars,
+)
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name
 from pipeline.fetch_mlb import normalize_mlb_team_name
 from pipeline.fetch_mma import normalize_mma_name
-from pipeline.run import _exclude_opponent_conflicts, _lookup_match_odds
+from pipeline.run import (
+    _append_odds_snapshot_log,
+    _apply_latest_market_snapshots,
+    _build_odds_snapshot_rows,
+    _compute_slimegrinder as _run_compute_slimegrinder,
+    _compute_slop_locks as _run_compute_slop_locks,
+    _compute_totals_locks,
+    _load_json,
+    _load_latest_odds_snapshots,
+    _lookup_match_odds,
+    _odds_history_path,
+    _save_json,
+)
 
 _NORMALIZERS = {
     "nba": normalize_nba_team_name,
@@ -37,112 +56,6 @@ _NORMALIZERS = {
     "mlb": normalize_mlb_team_name,
     "mma": normalize_mma_name,
 }
-
-_MAX_LOCKS = 5
-
-
-def _recompute_slop_locks(matches: list[dict], outcomes: list[str], min_expected_value: float = 0.0) -> list[dict]:
-    """Rebuild slop locks from current match edges.
-
-    Picks within the -150/+195 window are preferred; remaining slots are
-    filled from outside the window so there are always picks when odds exist.
-    """
-    in_window: list[dict] = []
-    outside_window: list[dict] = []
-
-    for m in matches:
-        if m.get("completed"):
-            continue
-        edges = m.get("edges", {})
-        best_odds = m.get("best_odds", {})
-        game_candidates = []
-        for outcome in outcomes:
-            e = edges.get(outcome)
-            if not e:
-                continue
-            american = best_odds.get(outcome, e.get("american_odds"))
-            if american is None:
-                continue
-            game_candidates.append({
-                "home_team": m["home_team"],
-                "away_team": m["away_team"],
-                "date": m["date"],
-                "matchday": m.get("matchday"),
-                "pick": outcome,
-                "model_prob": round(e["model_prob"], 4),
-                "implied_prob": round(e["implied_prob"], 4),
-                "edge": round(e["edge"], 4),
-                "expected_value": round(e.get("expected_value", 0.0), 4),
-                "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
-                "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
-                "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
-                "confidence_stars": compute_confidence_stars(e["model_prob"], e["edge"]),
-                "individual_models": m.get("individual_models", {}),
-                "blurb": "",
-            })
-        game_candidates = [c for c in game_candidates if c["edge"] >= 0 and c["expected_value"] >= min_expected_value]
-        if not game_candidates:
-            continue
-        best = max(game_candidates, key=lambda x: x["model_prob"])
-        if SLOP_LOCK_MIN_ODDS <= best["american_odds"] <= SLOP_LOCK_MAX_ODDS:
-            in_window.append(best)
-        elif best["american_odds"] >= SLOP_LOCK_FALLBACK_MIN_ODDS:
-            outside_window.append(best)
-
-    in_window.sort(key=lambda x: x["model_prob"], reverse=True)
-    outside_window.sort(key=lambda x: x["model_prob"], reverse=True)
-    result = in_window[:_MAX_LOCKS]
-    if len(result) < _MAX_LOCKS:
-        result.extend(outside_window[:_MAX_LOCKS - len(result)])
-    return _exclude_opponent_conflicts(result)
-
-
-def _compute_slimegrinder(matches: list[dict], outcomes: list[str], min_expected_value: float = 0.0) -> list[dict]:
-    """Extract SLIMEGRINDER: Top 3 likely winners with positive edge.
-    Odds window: -250 to +165.
-    """
-    candidates = []
-    for m in matches:
-        if m.get("completed"):
-            continue
-        edges = m.get("edges", {})
-        best_odds = m.get("best_odds", {})
-
-        for outcome in outcomes:
-            e = edges.get(outcome)
-            if not e or not best_odds.get(outcome):
-                continue
-
-            american = best_odds[outcome]
-            if not (SLIMEGRINDER_MIN_ODDS <= american <= SLIMEGRINDER_MAX_ODDS):
-                continue
-
-            if e["edge"] <= 0:
-                continue
-            if e.get("expected_value", 0.0) < min_expected_value:
-                continue
-
-            candidates.append({
-                "home_team": m["home_team"],
-                "away_team": m["away_team"],
-                "date": m["date"],
-                "matchday": m.get("matchday"),
-                "pick": outcome,
-                "model_prob": round(e["model_prob"], 4),
-                "implied_prob": round(e["implied_prob"], 4),
-                "edge": round(e["edge"], 4),
-                "expected_value": round(e.get("expected_value", 0.0), 4),
-                "american_odds": american,
-                "decimal_odds": e["decimal_odds"],
-                "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
-                "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
-                "confidence_stars": m.get("confidence_stars", 1),
-            })
-
-    candidates.sort(key=lambda x: x["model_prob"], reverse=True)
-    return _exclude_opponent_conflicts(candidates)[:3]
-
 
 def refresh_sport(sport_key: str) -> None:
     """Refresh odds and slop locks for one sport.
@@ -165,7 +78,10 @@ def refresh_sport(sport_key: str) -> None:
     # Fetch fresh odds and build lookup
     odds_lookup: dict[tuple, dict] = {}
     try:
-        odds_list = fetch_odds(sport_key=sport["odds_sport"])
+        odds_list = fetch_odds(
+            sport_key=sport["odds_sport"],
+            include_totals=(sport_key in {"nba", "mlb"}),
+        )
         for o in odds_list:
             o["home_team"] = normalizer(o["home_team"])
             o["away_team"] = normalizer(o["away_team"])
@@ -173,6 +89,10 @@ def refresh_sport(sport_key: str) -> None:
         print(f"  {sport_key}: fetched odds for {len(odds_list)} games")
     except Exception as exc:
         print(f"  {sport_key}: odds fetch failed ({exc}), using cached edges")
+
+    tracking_dir = data_path.parent.parent / "tracking"
+    odds_history_path = str(tracking_dir / "odds_history.csv")
+    _append_odds_snapshot_log(odds_history_path, _build_odds_snapshot_rows(sport_key, odds_list))
 
     # Patch edges onto matches where we have fresh odds
     for match in matches:
@@ -204,10 +124,64 @@ def refresh_sport(sport_key: str) -> None:
             match["confidence_stars"] = compute_confidence_stars(model_prob, edge)
             match["american_odds"] = match["best_odds"].get(pick)
 
+    totals_matches: list[dict] = data.get("totals_matches", [])
+    for total_match in totals_matches:
+        match_odds = _lookup_match_odds(
+            odds_lookup,
+            sport_key,
+            total_match["home_team"],
+            total_match["away_team"],
+        )
+        if not match_odds or match_odds.get("total_line") is None:
+            continue
+        expected_total = float(total_match.get("expected_total", match_odds["total_line"]))
+        sigma = max(1.5, float(total_match.get("total_stddev", sport.get("totals_default_stddev", 3.1))))
+        current_line = float(match_odds["total_line"])
+        over_prob = float(1.0 - norm.cdf(current_line, loc=expected_total, scale=sigma))
+        over_prob = max(0.01, min(0.99, over_prob))
+        total_probs = {"over": over_prob, "under": 1.0 - over_prob}
+        total_edges = compute_totals_edges(
+            total_probs,
+            match_odds,
+            individual_probs=[total_probs],
+            fractional_kelly=sport.get("kelly_fraction", 0.25),
+        )
+        total_pick = max(total_probs, key=total_probs.get)
+        total_match["start_time"] = match_odds.get("commence_time", total_match.get("start_time"))
+        total_match["total_line"] = current_line
+        total_match["pick"] = total_pick
+        total_match["model_prob"] = round(total_probs[total_pick], 4)
+        total_match["confidence_score"] = total_edges.get(total_pick, {}).get("confidence_score", 0.0)
+        total_match["american_odds"] = total_edges.get(total_pick, {}).get("american_odds")
+        total_match["model_probs"] = {k: round(v, 4) for k, v in total_probs.items()}
+        total_match["edges"] = total_edges
+
     matches_with_odds = sum(1 for m in matches if m.get("edges"))
     min_expected_value = sport.get("min_expected_value", 0.0)
-    slop_locks = _recompute_slop_locks(matches, outcomes, min_expected_value=min_expected_value)
-    slimegrinder = _compute_slimegrinder(matches, outcomes, min_expected_value=min_expected_value)
+    slop_locks = _run_compute_slop_locks(
+        matches,
+        outcomes,
+        min_expected_value=min_expected_value,
+        edge_floor=sport.get("slop_lock_edge_threshold", 0.03),
+        probability_floor=sport.get("slop_lock_probability_floor", 0.45),
+        additional_confidence_floor=sport.get("slop_lock_confidence_threshold", 65.0),
+        confidence_dropoff=sport.get("slop_lock_confidence_dropoff", 0.0),
+        max_picks=sport.get("slop_lock_max_picks", 3),
+    )
+    slimegrinder = _run_compute_slimegrinder(
+        matches,
+        outcomes,
+        min_expected_value=min_expected_value,
+        confidence_floor=sport.get("slimegrinder_confidence_threshold", 65.0),
+    )
+    totals_locks = _compute_totals_locks(
+        totals_matches,
+        min_expected_value=sport.get("totals_min_expected_value", min_expected_value),
+        edge_floor=sport.get("totals_edge_threshold", 0.02),
+        probability_floor=sport.get("totals_probability_floor", 0.53),
+        confidence_floor=sport.get("totals_confidence_threshold", 54.0),
+        max_picks=sport.get("totals_max_picks", 3),
+    ) if totals_matches else []
     in_window = sum(
         1 for s in slop_locks
         if SLOP_LOCK_MIN_ODDS <= s["american_odds"] <= SLOP_LOCK_MAX_ODDS
@@ -215,15 +189,28 @@ def refresh_sport(sport_key: str) -> None:
     fallback = len(slop_locks) - in_window
 
     data["matches"] = matches
+    data["totals_matches"] = totals_matches
     data["slop_locks"] = slop_locks
+    data["totals_locks"] = totals_locks
     data["slimegrinder"] = slimegrinder
+
+    pick_history_path = data_path.parent / "pick_history.json"
+    pick_history = _load_json(str(pick_history_path))
+    if isinstance(pick_history, dict):
+        latest_snapshots = _load_latest_odds_snapshots(odds_history_path, sport_key)
+        picks = pick_history.get("picks", [])
+        if isinstance(picks, list):
+            _apply_latest_market_snapshots(picks, latest_snapshots)
+            pick_history["picks"] = picks
+            _save_json(str(pick_history_path), pick_history)
 
     with data_path.open("w") as f:
         json.dump(data, f, indent=2)
 
     print(
         f"  {sport_key}: {matches_with_odds} matches with odds → "
-        f"{len(slop_locks)} locks ({in_window} in window, {fallback} fallback)"
+        f"{len(slop_locks)} locks ({in_window} in window, {fallback} fallback), "
+        f"{len(totals_locks)} totals"
     )
 
 

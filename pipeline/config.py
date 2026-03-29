@@ -4,6 +4,7 @@ import os
 
 TRACKING_DIRNAME = "tracking"
 RESULTS_LOG_FILENAME = "results_log.csv"
+ODDS_HISTORY_FILENAME = "odds_history.csv"
 
 # API Keys (from environment / GitHub Secrets)
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
@@ -148,6 +149,7 @@ SPORTS = {
         "nba_matchup_window": 8,
         "nba_matchup_min_games": 30,
         "availability_adjustment_max_delta": 0.02,
+        "availability_total_adjustment_max_points": 2.2,
         "totals_feature_window": 8,
         "totals_feature_min_games": 30,
         "totals_min_expected_value": 0.0,
