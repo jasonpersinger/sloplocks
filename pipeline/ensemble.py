@@ -6,8 +6,10 @@ from pipeline.config import VALUE_EDGE_THRESHOLD
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
 
-def decimal_to_american(decimal_odds: float) -> int:
+def decimal_to_american(decimal_odds: float) -> int | None:
     """Convert decimal odds to American format."""
+    if decimal_odds <= 1.0:
+        return None
     if decimal_odds >= 2.0:
         return round((decimal_odds - 1) * 100)
     else:

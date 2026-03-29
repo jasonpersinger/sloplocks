@@ -34,6 +34,9 @@ class TestOddsConversion:
         # 2.0 -> exactly +100
         assert decimal_to_american(2.0) == 100
 
+    def test_invalid_decimal_placeholder_returns_none(self):
+        assert decimal_to_american(1.0) is None
+
     def test_implied_probability_even(self):
         assert implied_probability(2.0) == pytest.approx(0.50)
 
