@@ -512,7 +512,7 @@
       }
 
       allPicks.sort(function (a, b) { return b.model_prob - a.model_prob; });
-      renderFeed(allPicks.slice(0, 5));
+      renderFeed(allPicks);
       renderStats('all');
     });
   }
@@ -531,7 +531,7 @@
         var locks = (data.slop_locks || []).concat(data.totals_locks || []);
         locks.forEach(function (pick) { pick.sport = sport; });
         locks.sort(function (a, b) { return b.model_prob - a.model_prob; });
-        renderFeed(locks.slice(0, 5));
+        renderFeed(locks);
         renderStats(sport);
       })
       .catch(function () {
