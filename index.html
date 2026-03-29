@@ -316,8 +316,13 @@
   }
 
   function createPickCard(pick) {
-    var pickedTeam = pick.pick === 'home' ? pick.home_team : pick.away_team;
-    var opponent   = pick.pick === 'home' ? pick.away_team : pick.home_team;
+    var isTotal = pick.market_type === 'total';
+    var pickedTeam = isTotal
+      ? (pick.pick || '').toUpperCase() + (pick.total_line != null ? ' ' + pick.total_line : '')
+      : (pick.pick === 'home' ? pick.home_team : pick.away_team);
+    var opponent   = isTotal
+      ? pick.home_team + ' VS ' + pick.away_team
+      : (pick.pick === 'home' ? pick.away_team : pick.home_team);
 
     var card = document.createElement('article');
     card.className = 'pick-card';
@@ -346,14 +351,14 @@
     meta.className = 'meta-grid';
     meta.innerHTML =
       '<span><span class="label">MODEL</span> ' + pct(pick.model_prob) + '</span>' +
-      '<span><span class="label">FAIR</span> ' + pct(pick.implied_prob || 0) + '</span>' +
+      '<span><span class="label">' + (isTotal ? 'LINE' : 'FAIR') + '</span> ' + (isTotal ? (pick.total_line != null ? pick.total_line : '--') : pct(pick.implied_prob || 0)) + '</span>' +
       '<span class="' + ((pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad') + '"><span class="label">EDGE</span> ' + edgePct(pick.edge || 0) + '</span>';
     box.appendChild(meta);
 
     var footer = document.createElement('div');
     footer.className = 'footer-grid';
     footer.innerHTML =
-      '<span><span class="label">EV</span> ' + units(pick.expected_value) + '</span>' +
+      '<span><span class="label">' + (isTotal ? 'PROJ' : 'EV') + '</span> ' + (isTotal ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--') : units(pick.expected_value)) + '</span>' +
       '<span><span class="label">CONF</span> ' + (pick.confidence_score != null ? pick.confidence_score + '/100' : '--') + '</span>' +
       '<span><span class="label">KELLY</span> ' + (pick.fractional_kelly != null ? (pick.fractional_kelly * 100).toFixed(1) + '%' : '--') + '</span>';
     box.appendChild(footer);
@@ -494,6 +499,10 @@
           pick.sport = sport; // tag with source sport key
           allPicks.push(pick);
         });
+        (data.totals_locks || []).forEach(function (pick) {
+          pick.sport = sport;
+          allPicks.push(pick);
+        });
       });
 
       if (Object.keys(loadedSportsData).length === 0) {
@@ -519,7 +528,7 @@
       })
       .then(function (data) {
         loadedSportsData[sport] = data;
-        var locks = data.slop_locks || [];
+        var locks = (data.slop_locks || []).concat(data.totals_locks || []);
         locks.forEach(function (pick) { pick.sport = sport; });
         locks.sort(function (a, b) { return b.model_prob - a.model_prob; });
         renderFeed(locks.slice(0, 5));

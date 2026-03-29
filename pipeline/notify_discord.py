@@ -77,6 +77,11 @@ def _fmt_units(value: float | None) -> str:
 
 def _pick_team(item: dict) -> str:
     """Return the picked side's display name."""
+    if item.get("market_type") == "total":
+        line = item.get("total_line")
+        if line is None:
+            return item["pick"].upper()
+        return f"{item['pick'].upper()} {line:g}"
     outcome = item["pick"]
     if outcome == "home":
         return item["home_team"]
@@ -173,6 +178,11 @@ def _build_curated_candidates() -> list[dict]:
                 _enrich_item(lock, sport_key, "slop_lock", lookup.get(_pick_key(lock)))
             )
 
+        for total_lock in data.get("totals_locks") or []:
+            curated.append(
+                _enrich_item(total_lock, sport_key, "total_lock")
+            )
+
         longslop = data.get("longslop")
         if longslop:
             curated.append(
@@ -227,10 +237,14 @@ def _status_label(item: dict) -> str:
 
 def _pick_subtitle(item: dict) -> str:
     parts = []
+    if item.get("market_type") == "total" and item.get("expected_total") is not None:
+        parts.append(f"Proj {item['expected_total']:.1f}")
     if item.get("source") == "longslop":
         parts.append("Longshot")
     elif item.get("source") == "slop_lock":
         parts.append("Curated")
+    elif item.get("source") == "total_lock":
+        parts.append("Totals")
     else:
         parts.append("Model radar")
 

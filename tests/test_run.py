@@ -328,6 +328,9 @@ class TestRunMLBPipeline:
                 "commence_time": f"{_TODAY}T20:10:00Z",
                 "home_odds": 1.85,
                 "away_odds": 2.05,
+                "total_line": 8.5,
+                "over_odds": 1.95,
+                "under_odds": 1.91,
             }
         ]
 
@@ -335,6 +338,7 @@ class TestRunMLBPipeline:
         monkeypatch.setitem(SPORTS["mlb"], "pitcher_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "run_environment_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "handedness_feature_min_games", 4)
+        monkeypatch.setitem(SPORTS["mlb"], "totals_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "results_feature_min_games", 50)
 
         output_dir = str(tmp_path / "mlb")
@@ -348,6 +352,10 @@ class TestRunMLBPipeline:
         assert "run_environment" in match["individual_models"]
         assert "handedness_features" in match["individual_models"]
         assert match["weather"]["temperature_f"] == 82.0
+        total_market = data["totals_matches"][0]
+        assert total_market["total_line"] == 8.5
+        assert total_market["pick"] in {"over", "under"}
+        assert "over" in total_market["edges"]
 
 
 class TestMlbWeatherAdjustment:

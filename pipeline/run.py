@@ -11,6 +11,7 @@ from datetime import datetime, timedelta, timezone
 
 import numpy as np
 import pandas as pd
+from scipy.stats import norm
 
 from pipeline.config import (
     ANTHROPIC_API_KEY,
@@ -37,6 +38,7 @@ from pipeline.models import (
     EloRatings,
     FourFactorsModel,
     HandednessMatchupModel,
+    MlbTotalsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
@@ -44,6 +46,7 @@ from pipeline.models import (
     elo_predict,
     four_factors_predict,
     handedness_matchup_predict,
+    mlb_totals_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
@@ -51,7 +54,7 @@ from pipeline.models import (
     run_environment_predict,
     results_features_predict,
 )
-from pipeline.ensemble import blend_predictions, compute_edges, decimal_to_american, compute_confidence_stars
+from pipeline.ensemble import blend_predictions, compute_edges, compute_totals_edges, decimal_to_american, compute_confidence_stars
 from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
 from pipeline.backtest import (
     compute_model_weights,
@@ -403,6 +406,35 @@ def _apply_mlb_weather_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
+def _apply_mlb_weather_total_adjustment(
+    expected_total: float,
+    weather: dict | None,
+    max_runs_delta: float = 0.8,
+) -> float:
+    """Shift an MLB total modestly for outdoor weather conditions."""
+    if not weather or not weather.get("weather_exposed"):
+        return expected_total
+
+    temperature_f = weather.get("temperature_f")
+    wind_mph = weather.get("wind_mph")
+    precip_probability = weather.get("precipitation_probability")
+    if temperature_f is None or wind_mph is None:
+        return expected_total
+
+    warm_term = max(-1.0, min(1.0, (float(temperature_f) - 68.0) / 18.0))
+    wind_term = max(-1.0, min(1.0, (float(wind_mph) - 10.0) / 15.0))
+    precip_term = 0.0
+    if precip_probability is not None:
+        precip_term = max(0.0, min(1.0, (float(precip_probability) - 20.0) / 50.0))
+
+    environment_index = max(-1.0, min(1.0, (0.55 * warm_term) + (0.35 * wind_term) - (0.45 * precip_term)))
+    if abs(environment_index) < 0.05:
+        return expected_total
+
+    delta = max(-max_runs_delta, min(max_runs_delta, environment_index * max_runs_delta))
+    return max(4.5, min(16.0, expected_total + delta))
+
+
 # ---------------------------------------------------------------------------
 # Blurb generation (via Claude API)
 # ---------------------------------------------------------------------------
@@ -658,6 +690,62 @@ def _compute_longslop(
 
     longslop_candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
     return longslop_candidates[0] if longslop_candidates else None
+
+
+def _compute_totals_locks(
+    total_records,
+    min_expected_value: float = 0.0,
+    edge_floor: float = 0.02,
+    probability_floor: float = 0.53,
+    confidence_floor: float = 54.0,
+    max_picks: int = 3,
+):
+    """Extract curated MLB totals picks from over/under records."""
+    candidates = []
+    for rec in total_records:
+        if rec.get("completed"):
+            continue
+        edges = rec.get("edges") or {}
+        for outcome in ("over", "under"):
+            edge_data = edges.get(outcome)
+            if not edge_data:
+                continue
+            if (
+                edge_data.get("edge", 0.0) >= edge_floor
+                and edge_data.get("model_prob", 0.0) >= probability_floor
+                and edge_data.get("expected_value", 0.0) >= min_expected_value
+                and edge_data.get("confidence_score", 0.0) >= confidence_floor
+            ):
+                candidates.append({
+                    "market_type": "total",
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": rec["date"],
+                    "start_time": rec.get("start_time"),
+                    "pick": outcome,
+                    "total_line": rec.get("total_line"),
+                    "expected_total": rec.get("expected_total"),
+                    "weather": rec.get("weather"),
+                    "model_prob": round(edge_data["model_prob"], 4),
+                    "implied_prob": round(edge_data["implied_prob"], 4),
+                    "edge": round(edge_data["edge"], 4),
+                    "expected_value": round(edge_data["expected_value"], 4),
+                    "american_odds": edge_data["american_odds"],
+                    "decimal_odds": edge_data["decimal_odds"],
+                    "kelly_fraction": round(edge_data.get("kelly_fraction", 0.0), 4),
+                    "fractional_kelly": round(edge_data.get("fractional_kelly", 0.0), 4),
+                    "confidence_score": edge_data.get("confidence_score", 0.0),
+                })
+
+    candidates.sort(
+        key=lambda item: (
+            item.get("confidence_score", 0.0),
+            item.get("expected_value", 0.0),
+            item.get("edge", 0.0),
+        ),
+        reverse=True,
+    )
+    return candidates[:max_picks]
 
 
 def _compute_slimegrinder(
@@ -929,7 +1017,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # Odds are generic — just pass the right sport key
     odds_list = []
     try:
-        odds_list = fetch_odds(sport_key=sport["odds_sport"])
+        odds_list = fetch_odds(
+            sport_key=sport["odds_sport"],
+            include_totals=(sport_key == "mlb"),
+        )
     except Exception:
         pass
 
@@ -1022,6 +1113,15 @@ def run_sport_pipeline(sport_key, output_dir=None):
             min_games=sport.get("handedness_feature_min_games", 20),
         )
 
+    totals_model = None
+    if sport_key == "mlb" and matches is not None and not matches.empty:
+        totals_model = MlbTotalsModel(
+            matches,
+            feature_window=sport.get("totals_feature_window", 12),
+            min_games=sport.get("totals_feature_min_games", 20),
+            default_stddev=sport.get("totals_default_stddev", 3.1),
+        )
+
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
@@ -1105,6 +1205,7 @@ def run_sport_pipeline(sport_key, output_dir=None):
     fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] in allowed_dates]
 
     prediction_records = []
+    totals_prediction_records = []
 
     for fix in fixtures:
         home = fix["home_team"]
@@ -1313,6 +1414,55 @@ def run_sport_pipeline(sport_key, output_dir=None):
         }
         prediction_records.append(record)
 
+        if sport_key == "mlb" and totals_model is not None and match_odds and match_odds.get("total_line") is not None:
+            total_projection = mlb_totals_predict(
+                totals_model,
+                fix,
+                total_line=float(match_odds["total_line"]),
+            )
+            total_projection["expected_total"] = _apply_mlb_weather_total_adjustment(
+                total_projection["expected_total"],
+                fix.get("weather"),
+            )
+            sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
+            over_prob = float(
+                1.0 - norm.cdf(
+                    float(match_odds["total_line"]),
+                    loc=total_projection["expected_total"],
+                    scale=sigma,
+                )
+            )
+            over_prob = max(0.01, min(0.99, over_prob))
+            total_model_probs = {"over": over_prob, "under": 1.0 - over_prob}
+            total_edges = compute_totals_edges(
+                total_model_probs,
+                match_odds,
+                individual_probs=[total_model_probs],
+                fractional_kelly=sport.get("kelly_fraction", 0.25),
+            )
+            total_pick = max(total_model_probs, key=total_model_probs.get)
+            totals_prediction_records.append({
+                "market_type": "total",
+                "home_team": home,
+                "away_team": away,
+                "date": fix["date"],
+                "start_time": _resolve_start_time(fix, match_odds),
+                "completed": fix.get("completed", False),
+                "home_pitcher": fix.get("home_pitcher"),
+                "away_pitcher": fix.get("away_pitcher"),
+                "weather": fix.get("weather"),
+                "total_line": float(match_odds["total_line"]),
+                "expected_total": round(total_projection["expected_total"], 3),
+                "total_stddev": round(sigma, 3),
+                "pick": total_pick,
+                "model_prob": round(total_model_probs[total_pick], 4),
+                "confidence_score": total_edges.get(total_pick, {}).get("confidence_score", 0.0),
+                "american_odds": total_edges.get(total_pick, {}).get("american_odds"),
+                "model_probs": {k: round(v, 4) for k, v in total_model_probs.items()},
+                "individual_models": {"totals_model": {k: round(v, 4) for k, v in total_model_probs.items()}},
+                "edges": total_edges,
+            })
+
     # ------------------------------------------------------------------
     # 5b. SLOP LOCKS + LONGSLOP
     # ------------------------------------------------------------------
@@ -1339,6 +1489,14 @@ def run_sport_pipeline(sport_key, output_dir=None):
         min_expected_value=min_expected_value,
         confidence_floor=sport.get("slimegrinder_confidence_threshold", 65.0),
     )
+    totals_locks = _compute_totals_locks(
+        totals_prediction_records,
+        min_expected_value=sport.get("totals_min_expected_value", min_expected_value),
+        edge_floor=sport.get("totals_edge_threshold", 0.02),
+        probability_floor=sport.get("totals_probability_floor", 0.53),
+        confidence_floor=sport.get("totals_confidence_threshold", 54.0),
+        max_picks=sport.get("totals_max_picks", 3),
+    ) if sport_key == "mlb" else []
 
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
@@ -1517,9 +1675,11 @@ def run_sport_pipeline(sport_key, output_dir=None):
         "sport_name": sport["display_name"],
         "outcomes": outcomes,
         "slop_locks": slop_locks,
+        "totals_locks": totals_locks,
         "slimegrinder": slimegrinder,
         "longslop": longslop,
         "matches": prediction_records,
+        "totals_matches": totals_prediction_records,
         "season_stats": season_stats,
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
         "pick_stats": pick_stats,

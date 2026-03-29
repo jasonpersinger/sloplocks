@@ -12,6 +12,7 @@ from pipeline.models import (
     HandednessMatchupModel,
     EloRatings,
     FourFactorsModel,
+    MlbTotalsModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     ResultsFeatureModel,
@@ -23,6 +24,7 @@ from pipeline.models import (
     fit_dixon_coles,
     four_factors_predict,
     handedness_matchup_predict,
+    mlb_totals_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
     run_environment_predict,
@@ -501,6 +503,58 @@ class TestHandednessMatchupModel:
         assert model.model is not None
         assert probs["home"] > 0.5
         assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestMlbTotalsModel:
+    def _sample_games(self):
+        rows = []
+        base = pd.Timestamp("2026-03-01")
+        games = [
+            ("Reds", "Red Sox", 6, 5, "Ace R", "Ace B", 5.0, 3, 6.0, 2, 4.0, 3, 3.0, 2),
+            ("Reds", "Giants", 7, 3, "Ace R", "Ace G", 5.0, 2, 6.0, 2, 4.0, 2, 3.0, 1),
+            ("Red Sox", "Cardinals", 5, 4, "Ace B", "Ace C", 6.0, 2, 6.0, 3, 3.0, 1, 3.0, 2),
+            ("Reds", "Cardinals", 8, 4, "Ace R", "Ace C", 5.0, 3, 6.0, 3, 4.0, 2, 3.0, 2),
+            ("Giants", "Cardinals", 3, 2, "Ace G", "Ace C", 6.0, 1, 6.0, 2, 3.0, 1, 3.0, 1),
+            ("Red Sox", "Giants", 6, 3, "Ace B", "Ace G", 6.0, 2, 6.0, 2, 3.0, 1, 3.0, 1),
+        ]
+        for idx, game in enumerate(games):
+            home, away, hg, ag, hp, ap, hip, her, aip, aer, hbip, hber, abip, aber = game
+            rows.append({
+                "date": (base + pd.Timedelta(days=idx)).strftime("%Y-%m-%d"),
+                "home_team": home,
+                "away_team": away,
+                "home_goals": hg,
+                "away_goals": ag,
+                "home_pitcher": hp,
+                "away_pitcher": ap,
+                "home_pitcher_ip": hip,
+                "home_pitcher_earned_runs": her,
+                "away_pitcher_ip": aip,
+                "away_pitcher_earned_runs": aer,
+                "home_bullpen_ip": hbip,
+                "home_bullpen_earned_runs": hber,
+                "away_bullpen_ip": abip,
+                "away_bullpen_earned_runs": aber,
+            })
+        return pd.DataFrame(rows)
+
+    def test_predicts_expected_total_and_market_probabilities(self):
+        model = MlbTotalsModel(self._sample_games(), feature_window=4, min_games=4)
+        result = mlb_totals_predict(
+            model,
+            {
+                "home_team": "Reds",
+                "away_team": "Red Sox",
+                "home_pitcher": "Ace R",
+                "away_pitcher": "Ace B",
+            },
+            total_line=9.5,
+        )
+
+        assert model.model is not None
+        assert result["expected_total"] > 7.0
+        assert 0.0 < result["over"] < 1.0
+        assert math.isclose(result["over"] + result["under"], 1.0, abs_tol=1e-9)
 
 
 class TestRecentBoxScoreModel:

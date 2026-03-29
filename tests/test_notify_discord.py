@@ -95,11 +95,29 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
         "start_time": "2026-03-29T02:00:00Z",
         "pick": "away",
     }
+    mlb_total_lock = {
+        "market_type": "total",
+        "home_team": "Dodgers",
+        "away_team": "Padres",
+        "date": "2026-03-28",
+        "start_time": "2026-03-29T02:00:00Z",
+        "pick": "over",
+        "total_line": 8.5,
+        "expected_total": 9.4,
+        "model_prob": 0.59,
+        "implied_prob": 0.512,
+        "edge": 0.048,
+        "expected_value": 0.14,
+        "american_odds": -105,
+        "fractional_kelly": 0.018,
+        "confidence_score": 61,
+    }
     _write_predictions(
         tmp_path,
         "mlb",
         {
             "slop_locks": [],
+            "totals_locks": [mlb_total_lock],
             "longslop": mlb_longslop,
             "matches": [mlb_match],
         },
@@ -114,6 +132,8 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "curated picks" in payload["content"]
     assert "Lakers" in full_text
     assert "Dodgers" in full_text
+    assert "OVER 8.5" in full_text
+    assert "Proj 9.4" in full_text
     assert "LONGSLOP" in full_text
     assert "EV 0.17u" in full_text
     assert "Kelly 4.1%" in full_text

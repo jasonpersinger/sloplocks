@@ -5,8 +5,8 @@ import math
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
-from scipy.stats import poisson
-from sklearn.linear_model import LogisticRegression
+from scipy.stats import norm, poisson
+from sklearn.linear_model import LinearRegression, LogisticRegression
 
 from pipeline.config import (
     CONGESTION_PENALTY,
@@ -1211,6 +1211,163 @@ class RunEnvironmentModel:
 def run_environment_predict(model, home_team, away_team):
     """Predict two-way win probabilities from the MLB run-environment model."""
     return model.predict(home_team, away_team)
+
+
+# ---------------------------------------------------------------------------
+# MLB totals model
+# ---------------------------------------------------------------------------
+
+class MlbTotalsModel:
+    """Walk-forward regression model for MLB game totals."""
+
+    def __init__(self, games, feature_window=12, min_games=20, park_factors=None, default_stddev=3.1):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.park_factors = park_factors or MLB_PARK_FACTORS
+        self.default_stddev = default_stddev
+        self.model = None
+        self.team_logs = {}
+        self.pitcher_logs = {}
+        self.feature_names = [
+            "home_recent_runs_for",
+            "away_recent_runs_for",
+            "home_recent_runs_allowed",
+            "away_recent_runs_allowed",
+            "home_starter_recent_ra9",
+            "away_starter_recent_ra9",
+            "home_bullpen_recent_ra9",
+            "away_bullpen_recent_ra9",
+            "park_factor",
+        ]
+        self.residual_std = default_stddev
+        self._fit(games)
+
+    def _recent_team_rates(self, team_logs):
+        if not team_logs:
+            return {"runs_for": 4.4, "runs_allowed": 4.4}
+        recent = team_logs[-self.feature_window :]
+        return {
+            "runs_for": float(sum(item["runs_for"] for item in recent) / len(recent)),
+            "runs_allowed": float(sum(item["runs_allowed"] for item in recent) / len(recent)),
+        }
+
+    def _recent_ra9(self, logs, key, default):
+        if not logs:
+            return default
+        recent = logs[-self.feature_window :]
+        innings = sum(item["innings"] for item in recent)
+        if innings <= 0:
+            return default
+        return 9.0 * sum(item[key] for item in recent) / innings
+
+    def _feature_vector(self, row, team_logs, pitcher_logs):
+        home_team = row["home_team"]
+        away_team = row["away_team"]
+        home_rates = self._recent_team_rates(team_logs.get(home_team, []))
+        away_rates = self._recent_team_rates(team_logs.get(away_team, []))
+        home_pitcher = row.get("home_pitcher")
+        away_pitcher = row.get("away_pitcher")
+        home_park = float(self.park_factors.get(home_team, 1.0))
+
+        return np.array([
+            home_rates["runs_for"],
+            away_rates["runs_for"],
+            home_rates["runs_allowed"],
+            away_rates["runs_allowed"],
+            self._recent_ra9(pitcher_logs.get(home_pitcher, []), "earned_runs", 4.4),
+            self._recent_ra9(pitcher_logs.get(away_pitcher, []), "earned_runs", 4.4),
+            self._recent_ra9(team_logs.get(home_team, []), "bullpen_earned_runs", 4.2),
+            self._recent_ra9(team_logs.get(away_team, []), "bullpen_earned_runs", 4.2),
+            home_park,
+        ])
+
+    def _fit(self, games):
+        required = {
+            "home_team", "away_team", "home_goals", "away_goals",
+            "home_pitcher", "away_pitcher",
+            "home_pitcher_ip", "away_pitcher_ip",
+            "home_pitcher_earned_runs", "away_pitcher_earned_runs",
+            "home_bullpen_ip", "away_bullpen_ip",
+            "home_bullpen_earned_runs", "away_bullpen_earned_runs",
+        }
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs: dict[str, list[dict]] = {}
+        pitcher_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            X.append(self._feature_vector(row, team_logs, pitcher_logs))
+            y.append(float(row["home_goals"]) + float(row["away_goals"]))
+
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+            home_pitcher = row.get("home_pitcher")
+            away_pitcher = row.get("away_pitcher")
+
+            team_logs.setdefault(home_team, []).append({
+                "runs_for": float(row["home_goals"]),
+                "runs_allowed": float(row["away_goals"]),
+                "innings": float(row.get("home_bullpen_ip", 0.0) or 0.0),
+                "bullpen_earned_runs": float(row.get("home_bullpen_earned_runs", 0.0) or 0.0),
+            })
+            team_logs.setdefault(away_team, []).append({
+                "runs_for": float(row["away_goals"]),
+                "runs_allowed": float(row["home_goals"]),
+                "innings": float(row.get("away_bullpen_ip", 0.0) or 0.0),
+                "bullpen_earned_runs": float(row.get("away_bullpen_earned_runs", 0.0) or 0.0),
+            })
+            if home_pitcher and home_pitcher != "TBD":
+                pitcher_logs.setdefault(home_pitcher, []).append({
+                    "innings": float(row.get("home_pitcher_ip", 0.0) or 0.0),
+                    "earned_runs": float(row.get("home_pitcher_earned_runs", 0.0) or 0.0),
+                })
+            if away_pitcher and away_pitcher != "TBD":
+                pitcher_logs.setdefault(away_pitcher, []).append({
+                    "innings": float(row.get("away_pitcher_ip", 0.0) or 0.0),
+                    "earned_runs": float(row.get("away_pitcher_earned_runs", 0.0) or 0.0),
+                })
+
+        self.team_logs = team_logs
+        self.pitcher_logs = pitcher_logs
+
+        if len(X) < self.min_games:
+            return
+
+        self.model = LinearRegression()
+        self.model.fit(np.array(X), np.array(y))
+        preds = self.model.predict(np.array(X))
+        residuals = np.array(y) - preds
+        if len(residuals) >= 5:
+            self.residual_std = max(1.5, float(np.std(residuals)))
+
+    def predict_total(self, fixture: dict) -> float:
+        if self.model is None:
+            return 8.4
+        features = self._feature_vector(fixture, self.team_logs, self.pitcher_logs)
+        total = float(self.model.predict(np.array([features]))[0])
+        return max(4.5, min(16.0, total))
+
+    def predict_market(self, fixture: dict, total_line: float) -> dict[str, float]:
+        expected_total = self.predict_total(fixture)
+        sigma = max(1.5, float(self.residual_std or self.default_stddev))
+        over_prob = float(1.0 - norm.cdf(total_line, loc=expected_total, scale=sigma))
+        over_prob = max(0.01, min(0.99, over_prob))
+        under_prob = 1.0 - over_prob
+        return {
+            "expected_total": expected_total,
+            "stddev": sigma,
+            "over": over_prob,
+            "under": under_prob,
+        }
+
+
+def mlb_totals_predict(model, fixture: dict, total_line: float) -> dict[str, float]:
+    """Predict MLB over/under probabilities and expected total."""
+    return model.predict_market(fixture, total_line)
 
 
 # ---------------------------------------------------------------------------

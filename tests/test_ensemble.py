@@ -3,6 +3,7 @@
 import pytest
 from pipeline.ensemble import (
     apply_probability_calibration,
+    compute_totals_edges,
     decimal_to_american,
     implied_probability,
     blend_predictions,
@@ -140,6 +141,20 @@ class TestComputeEdges:
         assert edges["home"]["implied_prob"] == pytest.approx(0.4545, abs=1e-4)
         assert edges["home"]["hold"] == pytest.approx(0.0476, abs=1e-4)
         assert edges["home"]["edge"] == pytest.approx(0.0873, abs=1e-2)
+
+
+class TestComputeTotalsEdges:
+    def test_totals_edges_calculate_over_under_value(self):
+        edges = compute_totals_edges(
+            {"over": 0.58, "under": 0.42},
+            {"over_odds": 1.95, "under_odds": 1.91},
+        )
+
+        assert "over" in edges
+        assert "under" in edges
+        assert edges["over"]["market_implied_prob"] == pytest.approx(1 / 1.95, abs=1e-4)
+        assert edges["over"]["expected_value"] > 0
+        assert edges["over"]["american_odds"] == decimal_to_american(1.95)
 
 
 class TestExpectedValue:

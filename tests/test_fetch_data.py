@@ -116,3 +116,76 @@ class TestFetchOdds:
 
         actual_url = mock_get.call_args[0][0]
         assert "basketball_nba" in actual_url
+
+    @patch("pipeline.fetch_data.requests.get")
+    def test_include_totals_returns_consensus_total_line(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = [
+            {
+                "home_team": "Atlanta Braves",
+                "away_team": "New York Mets",
+                "commence_time": "2026-03-29T23:20:00Z",
+                "bookmakers": [
+                    {
+                        "key": "draftkings",
+                        "markets": [
+                            {
+                                "key": "h2h",
+                                "outcomes": [
+                                    {"name": "Atlanta Braves", "price": 1.85},
+                                    {"name": "New York Mets", "price": 2.05},
+                                ],
+                            },
+                            {
+                                "key": "totals",
+                                "outcomes": [
+                                    {"name": "Over", "price": 1.95, "point": 8.5},
+                                    {"name": "Under", "price": 1.87, "point": 8.5},
+                                ],
+                            },
+                        ],
+                    },
+                    {
+                        "key": "fanduel",
+                        "markets": [
+                            {
+                                "key": "totals",
+                                "outcomes": [
+                                    {"name": "Over", "price": 2.00, "point": 8.5},
+                                    {"name": "Under", "price": 1.91, "point": 8.5},
+                                ],
+                            },
+                            {
+                                "key": "totals",
+                                "outcomes": [
+                                    {"name": "Over", "price": 1.82, "point": 9.0},
+                                    {"name": "Under", "price": 2.05, "point": 9.0},
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            }
+        ]
+        mock_resp.raise_for_status = MagicMock()
+        mock_get.return_value = mock_resp
+
+        odds = fetch_odds(sport_key="baseball_mlb", include_totals=True)
+
+        assert len(odds) == 1
+        match_odds = odds[0]
+        assert match_odds["total_line"] == 8.5
+        assert match_odds["over_odds"] == 2.00
+        assert match_odds["under_odds"] == 1.91
+
+    @patch("pipeline.fetch_data.requests.get")
+    def test_include_totals_uses_combined_markets_param(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = []
+        mock_resp.raise_for_status = MagicMock()
+        mock_get.return_value = mock_resp
+
+        fetch_odds(sport_key="baseball_mlb", include_totals=True)
+
+        params = mock_get.call_args.kwargs["params"]
+        assert params["markets"] == "h2h,totals"

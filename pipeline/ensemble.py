@@ -287,6 +287,61 @@ def compute_edges(
     return edges
 
 
+def compute_totals_edges(
+    model_probs: dict[str, float],
+    odds: dict[str, float],
+    individual_probs: list[dict[str, float]] | None = None,
+    fractional_kelly: float = 0.25,
+) -> dict[str, dict]:
+    """Compute over/under edges for totals markets."""
+    active_odds = {}
+    for outcome in ("over", "under"):
+        odds_key = f"{outcome}_odds"
+        dec_odds = odds.get(odds_key, 0)
+        if dec_odds > 0 and outcome in model_probs:
+            active_odds[outcome] = dec_odds
+
+    raw_probs, fair_probs, hold = no_vig_probabilities(active_odds)
+    edges: dict[str, dict] = {}
+    for outcome, dec_odds in active_odds.items():
+        imp_prob = fair_probs[outcome]
+        raw_imp_prob = raw_probs[outcome]
+        raw_mod_prob = model_probs[outcome]
+        calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
+        edge = calibrated_mod_prob - imp_prob
+        ev = expected_value(calibrated_mod_prob, dec_odds)
+        full_kelly = kelly_fraction(calibrated_mod_prob, dec_odds, fraction=1.0)
+        fractional = kelly_fraction(calibrated_mod_prob, dec_odds, fraction=fractional_kelly)
+
+        outcome_model_probs = []
+        if individual_probs:
+            for p in individual_probs:
+                if outcome in p:
+                    outcome_model_probs.append(p[outcome])
+
+        conf_score = compute_confidence_score(
+            outcome_model_probs, calibrated_mod_prob, edge, imp_prob, expected_value=ev
+        )
+        edges[outcome] = {
+            "model_prob": round(calibrated_mod_prob, 4),
+            "raw_model_prob": round(raw_mod_prob, 4),
+            "implied_prob": round(imp_prob, 4),
+            "market_implied_prob": round(raw_imp_prob, 4),
+            "edge": round(edge, 4),
+            "expected_value": round(ev, 4),
+            "decimal_odds": dec_odds,
+            "american_odds": decimal_to_american(dec_odds),
+            "kelly_fraction": round(full_kelly, 4),
+            "fractional_kelly": round(fractional, 4),
+            "confidence_score": conf_score,
+            "is_value": edge >= VALUE_EDGE_THRESHOLD and conf_score >= 65,
+            "unrealistic_flag": abs(raw_mod_prob - imp_prob) > MAX_ALLOWED_DIVERGENCE,
+            "hold": round(hold, 4),
+        }
+
+    return edges
+
+
 def compute_confidence_stars(model_prob: float, edge: float) -> int:
     """Legacy helper (keeping for compatibility, but moving to score)."""
     stars = 1

@@ -11,14 +11,14 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
    - NCAAM: `pipeline/fetch_ncaam.py:240-440`
    - MLB: `pipeline/fetch_mlb.py:191-243`
    - MMA: `pipeline/fetch_mma.py:97-195`
-2. Market odds are fetched from The Odds API and reduced to best available decimal prices per outcome in `pipeline/fetch_data.py:15-68`.
+2. Market odds are fetched from The Odds API and reduced to best available decimal prices per outcome in `pipeline/fetch_data.py:15-102`.
 3. Sport-specific models generate per-outcome probabilities:
    - Elo for all sports: `pipeline/models.py`
    - Results-feature logistic model for NBA, NCAAM, MLB, and MMA: `pipeline/models.py`
    - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
    - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
    - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
-   - Pitcher matchup, bullpen matchup, handedness matchup, and run-environment models for MLB: `pipeline/models.py`
+   - Pitcher matchup, bullpen matchup, handedness matchup, run-environment, and totals models for MLB: `pipeline/models.py`
 4. Historical model accuracy is converted into ensemble weights in `pipeline/backtest.py:72-87`, then blended in `pipeline/ensemble.py:55-69`.
 5. Historical isotonic calibration is fit from resolved `history.json` entries in `pipeline/ensemble.py:72-136` and applied in `pipeline/run.py:783-797`, `pipeline/run.py:891-897`.
 6. Odds-aware edges, EV, Kelly fractions, and confidence scores are computed in `pipeline/ensemble.py:210-276`.
@@ -88,6 +88,8 @@ Configured models live in `pipeline/config.py:112-137`.
   - Walk-forward team run and margin splits versus left-handed and right-handed starters using cached starter throwing-hand metadata from ESPN core athlete records in `pipeline/fetch_mlb.py` and `pipeline/models.py`.
 - Run-environment model:
   - Walk-forward team runs scored, runs allowed, recent scoring form, recent prevention form, recent margin, and home park-factor context using `MLB_PARK_FACTORS` in `pipeline/config.py` and `pipeline/models.py`.
+- Totals model:
+  - Walk-forward regression of expected game runs using team scoring form, starter run prevention, bullpen run prevention, and park context, then live over/under pricing with weather adjustment in `pipeline/models.py` and `pipeline/run.py`.
 - Fetched but unused inputs:
   - Full batting-order strength, confirmed starting lineups, platoon-heavy lineup composition, and bullpen leverage roles are still not modeled.
 
@@ -108,7 +110,8 @@ Configured models live in `pipeline/config.py:138-160`.
 
 - Active model lists are sport-specific in `pipeline/config.py:62-160`.
   - NBA and NCAAM use five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
-  - MLB uses six models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`, `handedness_features`.
+  - MLB uses six side models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`, `handedness_features`.
+  - MLB also now has a separate totals lane driven by `MlbTotalsModel` plus live totals-market pricing.
   - MMA uses two models: `elo`, `results_features`.
 - Historical rolling accuracy for each model is read from `model_accuracy.json` and transformed into softmax weights in `pipeline/backtest.py:72-87` and `pipeline/run.py:775-781`.
 - The softmax temperature is now configurable per sport:
@@ -137,6 +140,7 @@ Configured models live in `pipeline/config.py:138-160`.
   - model win probability
   - edge size
   - penalties for large market divergence and sub-45% underdogs
+- MLB totals use the same vig removal / EV / Kelly logic through `compute_totals_edges()` in `pipeline/ensemble.py`, but they operate on `over` and `under` rather than `home` and `away`.
 - Pick filters in `pipeline/run.py:445-605` now gate on EV in addition to probability edge:
   - `slop_locks`: `edge >= 0.03`, `model_prob > 0.45`, `expected_value >= min_expected_value`, maximum 3 picks, additional picks require `confidence_score >= 65`
   - `longslop`: `american_odds >= +500`, `confidence_score >= 65`, `edge >= 0`, `expected_value >= min_expected_value`
@@ -336,6 +340,18 @@ Configured models live in `pipeline/config.py:138-160`.
   - Team offenses do not perform identically into lefties and righties.
   - This adds a real baseball-specific split layer using data already accessible from the current free stack.
 
+#### 18. Added MLB over/under market support
+
+- What changed:
+  - Extended `pipeline/fetch_data.py` to fetch and normalize totals markets with a consensus totals line.
+  - Added `MlbTotalsModel` and `mlb_totals_predict()` in `pipeline/models.py`.
+  - Added `compute_totals_edges()` in `pipeline/ensemble.py`.
+  - Wired a parallel `totals_matches` / `totals_locks` lane into `pipeline/run.py`.
+  - Surfaced totals locks in `index.html` and `pipeline/notify_discord.py`.
+- Why it matters:
+  - MLB now supports a second real betting market besides moneyline sides.
+  - The totals lane reuses the current run-environment, pitcher, bullpen, park, and weather work instead of requiring a separate product.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -356,6 +372,7 @@ The MLB stack now covers starters, bullpens, park context, handedness, and live 
 - confirmed batting-order strength
 - platoon-heavy lineup composition versus the opposing starter
 - bullpen leverage role quality beyond simple aggregate workload
+- totals-specific bullpen availability and umpire context
 
 ### 3. Add lineup and injury freshness closer to lock
 
