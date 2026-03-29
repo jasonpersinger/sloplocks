@@ -39,6 +39,7 @@ from pipeline.models import (
     FourFactorsModel,
     HandednessMatchupModel,
     MlbTotalsModel,
+    NbaMatchupModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
@@ -47,6 +48,7 @@ from pipeline.models import (
     four_factors_predict,
     handedness_matchup_predict,
     mlb_totals_predict,
+    nba_matchup_predict,
     ResultsFeatureModel,
     pitcher_matchup_predict,
     recent_boxscore_predict,
@@ -505,6 +507,45 @@ def _apply_mlb_lineup_total_adjustment(
 
     delta = max(-max_runs_delta, min(max_runs_delta, combined * max_runs_delta * 0.7))
     return max(4.5, min(16.0, expected_total + delta))
+
+
+def _compute_nba_availability_index(profile: dict | None) -> float:
+    """Score a live NBA availability profile."""
+    if not profile:
+        return 0.0
+    active_players = float(profile.get("active_players", 0.0) or 0.0)
+    available_core_players = float(profile.get("available_core_players", 0.0) or 0.0)
+    injury_burden = float(profile.get("injury_burden", 0.0) or 0.0)
+    key_absence_score = float(profile.get("key_absence_score", 0.0) or 0.0)
+
+    depth_term = max(-1.0, min(1.0, (available_core_players - 9.0) / 4.0))
+    active_term = 0.0
+    if active_players > 0:
+        active_term = max(-1.0, min(1.0, (available_core_players / active_players) - 0.75))
+
+    return (0.35 * depth_term) + (0.25 * active_term) - (0.45 * injury_burden) - (0.75 * key_absence_score)
+
+
+def _apply_nba_availability_adjustment(
+    blended: dict[str, float],
+    home_profile: dict | None,
+    away_profile: dict | None,
+    max_delta: float = 0.02,
+) -> dict[str, float]:
+    """Apply a small live NBA availability adjustment from roster status."""
+    differential = _compute_nba_availability_index(home_profile) - _compute_nba_availability_index(away_profile)
+    if abs(differential) < 0.05:
+        return blended
+
+    delta = max(-max_delta, min(max_delta, differential * max_delta * 0.6))
+    if abs(delta) < 0.001:
+        return blended
+
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
 
 
 # ---------------------------------------------------------------------------
@@ -1045,7 +1086,9 @@ def run_sport_pipeline(sport_key, output_dir=None):
         games_df, box_scores_df = fetch_nba_espn_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
-        fixtures = fetch_nba_espn_schedule()
+        fixtures = fetch_nba_espn_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
         matches = games_df
     elif sport_key == "ncaam":
         games_df, box_scores_df = fetch_ncaam_games(
@@ -1152,6 +1195,15 @@ def run_sport_pipeline(sport_key, output_dir=None):
             min_games=sport.get("recent_boxscore_min_games", 30),
         )
 
+    nba_matchup_model = None
+    if sport_key == "nba" and "nba_matchup" in sport["models"] and box_scores_df is not None and matches is not None:
+        nba_matchup_model = NbaMatchupModel(
+            box_scores_df,
+            matches,
+            feature_window=sport.get("nba_matchup_window", 8),
+            min_games=sport.get("nba_matchup_min_games", 30),
+        )
+
     pitcher_feature_model = None
     if "pitcher_features" in sport["models"] and matches is not None and not matches.empty:
         pitcher_feature_model = PitcherMatchupModel(
@@ -1213,6 +1265,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
         model_names.append("results_features")
     if recent_boxscore_model is not None:
         model_names.append("recent_boxscore")
+    if nba_matchup_model is not None:
+        model_names.append("nba_matchup")
     if pitcher_feature_model is not None:
         model_names.append("pitcher_features")
     if bullpen_feature_model is not None:
@@ -1359,6 +1413,17 @@ def run_sport_pipeline(sport_key, output_dir=None):
             blend_weights.append(model_weight_dict["recent_boxscore"])
             individual_models["recent_boxscore"] = recent_boxscore_probs
 
+        if nba_matchup_model is not None:
+            nba_matchup_probs = nba_matchup_predict(
+                nba_matchup_model,
+                home,
+                away,
+                game_date=fix.get("date"),
+            )
+            individual_preds.append(nba_matchup_probs)
+            blend_weights.append(model_weight_dict["nba_matchup"])
+            individual_models["nba_matchup"] = nba_matchup_probs
+
         if pitcher_feature_model is not None:
             pitcher_probs = pitcher_matchup_predict(
                 pitcher_feature_model,
@@ -1424,6 +1489,13 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 fix.get("away_pitcher_hand"),
                 max_delta=sport.get("lineup_adjustment_max_delta", 0.015),
             )
+        if sport_key == "nba":
+            blended = _apply_nba_availability_adjustment(
+                blended,
+                fix.get("home_availability_profile"),
+                fix.get("away_availability_profile"),
+                max_delta=sport.get("availability_adjustment_max_delta", 0.02),
+            )
         blended = apply_probability_calibration(
             blended,
             probability_calibrators,
@@ -1470,6 +1542,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "matchday": fix.get("matchday"),
             "completed": fix.get("completed", False),
             "neutral": is_neutral,
+            "home_availability_profile": fix.get("home_availability_profile"),
+            "away_availability_profile": fix.get("away_availability_profile"),
             "home_pitcher": fix.get("home_pitcher"),
             "home_pitcher_hand": fix.get("home_pitcher_hand"),
             "away_pitcher": fix.get("away_pitcher"),

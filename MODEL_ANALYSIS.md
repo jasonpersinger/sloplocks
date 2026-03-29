@@ -16,6 +16,7 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
    - Elo for all sports: `pipeline/models.py`
    - Results-feature logistic model for NBA, NCAAM, MLB, and MMA: `pipeline/models.py`
    - Recent box-score matchup model for NBA and NCAAM: `pipeline/models.py`
+   - NBA matchup-context model for venue splits, rest, and pace/style interaction: `pipeline/models.py`
    - Adjusted Efficiency for NBA and NCAAM: `pipeline/models.py`
    - Four Factors logistic regression for NBA and NCAAM: `pipeline/models.py`
    - Pitcher matchup, bullpen matchup, handedness matchup, run-environment, and totals models for MLB: `pipeline/models.py`
@@ -39,6 +40,10 @@ Configured models live in `pipeline/config.py:62-86`.
   - Walk-forward season win%, recent win%, season margin, recent margin, venue win%, rest-day differential, and games-played differential from historical results in `pipeline/models.py`.
 - Recent box-score model:
   - Walk-forward season/recent net rating, eFG%, turnover rate, rebound rate, free-throw rate, and pace differentials from ESPN box scores in `pipeline/models.py`.
+- NBA matchup model:
+  - Walk-forward season and recent net-rating differentials, home-versus-road split strength, offense-vs-defense interaction, pace mismatch, recent margin, and rest-day differential from ESPN box scores plus game dates in `pipeline/models.py`.
+- Live availability features:
+  - Current roster injury burden, available core-player count, and absence of current scoring/rebounding/assist leaders from ESPN scoreboard plus roster data in `pipeline/fetch_nba.py` and `pipeline/run.py`.
 - Adjusted Efficiency features:
   - Weighted points scored, points allowed, possessions, and opponent-adjusted offense/defense from ESPN box scores in `pipeline/models.py:510-605`.
   - Tempo is derived from weighted possessions and fed into expected pace in `pipeline/models.py:635-647`.
@@ -48,7 +53,7 @@ Configured models live in `pipeline/config.py:62-86`.
   - These are season-to-date weighted aggregates, not fixture-specific snapshots.
 - Fetched but unused inputs:
   - Raw ESPN box-score fields like `fg3a` are only used indirectly through possessions and factor calculations.
-  - No injury, lineup, travel, referee, or player-availability features are currently consumed.
+  - No travel, referee, or confirmed-lineup minute-allocation features are currently consumed.
 
 #### NCAAM
 
@@ -109,7 +114,8 @@ Configured models live in `pipeline/config.py:138-160`.
 ### Ensemble mechanics
 
 - Active model lists are sport-specific in `pipeline/config.py:62-160`.
-  - NBA and NCAAM use five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
+  - NBA uses six models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`, `nba_matchup`.
+  - NCAAM uses five models: `elo`, `efficiency`, `four_factors`, `results_features`, `recent_boxscore`.
   - MLB uses six side models: `elo`, `results_features`, `pitcher_features`, `bullpen_features`, `run_environment`, `handedness_features`.
   - MLB also now has a separate totals lane driven by `MlbTotalsModel` plus live totals-market pricing.
   - MMA uses two models: `elo`, `results_features`.
@@ -361,6 +367,25 @@ Configured models live in `pipeline/config.py:138-160`.
 - Why it matters:
   - The previous MLB live path knew the starter and the weather, but it still treated the batting side too generically at lock time.
   - This adds a real pregame roster-health and platoon-composition signal without pretending ESPN gives a perfectly confirmed batting order.
+
+#### 20. Added an NBA matchup-context model
+
+- What changed:
+  - Added `NbaMatchupModel` and `nba_matchup_predict()` in `pipeline/models.py`.
+  - Enabled it in `pipeline/config.py` and wired it into the NBA ensemble in `pipeline/run.py`.
+- Why it matters:
+  - The prior NBA stack had season and recent-form views, but it still lacked a dedicated layer for home/road split strength, rest differential, and pace/style interaction.
+  - This gives NBA a more game-specific matchup read instead of relying only on generic team-strength snapshots.
+
+#### 21. Added live NBA availability adjustment
+
+- What changed:
+  - Added ESPN roster-based availability fetching/caching in `pipeline/fetch_nba.py`.
+  - Added a live availability adjustment in `pipeline/run.py` using injury burden plus current team-leader absence signals.
+  - Added NBA config control for the adjustment cap in `pipeline/config.py`.
+- Why it matters:
+  - A team missing its current high-usage scorer or playmaker should not be treated like a full-strength roster.
+  - This improves the live NBA path without requiring a fragile player-projection or beat-reporter feed.
 
 ## Future Improvements
 

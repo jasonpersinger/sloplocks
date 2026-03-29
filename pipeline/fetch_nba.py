@@ -228,9 +228,14 @@ def _nba_season_date_range(season: int) -> list[str]:
 def _load_espn_cache(cache_path: str | None) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
-        return {"games": {}}
+        return {"games": {}, "rosters": {}}
     with open(cache_path) as f:
-        return _json.load(f)
+        cache = _json.load(f)
+    if not isinstance(cache, dict):
+        return {"games": {}, "rosters": {}}
+    cache.setdefault("games", {})
+    cache.setdefault("rosters", {})
+    return cache
 
 
 def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
@@ -240,6 +245,86 @@ def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
     os.makedirs(os.path.dirname(cache_path) or ".", exist_ok=True)
     with open(cache_path, "w") as f:
         _json.dump(cache, f)
+
+
+def _injury_weight(status: str | None) -> float:
+    """Convert ESPN injury text into a coarse availability penalty."""
+    normalized = str(status or "").strip().lower()
+    if normalized in {"out", "suspended"}:
+        return 1.0
+    if normalized in {"doubtful"}:
+        return 0.75
+    if normalized in {"questionable", "day-to-day"}:
+        return 0.35
+    return 0.0
+
+
+def _fetch_nba_team_availability_profile(team_id: str | int | None, leader_ids=None, cache: dict | None = None) -> dict:
+    """Fetch and cache a coarse NBA roster availability profile."""
+    default = {
+        "active_players": 0,
+        "injured_players": 0,
+        "injury_burden": 0.0,
+        "key_absence_score": 0.0,
+        "available_core_players": 0,
+    }
+    if not team_id:
+        return default
+
+    leader_set = {str(player_id) for player_id in (leader_ids or []) if player_id}
+    cache_store = None
+    cache_key = str(team_id)
+    if cache is not None:
+        cache_store = cache.setdefault("rosters", {})
+        cached = cache_store.get(cache_key)
+        if cached is not None:
+            return cached
+
+    url = f"{NBA_ESPN_BASE}/teams/{team_id}/roster"
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException:
+        return default
+
+    active_players = 0
+    injured_players = 0
+    injury_burden = 0.0
+    key_absence_score = 0.0
+    available_core_players = 0
+
+    for athlete in data.get("athletes", []):
+        if not isinstance(athlete, dict):
+            continue
+        status_type = athlete.get("status", {}).get("type")
+        is_active = status_type == "active"
+        if is_active:
+            active_players += 1
+
+        injuries = athlete.get("injuries") or []
+        player_penalty = 0.0
+        for injury in injuries:
+            player_penalty = max(player_penalty, _injury_weight(injury.get("status")))
+
+        if player_penalty > 0:
+            injured_players += 1
+            injury_burden += player_penalty
+            if str(athlete.get("id")) in leader_set:
+                key_absence_score += player_penalty
+        elif is_active:
+            available_core_players += 1
+
+    profile = {
+        "active_players": active_players,
+        "injured_players": injured_players,
+        "injury_burden": round(injury_burden, 3),
+        "key_absence_score": round(key_absence_score, 3),
+        "available_core_players": available_core_players,
+    }
+    if cache_store is not None:
+        cache_store[cache_key] = profile
+    return profile
 
 
 def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2) -> list[str]:
@@ -427,7 +512,7 @@ def fetch_nba_espn_games(
     return games_df, box_scores_df
 
 
-def fetch_nba_espn_schedule() -> list[dict]:
+def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
     """Fetch today's NBA games via ESPN API.
 
     Uses the ESPN scoreboard for today's date in US Eastern Time (UTC-5/UTC-4).
@@ -441,6 +526,7 @@ def fetch_nba_espn_schedule() -> list[dict]:
     game_date_str = today_et.strftime("%Y-%m-%d")
     espn_date = today_et.strftime("%Y%m%d")
 
+    cache = _load_espn_cache(cache_path)
     url = f"{NBA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=50"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
@@ -462,6 +548,17 @@ def fetch_nba_espn_schedule() -> list[dict]:
         if home is None or away is None:
             continue
 
+        home_leader_ids = []
+        away_leader_ids = []
+        for leader_group in home.get("leaders", []):
+            leaders = leader_group.get("leaders", [])
+            if leaders:
+                home_leader_ids.append(leaders[0].get("athlete", {}).get("id"))
+        for leader_group in away.get("leaders", []):
+            leaders = leader_group.get("leaders", [])
+            if leaders:
+                away_leader_ids.append(leaders[0].get("athlete", {}).get("id"))
+
         fixtures.append({
             "home_team": normalize_nba_team_name(home["team"]["displayName"]),
             "away_team": normalize_nba_team_name(away["team"]["displayName"]),
@@ -470,6 +567,9 @@ def fetch_nba_espn_schedule() -> list[dict]:
             "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
+            "home_availability_profile": _fetch_nba_team_availability_profile(home["team"].get("id"), leader_ids=home_leader_ids, cache=cache),
+            "away_availability_profile": _fetch_nba_team_availability_profile(away["team"].get("id"), leader_ids=away_leader_ids, cache=cache),
         })
 
+    _save_espn_cache(cache_path, cache)
     return fixtures

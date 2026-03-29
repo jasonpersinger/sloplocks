@@ -13,6 +13,7 @@ from pipeline.models import (
     EloRatings,
     FourFactorsModel,
     MlbTotalsModel,
+    NbaMatchupModel,
     PitcherMatchupModel,
     RecentBoxScoreModel,
     ResultsFeatureModel,
@@ -25,6 +26,7 @@ from pipeline.models import (
     four_factors_predict,
     handedness_matchup_predict,
     mlb_totals_predict,
+    nba_matchup_predict,
     pitcher_matchup_predict,
     recent_boxscore_predict,
     run_environment_predict,
@@ -632,6 +634,74 @@ class TestRecentBoxScoreModel:
 
         model = RecentBoxScoreModel(pd.DataFrame(box_rows), pd.DataFrame(games), feature_window=6, min_games=10)
         probs = recent_boxscore_predict(model, "A", "B")
+
+        assert model.model is not None
+        assert probs["home"] > 0.5
+        assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
+
+
+class TestNbaMatchupModel:
+    def test_fit_and_predict_uses_venue_rest_and_style_context(self):
+        games = []
+        box_rows = []
+        base = pd.Timestamp("2026-01-01")
+        matchups = [
+            ("A", "B", 114, 101, 100.0),
+            ("C", "D", 107, 95, 97.0),
+            ("B", "A", 99, 110, 99.0),
+            ("D", "C", 94, 103, 96.0),
+        ]
+        for idx in range(24):
+            game_id = f"nba-{idx}"
+            home_team, away_team, home_pts, away_pts, pace = matchups[idx % len(matchups)]
+            date_str = (base + pd.Timedelta(days=idx * 2)).strftime("%Y-%m-%d")
+            games.append({
+                "game_id": game_id,
+                "date": date_str,
+                "home_team": home_team,
+                "away_team": away_team,
+                "home_goals": home_pts,
+                "away_goals": away_pts,
+            })
+            home_strong = home_team in {"A", "C"}
+            away_strong = away_team in {"A", "C"}
+            box_rows.extend([
+                {
+                    "game_id": game_id,
+                    "team": home_team,
+                    "date": date_str,
+                    "pts": home_pts,
+                    "fgm": 40 if home_strong else 34,
+                    "fga": 82,
+                    "fg3m": 13 if home_strong else 9,
+                    "fg3a": 33,
+                    "ftm": 21 if home_strong else 17,
+                    "fta": 25 if home_strong else 21,
+                    "orb": 11 if home_strong else 8,
+                    "drb": 30 if home_strong else 26,
+                    "to": 10 if home_strong else 14,
+                    "possessions": pace,
+                },
+                {
+                    "game_id": game_id,
+                    "team": away_team,
+                    "date": date_str,
+                    "pts": away_pts,
+                    "fgm": 34 if away_strong else 31,
+                    "fga": 82,
+                    "fg3m": 9 if away_strong else 7,
+                    "fg3a": 31,
+                    "ftm": 17 if away_strong else 14,
+                    "fta": 21 if away_strong else 18,
+                    "orb": 8 if away_strong else 7,
+                    "drb": 26 if away_strong else 24,
+                    "to": 14 if away_strong else 16,
+                    "possessions": pace - 1.0,
+                },
+            ])
+
+        model = NbaMatchupModel(pd.DataFrame(box_rows), pd.DataFrame(games), feature_window=6, min_games=10)
+        probs = nba_matchup_predict(model, "A", "B", game_date="2026-03-15")
 
         assert model.model is not None
         assert probs["home"] > 0.5

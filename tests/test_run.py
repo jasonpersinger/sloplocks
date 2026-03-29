@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from pipeline.config import SPORTS
 from pipeline.run import (
+    _apply_nba_availability_adjustment,
     _apply_mlb_lineup_adjustment,
     _apply_mlb_lineup_total_adjustment,
     _apply_mlb_weather_adjustment,
@@ -170,6 +171,20 @@ class TestRunNBAPipeline:
                 "away_team": "Warriors",
                 "date": _TODAY,
                 "start_time": f"{_TODAY}T00:30:00Z",
+                "home_availability_profile": {
+                    "active_players": 15,
+                    "injured_players": 0,
+                    "injury_burden": 0.0,
+                    "key_absence_score": 0.0,
+                    "available_core_players": 12,
+                },
+                "away_availability_profile": {
+                    "active_players": 14,
+                    "injured_players": 2,
+                    "injury_burden": 1.25,
+                    "key_absence_score": 1.0,
+                    "available_core_players": 9,
+                },
             }
         ]
         mock_odds.return_value = [
@@ -198,6 +213,7 @@ class TestRunNBAPipeline:
 
         match = data["matches"][0]
         assert match["start_time"] == f"{_TODAY}T00:30:00Z"
+        assert match["home_availability_profile"]["available_core_players"] == 12
         assert "draw" not in match["model_probs"]
         assert set(match["model_probs"].keys()) == {"home", "away"}
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
@@ -219,6 +235,7 @@ class TestRunNBAPipeline:
         assert "four_factors" in data["model_weights"]
         assert "results_features" in data["model_weights"]
         assert "recent_boxscore" in data["model_weights"]
+        assert "nba_matchup" in data["model_weights"]
         assert "dixon_coles" not in data["model_weights"]
 
 
@@ -460,6 +477,31 @@ class TestMlbLineupAdjustment:
         )
 
         assert adjusted > 8.2
+
+
+class TestNbaAvailabilityAdjustment:
+    def test_missing_key_players_pushes_probability_away_from_shorthanded_team(self):
+        adjusted = _apply_nba_availability_adjustment(
+            {"home": 0.54, "away": 0.46},
+            {
+                "active_players": 15,
+                "injured_players": 0,
+                "injury_burden": 0.0,
+                "key_absence_score": 0.0,
+                "available_core_players": 12,
+            },
+            {
+                "active_players": 14,
+                "injured_players": 2,
+                "injury_burden": 1.25,
+                "key_absence_score": 1.0,
+                "available_core_players": 9,
+            },
+            max_delta=0.02,
+        )
+
+        assert adjusted["home"] > 0.54
+        assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
 
 
 # ---------------------------------------------------------------------------

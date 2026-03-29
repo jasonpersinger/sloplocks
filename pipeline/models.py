@@ -1526,6 +1526,194 @@ def recent_boxscore_predict(model, home_team, away_team):
 
 
 # ---------------------------------------------------------------------------
+# NBA matchup context model
+# ---------------------------------------------------------------------------
+
+class NbaMatchupModel:
+    """NBA-specific walk-forward model using venue, rest, and style context."""
+
+    def __init__(self, box_scores, games, feature_window=8, min_games=30):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.model = None
+        self.team_logs = {}
+        self.feature_names = [
+            "season_net_rating_diff",
+            "recent_net_rating_diff",
+            "venue_net_rating_diff",
+            "offense_defense_edge",
+            "efg_diff",
+            "pace_delta",
+            "rest_diff",
+            "home_recent_margin",
+        ]
+        self._fit(box_scores, games)
+
+    @staticmethod
+    def _default_summary():
+        return {
+            "off_rating": 110.0,
+            "def_rating": 110.0,
+            "net_rating": 0.0,
+            "efg": 0.53,
+            "pace": 98.0,
+            "margin": 0.0,
+        }
+
+    def _aggregate(self, logs):
+        if not logs:
+            return self._default_summary()
+
+        def _avg(key):
+            return float(sum(item[key] for item in logs) / len(logs))
+
+        return {
+            "off_rating": _avg("off_rating"),
+            "def_rating": _avg("def_rating"),
+            "net_rating": _avg("net_rating"),
+            "efg": _avg("efg"),
+            "pace": _avg("pace"),
+            "margin": _avg("margin"),
+        }
+
+    def _rest_days(self, logs, game_date):
+        if not logs or game_date is None:
+            return 2.0
+        try:
+            current = pd.Timestamp(game_date)
+        except (TypeError, ValueError):
+            return 2.0
+
+        dated_logs = [item for item in logs if item.get("date") is not None]
+        if not dated_logs:
+            return 2.0
+        last_date = max(pd.Timestamp(item["date"]) for item in dated_logs)
+        return max(0.0, float((current - last_date).days))
+
+    def _feature_vector(self, home_logs, away_logs, game_date=None):
+        home_season = self._aggregate(home_logs)
+        away_season = self._aggregate(away_logs)
+        home_recent = self._aggregate(home_logs[-self.feature_window :])
+        away_recent = self._aggregate(away_logs[-self.feature_window :])
+        home_home = self._aggregate([item for item in home_logs if item.get("venue") == "home"][-self.feature_window :])
+        away_away = self._aggregate([item for item in away_logs if item.get("venue") == "away"][-self.feature_window :])
+
+        return np.array([
+            home_season["net_rating"] - away_season["net_rating"],
+            home_recent["net_rating"] - away_recent["net_rating"],
+            home_home["net_rating"] - away_away["net_rating"],
+            (home_recent["off_rating"] - away_recent["def_rating"]) - (away_recent["off_rating"] - home_recent["def_rating"]),
+            home_recent["efg"] - away_recent["efg"],
+            (home_recent["pace"] - away_recent["pace"]) / 18.0,
+            (self._rest_days(home_logs, game_date) - self._rest_days(away_logs, game_date)) / 3.0,
+            home_recent["margin"],
+        ])
+
+    @staticmethod
+    def _boxscore_log(team_bs, opp_bs, venue, game_date, team_points, opp_points):
+        team_poss = max(float(team_bs["possessions"]), 1.0)
+        opp_poss = max(float(opp_bs["possessions"]), 1.0)
+        fga = max(float(team_bs["fga"]), 1.0)
+        return {
+            "date": game_date,
+            "venue": venue,
+            "off_rating": (float(team_bs["pts"]) / team_poss) * 100.0,
+            "def_rating": (float(opp_bs["pts"]) / opp_poss) * 100.0,
+            "net_rating": ((float(team_bs["pts"]) / team_poss) - (float(opp_bs["pts"]) / opp_poss)) * 100.0,
+            "efg": (float(team_bs["fgm"]) + (0.5 * float(team_bs["fg3m"]))) / fga,
+            "pace": (team_poss + opp_poss) / 2.0,
+            "margin": float(team_points - opp_points),
+        }
+
+    def _fit(self, box_scores, games):
+        required_box = {"game_id", "team", "pts", "fgm", "fga", "fg3m", "possessions"}
+        required_games = {"game_id", "date", "home_team", "away_team", "home_goals", "away_goals"}
+        if (
+            box_scores is None
+            or games is None
+            or box_scores.empty
+            or games.empty
+            or not required_box.issubset(set(box_scores.columns))
+            or not required_games.issubset(set(games.columns))
+        ):
+            return
+
+        bs_lookup = {}
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
+
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs = {
+            team: []
+            for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
+        }
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            home = row["home_team"]
+            away = row["away_team"]
+            home_bs = bs_lookup.get((row["game_id"], home))
+            away_bs = bs_lookup.get((row["game_id"], away))
+            if home_bs is None or away_bs is None:
+                continue
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            X.append(self._feature_vector(team_logs.get(home, []), team_logs.get(away, []), game_date=row["date"]))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            team_logs.setdefault(home, []).append(
+                self._boxscore_log(
+                    home_bs,
+                    away_bs,
+                    "home",
+                    row["date"],
+                    row["home_goals"],
+                    row["away_goals"],
+                )
+            )
+            team_logs.setdefault(away, []).append(
+                self._boxscore_log(
+                    away_bs,
+                    home_bs,
+                    "away",
+                    row["date"],
+                    row["away_goals"],
+                    row["home_goals"],
+                )
+            )
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict(self, home_team, away_team, game_date=None):
+        if self.model is None:
+            return {"home": 0.5, "away": 0.5}
+
+        X = np.array([self._feature_vector(
+            self.team_logs.get(home_team, []),
+            self.team_logs.get(away_team, []),
+            game_date=game_date,
+        )])
+        proba = self.model.predict_proba(X)[0]
+        classes = list(self.model.classes_)
+        home_idx = classes.index(1)
+        away_idx = classes.index(0)
+        return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
+
+
+def nba_matchup_predict(model, home_team, away_team, game_date=None):
+    """Predict two-way probabilities from the NBA matchup-context model."""
+    return model.predict(home_team, away_team, game_date=game_date)
+
+
+# ---------------------------------------------------------------------------
 # Adjusted Efficiency (KenPom-style)
 # ---------------------------------------------------------------------------
 

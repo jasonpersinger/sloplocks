@@ -8,6 +8,7 @@ import pytest
 import requests
 
 from pipeline.fetch_nba import (
+    _fetch_nba_team_availability_profile,
     normalize_nba_team_name,
     fetch_nba_games,
     fetch_nba_schedule,
@@ -325,6 +326,48 @@ class TestFetchNbaEspnSchedule:
         pending = next(f for f in fixtures if f["home_team"] == "Heat")
         assert completed["completed"] is True
         assert pending["completed"] is False
+
+
+class TestNbaAvailabilityProfile:
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_fetches_and_caches_team_availability(self, mock_get):
+        roster_resp = MagicMock()
+        roster_resp.raise_for_status = MagicMock()
+        roster_resp.json.return_value = {
+            "athletes": [
+                {
+                    "id": "1",
+                    "displayName": "Star Guard",
+                    "status": {"type": "active"},
+                    "injuries": [{"status": "Out"}],
+                },
+                {
+                    "id": "2",
+                    "displayName": "Starter Wing",
+                    "status": {"type": "active"},
+                    "injuries": [],
+                },
+                {
+                    "id": "3",
+                    "displayName": "Bench Big",
+                    "status": {"type": "active"},
+                    "injuries": [{"status": "Day-To-Day"}],
+                },
+            ]
+        }
+        mock_get.return_value = roster_resp
+
+        cache = {"games": {}, "rosters": {}}
+        first = _fetch_nba_team_availability_profile("13", leader_ids=["1"], cache=cache)
+        second = _fetch_nba_team_availability_profile("13", leader_ids=["1"], cache=cache)
+
+        assert first["active_players"] == 3
+        assert first["injured_players"] == 2
+        assert first["key_absence_score"] == 1.0
+        assert first["injury_burden"] == 1.35
+        assert first["available_core_players"] == 1
+        assert second == first
+        assert mock_get.call_count == 1
 
 
 # ---------------------------------------------------------------------------
