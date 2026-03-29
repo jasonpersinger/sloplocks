@@ -151,6 +151,88 @@ def _extract_summary_team_stats(summary: dict) -> dict[str, dict]:
     return stats_by_team
 
 
+def _parse_toi_minutes(value) -> float:
+    """Parse ESPN hockey TOI strings like '59:43' into decimal minutes."""
+    if value in (None, ""):
+        return 0.0
+    text = str(value).strip()
+    parts = text.split(":")
+    if len(parts) != 2:
+        return _parse_float(text, 0.0)
+    minutes = _parse_float(parts[0], 0.0)
+    seconds = _parse_float(parts[1], 0.0)
+    return float(minutes + (seconds / 60.0))
+
+
+def _extract_summary_goalies(summary: dict) -> dict[str, dict]:
+    """Extract the lead goalie row for each team from an ESPN summary payload."""
+    goalies_by_team = {}
+    for team_group in summary.get("boxscore", {}).get("players", []):
+        team_name = normalize_nhl_team_name(team_group.get("team", {}).get("displayName", ""))
+        if not team_name:
+            continue
+
+        goalie_group = None
+        for stat_group in team_group.get("statistics", []):
+            if stat_group.get("name") == "goalies":
+                goalie_group = stat_group
+                break
+        if goalie_group is None:
+            continue
+
+        labels = goalie_group.get("labels", [])
+        goalie_rows = []
+        for athlete_row in goalie_group.get("athletes", []):
+            athlete = athlete_row.get("athlete", {})
+            raw_stats = athlete_row.get("stats", [])
+            stat_map = {
+                label: raw_stats[idx]
+                for idx, label in enumerate(labels)
+                if idx < len(raw_stats)
+            }
+            goalie_rows.append({
+                "goalie": athlete.get("displayName"),
+                "goalie_id": athlete.get("id"),
+                "goals_allowed": int(_parse_float(stat_map.get("GA"), 0.0)),
+                "shots_against": int(_parse_float(stat_map.get("SA"), 0.0)),
+                "saves": int(_parse_float(stat_map.get("SV"), 0.0)),
+                "save_pct": _parse_save_pct(stat_map.get("SV%")),
+                "time_on_ice_minutes": _parse_toi_minutes(stat_map.get("TOI")),
+            })
+
+        if not goalie_rows:
+            continue
+        goalie_rows.sort(
+            key=lambda row: (
+                row.get("time_on_ice_minutes", 0.0),
+                row.get("saves", 0),
+                row.get("shots_against", 0),
+            ),
+            reverse=True,
+        )
+        goalies_by_team[team_name] = goalie_rows[0]
+    return goalies_by_team
+
+
+def _extract_probable_goalie(competitor: dict) -> dict:
+    """Extract one probable-starting-goalie descriptor from an ESPN competitor row."""
+    for probable in competitor.get("probables", []) or []:
+        if probable.get("name") != "probableStartingGoalie":
+            continue
+        athlete = probable.get("athlete", {}) or {}
+        status = probable.get("status", {}) or {}
+        return {
+            "goalie": athlete.get("displayName") or probable.get("displayValue"),
+            "goalie_id": athlete.get("id") or probable.get("playerId"),
+            "goalie_status": status.get("type") or status.get("name"),
+        }
+    return {
+        "goalie": None,
+        "goalie_id": None,
+        "goalie_status": None,
+    }
+
+
 def _parse_final_event(event: dict) -> dict | None:
     """Parse one final NHL scoreboard event into a cached game row."""
     comp = event.get("competitions", [{}])[0]
@@ -186,6 +268,20 @@ def _parse_final_event(event: dict) -> dict | None:
         "away_save_pct": _parse_save_pct(away_stats.get("savePct")),
         "home_shots": home_goals + away_saves,
         "away_shots": away_goals + home_saves,
+        "home_goalie": None,
+        "away_goalie": None,
+        "home_goalie_id": None,
+        "away_goalie_id": None,
+        "home_goalie_goals_allowed": home_goals,
+        "away_goalie_goals_allowed": away_goals,
+        "home_goalie_shots_against": home_goals + away_saves,
+        "away_goalie_shots_against": away_goals + home_saves,
+        "home_goalie_saves": home_saves,
+        "away_goalie_saves": away_saves,
+        "home_goalie_save_pct": _parse_save_pct(home_stats.get("savePct")),
+        "away_goalie_save_pct": _parse_save_pct(away_stats.get("savePct")),
+        "home_goalie_toi_minutes": 60.0,
+        "away_goalie_toi_minutes": 60.0,
         "home_blocked_shots": 0,
         "away_blocked_shots": 0,
         "home_hits": 0,
@@ -265,6 +361,28 @@ def fetch_nhl_games(
                 "away_penalties": existing.get("away_penalties", parsed["away_penalties"]),
                 "home_penalty_minutes": existing.get("home_penalty_minutes", parsed["home_penalty_minutes"]),
                 "away_penalty_minutes": existing.get("away_penalty_minutes", parsed["away_penalty_minutes"]),
+                "home_goalie": existing.get("home_goalie", parsed["home_goalie"]),
+                "away_goalie": existing.get("away_goalie", parsed["away_goalie"]),
+                "home_goalie_id": existing.get("home_goalie_id", parsed["home_goalie_id"]),
+                "away_goalie_id": existing.get("away_goalie_id", parsed["away_goalie_id"]),
+                "home_goalie_goals_allowed": existing.get(
+                    "home_goalie_goals_allowed", parsed["home_goalie_goals_allowed"]
+                ),
+                "away_goalie_goals_allowed": existing.get(
+                    "away_goalie_goals_allowed", parsed["away_goalie_goals_allowed"]
+                ),
+                "home_goalie_shots_against": existing.get(
+                    "home_goalie_shots_against", parsed["home_goalie_shots_against"]
+                ),
+                "away_goalie_shots_against": existing.get(
+                    "away_goalie_shots_against", parsed["away_goalie_shots_against"]
+                ),
+                "home_goalie_saves": existing.get("home_goalie_saves", parsed["home_goalie_saves"]),
+                "away_goalie_saves": existing.get("away_goalie_saves", parsed["away_goalie_saves"]),
+                "home_goalie_save_pct": existing.get("home_goalie_save_pct", parsed["home_goalie_save_pct"]),
+                "away_goalie_save_pct": existing.get("away_goalie_save_pct", parsed["away_goalie_save_pct"]),
+                "home_goalie_toi_minutes": existing.get("home_goalie_toi_minutes", parsed["home_goalie_toi_minutes"]),
+                "away_goalie_toi_minutes": existing.get("away_goalie_toi_minutes", parsed["away_goalie_toi_minutes"]),
             }
 
         for event in data.get("events", []):
@@ -285,8 +403,11 @@ def fetch_nhl_games(
                 continue
 
             team_stats = _extract_summary_team_stats(summary)
+            goalie_stats = _extract_summary_goalies(summary)
             home_stats = team_stats.get(entry["home_team"], {})
             away_stats = team_stats.get(entry["away_team"], {})
+            home_goalie = goalie_stats.get(entry["home_team"], {})
+            away_goalie = goalie_stats.get(entry["away_team"], {})
             for prefix, stats in (("home", home_stats), ("away", away_stats)):
                 entry[f"{prefix}_shots"] = int(stats.get("shots", entry.get(f"{prefix}_shots", 0)))
                 entry[f"{prefix}_blocked_shots"] = int(stats.get("blocked_shots", 0))
@@ -300,6 +421,16 @@ def fetch_nhl_games(
                 entry[f"{prefix}_giveaways"] = int(stats.get("giveaways", 0))
                 entry[f"{prefix}_penalties"] = int(stats.get("penalties", 0))
                 entry[f"{prefix}_penalty_minutes"] = float(stats.get("penalty_minutes", 0.0))
+            for prefix, stats in (("home", home_goalie), ("away", away_goalie)):
+                if not stats:
+                    continue
+                entry[f"{prefix}_goalie"] = stats.get("goalie")
+                entry[f"{prefix}_goalie_id"] = stats.get("goalie_id")
+                entry[f"{prefix}_goalie_goals_allowed"] = int(stats.get("goals_allowed", 0))
+                entry[f"{prefix}_goalie_shots_against"] = int(stats.get("shots_against", 0))
+                entry[f"{prefix}_goalie_saves"] = int(stats.get("saves", 0))
+                entry[f"{prefix}_goalie_save_pct"] = float(stats.get("save_pct", 0.91))
+                entry[f"{prefix}_goalie_toi_minutes"] = float(stats.get("time_on_ice_minutes", 0.0))
 
     _save_espn_cache(cache_path, cache)
 
@@ -318,6 +449,20 @@ def fetch_nhl_games(
             "away_save_pct": entry.get("away_save_pct", 0.91),
             "home_shots": entry.get("home_shots", 0),
             "away_shots": entry.get("away_shots", 0),
+            "home_goalie": entry.get("home_goalie"),
+            "away_goalie": entry.get("away_goalie"),
+            "home_goalie_id": entry.get("home_goalie_id"),
+            "away_goalie_id": entry.get("away_goalie_id"),
+            "home_goalie_goals_allowed": entry.get("home_goalie_goals_allowed", entry.get("home_goals", 0)),
+            "away_goalie_goals_allowed": entry.get("away_goalie_goals_allowed", entry.get("away_goals", 0)),
+            "home_goalie_shots_against": entry.get("home_goalie_shots_against", entry.get("home_shots", 0)),
+            "away_goalie_shots_against": entry.get("away_goalie_shots_against", entry.get("away_shots", 0)),
+            "home_goalie_saves": entry.get("home_goalie_saves", entry.get("home_saves", 0)),
+            "away_goalie_saves": entry.get("away_goalie_saves", entry.get("away_saves", 0)),
+            "home_goalie_save_pct": entry.get("home_goalie_save_pct", entry.get("home_save_pct", 0.91)),
+            "away_goalie_save_pct": entry.get("away_goalie_save_pct", entry.get("away_save_pct", 0.91)),
+            "home_goalie_toi_minutes": entry.get("home_goalie_toi_minutes", 60.0),
+            "away_goalie_toi_minutes": entry.get("away_goalie_toi_minutes", 60.0),
             "home_blocked_shots": entry.get("home_blocked_shots", 0),
             "away_blocked_shots": entry.get("away_blocked_shots", 0),
             "home_hits": entry.get("home_hits", 0),
@@ -347,6 +492,12 @@ def fetch_nhl_games(
         columns=[
             "game_id", "date", "home_team", "away_team", "home_goals", "away_goals",
             "home_saves", "away_saves", "home_save_pct", "away_save_pct", "home_shots", "away_shots",
+            "home_goalie", "away_goalie", "home_goalie_id", "away_goalie_id",
+            "home_goalie_goals_allowed", "away_goalie_goals_allowed",
+            "home_goalie_shots_against", "away_goalie_shots_against",
+            "home_goalie_saves", "away_goalie_saves",
+            "home_goalie_save_pct", "away_goalie_save_pct",
+            "home_goalie_toi_minutes", "away_goalie_toi_minutes",
             "home_blocked_shots", "away_blocked_shots", "home_hits", "away_hits",
             "home_takeaways", "away_takeaways", "home_power_play_goals", "away_power_play_goals",
             "home_power_play_opportunities", "away_power_play_opportunities",
@@ -386,6 +537,9 @@ def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
         if home is None or away is None:
             continue
 
+        home_probable = _extract_probable_goalie(home)
+        away_probable = _extract_probable_goalie(away)
+
         fixtures.append({
             "home_team": normalize_nhl_team_name(home["team"]["displayName"]),
             "away_team": normalize_nhl_team_name(away["team"]["displayName"]),
@@ -393,6 +547,12 @@ def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
             "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
+            "home_goalie": home_probable.get("goalie"),
+            "away_goalie": away_probable.get("goalie"),
+            "home_goalie_id": home_probable.get("goalie_id"),
+            "away_goalie_id": away_probable.get("goalie_id"),
+            "home_goalie_status": home_probable.get("goalie_status"),
+            "away_goalie_status": away_probable.get("goalie_status"),
         })
 
     return fixtures

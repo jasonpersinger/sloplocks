@@ -19,6 +19,14 @@ def _make_nhl_event(event_id, home_name, away_name, home_goals, away_goals, comp
                         "homeAway": "home",
                         "team": {"displayName": home_name},
                         "score": str(home_goals),
+                        "probables": [
+                            {
+                                "name": "probableStartingGoalie",
+                                "playerId": 31,
+                                "athlete": {"id": "31", "displayName": "Home Goalie"},
+                                "status": {"type": "confirmed"},
+                            }
+                        ],
                         "statistics": [
                             {"name": "saves", "displayValue": "28"},
                             {"name": "savePct", "displayValue": ".933"},
@@ -28,6 +36,14 @@ def _make_nhl_event(event_id, home_name, away_name, home_goals, away_goals, comp
                         "homeAway": "away",
                         "team": {"displayName": away_name},
                         "score": str(away_goals),
+                        "probables": [
+                            {
+                                "name": "probableStartingGoalie",
+                                "playerId": 35,
+                                "athlete": {"id": "35", "displayName": "Away Goalie"},
+                                "status": {"type": "projected"},
+                            }
+                        ],
                         "statistics": [
                             {"name": "saves", "displayValue": "24"},
                             {"name": "savePct", "displayValue": ".889"},
@@ -82,7 +98,39 @@ class TestFetchNhlGames:
                             {"name": "penaltyMinutes", "displayValue": "10"},
                         ],
                     },
-                ]
+                ],
+                "players": [
+                    {
+                        "team": {"displayName": "Boston Bruins"},
+                        "statistics": [
+                            {
+                                "name": "goalies",
+                                "labels": ["GA", "SA", "SOS", "SOSA", "SV", "SV%", "ESSV", "PPSV", "SHSV", "TOI"],
+                                "athletes": [
+                                    {
+                                        "athlete": {"id": "31", "displayName": "Linus Ullmark"},
+                                        "stats": ["2", "26", "0", "0", "24", ".923", "20", "4", "0", "60:00"],
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                    {
+                        "team": {"displayName": "Toronto Maple Leafs"},
+                        "statistics": [
+                            {
+                                "name": "goalies",
+                                "labels": ["GA", "SA", "SOS", "SOSA", "SV", "SV%", "ESSV", "PPSV", "SHSV", "TOI"],
+                                "athletes": [
+                                    {
+                                        "athlete": {"id": "35", "displayName": "Joseph Woll"},
+                                        "stats": ["4", "31", "0", "0", "27", ".871", "23", "4", "0", "58:14"],
+                                    }
+                                ],
+                            }
+                        ],
+                    },
+                ],
             }
         }
         mock_get.side_effect = [scoreboard_resp, summary_resp]
@@ -98,6 +146,8 @@ class TestFetchNhlGames:
         assert games_df.iloc[0]["home_faceoff_pct"] == 0.573
         assert games_df.iloc[0]["away_power_play_pct"] == 0.125
         assert games_df.iloc[0]["away_penalty_minutes"] == 10.0
+        assert games_df.iloc[0]["home_goalie"] == "Linus Ullmark"
+        assert games_df.iloc[0]["away_goalie_save_pct"] == 0.871
 
 
 class TestFetchNhlSchedule:
@@ -118,3 +168,5 @@ class TestFetchNhlSchedule:
         assert fixtures[0]["away_team"] == "Maple Leafs"
         assert fixtures[0]["completed"] is False
         assert fixtures[0]["start_time"] == "2026-03-29T23:00Z"
+        assert fixtures[0]["home_goalie"] == "Home Goalie"
+        assert fixtures[0]["away_goalie_status"] == "projected"

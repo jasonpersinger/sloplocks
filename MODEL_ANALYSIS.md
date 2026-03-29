@@ -428,6 +428,16 @@ Configured models live in `pipeline/config.py:138-160`.
   - The first NHL pass mostly saw goals, shots, and save percentage, which is too thin for a real hockey model.
   - This gives NHL a more credible read on puck-control and special-teams strength without changing the public output contract.
 
+#### 26. Added goalie-aware NHL modeling with probable starters
+
+- What changed:
+  - Extended `pipeline/fetch_nhl.py` to parse actual lead-goalie stats from historical ESPN summaries and probable starting goalies from the live ESPN scoreboard.
+  - Expanded `NhlMatchupModel` in `pipeline/models.py` to use recent probable-goalie save percentage, goals allowed, and goalie rest as explicit features.
+  - Wired probable goalie names through `pipeline/run.py` and added coverage in `tests/test_fetch_nhl.py`, `tests/test_models.py`, and `tests/test_run.py`.
+- Why it matters:
+  - Hockey moneylines are unusually sensitive to the crease.
+  - This gives the NHL model a direct goaltending signal instead of forcing it to infer everything from team-level save percentage.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness

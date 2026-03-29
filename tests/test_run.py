@@ -124,6 +124,12 @@ def sample_nhl_matches():
             "away_save_pct": 0.896 if strong_home else 0.928,
             "home_shots": 33 if strong_home else 27,
             "away_shots": 27 if strong_home else 33,
+            "home_goalie": "Bruins Starter" if strong_home else "Canadiens Starter",
+            "away_goalie": "Canadiens Starter" if strong_home else "Bruins Starter",
+            "home_goalie_save_pct": 0.931 if strong_home else 0.891,
+            "away_goalie_save_pct": 0.891 if strong_home else 0.931,
+            "home_goalie_goals_allowed": 2 if strong_home else 4,
+            "away_goalie_goals_allowed": 4 if strong_home else 2,
             "home_faceoff_pct": 0.57 if strong_home else 0.45,
             "away_faceoff_pct": 0.45 if strong_home else 0.57,
             "home_power_play_pct": 0.23 if strong_home else 0.12,
@@ -386,6 +392,10 @@ class TestRunNHLPipeline:
                 "away_team": "Canadiens",
                 "date": _TODAY,
                 "start_time": f"{_TODAY}T23:00:00Z",
+                "home_goalie": "Bruins Starter",
+                "away_goalie": "Canadiens Starter",
+                "home_goalie_status": "confirmed",
+                "away_goalie_status": "confirmed",
             }
         ]
         mock_odds.return_value = [
@@ -409,6 +419,8 @@ class TestRunNHLPipeline:
         assert data["outcomes"] == ["home", "away"]
         assert len(data["matches"]) == 1
         assert data["matches"][0]["pick"] in {"home", "away"}
+        assert data["matches"][0]["home_goalie"] == "Bruins Starter"
+        assert data["matches"][0]["away_goalie_status"] == "confirmed"
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
         assert "nhl_matchup" in data["model_weights"]

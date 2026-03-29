@@ -1745,6 +1745,7 @@ class NhlMatchupModel:
         self.min_games = min_games
         self.model = None
         self.team_logs = {}
+        self.goalie_logs = {}
         self.feature_names = [
             "season_goal_diff",
             "recent_goal_diff",
@@ -1756,6 +1757,9 @@ class NhlMatchupModel:
             "recent_power_play_pct_diff",
             "recent_takeaway_diff",
             "recent_penalty_minutes_edge",
+            "goalie_recent_save_pct_diff",
+            "goalie_recent_goals_allowed_edge",
+            "goalie_rest_diff",
             "rest_diff",
         ]
         self._fit(games)
@@ -1803,13 +1807,33 @@ class NhlMatchupModel:
         last_date = max(pd.Timestamp(item["date"]) for item in dated_logs)
         return max(0.0, float((current - last_date).days))
 
-    def _feature_vector(self, home_logs, away_logs, game_date=None):
+    def _goalie_summary(self, goalie_logs, game_date):
+        if not goalie_logs:
+            return {
+                "save_pct": 0.91,
+                "goals_allowed": 3.0,
+                "rest_days": 3.0,
+            }
+        recent = goalie_logs[-self.feature_window :]
+        innings = len(recent)
+        save_pct = float(sum(item["save_pct"] for item in recent) / innings)
+        goals_allowed = float(sum(item["goals_allowed"] for item in recent) / innings)
+        rest_days = self._rest_days(goalie_logs, game_date)
+        return {
+            "save_pct": save_pct,
+            "goals_allowed": goals_allowed,
+            "rest_days": rest_days,
+        }
+
+    def _feature_vector(self, home_logs, away_logs, home_goalie_logs=None, away_goalie_logs=None, game_date=None):
         home_season = self._aggregate(home_logs)
         away_season = self._aggregate(away_logs)
         home_recent = self._aggregate(home_logs[-self.feature_window :])
         away_recent = self._aggregate(away_logs[-self.feature_window :])
         home_home = self._aggregate([item for item in home_logs if item.get("venue") == "home"][-self.feature_window :])
         away_away = self._aggregate([item for item in away_logs if item.get("venue") == "away"][-self.feature_window :])
+        home_goalie = self._goalie_summary(home_goalie_logs or [], game_date)
+        away_goalie = self._goalie_summary(away_goalie_logs or [], game_date)
 
         return np.array([
             home_season["goal_diff"] - away_season["goal_diff"],
@@ -1822,6 +1846,9 @@ class NhlMatchupModel:
             home_recent["power_play_pct"] - away_recent["power_play_pct"],
             home_recent["takeaway_diff"] - away_recent["takeaway_diff"],
             (away_recent["penalty_minutes"] - home_recent["penalty_minutes"]) / 10.0,
+            home_goalie["save_pct"] - away_goalie["save_pct"],
+            away_goalie["goals_allowed"] - home_goalie["goals_allowed"],
+            (home_goalie["rest_days"] - away_goalie["rest_days"]) / 3.0,
             (self._rest_days(home_logs, game_date) - self._rest_days(away_logs, game_date)) / 3.0,
         ])
 
@@ -1865,6 +1892,7 @@ class NhlMatchupModel:
             team: []
             for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
         }
+        goalie_logs = {}
         X = []
         y = []
 
@@ -1873,8 +1901,16 @@ class NhlMatchupModel:
                 continue
             home = row["home_team"]
             away = row["away_team"]
+            home_goalie = row.get("home_goalie")
+            away_goalie = row.get("away_goalie")
 
-            X.append(self._feature_vector(team_logs.get(home, []), team_logs.get(away, []), game_date=row["date"]))
+            X.append(self._feature_vector(
+                team_logs.get(home, []),
+                team_logs.get(away, []),
+                goalie_logs.get(home_goalie, []),
+                goalie_logs.get(away_goalie, []),
+                game_date=row["date"],
+            ))
             y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
 
             team_logs.setdefault(home, []).append(
@@ -1909,8 +1945,21 @@ class NhlMatchupModel:
                     float(row.get("away_penalty_minutes", 8.0)),
                 )
             )
+            if home_goalie:
+                goalie_logs.setdefault(home_goalie, []).append({
+                    "date": row["date"],
+                    "save_pct": float(row.get("home_goalie_save_pct", row.get("home_save_pct", 0.91))),
+                    "goals_allowed": float(row.get("home_goalie_goals_allowed", row.get("away_goals", 3.0))),
+                })
+            if away_goalie:
+                goalie_logs.setdefault(away_goalie, []).append({
+                    "date": row["date"],
+                    "save_pct": float(row.get("away_goalie_save_pct", row.get("away_save_pct", 0.91))),
+                    "goals_allowed": float(row.get("away_goalie_goals_allowed", row.get("home_goals", 3.0))),
+                })
 
         self.team_logs = team_logs
+        self.goalie_logs = goalie_logs
 
         if len(X) < self.min_games or len(set(y)) < 2:
             return
@@ -1918,13 +1967,15 @@ class NhlMatchupModel:
         self.model = LogisticRegression(max_iter=1000)
         self.model.fit(np.array(X), np.array(y))
 
-    def predict(self, home_team, away_team, game_date=None):
+    def predict(self, home_team, away_team, game_date=None, home_goalie=None, away_goalie=None):
         if self.model is None:
             return {"home": 0.5, "away": 0.5}
 
         X = np.array([self._feature_vector(
             self.team_logs.get(home_team, []),
             self.team_logs.get(away_team, []),
+            self.goalie_logs.get(home_goalie, []),
+            self.goalie_logs.get(away_goalie, []),
             game_date=game_date,
         )])
         proba = self.model.predict_proba(X)[0]
@@ -1934,9 +1985,15 @@ class NhlMatchupModel:
         return {"home": float(proba[home_idx]), "away": float(proba[away_idx])}
 
 
-def nhl_matchup_predict(model, home_team, away_team, game_date=None):
+def nhl_matchup_predict(model, home_team, away_team, game_date=None, home_goalie=None, away_goalie=None):
     """Predict two-way probabilities from the NHL matchup-context model."""
-    return model.predict(home_team, away_team, game_date=game_date)
+    return model.predict(
+        home_team,
+        away_team,
+        game_date=game_date,
+        home_goalie=home_goalie,
+        away_goalie=away_goalie,
+    )
 
 
 # ---------------------------------------------------------------------------

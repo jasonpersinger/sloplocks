@@ -1742,6 +1742,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 home,
                 away,
                 game_date=fix.get("date"),
+                home_goalie=fix.get("home_goalie"),
+                away_goalie=fix.get("away_goalie"),
             )
             individual_preds.append(nhl_matchup_probs)
             blend_weights.append(model_weight_dict["nhl_matchup"])
@@ -1867,6 +1869,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "neutral": is_neutral,
             "home_availability_profile": fix.get("home_availability_profile"),
             "away_availability_profile": fix.get("away_availability_profile"),
+            "home_goalie": fix.get("home_goalie"),
+            "away_goalie": fix.get("away_goalie"),
+            "home_goalie_status": fix.get("home_goalie_status"),
+            "away_goalie_status": fix.get("away_goalie_status"),
             "home_pitcher": fix.get("home_pitcher"),
             "home_pitcher_hand": fix.get("home_pitcher_hand"),
             "away_pitcher": fix.get("away_pitcher"),

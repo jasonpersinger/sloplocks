@@ -804,6 +804,12 @@ class TestNhlMatchupModel:
                 "away_save_pct": 0.895 if strong_home else 0.925,
                 "home_shots": 32 if strong_home else 27,
                 "away_shots": 27 if strong_home else 32,
+                "home_goalie": "Bruins Starter" if strong_home else "Canadiens Starter",
+                "away_goalie": "Canadiens Starter" if strong_home else "Bruins Starter",
+                "home_goalie_save_pct": 0.928 if strong_home else 0.892,
+                "away_goalie_save_pct": 0.892 if strong_home else 0.928,
+                "home_goalie_goals_allowed": 2 if strong_home else 4,
+                "away_goalie_goals_allowed": 4 if strong_home else 2,
                 "home_faceoff_pct": 0.56 if strong_home else 0.46,
                 "away_faceoff_pct": 0.46 if strong_home else 0.56,
                 "home_power_play_pct": 0.24 if strong_home else 0.14,
@@ -817,7 +823,14 @@ class TestNhlMatchupModel:
             })
 
         model = NhlMatchupModel(pd.DataFrame(games), feature_window=8, min_games=20)
-        probs = nhl_matchup_predict(model, "Bruins", "Canadiens", game_date="2026-03-10")
+        probs = nhl_matchup_predict(
+            model,
+            "Bruins",
+            "Canadiens",
+            game_date="2026-03-10",
+            home_goalie="Bruins Starter",
+            away_goalie="Canadiens Starter",
+        )
 
         assert model.model is not None
         assert probs["home"] > 0.5
