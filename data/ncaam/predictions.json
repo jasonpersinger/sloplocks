@@ -21,32 +21,35 @@
       "expected_value": 0.0333,
       "american_odds": -233,
       "decimal_odds": 1.43,
-      "kelly_fraction": 0.0773,
+      "kelly_fraction": 0.0774,
       "fractional_kelly": 0.0193,
-      "confidence_score": 72.8,
-      "blurb": ""
+      "confidence_score": 0.0,
+      "individual_models": {
+        "elo": {
+          "home": 0.8026,
+          "away": 0.1974
+        },
+        "efficiency": {
+          "home": 0.6956,
+          "away": 0.3044
+        },
+        "four_factors": {
+          "home": 0.7601,
+          "away": 0.2399
+        },
+        "results_features": {
+          "home": 0.7132,
+          "away": 0.2868
+        },
+        "recent_boxscore": {
+          "home": 0.7398,
+          "away": 0.2602
+        }
+      }
     }
   ],
   "totals_locks": [],
-  "slimegrinder": [
-    {
-      "home_team": "Duke",
-      "away_team": "UConn",
-      "date": "2026-03-29",
-      "start_time": "2026-03-29T21:05Z",
-      "matchday": null,
-      "pick": "home",
-      "model_prob": 0.7226,
-      "implied_prob": 0.6808,
-      "edge": 0.0418,
-      "expected_value": 0.0333,
-      "american_odds": -233,
-      "decimal_odds": 1.43,
-      "kelly_fraction": 0.0773,
-      "fractional_kelly": 0.0193,
-      "confidence_score": 72.8
-    }
-  ],
+  "slimegrinder": [],
   "longslop": null,
   "matches": [
     {
@@ -72,13 +75,13 @@
       "weather": null,
       "pick": "home",
       "model_prob": 0.7354,
-      "edge": -0.1013,
+      "edge": -0.0712,
       "expected_value": -0.1489,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
       "confidence_score": 49.7,
       "confidence_stars": 2,
-      "american_odds": -1667,
+      "american_odds": -10000,
       "model_probs": {
         "home": 0.7354,
         "away": 0.2646
@@ -107,41 +110,45 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.8029,
+          "model_prob": 0.9015,
           "raw_model_prob": 0.7354,
-          "implied_prob": 0.9042,
-          "market_implied_prob": 0.9434,
-          "edge": -0.1013,
-          "expected_value": -0.1489,
-          "decimal_odds": 1.06,
-          "american_odds": -1667,
+          "implied_prob": 0.9727,
+          "market_implied_prob": 0.9901,
+          "edge": -0.0712,
+          "expected_value": -0.0895,
+          "decimal_odds": 1.01,
+          "american_odds": -10000,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 49.7,
+          "confidence_score": 0.0,
           "is_value": false,
-          "unrealistic_flag": false,
-          "hold": 0.0434
+          "unrealistic_flag": true,
+          "hold": 0.0179
         },
         "away": {
-          "model_prob": 0.1971,
+          "model_prob": 0.0985,
           "raw_model_prob": 0.2646,
-          "implied_prob": 0.0958,
-          "market_implied_prob": 0.1,
-          "edge": 0.1013,
-          "expected_value": 0.9712,
-          "decimal_odds": 10.0,
-          "american_odds": 900,
-          "kelly_fraction": 0.1079,
-          "fractional_kelly": 0.027,
-          "confidence_score": 41.0,
+          "implied_prob": 0.0273,
+          "market_implied_prob": 0.0278,
+          "edge": 0.0712,
+          "expected_value": 2.5454,
+          "decimal_odds": 36.0,
+          "american_odds": 3500,
+          "kelly_fraction": 0.0727,
+          "fractional_kelly": 0.0182,
+          "confidence_score": 0.0,
           "is_value": false,
-          "unrealistic_flag": false,
-          "hold": 0.0434
+          "unrealistic_flag": true,
+          "hold": 0.0179
         }
       },
       "best_odds": {
-        "home": -1667,
-        "away": 900
+        "home": -10000,
+        "away": 3500
+      },
+      "base_model_probs": {
+        "home": 0.7354,
+        "away": 0.2646
       }
     },
     {
@@ -210,9 +217,9 @@
           "expected_value": 0.0333,
           "decimal_odds": 1.43,
           "american_odds": -233,
-          "kelly_fraction": 0.0773,
+          "kelly_fraction": 0.0774,
           "fractional_kelly": 0.0193,
-          "confidence_score": 72.8,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": 0.0272
@@ -228,7 +235,7 @@
           "american_odds": 205,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 12.9,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": 0.0272
@@ -237,6 +244,10 @@
       "best_odds": {
         "home": -233,
         "away": 205
+      },
+      "base_model_probs": {
+        "home": 0.7504,
+        "away": 0.2496
       }
     }
   ],
@@ -299,12 +310,12 @@
   },
   "diagnostics": {
     "historical_matches": 1179,
-    "fixtures_fetched": 2,
-    "fixtures_in_window": 2,
+    "fixtures_fetched": 0,
+    "fixtures_in_window": 0,
     "fixtures_completed": 0,
-    "fixtures_pending": 2,
-    "odds_events_fetched": 10,
-    "fixtures_with_odds": 2,
+    "fixtures_pending": 0,
+    "odds_events_fetched": 11,
+    "fixtures_with_odds": 0,
     "fixtures_without_odds": 0,
     "matches_modeled": 2,
     "matches_with_market": 2,
@@ -313,7 +324,8 @@
     "lock_eligible_outcomes": 1,
     "slop_locks_posted": 1,
     "longslop_posted": 0,
-    "slimegrinders_posted": 1,
-    "summary": "modeled=2 | odds=2/2 | +ev=2 | eligible=1 | locks=1"
-  }
+    "slimegrinders_posted": 0,
+    "summary": "modeled=2 | odds=0/0 | +ev=2 | eligible=1 | locks=1"
+  },
+  "updated_at": "2026-03-29T19:08:38Z"
 }
