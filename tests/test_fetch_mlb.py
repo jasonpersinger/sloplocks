@@ -202,18 +202,18 @@ class TestBallparkWeather:
 
 
 class TestTeamLineupProfile:
+    class FakeResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self._payload
+
     def test_fetches_and_caches_active_hitter_profile(self, monkeypatch):
         calls = []
-
-        class FakeResponse:
-            def __init__(self, payload):
-                self._payload = payload
-
-            def raise_for_status(self):
-                return None
-
-            def json(self):
-                return self._payload
 
         roster_payload = {
             "athletes": [
@@ -261,9 +261,9 @@ class TestTeamLineupProfile:
         def fake_get(url, timeout=30):
             calls.append(url)
             if "/teams/15/roster" in url:
-                return FakeResponse(roster_payload)
+                return self.FakeResponse(roster_payload)
             player_id = url.rsplit("/", 1)[-1]
-            return FakeResponse(athlete_payloads[player_id])
+            return self.FakeResponse(athlete_payloads[player_id])
 
         monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
         cache = {"rosters": {}, "players": {}, "pitchers": {}, "weather": {}, "games": {}}
@@ -274,9 +274,57 @@ class TestTeamLineupProfile:
         assert first["active_hitters"] == 4
         assert first["available_hitters"] == 3
         assert first["injured_hitters"] == 1
+        assert first["key_bat_absence_score"] == 0.0
+        assert first["leader_absence_burden"] == 0.0
         assert first["left_handed_batters"] == 1
         assert first["right_handed_batters"] == 1
         assert first["switch_hitters"] == 1
         assert first["lefty_share"] == 0.3333
         assert second == first
         assert len(calls) == 4
+
+    def test_lineup_profile_penalizes_missing_live_batting_leaders(self, monkeypatch):
+        calls = []
+        roster_payload = {
+            "athletes": [
+                {
+                    "position": "Infielders",
+                    "items": [
+                        {
+                            "id": "101",
+                            "displayName": "Slugger",
+                            "status": {"type": "active"},
+                            "injuries": [{"status": "out"}],
+                        },
+                        {
+                            "id": "102",
+                            "displayName": "Healthy Bat",
+                            "status": {"type": "active"},
+                            "injuries": [],
+                        },
+                    ],
+                },
+            ]
+        }
+        athlete_payloads = {
+            "101": {"bats": {"abbreviation": "L"}, "throws": {"abbreviation": "R"}},
+            "102": {"bats": {"abbreviation": "R"}, "throws": {"abbreviation": "R"}},
+        }
+
+        def fake_get(url, timeout=30):
+            calls.append(url)
+            if "/teams/15/roster" in url:
+                return self.FakeResponse(roster_payload)
+            player_id = url.rsplit("/", 1)[-1]
+            return self.FakeResponse(athlete_payloads[player_id])
+
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+        profile = _fetch_team_lineup_profile(
+            "15",
+            cache={"rosters": {}, "players": {}, "pitchers": {}, "weather": {}, "games": {}},
+            leader_weights={"101": 1.0},
+        )
+
+        assert profile["injured_hitters"] == 1
+        assert profile["key_bat_absence_score"] == 1.0
+        assert profile["leader_absence_burden"] == 1.0

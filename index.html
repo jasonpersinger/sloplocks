@@ -507,6 +507,9 @@
           currentLine += ' | totals=' + currentData.totals_locks.length;
         }
         diagnosticLines.push(currentLine);
+        if ((currentDiagnostics.coverage_gap_examples || []).length) {
+          diagnosticLines.push('missing: ' + currentDiagnostics.coverage_gap_examples.slice(0, 2).join(', '));
+        }
       }
     }
 

@@ -61,6 +61,11 @@ class TestNormalizeNhlTeamName:
         assert normalize_nhl_team_name("Boston Bruins") == "Bruins"
         assert normalize_nhl_team_name("Unknown Club") == "Unknown Club"
 
+    @patch("pipeline.fetch_nhl._team_map", {})
+    def test_handles_common_alias_and_accent_variants(self):
+        assert normalize_nhl_team_name("Montréal Canadiens") == "Canadiens"
+        assert normalize_nhl_team_name("Utah Hockey Club") == "Utah"
+
 
 class TestFetchNhlGames:
     @patch("pipeline.fetch_nhl._team_map", {"Boston Bruins": "Bruins", "Toronto Maple Leafs": "Maple Leafs"})

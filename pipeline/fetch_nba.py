@@ -281,9 +281,13 @@ def _fetch_nba_team_availability_profile(
     default = {
         "active_players": 0,
         "injured_players": 0,
+        "questionable_players": 0,
+        "doubtful_players": 0,
         "injury_burden": 0.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0,
         "available_core_players": 0,
     }
     if not team_id:
@@ -322,21 +326,32 @@ def _fetch_nba_team_availability_profile(
             status_type = athlete.get("status", {}).get("type")
             injuries = athlete.get("injuries") or []
             player_penalty = 0.0
+            uncertain_penalty = 0.0
             for injury in injuries:
-                player_penalty = max(player_penalty, _injury_weight(injury.get("status")))
+                injury_status = injury.get("status")
+                weight = _injury_weight(injury_status)
+                player_penalty = max(player_penalty, weight)
+                normalized = str(injury_status or "").strip().lower()
+                if normalized in {"questionable", "day-to-day", "doubtful"}:
+                    uncertain_penalty = max(uncertain_penalty, weight)
             roster_rows.append({
                 "id": str(athlete.get("id")),
                 "active": status_type == "active",
                 "penalty": round(player_penalty, 3),
+                "uncertain_penalty": round(uncertain_penalty, 3),
             })
         if cache_store is not None:
             cache_store[cache_key] = {"player_rows": roster_rows}
 
     active_players = 0
     injured_players = 0
+    questionable_players = 0
+    doubtful_players = 0
     injury_burden = 0.0
+    uncertainty_burden = 0.0
     key_absence_score = 0.0
     leader_absence_burden = 0.0
+    leader_uncertainty_burden = 0.0
     available_core_players = 0
 
     for athlete in roster_rows:
@@ -345,6 +360,7 @@ def _fetch_nba_team_availability_profile(
             active_players += 1
 
         player_penalty = float(athlete.get("penalty", 0.0) or 0.0)
+        uncertain_penalty = float(athlete.get("uncertain_penalty", 0.0) or 0.0)
         if player_penalty > 0:
             injured_players += 1
             injury_burden += player_penalty
@@ -352,15 +368,27 @@ def _fetch_nba_team_availability_profile(
             if leader_weight_value > 0:
                 key_absence_score += player_penalty
                 leader_absence_burden += player_penalty * leader_weight_value
+            if uncertain_penalty > 0:
+                uncertainty_burden += uncertain_penalty
+                if uncertain_penalty >= 0.75:
+                    doubtful_players += 1
+                else:
+                    questionable_players += 1
+                if leader_weight_value > 0:
+                    leader_uncertainty_burden += uncertain_penalty * leader_weight_value
         elif is_active:
             available_core_players += 1
 
     profile = {
         "active_players": active_players,
         "injured_players": injured_players,
+        "questionable_players": questionable_players,
+        "doubtful_players": doubtful_players,
         "injury_burden": round(injury_burden, 3),
+        "uncertainty_burden": round(uncertainty_burden, 3),
         "key_absence_score": round(key_absence_score, 3),
         "leader_absence_burden": round(leader_absence_burden, 3),
+        "leader_uncertainty_burden": round(leader_uncertainty_burden, 3),
         "available_core_players": available_core_players,
     }
     return profile

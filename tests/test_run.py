@@ -278,6 +278,7 @@ class TestRunNBAPipeline:
         assert diagnostics["fixtures_in_window"] == 1
         assert diagnostics["odds_events_fetched"] == 1
         assert diagnostics["fixtures_with_odds"] == 1
+        assert diagnostics["coverage_gap_examples"] == []
         assert diagnostics["matches_modeled"] >= 1
 
         # Season stats should not have draw fields
@@ -339,6 +340,7 @@ class TestRunMMAPipeline:
         assert data["matches"][0]["start_time"] == f"{_TODAY}T03:00:00Z"
         assert data["diagnostics"]["fixtures_fetched"] == 1
         assert data["diagnostics"]["fixtures_with_odds"] == 1
+        assert data["diagnostics"]["coverage_gap_examples"] == []
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
 
@@ -448,6 +450,8 @@ class TestRunMLBPipeline:
                     "active_hitters": 13,
                     "available_hitters": 13,
                     "injured_hitters": 0,
+                    "key_bat_absence_score": 0.0,
+                    "leader_absence_burden": 0.0,
                     "left_handed_batters": 5,
                     "right_handed_batters": 6,
                     "switch_hitters": 2,
@@ -459,6 +463,8 @@ class TestRunMLBPipeline:
                     "active_hitters": 12,
                     "available_hitters": 11,
                     "injured_hitters": 1,
+                    "key_bat_absence_score": 0.9,
+                    "leader_absence_burden": 0.85,
                     "left_handed_batters": 2,
                     "right_handed_batters": 8,
                     "switch_hitters": 1,
@@ -539,6 +545,8 @@ class TestMlbLineupAdjustment:
                 "active_hitters": 13,
                 "available_hitters": 13,
                 "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
                 "lefty_share": 0.42,
                 "righty_share": 0.42,
                 "switch_share": 0.16,
@@ -547,6 +555,8 @@ class TestMlbLineupAdjustment:
                 "active_hitters": 12,
                 "available_hitters": 10,
                 "injured_hitters": 2,
+                "key_bat_absence_score": 1.0,
+                "leader_absence_burden": 0.9,
                 "lefty_share": 0.10,
                 "righty_share": 0.80,
                 "switch_share": 0.10,
@@ -566,6 +576,8 @@ class TestMlbLineupAdjustment:
                 "active_hitters": 13,
                 "available_hitters": 13,
                 "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
                 "lefty_share": 0.40,
                 "righty_share": 0.44,
                 "switch_share": 0.16,
@@ -574,6 +586,8 @@ class TestMlbLineupAdjustment:
                 "active_hitters": 13,
                 "available_hitters": 12,
                 "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
                 "lefty_share": 0.18,
                 "righty_share": 0.64,
                 "switch_share": 0.18,
@@ -585,6 +599,36 @@ class TestMlbLineupAdjustment:
 
         assert adjusted > 8.2
 
+    def test_missing_middle_of_order_bats_drag_side_probability(self):
+        adjusted = _apply_mlb_lineup_adjustment(
+            {"home": 0.5, "away": 0.5},
+            {
+                "active_hitters": 13,
+                "available_hitters": 11,
+                "injured_hitters": 1,
+                "key_bat_absence_score": 1.0,
+                "leader_absence_burden": 0.95,
+                "lefty_share": 0.36,
+                "righty_share": 0.46,
+                "switch_share": 0.18,
+            },
+            {
+                "active_hitters": 13,
+                "available_hitters": 13,
+                "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "lefty_share": 0.36,
+                "righty_share": 0.46,
+                "switch_share": 0.18,
+            },
+            home_pitcher_hand="R",
+            away_pitcher_hand="R",
+            max_delta=0.015,
+        )
+
+        assert adjusted["home"] < 0.5
+
 
 class TestNbaAvailabilityAdjustment:
     def test_missing_key_players_pushes_probability_away_from_shorthanded_team(self):
@@ -593,19 +637,28 @@ class TestNbaAvailabilityAdjustment:
             {
                 "active_players": 15,
                 "injured_players": 0,
+                "questionable_players": 0,
+                "doubtful_players": 0,
                 "injury_burden": 0.0,
+                "uncertainty_burden": 0.0,
                 "key_absence_score": 0.0,
                 "leader_absence_burden": 0.0,
+                "leader_uncertainty_burden": 0.0,
                 "available_core_players": 12,
             },
             {
                 "active_players": 14,
                 "injured_players": 2,
+                "questionable_players": 1,
+                "doubtful_players": 1,
                 "injury_burden": 1.25,
+                "uncertainty_burden": 0.75,
                 "key_absence_score": 1.0,
                 "leader_absence_burden": 1.25,
+                "leader_uncertainty_burden": 0.75,
                 "available_core_players": 9,
             },
+            start_time=(datetime.now(timezone.utc) + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             max_delta=0.02,
         )
 
@@ -618,23 +671,62 @@ class TestNbaAvailabilityAdjustment:
             {
                 "active_players": 15,
                 "injured_players": 0,
+                "questionable_players": 0,
+                "doubtful_players": 0,
                 "injury_burden": 0.0,
+                "uncertainty_burden": 0.0,
                 "key_absence_score": 0.0,
                 "leader_absence_burden": 0.0,
+                "leader_uncertainty_burden": 0.0,
                 "available_core_players": 12,
             },
             {
                 "active_players": 13,
                 "injured_players": 2,
+                "questionable_players": 1,
+                "doubtful_players": 1,
                 "injury_burden": 1.25,
+                "uncertainty_burden": 0.75,
                 "key_absence_score": 1.0,
                 "leader_absence_burden": 1.4,
+                "leader_uncertainty_burden": 0.75,
                 "available_core_players": 8,
             },
+            start_time=(datetime.now(timezone.utc) + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             max_points_delta=2.2,
         )
 
         assert adjusted_total < 228.5
+
+    def test_questionable_star_near_tip_matters_more_than_early_day(self):
+        profile = {
+            "active_players": 14,
+            "injured_players": 1,
+            "questionable_players": 1,
+            "doubtful_players": 0,
+            "injury_burden": 0.35,
+            "uncertainty_burden": 0.35,
+            "key_absence_score": 0.35,
+            "leader_absence_burden": 0.35,
+            "leader_uncertainty_burden": 0.35,
+            "available_core_players": 10,
+        }
+        early = _apply_nba_availability_adjustment(
+            {"home": 0.5, "away": 0.5},
+            profile,
+            None,
+            start_time=(datetime.now(timezone.utc) + timedelta(hours=16)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            max_delta=0.02,
+        )
+        late = _apply_nba_availability_adjustment(
+            {"home": 0.5, "away": 0.5},
+            profile,
+            None,
+            start_time=(datetime.now(timezone.utc) + timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            max_delta=0.02,
+        )
+
+        assert late["home"] < early["home"]
 
 
 # ---------------------------------------------------------------------------

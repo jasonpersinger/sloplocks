@@ -176,7 +176,12 @@ def refresh_sport(sport_key: str) -> None:
                 refreshed_probs,
                 match.get("home_availability_profile"),
                 match.get("away_availability_profile"),
+                start_time=match.get("start_time"),
                 max_delta=sport.get("availability_adjustment_max_delta", 0.02),
+                uncertainty_weight=sport.get("availability_uncertainty_weight", 0.35),
+                leader_uncertainty_weight=sport.get("availability_leader_uncertainty_weight", 0.35),
+                tipoff_partial_hours=sport.get("availability_tipoff_partial_hours", 12.0),
+                tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
             )
         elif sport_key == "mlb":
             refreshed_probs = _apply_mlb_weather_adjustment(
@@ -250,7 +255,10 @@ def refresh_sport(sport_key: str) -> None:
                 expected_total,
                 total_match.get("home_availability_profile"),
                 total_match.get("away_availability_profile"),
+                start_time=total_match.get("start_time"),
                 max_points_delta=sport.get("availability_total_adjustment_max_points", 2.2),
+                tipoff_partial_hours=sport.get("availability_tipoff_partial_hours", 12.0),
+                tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
             )
         elif sport_key == "mlb":
             expected_total = _apply_mlb_weather_total_adjustment(

@@ -686,6 +686,8 @@ def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand
     active_hitters = float(lineup_profile.get("active_hitters", 0.0) or 0.0)
     available_hitters = float(lineup_profile.get("available_hitters", 0.0) or 0.0)
     injured_hitters = float(lineup_profile.get("injured_hitters", 0.0) or 0.0)
+    key_bat_absence_score = float(lineup_profile.get("key_bat_absence_score", 0.0) or 0.0)
+    leader_absence_burden = float(lineup_profile.get("leader_absence_burden", 0.0) or 0.0)
 
     pitcher_hand = (opposing_pitcher_hand or "R").upper()
     if pitcher_hand == "L":
@@ -699,7 +701,14 @@ def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand
         availability_rate = max(-1.0, min(1.0, (available_hitters / active_hitters) - 1.0))
     injury_term = max(-1.0, min(1.0, injured_hitters / 4.0))
 
-    return (0.65 * platoon_term) + (0.2 * depth_term) + (0.15 * availability_rate) - (0.2 * injury_term)
+    return (
+        (0.6 * platoon_term)
+        + (0.2 * depth_term)
+        + (0.15 * availability_rate)
+        - (0.18 * injury_term)
+        - (0.28 * key_bat_absence_score)
+        - (0.24 * leader_absence_burden)
+    )
 
 
 def _apply_mlb_lineup_adjustment(
@@ -771,14 +780,55 @@ def _compute_nba_availability_index(profile: dict | None) -> float:
     )
 
 
+def _nba_tipoff_urgency(
+    start_time: str | None,
+    partial_hours: float = 12.0,
+    full_hours: float = 2.0,
+) -> float:
+    """Scale late-news sensitivity upward as tipoff approaches."""
+    if not start_time:
+        return 0.6
+    try:
+        tipoff = datetime.fromisoformat(str(start_time).replace("Z", "+00:00"))
+    except ValueError:
+        return 0.6
+
+    hours_to_tip = (tipoff - datetime.now(timezone.utc)).total_seconds() / 3600.0
+    if hours_to_tip <= full_hours:
+        return 1.0
+    if hours_to_tip <= max(full_hours + 4.0, 6.0):
+        return 0.85
+    if hours_to_tip <= partial_hours:
+        return 0.7
+    return 0.55
+
+
 def _apply_nba_availability_adjustment(
     blended: dict[str, float],
     home_profile: dict | None,
     away_profile: dict | None,
+    start_time: str | None = None,
     max_delta: float = 0.02,
+    uncertainty_weight: float = 0.35,
+    leader_uncertainty_weight: float = 0.35,
+    tipoff_partial_hours: float = 12.0,
+    tipoff_full_hours: float = 2.0,
 ) -> dict[str, float]:
     """Apply a small live NBA availability adjustment from roster status."""
     differential = _compute_nba_availability_index(home_profile) - _compute_nba_availability_index(away_profile)
+    urgency = _nba_tipoff_urgency(
+        start_time,
+        partial_hours=tipoff_partial_hours,
+        full_hours=tipoff_full_hours,
+    )
+    home_uncertainty = float((home_profile or {}).get("uncertainty_burden", 0.0) or 0.0)
+    away_uncertainty = float((away_profile or {}).get("uncertainty_burden", 0.0) or 0.0)
+    home_leader_uncertainty = float((home_profile or {}).get("leader_uncertainty_burden", 0.0) or 0.0)
+    away_leader_uncertainty = float((away_profile or {}).get("leader_uncertainty_burden", 0.0) or 0.0)
+    differential -= (
+        ((home_uncertainty - away_uncertainty) * uncertainty_weight)
+        + ((home_leader_uncertainty - away_leader_uncertainty) * leader_uncertainty_weight)
+    ) * urgency
     if abs(differential) < 0.05:
         return blended
 
@@ -797,24 +847,44 @@ def _apply_nba_availability_total_adjustment(
     expected_total: float,
     home_profile: dict | None,
     away_profile: dict | None,
+    start_time: str | None = None,
     max_points_delta: float = 2.2,
+    uncertainty_weight: float = 0.12,
+    leader_uncertainty_weight: float = 0.28,
+    tipoff_partial_hours: float = 12.0,
+    tipoff_full_hours: float = 2.0,
 ) -> float:
     """Adjust an NBA total modestly for current roster depletion."""
     if not home_profile and not away_profile:
         return expected_total
 
+    urgency = _nba_tipoff_urgency(
+        start_time,
+        partial_hours=tipoff_partial_hours,
+        full_hours=tipoff_full_hours,
+    )
+
     def _offense_drag(profile: dict | None) -> float:
         if not profile:
             return 0.0
         leader_absence = float(profile.get("leader_absence_burden", 0.0) or 0.0)
+        leader_uncertainty = float(profile.get("leader_uncertainty_burden", 0.0) or 0.0)
         injury_burden = float(profile.get("injury_burden", 0.0) or 0.0)
+        uncertainty_burden = float(profile.get("uncertainty_burden", 0.0) or 0.0)
         active_players = float(profile.get("active_players", 0.0) or 0.0)
         available_core = float(profile.get("available_core_players", 0.0) or 0.0)
         depth_gap = max(0.0, 10.0 - available_core)
         active_gap = 0.0
         if active_players > 0:
             active_gap = max(0.0, 0.75 - (available_core / active_players))
-        return (0.65 * leader_absence) + (0.25 * injury_burden) + (0.2 * depth_gap) + (0.35 * active_gap)
+        return (
+            (0.65 * leader_absence)
+            + (0.25 * injury_burden)
+            + (0.2 * depth_gap)
+            + (0.35 * active_gap)
+            + (leader_uncertainty_weight * leader_uncertainty * urgency)
+            + (uncertainty_weight * uncertainty_burden * urgency)
+        )
 
     combined_drag = _offense_drag(home_profile) + _offense_drag(away_profile)
     if combined_drag <= 0.05:
@@ -1290,9 +1360,12 @@ def _build_pipeline_diagnostics(
     probability_floor = sport.get("slop_lock_probability_floor", 0.45)
 
     fixtures_with_odds = 0
+    coverage_gap_examples = []
     for fixture in fixtures_in_window:
         if _lookup_match_odds(odds_lookup, sport_key, fixture["home_team"], fixture["away_team"]):
             fixtures_with_odds += 1
+        elif len(coverage_gap_examples) < 3:
+            coverage_gap_examples.append(f"{fixture['away_team']} @ {fixture['home_team']}")
 
     matches_with_market = 0
     matches_with_positive_ev = set()
@@ -1340,6 +1413,7 @@ def _build_pipeline_diagnostics(
         "odds_events_fetched": len(odds_list),
         "fixtures_with_odds": fixtures_with_odds,
         "fixtures_without_odds": len(fixtures_in_window) - fixtures_with_odds,
+        "coverage_gap_examples": coverage_gap_examples,
         "matches_modeled": len(prediction_records),
         "matches_with_market": matches_with_market,
         "matches_with_positive_ev": len(matches_with_positive_ev),
@@ -1848,7 +1922,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 blended,
                 fix.get("home_availability_profile"),
                 fix.get("away_availability_profile"),
+                start_time=fix.get("start_time"),
                 max_delta=sport.get("availability_adjustment_max_delta", 0.02),
+                uncertainty_weight=sport.get("availability_uncertainty_weight", 0.35),
+                leader_uncertainty_weight=sport.get("availability_leader_uncertainty_weight", 0.35),
+                tipoff_partial_hours=sport.get("availability_tipoff_partial_hours", 12.0),
+                tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
             )
         if sport_key == "nhl":
             blended = _apply_nhl_goalie_status_adjustment(
@@ -1964,7 +2043,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     total_projection["expected_total"],
                     fix.get("home_availability_profile"),
                     fix.get("away_availability_profile"),
+                    start_time=fix.get("start_time"),
                     max_points_delta=sport.get("availability_total_adjustment_max_points", 2.2),
+                    tipoff_partial_hours=sport.get("availability_tipoff_partial_hours", 12.0),
+                    tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
                 )
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(

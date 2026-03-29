@@ -363,9 +363,13 @@ class TestNbaAvailabilityProfile:
 
         assert first["active_players"] == 3
         assert first["injured_players"] == 2
+        assert first["questionable_players"] == 1
+        assert first["doubtful_players"] == 0
         assert first["key_absence_score"] == 1.0
         assert first["injury_burden"] == 1.35
+        assert first["uncertainty_burden"] == 0.35
         assert first["leader_absence_burden"] == 1.0
+        assert first["leader_uncertainty_burden"] == 0.0
         assert first["available_core_players"] == 1
         assert second == first
         assert mock_get.call_count == 1
@@ -406,6 +410,7 @@ class TestNbaAvailabilityProfile:
 
         assert profile["key_absence_score"] == 1.35
         assert profile["leader_absence_burden"] == 1.228
+        assert profile["leader_uncertainty_burden"] == pytest.approx(0.228, abs=0.002)
 
 
 # ---------------------------------------------------------------------------

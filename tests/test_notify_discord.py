@@ -67,7 +67,10 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
             "slop_locks": [nba_lock],
             "longslop": None,
             "matches": [nba_match],
-            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1"},
+            "diagnostics": {
+                "summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1",
+                "coverage_gap_examples": [],
+            },
         },
     )
 
@@ -126,7 +129,10 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
             "totals_locks": [mlb_total_lock],
             "longslop": mlb_longslop,
             "matches": [mlb_match],
-            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=0"},
+            "diagnostics": {
+                "summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=0",
+                "coverage_gap_examples": ["Giants @ Dodgers"],
+            },
         },
     )
     _write_dashboard(
@@ -158,6 +164,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "CONTROL PANEL" in full_text
     assert "Fix Live Coverage Gaps" in full_text
     assert "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1" in full_text
+    assert "missing: Giants @ Dodgers" in full_text
     assert "totals=1" in full_text
     assert "SLOP LOCK" in full_text
 

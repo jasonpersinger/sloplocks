@@ -248,6 +248,8 @@ def _diagnostic_field(sport_key: str, data: dict) -> dict | None:
 
     totals_locks = len(data.get("totals_locks") or [])
     lines = [summary]
+    if diagnostics.get("coverage_gap_examples"):
+        lines.append("missing: " + ", ".join(diagnostics.get("coverage_gap_examples")[:2]))
     if totals_locks:
         lines.append(f"totals={totals_locks}")
 

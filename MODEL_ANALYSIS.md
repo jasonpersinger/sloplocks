@@ -480,6 +480,34 @@ Configured models live in `pipeline/config.py:138-160`.
   - NHL sides are sensitive not just to who the probable goalie is, but also to how certain that goalie information is and how the teams are defending recently.
   - This gives the live NHL lane more hockey-specific context without changing the public data contract.
 
+#### 31. Improved NBA late-news handling near tipoff
+
+- What changed:
+  - Extended `pipeline/fetch_nba.py` so live availability profiles now distinguish confirmed injuries from late uncertain statuses such as questionable, day-to-day, and doubtful.
+  - Added near-tipoff urgency scaling in `pipeline/run.py` so questionable star absences matter more as game time approaches.
+  - Wired the same logic into `pipeline/refresh_picks.py` so the afternoon refresh reacts more sharply to unresolved live news.
+- Why it matters:
+  - NBA edges can swing late in the day on a single star-status change.
+  - This makes the refresh path more sensitive to exactly the kind of pregame uncertainty that was previously too blunt.
+
+#### 32. Made MLB lineup quality aware of missing top bats
+
+- What changed:
+  - Extended `pipeline/fetch_mlb.py` so live lineup profiles can weight missing hitters using ESPN scoreboard leader categories such as OPS, home runs, and RBI.
+  - Expanded the lineup index in `pipeline/run.py` so missing middle-of-the-order production drags side and totals adjustments more than generic bench injuries.
+- Why it matters:
+  - A lineup missing its best hitters is materially different from a lineup missing generic depth pieces.
+  - This moves MLB closer to real same-day batting quality without requiring a separate paid lineup feed.
+
+#### 33. Tightened NHL live odds coverage and diagnostics
+
+- What changed:
+  - Extended `pipeline/fetch_nhl.py` normalization with alias and accent handling for common live-market naming variants.
+  - Expanded pipeline diagnostics in `pipeline/run.py` to carry `coverage_gap_examples`, then surfaced those gaps on the site and in Discord through `index.html` and `pipeline/notify_discord.py`.
+- Why it matters:
+  - When NHL is thin, it is now easier to tell whether the model disliked the slate or whether the live odds feed simply failed to match a few fixtures.
+  - Better name normalization also improves the chance that live NHL markets get picked up in the first place.
+
 ## Future Improvements
 
 ### 1. Build a true walk-forward replay harness
@@ -493,11 +521,11 @@ Configured models live in `pipeline/config.py:138-160`.
 
 Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
 
-### 2. Add confirmed batting-order quality and bullpen-role context to MLB
+### 2. Add truly confirmed batting-order quality and bullpen-role context to MLB
 
-The MLB stack now covers starters, bullpens, park context, handedness, live weather, and current roster platoon balance, but it still lacks:
+The MLB stack now covers starters, bullpens, park context, handedness, live weather, and leader-aware lineup quality, but it still lacks:
 
-- confirmed batting-order quality rather than roster-level hitter availability
+- true confirmed batting-order quality rather than leader-weighted roster proxies
 - bullpen leverage role quality beyond simple aggregate workload
 - totals-specific bullpen availability and umpire context
 
@@ -523,9 +551,9 @@ MMA remains Elo-only. The next meaningful lift would require fighter-level stats
 
 ## Discovered Issues
 
-### 1. `refresh_picks` still uses different lock-selection logic than the full run
+### 1. Cold local full runs are still slower than the live refresh path
 
-The full pipeline uses the confidence-gated Phase 3 lock selection in `pipeline/run.py:445-505`. The quick refresh path still rebuilds locks with an odds-window and fallback-fill heuristic in `pipeline/refresh_picks.py:44-99`. That means a manual odds refresh can publish different lock behavior than a full rerun.
+The late-day refresh and the pushed GitHub workflows are now the practical operating path. A cold local full run can still spend a long time rebuilding ESPN caches before it reaches useful output, especially for sports with heavier historical fetches. That is not a correctness bug, but it does make local ad hoc verification slower than it should be.
 
 ### 2. Single-model sports still get structurally high agreement scores
 

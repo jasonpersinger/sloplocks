@@ -2,7 +2,9 @@
 
 import json as _json
 import os
+import re
 import time
+import unicodedata
 from datetime import datetime, timedelta, timezone
 
 import pandas as pd
@@ -13,6 +15,15 @@ from pipeline.config import NHL_ESPN_BASE
 _REQUEST_DELAY = 0.25
 
 _team_map: dict[str, str] | None = None
+_NHL_ALIAS_MAP = {
+    "montreal canadiens": "Canadiens",
+    "montréal canadiens": "Canadiens",
+    "st louis blues": "Blues",
+    "st. louis blues": "Blues",
+    "new jersey devils": "Devils",
+    "utah hockey club": "Utah",
+    "utah mammoth": "Utah",
+}
 
 
 def _build_team_map() -> dict[str, str]:
@@ -38,7 +49,12 @@ def normalize_nhl_team_name(name: str) -> str:
     global _team_map
     if _team_map is None:
         _team_map = _build_team_map()
-    return _team_map.get(name, name)
+    mapped = _team_map.get(name)
+    if mapped:
+        return mapped
+    folded = unicodedata.normalize("NFKD", str(name or "")).encode("ascii", "ignore").decode("ascii")
+    simplified = re.sub(r"[^a-z0-9]+", " ", folded.lower()).strip()
+    return _NHL_ALIAS_MAP.get(simplified, name)
 
 
 def _current_nhl_season() -> int:
