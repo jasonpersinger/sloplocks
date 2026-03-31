@@ -10,8 +10,12 @@ import pandas as pd
 import pytest
 from pipeline.config import SPORTS
 from pipeline.run import (
+    _apply_mlb_bullpen_availability_adjustment,
+    _apply_mlb_bullpen_total_adjustment,
+    _apply_nhl_injury_adjustment,
     _apply_nba_availability_adjustment,
     _apply_nba_availability_total_adjustment,
+    _compute_mlb_bullpen_tax,
     _apply_mlb_lineup_adjustment,
     _apply_mlb_lineup_total_adjustment,
     _apply_mlb_weather_adjustment,
@@ -569,6 +573,94 @@ class TestMlbLineupAdjustment:
         assert adjusted["home"] > 0.54
         assert pytest.approx(adjusted["home"] + adjusted["away"], abs=1e-9) == 1.0
 
+    def test_confirmed_lineup_absence_penalizes_missing_top_bats(self):
+        adjusted = _apply_mlb_lineup_adjustment(
+            {"home": 0.52, "away": 0.48},
+            {
+                "active_hitters": 13,
+                "available_hitters": 13,
+                "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "lefty_share": 0.4,
+                "righty_share": 0.4,
+                "switch_share": 0.2,
+                "confirmed_lineup": True,
+                "confirmed_hitters": 9,
+                "confirmed_top_order_score": 1.0,
+                "confirmed_lefty_share": 0.44,
+                "confirmed_righty_share": 0.44,
+                "confirmed_switch_share": 0.11,
+                "confirmed_leader_absence_burden": 0.0,
+            },
+            {
+                "active_hitters": 13,
+                "available_hitters": 13,
+                "injured_hitters": 0,
+                "key_bat_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "lefty_share": 0.4,
+                "righty_share": 0.4,
+                "switch_share": 0.2,
+                "confirmed_lineup": True,
+                "confirmed_hitters": 8,
+                "confirmed_top_order_score": 0.73,
+                "confirmed_lefty_share": 0.25,
+                "confirmed_righty_share": 0.75,
+                "confirmed_switch_share": 0.0,
+                "confirmed_leader_absence_burden": 1.3,
+            },
+            "R",
+            "L",
+            max_delta=0.015,
+        )
+
+        assert adjusted["home"] > 0.52
+
+
+class TestMlbBullpenAdjustments:
+    def test_recent_heavy_bullpen_usage_creates_tax(self):
+        matches = pd.DataFrame([
+            {
+                "date": "2026-03-25",
+                "home_team": "Aces",
+                "away_team": "Bruins",
+                "home_bullpen_ip": 4.0,
+                "home_bullpen_earned_runs": 1,
+                "away_bullpen_ip": 2.0,
+                "away_bullpen_earned_runs": 0,
+            },
+            {
+                "date": "2026-03-26",
+                "home_team": "Aces",
+                "away_team": "Bruins",
+                "home_bullpen_ip": 3.1,
+                "home_bullpen_earned_runs": 2,
+                "away_bullpen_ip": 1.2,
+                "away_bullpen_earned_runs": 0,
+            },
+        ])
+
+        tax = _compute_mlb_bullpen_tax("Aces", "2026-03-28", matches)
+        assert tax > 0.0
+
+    def test_bullpen_tax_shifts_side_and_total(self):
+        side = _apply_mlb_bullpen_availability_adjustment(
+            {"home": 0.51, "away": 0.49},
+            home_tax=0.1,
+            away_tax=0.8,
+            max_delta=0.012,
+        )
+        total = _apply_mlb_bullpen_total_adjustment(
+            8.3,
+            home_tax=0.6,
+            away_tax=0.7,
+            max_runs_delta=0.3,
+        )
+
+        assert side["home"] > 0.51
+        assert total > 8.3
+
     def test_lineup_adjustment_can_raise_total_for_live_bats(self):
         adjusted = _apply_mlb_lineup_total_adjustment(
             8.2,
@@ -727,6 +819,48 @@ class TestNbaAvailabilityAdjustment:
         )
 
         assert late["home"] < early["home"]
+
+    def test_event_specific_absence_news_penalizes_team(self):
+        adjusted = _apply_nba_availability_adjustment(
+            {"home": 0.53, "away": 0.47},
+            {
+                "active_players": 12,
+                "available_core_players": 10,
+                "injury_burden": 0.0,
+                "uncertainty_burden": 0.0,
+                "key_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "leader_uncertainty_burden": 0.0,
+                "event_injury_burden": 1.0,
+                "event_key_absence_score": 1.0,
+                "event_leader_absence_burden": 1.0,
+            },
+            {
+                "active_players": 12,
+                "available_core_players": 10,
+                "injury_burden": 0.0,
+                "uncertainty_burden": 0.0,
+                "key_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+                "leader_uncertainty_burden": 0.0,
+            },
+            start_time=(datetime.now(timezone.utc) + timedelta(hours=2)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            max_delta=0.02,
+        )
+
+        assert adjusted["home"] < 0.53
+
+
+class TestNhlInjuryAdjustment:
+    def test_missing_key_skater_penalizes_side(self):
+        adjusted = _apply_nhl_injury_adjustment(
+            {"home": 0.52, "away": 0.48},
+            {"injury_burden": 1.0, "key_absence_score": 1.0, "leader_absence_burden": 1.0},
+            {"injury_burden": 0.0, "key_absence_score": 0.0, "leader_absence_burden": 0.0},
+            max_delta=0.01,
+        )
+
+        assert adjusted["home"] < 0.52
 
 
 # ---------------------------------------------------------------------------

@@ -8,6 +8,7 @@ import pytest
 from pipeline.backtest import (
     build_dashboard_data,
     build_backtest_report,
+    build_walkforward_report,
     build_threshold_guidance,
     compute_brier_score,
     compute_model_weights,
@@ -353,3 +354,50 @@ class TestBacktestSummary:
         assert dashboard["leaders"]["best_roi_sport"]["sport"] in {"nba", "nhl"}
         assert dashboard["recommended_actions"]
         assert dashboard["insights"]
+        assert "walkforward" in dashboard
+        assert "calibration" in dashboard["walkforward"]
+
+    def test_build_walkforward_report(self, tmp_path):
+        data_dir = tmp_path / "data"
+        tracking_dir = data_dir / "tracking"
+        tracking_dir.mkdir(parents=True)
+
+        with open(tracking_dir / "results_log.csv", "w") as f:
+            f.write(
+                "logged_at,sport,entry_type,home_team,away_team,match_date,pick,actual,won,model_prob,home_prob,away_prob,draw_prob,implied_prob,market_implied_prob,edge,expected_value,american_odds,decimal_odds,confidence_score,kelly_fraction,fractional_kelly\n"
+                "2026-03-28T10:00:00Z,nba,prediction,Celtics,Hawks,2026-03-28,home,home,true,0.65,0.65,0.35,,,,0.03,,-120,,58,,\n"
+                "2026-03-28T10:00:00Z,nba,slop_lock,Celtics,Hawks,2026-03-28,home,home,true,0.65,,,,0.54,,0.11,0.08,-120,1.83,58,0.02,0.005\n"
+                "2026-03-29T10:00:00Z,nhl,prediction,Rangers,Panthers,2026-03-29,away,home,false,0.58,0.42,0.58,,,,0.01,,135,,41,,\n"
+                "2026-03-29T10:00:00Z,nhl,total_lock,Rangers,Panthers,2026-03-29,under,under,true,0.56,,,,0.51,,0.05,0.06,-102,1.98,55,0.03,0.007\n"
+            )
+
+        report = build_walkforward_report(str(data_dir), sports=["nba", "nhl"], as_of="2026-03-29")
+
+        assert report["aggregate"]["predictions"]["evaluated"] == 2
+        assert report["aggregate"]["predictions"]["accuracy"] == pytest.approx(0.5)
+        assert report["aggregate"]["picks"]["evaluated"] == 2
+        assert report["aggregate"]["picks"]["record"] == "2-0"
+        assert len(report["daily"]) == 2
+        assert report["daily"][0]["date"] == "2026-03-28"
+        assert report["daily"][1]["cumulative_picks"]["evaluated"] == 2
+        assert report["sports"]["nba"]["predictions"]["evaluated"] == 1
+        assert report["sports"]["nhl"]["picks"]["wins"] == 1
+        assert report["aggregate"]["calibration"]
+        assert report["aggregate"]["calibration"][0]["sample"] >= 1
+
+    def test_build_walkforward_report_skips_malformed_legacy_rows(self, tmp_path):
+        data_dir = tmp_path / "data"
+        tracking_dir = data_dir / "tracking"
+        tracking_dir.mkdir(parents=True)
+
+        with open(tracking_dir / "results_log.csv", "w") as f:
+            f.write(
+                "logged_at,sport,entry_type,home_team,away_team,match_date,pick,actual,won,model_prob,home_prob,away_prob,draw_prob,implied_prob,market_implied_prob,edge,expected_value,american_odds,decimal_odds,confidence_score,kelly_fraction,fractional_kelly\n"
+                "2026-03-29T10:00:00Z,mlb,slop_lock,moneyline,Reds,Red Sox,2026-03-29,home,home,true,false,0.6026,,,,0.5,0.5128,0.1026,0.1751,-105,1.95\n"
+                "2026-03-29T10:00:00Z,nba,prediction,Celtics,Hawks,2026-03-29,home,home,true,0.65,0.65,0.35,,,,0.03,,-120,,58,,\n"
+            )
+
+        report = build_walkforward_report(str(data_dir), sports=["mlb", "nba"], as_of="2026-03-29")
+
+        assert report["aggregate"]["predictions"]["evaluated"] == 1
+        assert report["aggregate"]["picks"]["evaluated"] == 0

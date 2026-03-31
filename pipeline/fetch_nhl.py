@@ -26,6 +26,18 @@ _NHL_ALIAS_MAP = {
 }
 
 
+def _nhl_leader_weight(stat_name: str | None) -> float:
+    """Assign extra importance to key NHL leader categories."""
+    mapping = {
+        "goals": 1.0,
+        "points": 1.0,
+        "assists": 0.85,
+        "shots": 0.6,
+        "savePct": 1.0,
+    }
+    return mapping.get(str(stat_name or "").strip(), 0.55)
+
+
 def _build_team_map() -> dict[str, str]:
     """Fetch ESPN teams endpoint and build displayName -> shortDisplayName map."""
     url = f"{NHL_ESPN_BASE}/teams?limit=40"
@@ -247,6 +259,49 @@ def _extract_probable_goalie(competitor: dict) -> dict:
         "goalie_id": None,
         "goalie_status": None,
     }
+
+
+def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | int | None, leader_weights: dict[str, float] | None = None) -> dict:
+    """Extract event-specific NHL skater injury burden from an ESPN summary payload."""
+    default = {
+        "injury_burden": 0.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0,
+    }
+    if not team_id:
+        return default
+
+    weight_map = {
+        str(player_id): float(weight)
+        for player_id, weight in (leader_weights or {}).items()
+        if player_id
+    }
+    summary_team_id = str(team_id)
+    profile = dict(default)
+    for injury_block in summary_data.get("injuries", []) or []:
+        if str((injury_block.get("team") or {}).get("id")) != summary_team_id:
+            continue
+        for injury in injury_block.get("injuries", []) or []:
+            status = str(injury.get("status") or "").strip().lower()
+            if status in {"out", "injured reserve", "injured reserve/out", "doubtful"}:
+                weight = 1.0 if status in {"out", "injured reserve", "injured reserve/out"} else 0.7
+            elif status in {"questionable", "day-to-day"}:
+                weight = 0.35
+            else:
+                continue
+            profile["injury_burden"] += weight
+            athlete_id = str((injury.get("athlete") or {}).get("id") or "")
+            leader_weight_value = float(weight_map.get(athlete_id, 0.0) or 0.0)
+            if leader_weight_value > 0:
+                profile["key_absence_score"] += weight
+                profile["leader_absence_burden"] += weight * leader_weight_value
+            if status in {"questionable", "day-to-day", "doubtful"}:
+                profile["uncertainty_burden"] += weight
+                if leader_weight_value > 0:
+                    profile["leader_uncertainty_burden"] += weight * leader_weight_value
+    return {key: round(value, 3) for key, value in profile.items()}
 
 
 def _parse_final_event(event: dict) -> dict | None:
@@ -553,8 +608,37 @@ def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
         if home is None or away is None:
             continue
 
+        home_leader_weights = {}
+        away_leader_weights = {}
+        for leader_group in home.get("leaders", []):
+            leaders = leader_group.get("leaders", [])
+            if leaders:
+                athlete_id = leaders[0].get("athlete", {}).get("id")
+                if athlete_id:
+                    home_leader_weights[str(athlete_id)] = (
+                        home_leader_weights.get(str(athlete_id), 0.0)
+                        + _nhl_leader_weight(leader_group.get("name"))
+                    )
+        for leader_group in away.get("leaders", []):
+            leaders = leader_group.get("leaders", [])
+            if leaders:
+                athlete_id = leaders[0].get("athlete", {}).get("id")
+                if athlete_id:
+                    away_leader_weights[str(athlete_id)] = (
+                        away_leader_weights.get(str(athlete_id), 0.0)
+                        + _nhl_leader_weight(leader_group.get("name"))
+                    )
+
         home_probable = _extract_probable_goalie(home)
         away_probable = _extract_probable_goalie(away)
+        summary_data = {}
+        try:
+            time.sleep(_REQUEST_DELAY)
+            summary_resp = requests.get(f"{NHL_ESPN_BASE}/summary?event={event['id']}", timeout=30)
+            summary_resp.raise_for_status()
+            summary_data = summary_resp.json()
+        except requests.RequestException:
+            summary_data = {}
 
         fixtures.append({
             "home_team": normalize_nhl_team_name(home["team"]["displayName"]),
@@ -569,6 +653,16 @@ def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
             "away_goalie_id": away_probable.get("goalie_id"),
             "home_goalie_status": home_probable.get("goalie_status"),
             "away_goalie_status": away_probable.get("goalie_status"),
+            "home_injury_profile": _extract_nhl_event_injury_profile(
+                summary_data,
+                home["team"].get("id"),
+                leader_weights=home_leader_weights,
+            ),
+            "away_injury_profile": _extract_nhl_event_injury_profile(
+                summary_data,
+                away["team"].get("id"),
+                leader_weights=away_leader_weights,
+            ),
         })
 
     return fixtures

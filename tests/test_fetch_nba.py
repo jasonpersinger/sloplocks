@@ -220,6 +220,26 @@ def _make_nba_summary(home_name, away_name, home_totals, away_totals):
     }
 
 
+def _make_nba_injury_summary(home_team_id="1", away_team_id="2"):
+    return {
+        "injuries": [
+            {
+                "team": {"id": str(home_team_id)},
+                "injuries": [
+                    {"status": "Out", "athlete": {"id": "11"}},
+                    {"status": "Questionable", "athlete": {"id": "12"}},
+                ],
+            },
+            {
+                "team": {"id": str(away_team_id)},
+                "injuries": [
+                    {"status": "Day-To-Day", "athlete": {"id": "21"}},
+                ],
+            },
+        ]
+    }
+
+
 class TestFetchNbaEspnGames:
     @patch("pipeline.fetch_nba.requests.get")
     def test_returns_games_and_box_scores(self, mock_get):
@@ -326,6 +346,51 @@ class TestFetchNbaEspnSchedule:
         pending = next(f for f in fixtures if f["home_team"] == "Heat")
         assert completed["completed"] is True
         assert pending["completed"] is False
+
+    @patch("pipeline.fetch_nba.requests.get")
+    def test_merges_event_specific_injuries_into_availability_profiles(self, mock_get):
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.raise_for_status = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                {
+                    "id": "1",
+                    "date": "2026-02-19T00:00Z",
+                    "competitions": [{
+                        "date": "2026-02-19T00:00Z",
+                        "neutralSite": False,
+                        "status": {"type": {"completed": False}},
+                        "competitors": [
+                            {
+                                "homeAway": "home",
+                                "team": {"displayName": "Los Angeles Lakers", "id": "1"},
+                                "score": "0",
+                                "leaders": [{"name": "pointsPerGame", "leaders": [{"athlete": {"id": "11"}}]}],
+                            },
+                            {
+                                "homeAway": "away",
+                                "team": {"displayName": "Boston Celtics", "id": "2"},
+                                "score": "0",
+                                "leaders": [{"name": "assistsPerGame", "leaders": [{"athlete": {"id": "21"}}]}],
+                            },
+                        ],
+                    }],
+                }
+            ]
+        }
+        roster_resp = MagicMock()
+        roster_resp.raise_for_status = MagicMock()
+        roster_resp.json.return_value = {"athletes": []}
+        summary_resp = MagicMock()
+        summary_resp.raise_for_status = MagicMock()
+        summary_resp.json.return_value = _make_nba_injury_summary("1", "2")
+        mock_get.side_effect = [scoreboard_resp, summary_resp, roster_resp, roster_resp]
+
+        fixtures = fetch_nba_espn_schedule()
+
+        assert fixtures[0]["home_availability_profile"]["event_injury_burden"] == 1.35
+        assert fixtures[0]["home_availability_profile"]["event_leader_absence_burden"] == 1.0
+        assert fixtures[0]["away_availability_profile"]["event_leader_uncertainty_burden"] == 0.315
 
 
 class TestNbaAvailabilityProfile:

@@ -2,6 +2,7 @@
 
 import pipeline.fetch_mlb as fetch_mlb
 from pipeline.fetch_mlb import (
+    _extract_confirmed_mlb_lineups,
     _extract_mlb_starting_pitchers,
     _extract_mlb_team_pitching,
     _fetch_ballpark_weather,
@@ -328,3 +329,93 @@ class TestTeamLineupProfile:
         assert profile["injured_hitters"] == 1
         assert profile["key_bat_absence_score"] == 1.0
         assert profile["leader_absence_burden"] == 1.0
+
+    def test_lineup_profile_merges_confirmed_batting_order(self, monkeypatch):
+        roster_payload = {
+            "athletes": [
+                {
+                    "position": "Infielders",
+                    "items": [
+                        {"id": "101", "status": {"type": "active"}, "injuries": []},
+                        {"id": "102", "status": {"type": "active"}, "injuries": []},
+                        {"id": "103", "status": {"type": "active"}, "injuries": []},
+                    ],
+                },
+            ]
+        }
+        athlete_payloads = {
+            "101": {"bats": {"abbreviation": "L"}, "throws": {"abbreviation": "R"}},
+            "102": {"bats": {"abbreviation": "R"}, "throws": {"abbreviation": "R"}},
+            "103": {"bats": {"abbreviation": "S"}, "throws": {"abbreviation": "R"}},
+        }
+
+        def fake_get(url, timeout=30):
+            if "/teams/15/roster" in url:
+                return self.FakeResponse(roster_payload)
+            player_id = url.rsplit("/", 1)[-1]
+            return self.FakeResponse(athlete_payloads[player_id])
+
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+        profile = _fetch_team_lineup_profile(
+            "15",
+            cache={"rosters": {}, "players": {}, "pitchers": {}, "weather": {}, "games": {}},
+            leader_weights={"101": 1.0, "102": 0.8, "103": 0.6},
+            confirmed_lineup={
+                "confirmed_lineup": True,
+                "confirmed_hitters": 2,
+                "confirmed_top_order_score": 0.62,
+                "confirmed_lefty_share": 0.5,
+                "confirmed_righty_share": 0.5,
+                "confirmed_switch_share": 0.0,
+                "player_ids": ["101", "102"],
+            },
+        )
+
+        assert profile["confirmed_lineup"] is True
+        assert profile["confirmed_hitters"] == 2
+        assert profile["confirmed_top_order_score"] == 0.62
+        assert profile["confirmed_leader_absence_burden"] == 0.6
+
+
+class TestConfirmedMlbLineups:
+    def test_extracts_confirmed_batting_order_from_summary(self, monkeypatch):
+        fetch_mlb._team_map = {"New York Yankees": "Yankees"}
+
+        class FakeResponse:
+            def __init__(self, bats):
+                self.bats = bats
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {"bats": {"abbreviation": self.bats}, "throws": {"abbreviation": "R"}}
+
+        bats = {"1": "L", "2": "R", "3": "S"}
+
+        def fake_get(url, timeout=30):
+            player_id = url.rsplit("/", 1)[-1]
+            return FakeResponse(bats[player_id])
+
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+        lineups = _extract_confirmed_mlb_lineups(
+            {
+                "rosters": [
+                    {
+                        "team": {"displayName": "New York Yankees"},
+                        "roster": [
+                            {"starter": True, "batOrder": 1, "position": {"abbreviation": "CF"}, "athlete": {"id": "1"}},
+                            {"starter": True, "batOrder": 2, "position": {"abbreviation": "1B"}, "athlete": {"id": "2"}},
+                            {"starter": True, "batOrder": 3, "position": {"abbreviation": "DH"}, "athlete": {"id": "3"}},
+                            {"starter": True, "batOrder": None, "position": {"abbreviation": "P"}, "athlete": {"id": "99"}},
+                        ],
+                    }
+                ]
+            },
+            cache={"players": {}},
+        )
+
+        assert lineups["Yankees"]["confirmed_lineup"] is False
+        assert lineups["Yankees"]["confirmed_hitters"] == 3
+        assert lineups["Yankees"]["confirmed_lefty_share"] == 0.3333
+        assert lineups["Yankees"]["confirmed_switch_share"] == 0.3333

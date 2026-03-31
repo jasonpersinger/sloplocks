@@ -40,12 +40,15 @@ from pipeline.fetch_mlb import fetch_mlb_schedule
 from pipeline.fetch_mma import normalize_mma_name
 from pipeline.run import (
     _append_odds_snapshot_log,
+    _apply_mlb_bullpen_availability_adjustment,
+    _apply_mlb_bullpen_total_adjustment,
     _apply_mlb_lineup_adjustment,
     _apply_mlb_lineup_total_adjustment,
     _apply_mlb_weather_adjustment,
     _apply_mlb_weather_total_adjustment,
     _apply_nba_availability_adjustment,
     _apply_nba_availability_total_adjustment,
+    _apply_nhl_injury_adjustment,
     _apply_nhl_goalie_status_adjustment,
     _apply_latest_market_snapshots,
     _build_pipeline_diagnostics,
@@ -102,6 +105,8 @@ def _merge_live_fixture(record: dict, live_fixture: dict | None) -> dict:
         "away_availability_profile",
         "home_lineup_profile",
         "away_lineup_profile",
+        "home_bullpen_tax",
+        "away_bullpen_tax",
         "weather",
         "home_pitcher",
         "away_pitcher",
@@ -111,6 +116,8 @@ def _merge_live_fixture(record: dict, live_fixture: dict | None) -> dict:
         "away_goalie",
         "home_goalie_status",
         "away_goalie_status",
+        "home_injury_profile",
+        "away_injury_profile",
     ):
         if live_fixture.get(key) is not None:
             merged[key] = live_fixture.get(key)
@@ -201,7 +208,19 @@ def refresh_sport(sport_key: str) -> None:
                 match.get("away_pitcher_hand"),
                 max_delta=sport.get("lineup_adjustment_max_delta", 0.015),
             )
+            refreshed_probs = _apply_mlb_bullpen_availability_adjustment(
+                refreshed_probs,
+                home_tax=match.get("home_bullpen_tax"),
+                away_tax=match.get("away_bullpen_tax"),
+                max_delta=sport.get("bullpen_availability_adjustment_max_delta", 0.012),
+            )
         elif sport_key == "nhl":
+            refreshed_probs = _apply_nhl_injury_adjustment(
+                refreshed_probs,
+                match.get("home_injury_profile"),
+                match.get("away_injury_profile"),
+                max_delta=sport.get("injury_adjustment_max_delta", 0.01),
+            )
             refreshed_probs = _apply_nhl_goalie_status_adjustment(
                 refreshed_probs,
                 match.get("home_goalie_status"),
@@ -280,6 +299,12 @@ def refresh_sport(sport_key: str) -> None:
                 total_match.get("home_pitcher_hand"),
                 total_match.get("away_pitcher_hand"),
                 max_runs_delta=sport.get("lineup_total_adjustment_max_runs", 0.35),
+            )
+            expected_total = _apply_mlb_bullpen_total_adjustment(
+                expected_total,
+                home_tax=total_match.get("home_bullpen_tax"),
+                away_tax=total_match.get("away_bullpen_tax"),
+                max_runs_delta=sport.get("bullpen_total_adjustment_max_delta", 0.3),
             )
         sigma = max(1.5, float(total_match.get("total_stddev", sport.get("totals_default_stddev", 3.1))))
         try:

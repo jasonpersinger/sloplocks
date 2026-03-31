@@ -1,6 +1,7 @@
 """Backtesting and accuracy-tracking utilities for SLOP LOCKS."""
 
 import argparse
+import csv
 import json
 import math
 import os
@@ -8,6 +9,299 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
 from pipeline.config import ENSEMBLE_ACCURACY_WINDOW, SPORTS
+
+
+def _safe_float(value):
+    """Convert stored scalar values into floats when possible."""
+    if value in (None, "", "None"):
+        return None
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_bool(value):
+    """Parse stored truthy/falsey strings into bools."""
+    if isinstance(value, bool):
+        return value
+    if value in (None, "", "None"):
+        return None
+    normalized = str(value).strip().lower()
+    if normalized in {"true", "1", "yes"}:
+        return True
+    if normalized in {"false", "0", "no"}:
+        return False
+    return None
+
+
+def _american_to_decimal(american):
+    """Convert American odds to decimal odds."""
+    american = _safe_float(american)
+    if american is None or american == 0:
+        return None
+    if american > 0:
+        return round(1.0 + (american / 100.0), 4)
+    return round(1.0 + (100.0 / abs(american)), 4)
+
+
+def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[dict]:
+    """Load tracked settled result rows from the shared results log."""
+    path = os.path.join(data_dir, "tracking", "results_log.csv")
+    if not os.path.exists(path):
+        return []
+
+    selected_sports = set(sports or SPORTS.keys())
+    rows = []
+    with open(path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row.get("sport") not in selected_sports:
+                continue
+            match_date = str(row.get("match_date") or "")[:10]
+            try:
+                datetime.strptime(match_date, "%Y-%m-%d")
+            except ValueError:
+                continue
+            home_team = row.get("home_team")
+            away_team = row.get("away_team")
+            if home_team in {"moneyline", "total", "prediction", "slop_lock", "total_lock"}:
+                continue
+            if away_team in {"moneyline", "total", "prediction", "slop_lock", "total_lock"}:
+                continue
+            rows.append({
+                "logged_at": row.get("logged_at"),
+                "sport": row.get("sport"),
+                "entry_type": row.get("entry_type"),
+                "home_team": home_team,
+                "away_team": away_team,
+                "match_date": match_date,
+                "pick": row.get("pick"),
+                "actual": row.get("actual"),
+                "won": _safe_bool(row.get("won")),
+                "model_prob": _safe_float(row.get("model_prob")),
+                "home_prob": _safe_float(row.get("home_prob")),
+                "away_prob": _safe_float(row.get("away_prob")),
+                "draw_prob": _safe_float(row.get("draw_prob")),
+                "implied_prob": _safe_float(row.get("implied_prob")),
+                "market_implied_prob": _safe_float(row.get("market_implied_prob")),
+                "edge": _safe_float(row.get("edge")),
+                "expected_value": _safe_float(row.get("expected_value")),
+                "american_odds": _safe_float(row.get("american_odds")),
+                "decimal_odds": _safe_float(row.get("decimal_odds")),
+                "confidence_score": _safe_float(row.get("confidence_score")),
+                "kelly_fraction": _safe_float(row.get("kelly_fraction")),
+                "fractional_kelly": _safe_float(row.get("fractional_kelly")),
+            })
+    return rows
+
+
+def _prediction_probs_from_row(row: dict) -> dict[str, float]:
+    """Build a probability dict from one tracked prediction row."""
+    probs = {}
+    for key, outcome in (("home_prob", "home"), ("away_prob", "away"), ("draw_prob", "draw")):
+        value = row.get(key)
+        if value is None:
+            continue
+        probs[outcome] = float(value)
+    return probs
+
+
+def _score_prediction_row(row: dict) -> dict | None:
+    """Evaluate one settled tracked prediction row."""
+    probs = _prediction_probs_from_row(row)
+    actual = row.get("actual")
+    if not probs or actual not in {"home", "away", "draw"}:
+        return None
+    actual_prob = max(probs.get(actual, 1e-15), 1e-15)
+    predicted = max(probs, key=probs.get)
+    brier = sum((probs.get(outcome, 0.0) - (1.0 if outcome == actual else 0.0)) ** 2 for outcome in probs)
+    return {
+        "predicted": predicted,
+        "actual": actual,
+        "correct": predicted == actual,
+        "actual_prob": actual_prob,
+        "log_loss": -math.log(actual_prob),
+        "brier": brier,
+        "model_prob": row.get("model_prob") or probs.get(predicted),
+    }
+
+
+def _summarize_prediction_rows(rows: list[dict]) -> dict:
+    """Summarize settled tracked prediction rows."""
+    scored = [item for item in (_score_prediction_row(row) for row in rows) if item is not None]
+    if not scored:
+        return {
+            "evaluated": 0,
+            "accuracy": None,
+            "avg_log_loss": None,
+            "avg_brier": None,
+        }
+    evaluated = len(scored)
+    correct = sum(1 for item in scored if item["correct"])
+    return {
+        "evaluated": evaluated,
+        "accuracy": round(correct / evaluated, 4),
+        "avg_log_loss": round(sum(item["log_loss"] for item in scored) / evaluated, 4),
+        "avg_brier": round(sum(item["brier"] for item in scored) / evaluated, 4),
+    }
+
+
+def _summarize_pick_rows(rows: list[dict]) -> dict:
+    """Summarize settled tracked pick rows from the results log."""
+    if not rows:
+        return {
+            "evaluated": 0,
+            "wins": 0,
+            "losses": 0,
+            "record": "0-0",
+            "hit_rate": None,
+            "roi": None,
+            "avg_expected_value": None,
+            "avg_confidence": None,
+        }
+
+    bets = []
+    wins = 0
+    losses = 0
+    pushes = 0
+    expected_values = []
+    confidence_values = []
+    for row in rows:
+        won = row.get("won")
+        if won is True:
+            wins += 1
+        elif won is False:
+            losses += 1
+        else:
+            pushes += 1
+
+        decimal_odds = row.get("decimal_odds")
+        if decimal_odds is None:
+            decimal_odds = _american_to_decimal(row.get("american_odds"))
+        if decimal_odds and decimal_odds > 1.0 and won is not None:
+            bets.append({
+                "stake": 100.0,
+                "odds": decimal_odds,
+                "won": bool(won),
+                "push": False,
+            })
+        if row.get("expected_value") is not None:
+            expected_values.append(float(row["expected_value"]))
+        if row.get("confidence_score") is not None:
+            confidence_values.append(float(row["confidence_score"]))
+
+    record = f"{wins}-{losses}" + (f"-{pushes}" if pushes else "")
+    evaluated = wins + losses + pushes
+    return {
+        "evaluated": evaluated,
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "record": record,
+        "hit_rate": round(wins / evaluated, 4) if evaluated else None,
+        "roi": round(compute_roi(bets), 4) if bets else None,
+        "avg_expected_value": round(sum(expected_values) / len(expected_values), 4) if expected_values else None,
+        "avg_confidence": round(sum(confidence_values) / len(confidence_values), 4) if confidence_values else None,
+    }
+
+
+def _calibration_bin_summary(rows: list[dict], bucket_size: float = 0.1) -> list[dict]:
+    """Summarize how predicted probabilities have calibrated against outcomes."""
+    buckets = defaultdict(list)
+    for row in rows:
+        scored = _score_prediction_row(row)
+        if scored is None:
+            continue
+        model_prob = row.get("model_prob")
+        if model_prob is None:
+            model_prob = scored.get("model_prob")
+        if model_prob is None:
+            continue
+        bucket = min(int(float(model_prob) / bucket_size), int((1.0 / bucket_size) - 1))
+        buckets[bucket].append({
+            "model_prob": float(model_prob),
+            "won": 1.0 if scored["correct"] else 0.0,
+        })
+
+    summary = []
+    for bucket in sorted(buckets):
+        bucket_rows = buckets[bucket]
+        low = round(bucket * bucket_size, 2)
+        high = round(low + bucket_size, 2)
+        sample = len(bucket_rows)
+        avg_prob = sum(item["model_prob"] for item in bucket_rows) / sample
+        win_rate = sum(item["won"] for item in bucket_rows) / sample
+        summary.append({
+            "bucket": f"{low:.2f}-{high:.2f}",
+            "sample": sample,
+            "avg_model_prob": round(avg_prob, 4),
+            "actual_win_rate": round(win_rate, 4),
+            "calibration_gap": round(avg_prob - win_rate, 4),
+        })
+    return summary
+
+
+def build_walkforward_report(data_dir: str = "data", sports: list[str] | None = None, as_of: str | None = None) -> dict:
+    """Build a date-ordered replay report from the shared settled results log."""
+    rows = _load_results_rows(data_dir, sports=sports)
+    if as_of:
+        anchor = datetime.fromisoformat(str(as_of).replace("Z", "+00:00")).date()
+        rows = [row for row in rows if row.get("match_date") and datetime.strptime(row["match_date"][:10], "%Y-%m-%d").date() <= anchor]
+
+    rows.sort(key=lambda row: (row.get("match_date") or "", row.get("logged_at") or "", row.get("sport") or "", row.get("entry_type") or ""))
+    selected_sports = sports or list(SPORTS.keys())
+
+    prediction_rows = [row for row in rows if row.get("entry_type") == "prediction"]
+    pick_rows = [row for row in rows if row.get("entry_type") != "prediction"]
+
+    per_day = []
+    by_day = defaultdict(list)
+    for row in rows:
+        if row.get("match_date"):
+            by_day[row["match_date"][:10]].append(row)
+
+    cumulative_predictions = []
+    cumulative_picks = []
+    for match_date in sorted(by_day):
+        day_rows = by_day[match_date]
+        day_predictions = [row for row in day_rows if row.get("entry_type") == "prediction"]
+        day_picks = [row for row in day_rows if row.get("entry_type") != "prediction"]
+        cumulative_predictions.extend(day_predictions)
+        cumulative_picks.extend(day_picks)
+        day_summary = {
+            "date": match_date,
+            "predictions": _summarize_prediction_rows(day_predictions),
+            "picks": _summarize_pick_rows(day_picks),
+            "cumulative_predictions": _summarize_prediction_rows(cumulative_predictions),
+            "cumulative_picks": _summarize_pick_rows(cumulative_picks),
+        }
+        per_day.append(day_summary)
+
+    sport_rows = {}
+    for sport_key in selected_sports:
+        sport_group = [row for row in rows if row.get("sport") == sport_key]
+        sport_predictions = [row for row in sport_group if row.get("entry_type") == "prediction"]
+        sport_picks = [row for row in sport_group if row.get("entry_type") != "prediction"]
+        if not sport_group:
+            continue
+        sport_rows[sport_key] = {
+            "predictions": _summarize_prediction_rows(sport_predictions),
+            "picks": _summarize_pick_rows(sport_picks),
+            "calibration": _calibration_bin_summary(sport_predictions),
+        }
+
+    aggregate_predictions = _summarize_prediction_rows(prediction_rows)
+    aggregate_picks = _summarize_pick_rows(pick_rows)
+    return {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sports": sport_rows,
+        "aggregate": {
+            "predictions": aggregate_predictions,
+            "picks": aggregate_picks,
+            "calibration": _calibration_bin_summary(prediction_rows),
+        },
+        "daily": per_day,
+    }
 
 
 def evaluate_prediction(probs, home_goals, away_goals):
@@ -574,6 +868,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
     """Build a site-friendly reporting dashboard payload."""
     selected_sports = sports or list(SPORTS.keys())
     report = build_backtest_report(data_dir=data_dir, sports=selected_sports)
+    walkforward = build_walkforward_report(data_dir=data_dir, sports=selected_sports, as_of=as_of)
 
     manifest_path = os.path.join(data_dir, "manifest.json")
     manifest = {}
@@ -644,6 +939,12 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
         "windows": windows,
         "sports": sports_summary,
         "leaders": leaders,
+        "walkforward": {
+            "predictions": walkforward.get("aggregate", {}).get("predictions", {}),
+            "picks": walkforward.get("aggregate", {}).get("picks", {}),
+            "calibration": walkforward.get("aggregate", {}).get("calibration", []),
+            "recent_days": walkforward.get("daily", [])[-7:],
+        },
         "recommended_actions": _build_recommended_actions(report, manifest, windows, leaders),
         "insights": _build_dashboard_insights(report, manifest, windows, leaders),
     }
@@ -735,9 +1036,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Summarize historical model and pick performance.")
     parser.add_argument("sports", nargs="*", help="Optional sport keys to limit the report.")
     parser.add_argument("--data-dir", default="data", help="Directory containing per-sport pipeline outputs.")
+    parser.add_argument("--walkforward", action="store_true", help="Emit the walk-forward replay report instead of the aggregate summary.")
     args = parser.parse_args()
 
-    report = build_backtest_report(data_dir=args.data_dir, sports=args.sports or None)
+    if args.walkforward:
+        report = build_walkforward_report(data_dir=args.data_dir, sports=args.sports or None)
+    else:
+        report = build_backtest_report(data_dir=args.data_dir, sports=args.sports or None)
     print(json.dumps(report, indent=2))
 
 

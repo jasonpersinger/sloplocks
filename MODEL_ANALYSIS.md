@@ -99,7 +99,7 @@ Configured models live in `pipeline/config.py:112-137`.
 - Totals model:
   - Walk-forward regression of expected game runs using team scoring form, starter run prevention, bullpen run prevention, and park context, then live over/under pricing with weather adjustment in `pipeline/models.py` and `pipeline/run.py`.
 - Fetched but unused inputs:
-  - Full batting-order strength, confirmed starting lineups, platoon-heavy lineup composition, and bullpen leverage roles are still not modeled.
+  - Bullpen leverage roles and catcher/framing context are still not modeled.
 
 #### MMA
 
@@ -167,7 +167,7 @@ Configured models live in `pipeline/config.py:138-160`.
   - `summarize_pick_history()` in `pipeline/backtest.py:204-227`
   - CLI report builder in `pipeline/backtest.py:230-285`
 - Ongoing post-result logging now persists resolved predictions and picks to `data/tracking/results_log.csv` through `pipeline/run.py:87-183`.
-- There is still no full walk-forward replay engine that reconstructs each historical day from raw inputs before making a pick. The current backtest module summarizes stored historical outputs rather than replaying the model from scratch.
+- The stack now has a true date-ordered replay layer over settled tracked outputs in `pipeline/backtest.py`, including daily cumulative prediction accuracy, pick ROI, and calibration bins. It still does not retrain the underlying sport models from raw inputs for every historical date, but it is no longer limited to static aggregate summaries.
 
 ## Changes Implemented
 
@@ -508,11 +508,42 @@ Configured models live in `pipeline/config.py:138-160`.
   - When NHL is thin, it is now easier to tell whether the model disliked the slate or whether the live odds feed simply failed to match a few fixtures.
   - Better name normalization also improves the chance that live NHL markets get picked up in the first place.
 
+#### 34. Added a true date-ordered replay report over settled predictions and picks
+
+- What changed:
+  - Added `build_walkforward_report()` plus daily/cumulative replay helpers and calibration bins in `pipeline/backtest.py`.
+  - The dashboard payload now includes a `walkforward` section with aggregate replay summaries, calibration buckets, and recent daily replay rows.
+  - Added focused coverage in `tests/test_backtest.py`.
+- Why it matters:
+  - The reporting layer is no longer just a static aggregate over saved histories.
+  - You can now inspect how the stack has behaved day by day, how probabilities have calibrated, and whether pick quality is drifting over time.
+
+#### 35. Added confirmed MLB batting-order context and live bullpen-fatigue adjustments
+
+- What changed:
+  - `pipeline/fetch_mlb.py` now fetches same-day ESPN summary payloads during schedule generation and extracts confirmed batting-order rosters with handedness mix and top-order depth.
+  - `pipeline/run.py` now uses those confirmed-lineup fields inside the MLB lineup adjustment, and it computes a same-day bullpen fatigue tax from recent bullpen innings before applying extra side and totals adjustments.
+  - `pipeline/refresh_picks.py` now reapplies those bullpen-fatigue adjustments during live refreshes, and the new behavior is covered in `tests/test_fetch_mlb.py` and `tests/test_run.py`.
+- Why it matters:
+  - MLB sides and totals now react to actual same-day lineups instead of only generic roster health.
+  - Bullpen quality is no longer treated as purely static season form; recent bullpen strain now nudges the projection too.
+
+#### 36. Added event-specific NBA and NHL injury refresh signals
+
+- What changed:
+  - `pipeline/fetch_nba.py` now pulls each event summary during schedule refresh and merges event-specific injury burdens into team availability profiles.
+  - `pipeline/fetch_nhl.py` now pulls event summaries to build same-day skater injury profiles alongside probable-goalie status.
+  - `pipeline/run.py` and `pipeline/refresh_picks.py` now apply those event-specific NBA/NHL injury adjustments during both the full run and the late refresh path.
+  - Added coverage in `tests/test_fetch_nba.py`, `tests/test_fetch_nhl.py`, and `tests/test_run.py`.
+- Why it matters:
+  - Late-news handling is now based on game-specific injury state, not just generic roster listings.
+  - That gives the model a better chance to react to day-of absences and uncertainties before lock.
+
 ## Future Improvements
 
-### 1. Build a true walk-forward replay harness
+### 1. Rebuild historical model state from raw inputs day by day
 
-`pipeline/backtest.py` now summarizes stored historical outputs, but it still does not rebuild historical predictions from raw data one day at a time. A true replay script should:
+`pipeline/backtest.py` now has a real replay over settled tracked outputs, but it still does not retrain or reconstruct each sport model from raw data one day at a time. The next step is a deeper replay script that:
 
 - reconstruct the feature state as of each historical date
 - run the live model logic against that state
@@ -523,9 +554,8 @@ Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fe
 
 ### 2. Add truly confirmed batting-order quality and bullpen-role context to MLB
 
-The MLB stack now covers starters, bullpens, park context, handedness, live weather, and leader-aware lineup quality, but it still lacks:
+The MLB stack now covers starters, bullpens, park context, handedness, live weather, confirmed batting-order shape, and lineup-aware totals, but it still lacks:
 
-- true confirmed batting-order quality rather than leader-weighted roster proxies
 - bullpen leverage role quality beyond simple aggregate workload
 - totals-specific bullpen availability and umpire context
 
@@ -533,9 +563,8 @@ The MLB stack now covers starters, bullpens, park context, handedness, live weat
 
 The refresh path now refetches core live metadata in `pipeline/refresh_picks.py`, but it still does not fully rebuild each sport from scratch. The next step is to push closer to confirmed pregame information, especially:
 
-- MLB confirmed batting orders rather than roster-level lineup proxies
 - NBA late scratches and minute-allocation expectations closer to tip
-- NHL confirmed starters and special-teams usage closer to puck drop
+- NHL confirmed skater availability and special-teams usage closer to puck drop
 
 ### 4. Fix training leakage in efficiency and four-factors models
 

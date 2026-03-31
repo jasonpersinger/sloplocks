@@ -394,6 +394,47 @@ def _fetch_nba_team_availability_profile(
     return profile
 
 
+def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | int | None, leader_weights: dict[str, float] | None = None) -> dict:
+    """Extract event-specific NBA injury burden from an ESPN summary payload."""
+    default = {
+        "event_injury_burden": 0.0,
+        "event_uncertainty_burden": 0.0,
+        "event_key_absence_score": 0.0,
+        "event_leader_absence_burden": 0.0,
+        "event_leader_uncertainty_burden": 0.0,
+    }
+    if not team_id:
+        return default
+
+    weight_map = {
+        str(player_id): float(weight)
+        for player_id, weight in (leader_weights or {}).items()
+        if player_id
+    }
+    summary_team_id = str(team_id)
+    profile = dict(default)
+    for injury_block in summary_data.get("injuries", []) or []:
+        if str((injury_block.get("team") or {}).get("id")) != summary_team_id:
+            continue
+        for injury in injury_block.get("injuries", []) or []:
+            status = injury.get("status")
+            weight = _injury_weight(status)
+            if weight <= 0:
+                continue
+            profile["event_injury_burden"] += weight
+            athlete_id = str((injury.get("athlete") or {}).get("id") or "")
+            leader_weight_value = float(weight_map.get(athlete_id, 0.0) or 0.0)
+            if leader_weight_value > 0:
+                profile["event_key_absence_score"] += weight
+                profile["event_leader_absence_burden"] += weight * leader_weight_value
+            normalized = str(status or "").strip().lower()
+            if normalized in {"questionable", "day-to-day", "doubtful"}:
+                profile["event_uncertainty_burden"] += weight
+                if leader_weight_value > 0:
+                    profile["event_leader_uncertainty_burden"] += weight * leader_weight_value
+    return {key: round(value, 3) for key, value in profile.items()}
+
+
 def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2) -> list[str]:
     """Return only dates that need fetching based on cache contents.
 
@@ -636,6 +677,32 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
                         _leader_weight(leader_group.get("name"))
                     )
 
+        summary_data = {}
+        try:
+            time.sleep(_ESPN_REQUEST_DELAY)
+            summary_resp = requests.get(f"{NBA_ESPN_BASE}/summary?event={event['id']}", timeout=30)
+            summary_resp.raise_for_status()
+            summary_data = summary_resp.json()
+        except requests.RequestException:
+            summary_data = {}
+
+        home_profile = _fetch_nba_team_availability_profile(
+            home["team"].get("id"),
+            leader_weights=home_leader_weights,
+            cache=cache,
+        )
+        away_profile = _fetch_nba_team_availability_profile(
+            away["team"].get("id"),
+            leader_weights=away_leader_weights,
+            cache=cache,
+        )
+        home_profile.update(
+            _extract_nba_event_injury_profile(summary_data, home["team"].get("id"), leader_weights=home_leader_weights)
+        )
+        away_profile.update(
+            _extract_nba_event_injury_profile(summary_data, away["team"].get("id"), leader_weights=away_leader_weights)
+        )
+
         fixtures.append({
             "home_team": normalize_nba_team_name(home["team"]["displayName"]),
             "away_team": normalize_nba_team_name(away["team"]["displayName"]),
@@ -644,16 +711,8 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
             "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
-            "home_availability_profile": _fetch_nba_team_availability_profile(
-                home["team"].get("id"),
-                leader_weights=home_leader_weights,
-                cache=cache,
-            ),
-            "away_availability_profile": _fetch_nba_team_availability_profile(
-                away["team"].get("id"),
-                leader_weights=away_leader_weights,
-                cache=cache,
-            ),
+            "home_availability_profile": home_profile,
+            "away_availability_profile": away_profile,
         })
 
     _save_espn_cache(cache_path, cache)

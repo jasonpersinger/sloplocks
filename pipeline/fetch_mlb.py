@@ -32,6 +32,22 @@ def _mlb_leader_weight(stat_name: str | None) -> float:
     return mapping.get(str(stat_name or "").strip(), 0.6)
 
 
+def _lineup_slot_weight(slot: int) -> float:
+    """Weight earlier batting-order spots more heavily than the bottom third."""
+    weights = {
+        1: 1.00,
+        2: 0.98,
+        3: 1.00,
+        4: 0.96,
+        5: 0.88,
+        6: 0.78,
+        7: 0.68,
+        8: 0.6,
+        9: 0.54,
+    }
+    return weights.get(int(slot), 0.5)
+
+
 def _build_team_map() -> dict[str, str]:
     """Fetch ESPN teams endpoint and build displayName -> shortName map."""
     url = f"{MLB_ESPN_BASE}/teams?limit=40"
@@ -150,6 +166,7 @@ def _fetch_team_lineup_profile(
     team_id: str | int | None,
     cache: dict | None = None,
     leader_weights: dict[str, float] | None = None,
+    confirmed_lineup: dict | None = None,
 ) -> dict:
     """Fetch and cache a coarse current-roster lineup profile for one MLB team."""
     default = {
@@ -164,6 +181,13 @@ def _fetch_team_lineup_profile(
         "lefty_share": 0.0,
         "righty_share": 0.0,
         "switch_share": 0.0,
+        "confirmed_lineup": False,
+        "confirmed_hitters": 0,
+        "confirmed_top_order_score": 0.0,
+        "confirmed_leader_absence_burden": 0.0,
+        "confirmed_lefty_share": 0.0,
+        "confirmed_righty_share": 0.0,
+        "confirmed_switch_share": 0.0,
     }
     if not team_id:
         return default
@@ -266,7 +290,80 @@ def _fetch_team_lineup_profile(
         "righty_share": round(right_handed_batters / denominator, 4),
         "switch_share": round(switch_hitters / denominator, 4),
     }
+
+    if confirmed_lineup:
+        confirmed_ids = {
+            str(player_id)
+            for player_id in confirmed_lineup.get("player_ids", [])
+            if player_id
+        }
+        profile.update({
+            "confirmed_lineup": bool(confirmed_lineup.get("confirmed_lineup")),
+            "confirmed_hitters": int(confirmed_lineup.get("confirmed_hitters", 0) or 0),
+            "confirmed_top_order_score": round(float(confirmed_lineup.get("confirmed_top_order_score", 0.0) or 0.0), 3),
+            "confirmed_lefty_share": round(float(confirmed_lineup.get("confirmed_lefty_share", 0.0) or 0.0), 4),
+            "confirmed_righty_share": round(float(confirmed_lineup.get("confirmed_righty_share", 0.0) or 0.0), 4),
+            "confirmed_switch_share": round(float(confirmed_lineup.get("confirmed_switch_share", 0.0) or 0.0), 4),
+            "confirmed_leader_absence_burden": round(
+                sum(weight for player_id, weight in weight_map.items() if player_id not in confirmed_ids),
+                3,
+            ),
+        })
     return profile
+
+
+def _extract_confirmed_mlb_lineups(summary_data: dict, cache: dict | None = None) -> dict[str, dict]:
+    """Extract confirmed same-day batting-order profiles from an ESPN summary payload."""
+    lineups = {}
+    full_order_weight = sum(_lineup_slot_weight(slot) for slot in range(1, 10))
+
+    for roster in summary_data.get("rosters", []):
+        team_name = normalize_mlb_team_name(roster.get("team", {}).get("displayName", ""))
+        if not team_name:
+            continue
+
+        confirmed_rows = []
+        for player in roster.get("roster", []) or []:
+            if not player.get("starter"):
+                continue
+            if str((player.get("position") or {}).get("abbreviation", "")).upper() == "P":
+                continue
+            bat_order = player.get("batOrder")
+            if bat_order in (None, "", 0):
+                continue
+            try:
+                slot = int(bat_order)
+            except (TypeError, ValueError):
+                continue
+            athlete = player.get("athlete", {}) or {}
+            player_id = athlete.get("id")
+            bats = _fetch_player_profile(player_id, cache).get("bats")
+            confirmed_rows.append({
+                "slot": slot,
+                "player_id": str(player_id) if player_id else None,
+                "bats": bats,
+            })
+
+        if not confirmed_rows:
+            continue
+
+        confirmed_rows.sort(key=lambda row: row["slot"])
+        confirmed_hitters = len(confirmed_rows)
+        lefties = sum(1 for row in confirmed_rows if row.get("bats") == "L")
+        righties = sum(1 for row in confirmed_rows if row.get("bats") == "R")
+        switch_hitters = sum(1 for row in confirmed_rows if row.get("bats") == "S")
+        slot_weight_total = sum(_lineup_slot_weight(row["slot"]) for row in confirmed_rows[:9])
+        denom = max(1, confirmed_hitters)
+        lineups[team_name] = {
+            "confirmed_lineup": confirmed_hitters >= 8,
+            "confirmed_hitters": confirmed_hitters,
+            "confirmed_top_order_score": round(slot_weight_total / full_order_weight, 4),
+            "confirmed_lefty_share": round(lefties / denom, 4),
+            "confirmed_righty_share": round(righties / denom, 4),
+            "confirmed_switch_share": round(switch_hitters / denom, 4),
+            "player_ids": [row["player_id"] for row in confirmed_rows if row.get("player_id")],
+        }
+    return lineups
 
 
 def _weather_cache_key(home_team: str, start_time: str | None) -> str:
@@ -717,6 +814,15 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
         start_time = comp.get("date", event.get("date"))
         home_team_id = home["team"].get("id")
         away_team_id = away["team"].get("id")
+        confirmed_lineups = {}
+        summary_url = f"{MLB_ESPN_BASE}/summary?event={event.get('id')}"
+        try:
+            time.sleep(_REQUEST_DELAY)
+            summary_resp = requests.get(summary_url, timeout=30)
+            summary_resp.raise_for_status()
+            confirmed_lineups = _extract_confirmed_mlb_lineups(summary_resp.json(), cache)
+        except requests.RequestException:
+            confirmed_lineups = {}
         weather = _fetch_ballpark_weather(
             normalize_mlb_team_name(home["team"]["displayName"]),
             start_time,
@@ -726,11 +832,13 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
             home_team_id,
             cache,
             leader_weights=home_leader_weights,
+            confirmed_lineup=confirmed_lineups.get(normalize_mlb_team_name(home["team"]["displayName"])),
         )
         away_lineup_profile = _fetch_team_lineup_profile(
             away_team_id,
             cache,
             leader_weights=away_leader_weights,
+            confirmed_lineup=confirmed_lineups.get(normalize_mlb_team_name(away["team"]["displayName"])),
         )
 
         fixtures.append({

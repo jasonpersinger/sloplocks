@@ -175,3 +175,68 @@ class TestFetchNhlSchedule:
         assert fixtures[0]["start_time"] == "2026-03-29T23:00Z"
         assert fixtures[0]["home_goalie"] == "Home Goalie"
         assert fixtures[0]["away_goalie_status"] == "projected"
+
+    @patch("pipeline.fetch_nhl._team_map", {"Boston Bruins": "Bruins", "Toronto Maple Leafs": "Maple Leafs"})
+    @patch("pipeline.fetch_nhl.requests.get")
+    def test_includes_event_injury_profiles(self, mock_get):
+        scoreboard_resp = MagicMock()
+        scoreboard_resp.raise_for_status = MagicMock()
+        scoreboard_resp.json.return_value = {
+            "events": [
+                {
+                    **_make_nhl_event("1", "Boston Bruins", "Toronto Maple Leafs", 0, 0, completed=False),
+                    "competitions": [
+                        {
+                            "date": "2026-03-29T23:00Z",
+                            "neutralSite": False,
+                            "status": {"type": {"completed": False}},
+                            "competitors": [
+                                {
+                                    "homeAway": "home",
+                                    "team": {"displayName": "Boston Bruins", "id": "6"},
+                                    "score": "0",
+                                    "probables": [
+                                        {
+                                            "name": "probableStartingGoalie",
+                                            "playerId": 31,
+                                            "athlete": {"id": "31", "displayName": "Home Goalie"},
+                                            "status": {"type": "confirmed"},
+                                        }
+                                    ],
+                                    "leaders": [{"name": "points", "leaders": [{"athlete": {"id": "88"}}]}],
+                                },
+                                {
+                                    "homeAway": "away",
+                                    "team": {"displayName": "Toronto Maple Leafs", "id": "10"},
+                                    "score": "0",
+                                    "probables": [
+                                        {
+                                            "name": "probableStartingGoalie",
+                                            "playerId": 35,
+                                            "athlete": {"id": "35", "displayName": "Away Goalie"},
+                                            "status": {"type": "projected"},
+                                        }
+                                    ],
+                                    "leaders": [{"name": "assists", "leaders": [{"athlete": {"id": "99"}}]}],
+                                },
+                            ],
+                        }
+                    ],
+                }
+            ]
+        }
+        summary_resp = MagicMock()
+        summary_resp.raise_for_status = MagicMock()
+        summary_resp.json.return_value = {
+            "injuries": [
+                {"team": {"id": "6"}, "injuries": [{"status": "Out", "athlete": {"id": "88"}}]},
+                {"team": {"id": "10"}, "injuries": [{"status": "Questionable", "athlete": {"id": "99"}}]},
+            ]
+        }
+        mock_get.side_effect = [scoreboard_resp, summary_resp]
+
+        fixtures = fetch_nhl_schedule()
+
+        assert fixtures[0]["home_injury_profile"]["injury_burden"] == 1.0
+        assert fixtures[0]["home_injury_profile"]["leader_absence_burden"] == 1.0
+        assert fixtures[0]["away_injury_profile"]["leader_uncertainty_burden"] == 0.297

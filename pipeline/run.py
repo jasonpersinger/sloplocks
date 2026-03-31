@@ -680,14 +680,22 @@ def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand
     if not lineup_profile:
         return 0.0
 
-    lefty_share = float(lineup_profile.get("lefty_share", 0.0) or 0.0)
-    righty_share = float(lineup_profile.get("righty_share", 0.0) or 0.0)
-    switch_share = float(lineup_profile.get("switch_share", 0.0) or 0.0)
+    if lineup_profile.get("confirmed_lineup"):
+        lefty_share = float(lineup_profile.get("confirmed_lefty_share", lineup_profile.get("lefty_share", 0.0)) or 0.0)
+        righty_share = float(lineup_profile.get("confirmed_righty_share", lineup_profile.get("righty_share", 0.0)) or 0.0)
+        switch_share = float(lineup_profile.get("confirmed_switch_share", lineup_profile.get("switch_share", 0.0)) or 0.0)
+    else:
+        lefty_share = float(lineup_profile.get("lefty_share", 0.0) or 0.0)
+        righty_share = float(lineup_profile.get("righty_share", 0.0) or 0.0)
+        switch_share = float(lineup_profile.get("switch_share", 0.0) or 0.0)
     active_hitters = float(lineup_profile.get("active_hitters", 0.0) or 0.0)
     available_hitters = float(lineup_profile.get("available_hitters", 0.0) or 0.0)
     injured_hitters = float(lineup_profile.get("injured_hitters", 0.0) or 0.0)
     key_bat_absence_score = float(lineup_profile.get("key_bat_absence_score", 0.0) or 0.0)
     leader_absence_burden = float(lineup_profile.get("leader_absence_burden", 0.0) or 0.0)
+    confirmed_hitters = float(lineup_profile.get("confirmed_hitters", 0.0) or 0.0)
+    confirmed_top_order_score = float(lineup_profile.get("confirmed_top_order_score", 0.0) or 0.0)
+    confirmed_leader_absence_burden = float(lineup_profile.get("confirmed_leader_absence_burden", 0.0) or 0.0)
 
     pitcher_hand = (opposing_pitcher_hand or "R").upper()
     if pitcher_hand == "L":
@@ -700,6 +708,11 @@ def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand
     if active_hitters > 0:
         availability_rate = max(-1.0, min(1.0, (available_hitters / active_hitters) - 1.0))
     injury_term = max(-1.0, min(1.0, injured_hitters / 4.0))
+    confirmed_depth_term = 0.0
+    confirmed_top_order_term = 0.0
+    if lineup_profile.get("confirmed_lineup"):
+        confirmed_depth_term = max(-1.0, min(1.0, (confirmed_hitters - 9.0) / 2.0))
+        confirmed_top_order_term = max(-1.0, min(1.0, (confirmed_top_order_score - 0.82) / 0.18))
 
     return (
         (0.6 * platoon_term)
@@ -708,7 +721,94 @@ def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand
         - (0.18 * injury_term)
         - (0.28 * key_bat_absence_score)
         - (0.24 * leader_absence_burden)
+        + (0.12 * confirmed_depth_term)
+        + (0.16 * confirmed_top_order_term)
+        - (0.16 * confirmed_leader_absence_burden)
     )
+
+
+def _team_bullpen_rows(team: str, before_date: str, matches: pd.DataFrame, recent_days: int = 3) -> list[dict]:
+    """Return recent bullpen workload rows for one MLB team before a date."""
+    if matches is None or matches.empty or recent_days <= 0:
+        return []
+
+    cutoff = pd.to_datetime(before_date[:10])
+    window_start = cutoff - timedelta(days=recent_days)
+    rows = []
+    for _, row in matches.iterrows():
+        row_date = pd.to_datetime(row["date"])
+        if row_date >= cutoff or row_date < window_start:
+            continue
+        if row["home_team"] == team:
+            rows.append({
+                "date": row["date"],
+                "innings": float(row.get("home_bullpen_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("home_bullpen_earned_runs", 0.0) or 0.0),
+            })
+        elif row["away_team"] == team:
+            rows.append({
+                "date": row["date"],
+                "innings": float(row.get("away_bullpen_ip", 0.0) or 0.0),
+                "earned_runs": float(row.get("away_bullpen_earned_runs", 0.0) or 0.0),
+            })
+    rows.sort(key=lambda item: item["date"])
+    return rows
+
+
+def _compute_mlb_bullpen_tax(
+    team: str,
+    before_date: str,
+    matches: pd.DataFrame,
+    recent_days: int = 3,
+    usage_baseline: float = 6.5,
+    last_game_baseline: float = 3.5,
+) -> float:
+    """Estimate a same-day bullpen fatigue tax from recent innings load."""
+    rows = _team_bullpen_rows(team, before_date, matches, recent_days=recent_days)
+    if not rows:
+        return 0.0
+
+    total_ip = sum(item["innings"] for item in rows)
+    last_game_ip = rows[-1]["innings"]
+    earned_runs = sum(item["earned_runs"] for item in rows)
+    usage_term = max(0.0, total_ip - usage_baseline) / max(usage_baseline, 1.0)
+    last_game_term = max(0.0, last_game_ip - last_game_baseline) / max(last_game_baseline, 1.0)
+    runs_term = max(0.0, earned_runs - 2.0) / 6.0
+    return max(0.0, min(1.5, (0.55 * usage_term) + (0.3 * last_game_term) + (0.15 * runs_term)))
+
+
+def _apply_mlb_bullpen_availability_adjustment(
+    blended: dict[str, float],
+    home_tax: float = 0.0,
+    away_tax: float = 0.0,
+    max_delta: float = 0.012,
+) -> dict[str, float]:
+    """Shade MLB sides away from the team carrying heavier recent bullpen tax."""
+    differential = float(away_tax or 0.0) - float(home_tax or 0.0)
+    if abs(differential) < 0.05:
+        return blended
+    delta = max(-max_delta, min(max_delta, differential * max_delta * 0.75))
+    if abs(delta) < 0.001:
+        return blended
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
+
+
+def _apply_mlb_bullpen_total_adjustment(
+    expected_total: float,
+    home_tax: float = 0.0,
+    away_tax: float = 0.0,
+    max_runs_delta: float = 0.3,
+) -> float:
+    """Push MLB totals upward modestly when both bullpens are carrying fatigue."""
+    combined_tax = float(home_tax or 0.0) + float(away_tax or 0.0)
+    if combined_tax < 0.1:
+        return expected_total
+    delta = max(0.0, min(max_runs_delta, combined_tax * max_runs_delta * 0.6))
+    return max(4.5, min(16.0, expected_total + delta))
 
 
 def _apply_mlb_lineup_adjustment(
@@ -765,6 +865,9 @@ def _compute_nba_availability_index(profile: dict | None) -> float:
     injury_burden = float(profile.get("injury_burden", 0.0) or 0.0)
     key_absence_score = float(profile.get("key_absence_score", 0.0) or 0.0)
     leader_absence_burden = float(profile.get("leader_absence_burden", 0.0) or 0.0)
+    event_injury_burden = float(profile.get("event_injury_burden", 0.0) or 0.0)
+    event_key_absence_score = float(profile.get("event_key_absence_score", 0.0) or 0.0)
+    event_leader_absence_burden = float(profile.get("event_leader_absence_burden", 0.0) or 0.0)
 
     depth_term = max(-1.0, min(1.0, (available_core_players - 9.0) / 4.0))
     active_term = 0.0
@@ -777,6 +880,9 @@ def _compute_nba_availability_index(profile: dict | None) -> float:
         - (0.35 * injury_burden)
         - (0.45 * key_absence_score)
         - (0.7 * leader_absence_burden)
+        - (0.2 * event_injury_burden)
+        - (0.3 * event_key_absence_score)
+        - (0.55 * event_leader_absence_burden)
     )
 
 
@@ -825,9 +931,15 @@ def _apply_nba_availability_adjustment(
     away_uncertainty = float((away_profile or {}).get("uncertainty_burden", 0.0) or 0.0)
     home_leader_uncertainty = float((home_profile or {}).get("leader_uncertainty_burden", 0.0) or 0.0)
     away_leader_uncertainty = float((away_profile or {}).get("leader_uncertainty_burden", 0.0) or 0.0)
+    home_event_uncertainty = float((home_profile or {}).get("event_uncertainty_burden", 0.0) or 0.0)
+    away_event_uncertainty = float((away_profile or {}).get("event_uncertainty_burden", 0.0) or 0.0)
+    home_event_leader_uncertainty = float((home_profile or {}).get("event_leader_uncertainty_burden", 0.0) or 0.0)
+    away_event_leader_uncertainty = float((away_profile or {}).get("event_leader_uncertainty_burden", 0.0) or 0.0)
     differential -= (
         ((home_uncertainty - away_uncertainty) * uncertainty_weight)
         + ((home_leader_uncertainty - away_leader_uncertainty) * leader_uncertainty_weight)
+        + ((home_event_uncertainty - away_event_uncertainty) * (uncertainty_weight * 0.85))
+        + ((home_event_leader_uncertainty - away_event_leader_uncertainty) * (leader_uncertainty_weight * 0.9))
     ) * urgency
     if abs(differential) < 0.05:
         return blended
@@ -915,6 +1027,39 @@ def _apply_nhl_goalie_status_adjustment(
         return blended
 
     delta = max(-max_delta, min(max_delta, differential * max_delta * 0.8))
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
+
+
+def _compute_nhl_injury_index(profile: dict | None) -> float:
+    """Score an NHL skater injury profile from event-specific news."""
+    if not profile:
+        return 0.0
+    return (
+        - (0.35 * float(profile.get("injury_burden", 0.0) or 0.0))
+        - (0.45 * float(profile.get("key_absence_score", 0.0) or 0.0))
+        - (0.7 * float(profile.get("leader_absence_burden", 0.0) or 0.0))
+        - (0.2 * float(profile.get("uncertainty_burden", 0.0) or 0.0))
+        - (0.3 * float(profile.get("leader_uncertainty_burden", 0.0) or 0.0))
+    )
+
+
+def _apply_nhl_injury_adjustment(
+    blended: dict[str, float],
+    home_profile: dict | None,
+    away_profile: dict | None,
+    max_delta: float = 0.01,
+) -> dict[str, float]:
+    """Apply a modest NHL side adjustment from same-day skater injury news."""
+    differential = _compute_nhl_injury_index(home_profile) - _compute_nhl_injury_index(away_profile)
+    if abs(differential) < 0.05:
+        return blended
+    delta = max(-max_delta, min(max_delta, differential * max_delta * 0.6))
+    if abs(delta) < 0.001:
+        return blended
     adjusted = {
         "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
         "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
@@ -1904,7 +2049,25 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
         # Blend
         blended = blend_predictions(individual_preds, blend_weights)
+        home_bullpen_tax = 0.0
+        away_bullpen_tax = 0.0
         if sport_key == "mlb":
+            home_bullpen_tax = _compute_mlb_bullpen_tax(
+                home,
+                fix["date"],
+                matches,
+                recent_days=sport.get("bullpen_fatigue_window_days", 3),
+                usage_baseline=sport.get("bullpen_fatigue_usage_baseline", 6.5),
+                last_game_baseline=sport.get("bullpen_last_game_usage_baseline", 3.5),
+            )
+            away_bullpen_tax = _compute_mlb_bullpen_tax(
+                away,
+                fix["date"],
+                matches,
+                recent_days=sport.get("bullpen_fatigue_window_days", 3),
+                usage_baseline=sport.get("bullpen_fatigue_usage_baseline", 6.5),
+                last_game_baseline=sport.get("bullpen_last_game_usage_baseline", 3.5),
+            )
             blended = _apply_mlb_weather_adjustment(
                 blended,
                 run_environment_probs,
@@ -1919,6 +2082,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 fix.get("away_pitcher_hand"),
                 max_delta=sport.get("lineup_adjustment_max_delta", 0.015),
             )
+            blended = _apply_mlb_bullpen_availability_adjustment(
+                blended,
+                home_tax=home_bullpen_tax,
+                away_tax=away_bullpen_tax,
+                max_delta=sport.get("bullpen_availability_adjustment_max_delta", 0.012),
+            )
         if sport_key == "nba":
             blended = _apply_nba_availability_adjustment(
                 blended,
@@ -1932,6 +2101,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
             )
         if sport_key == "nhl":
+            blended = _apply_nhl_injury_adjustment(
+                blended,
+                fix.get("home_injury_profile"),
+                fix.get("away_injury_profile"),
+                max_delta=sport.get("injury_adjustment_max_delta", 0.01),
+            )
             blended = _apply_nhl_goalie_status_adjustment(
                 blended,
                 fix.get("home_goalie_status"),
@@ -1990,12 +2165,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
             "away_goalie": fix.get("away_goalie"),
             "home_goalie_status": fix.get("home_goalie_status"),
             "away_goalie_status": fix.get("away_goalie_status"),
+            "home_injury_profile": fix.get("home_injury_profile"),
+            "away_injury_profile": fix.get("away_injury_profile"),
             "home_pitcher": fix.get("home_pitcher"),
             "home_pitcher_hand": fix.get("home_pitcher_hand"),
             "away_pitcher": fix.get("away_pitcher"),
             "away_pitcher_hand": fix.get("away_pitcher_hand"),
             "home_lineup_profile": fix.get("home_lineup_profile"),
             "away_lineup_profile": fix.get("away_lineup_profile"),
+            "home_bullpen_tax": round(home_bullpen_tax, 3) if sport_key == "mlb" else None,
+            "away_bullpen_tax": round(away_bullpen_tax, 3) if sport_key == "mlb" else None,
             "weather": fix.get("weather"),
             "pick": pick,
             "model_prob": round(model_prob, 4),
@@ -2034,6 +2213,12 @@ def run_sport_pipeline(sport_key, output_dir=None):
                     fix.get("home_pitcher_hand"),
                     fix.get("away_pitcher_hand"),
                     max_runs_delta=sport.get("lineup_total_adjustment_max_delta", 0.35),
+                )
+                total_projection["expected_total"] = _apply_mlb_bullpen_total_adjustment(
+                    total_projection["expected_total"],
+                    home_tax=home_bullpen_tax,
+                    away_tax=away_bullpen_tax,
+                    max_runs_delta=sport.get("bullpen_total_adjustment_max_delta", 0.3),
                 )
             else:
                 total_projection = nba_totals_predict(
@@ -2078,6 +2263,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "away_pitcher": fix.get("away_pitcher"),
                 "home_lineup_profile": fix.get("home_lineup_profile"),
                 "away_lineup_profile": fix.get("away_lineup_profile"),
+                "home_bullpen_tax": round(home_bullpen_tax, 3) if sport_key == "mlb" else None,
+                "away_bullpen_tax": round(away_bullpen_tax, 3) if sport_key == "mlb" else None,
                 "weather": fix.get("weather"),
                 "total_line": float(match_odds["total_line"]),
                 "expected_total": round(total_projection["expected_total"], 3),
