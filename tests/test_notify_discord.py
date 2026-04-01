@@ -66,6 +66,19 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
         {
             "slop_locks": [nba_lock],
             "longslop": None,
+            "slimegrinder": [
+                {
+                    "home_team": "Knicks",
+                    "away_team": "Heat",
+                    "date": "2026-03-28",
+                    "start_time": "2026-03-28T21:00:00Z",
+                    "pick": "away",
+                    "model_prob": 0.58,
+                    "edge": 0.031,
+                    "confidence_score": 66,
+                    "american_odds": 105,
+                }
+            ],
             "matches": [nba_match],
             "diagnostics": {
                 "summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1",
@@ -150,7 +163,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     full_text = json.dumps(payload)
 
     assert payload["username"] == "BIG SLIME"
-    assert "curated picks" in payload["content"]
+    assert "official picks" in payload["content"]
     assert "Lakers" in full_text
     assert "Dodgers" in full_text
     assert "OVER 8.5" in full_text
@@ -167,6 +180,9 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "missing: Giants @ Dodgers" in full_text
     assert "totals=1" in full_text
     assert "SLOP LOCK" in full_text
+    assert "SLIMEGRINDER" in full_text
+    assert "secondary qualified picks; stronger than radar, below official locks" in full_text
+    assert "official pick" in payload["content"]
 
 
 def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
@@ -197,8 +213,10 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     payload = notify_discord.build_payload()
     full_text = json.dumps(payload)
 
-    assert "radar spot" in payload["content"]
+    assert "radar lean" in payload["content"]
     assert "MODEL RADAR" in full_text
+    assert "not official picks or qualified slimegrinders" in full_text
+    assert "Not an official pick" in full_text
     assert "Jon Jones" in full_text
     assert "Mar 28 11:00 PM ET" in full_text
     assert "SLATE DIAGNOSTICS" in full_text

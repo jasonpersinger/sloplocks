@@ -34,6 +34,7 @@ PICK_LABELS = {"draw": "DRAW"}
 DATA_DIR = Path("data")
 SPORT_ORDER = ("nba", "nhl", "ncaam", "mlb", "mma")
 MAX_CURATED_FIELDS = 8
+MAX_SLIME_FIELDS = 5
 MAX_RADAR_FIELDS = 5
 MAX_DIAGNOSTIC_FIELDS = 4
 
@@ -217,6 +218,29 @@ def _build_curated_candidates() -> list[dict]:
     return curated
 
 
+def _build_slimegrinder_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> list[dict]:
+    """Return secondary qualified picks from the slimegrinder lane."""
+    slime = []
+    for sport_key, data in _iter_sport_data():
+        lookup = _match_lookup(data.get("matches") or [])
+        for item in data.get("slimegrinder") or []:
+            enriched = _enrich_item(item, sport_key, "slimegrinder", lookup.get(_pick_key(item)))
+            key = _pick_key(enriched)
+            if key in excluded_keys:
+                continue
+            slime.append(enriched)
+
+    slime.sort(
+        key=lambda item: (
+            item.get("confidence_score", 0),
+            item.get("expected_value", -999),
+            item.get("edge", -999),
+        ),
+        reverse=True,
+    )
+    return slime
+
+
 def _build_radar_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> list[dict]:
     radar = []
     for sport_key, data in _iter_sport_data():
@@ -267,13 +291,15 @@ def _status_label(item: dict) -> str:
         return " 🔒 **SLOP LOCK**"
     if item.get("source") == "total_lock":
         return " 📈 **TOTAL LOCK**"
+    if item.get("source") == "slimegrinder":
+        return " 🟢 **SLIMEGRINDER**"
 
     conf_score = item.get("confidence_score", 0) or 0
     if conf_score >= 85:
-        return " 🔥 **MASTER LOCK**"
+        return " 👀 **RADAR LEAN**"
     if conf_score >= 65:
-        return " ✅ **VALIDATED**"
-    return " 👀 **RADAR**"
+        return " 👀 **RADAR LEAN**"
+    return " 👀 **RADAR ONLY**"
 
 
 def _pick_subtitle(item: dict) -> str:
@@ -283,11 +309,13 @@ def _pick_subtitle(item: dict) -> str:
     if item.get("source") == "longslop":
         parts.append("Longshot")
     elif item.get("source") == "slop_lock":
-        parts.append("Curated")
+        parts.append("Official pick")
     elif item.get("source") == "total_lock":
-        parts.append("Totals")
+        parts.append("Official totals pick")
+    elif item.get("source") == "slimegrinder":
+        parts.append("Secondary qualified pick")
     else:
-        parts.append("Model radar")
+        parts.append("Not an official pick")
 
     if item.get("expected_value") is not None:
         parts.append(f"EV {_fmt_units(item['expected_value'])}")
@@ -378,22 +406,35 @@ def build_payload() -> dict:
         })
 
     curated_keys = {_pick_key(item) for item in curated}
-    radar = _build_radar_candidates(curated_keys)
+    slimegrinder = _build_slimegrinder_candidates(curated_keys)
+    secondary_keys = curated_keys | {_pick_key(item) for item in slimegrinder}
+    if slimegrinder:
+        embeds.append({
+            "title": "🟢  SLIMEGRINDER",
+            "color": COLOR_RADAR,
+            "fields": [_lock_field(item, item["sport"]) for item in slimegrinder[:MAX_SLIME_FIELDS]],
+            "footer": {"text": "secondary qualified picks; stronger than radar, below official locks"},
+        })
+
+    radar = _build_radar_candidates(secondary_keys)
     if radar:
         embeds.append({
             "title": "📡  MODEL RADAR",
             "color": COLOR_RADAR,
             "fields": [_lock_field(item, item["sport"]) for item in radar[:MAX_RADAR_FIELDS]],
-            "footer": {"text": "top remaining matchups by model confidence"},
+            "footer": {"text": "leftover model leans only; not official picks or qualified slimegrinders"},
         })
 
     summary_parts = []
     if curated:
         count = len(curated)
-        summary_parts.append(f"{count} curated pick{'s' if count != 1 else ''}")
+        summary_parts.append(f"{count} official pick{'s' if count != 1 else ''}")
+    if slimegrinder:
+        shown = min(len(slimegrinder), MAX_SLIME_FIELDS)
+        summary_parts.append(f"{shown} slimegrinder pick{'s' if shown != 1 else ''}")
     if radar:
         shown = min(len(radar), MAX_RADAR_FIELDS)
-        summary_parts.append(f"{shown} radar spot{'s' if shown != 1 else ''}")
+        summary_parts.append(f"{shown} radar lean{'s' if shown != 1 else ''} (not official)")
     if not summary_parts:
         summary_parts.append("No picks qualified today")
 
