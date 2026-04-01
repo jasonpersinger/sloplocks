@@ -8,7 +8,40 @@ import os
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
+import pandas as pd
+
 from pipeline.config import ENSEMBLE_ACCURACY_WINDOW, SPORTS
+from pipeline.ensemble import blend_predictions
+from pipeline.fetch_mlb import fetch_mlb_games
+from pipeline.fetch_mma import fetch_mma_games
+from pipeline.fetch_nba import fetch_nba_espn_games
+from pipeline.fetch_ncaam import fetch_ncaam_games
+from pipeline.fetch_nhl import fetch_nhl_games
+from pipeline.models import (
+    AdjustedEfficiency,
+    BullpenMatchupModel,
+    EloRatings,
+    FourFactorsModel,
+    HandednessMatchupModel,
+    NbaMatchupModel,
+    NbaTotalsModel,
+    NhlMatchupModel,
+    PitcherMatchupModel,
+    RecentBoxScoreModel,
+    ResultsFeatureModel,
+    RunEnvironmentModel,
+    bullpen_matchup_predict,
+    efficiency_predict,
+    elo_predict,
+    four_factors_predict,
+    handedness_matchup_predict,
+    nba_matchup_predict,
+    nhl_matchup_predict,
+    pitcher_matchup_predict,
+    recent_boxscore_predict,
+    results_features_predict,
+    run_environment_predict,
+)
 
 
 def _safe_float(value):
@@ -239,6 +272,351 @@ def _calibration_bin_summary(rows: list[dict], bucket_size: float = 0.1) -> list
             "calibration_gap": round(avg_prob - win_rate, 4),
         })
     return summary
+
+
+def _summarize_scored_predictions(rows: list[dict]) -> dict:
+    """Summarize a list of already-scored prediction rows."""
+    if not rows:
+        return {
+            "evaluated": 0,
+            "accuracy": None,
+            "avg_log_loss": None,
+            "avg_brier": None,
+        }
+    evaluated = len(rows)
+    correct = sum(1 for row in rows if row.get("correct"))
+    return {
+        "evaluated": evaluated,
+        "accuracy": round(correct / evaluated, 4),
+        "avg_log_loss": round(sum(float(row.get("log_loss", 0.0)) for row in rows) / evaluated, 4),
+        "avg_brier": round(sum(float(row.get("brier", 0.0)) for row in rows) / evaluated, 4),
+    }
+
+
+def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tuple[pd.DataFrame, pd.DataFrame | None]:
+    """Load historical raw inputs for one sport using the local ESPN caches."""
+    cache_path = os.path.join(data_dir, sport_key, "espn_cache.json")
+    if sport_key == "nba":
+        return fetch_nba_espn_games(cache_path=cache_path)
+    if sport_key == "ncaam":
+        return fetch_ncaam_games(cache_path=cache_path)
+    if sport_key == "mlb":
+        return fetch_mlb_games(cache_path=cache_path)
+    if sport_key == "nhl":
+        return fetch_nhl_games(cache_path=cache_path)
+    if sport_key == "mma":
+        return fetch_mma_games(cache_path=cache_path)
+    raise ValueError(f"Unsupported sport: {sport_key}")
+
+
+def _build_walkforward_models(
+    sport_key: str,
+    sport: dict,
+    train_matches: pd.DataFrame,
+    train_box_scores: pd.DataFrame | None,
+    model_names: list[str],
+) -> dict:
+    """Fit the active model set for one walk-forward training slice."""
+    models = {}
+    if train_matches is None or train_matches.empty:
+        return models
+
+    teams = sorted(set(train_matches["home_team"].unique()) | set(train_matches["away_team"].unique()))
+    if "elo" in model_names and teams:
+        elo = EloRatings(
+            teams,
+            k_factor=sport["elo_k_factor"],
+            home_advantage=sport["elo_home_advantage"],
+        )
+        elo.process_season(train_matches)
+        models["elo"] = elo
+
+    if "results_features" in model_names:
+        models["results_features"] = ResultsFeatureModel(
+            train_matches,
+            feature_window=sport.get("results_feature_window", 8),
+            min_games=sport.get("results_feature_min_games", 30),
+        )
+
+    if sport_key in {"nba", "ncaam"} and train_box_scores is not None and not train_box_scores.empty:
+        if "efficiency" in model_names:
+            models["efficiency"] = AdjustedEfficiency(train_box_scores, train_matches)
+        if "four_factors" in model_names:
+            models["four_factors"] = FourFactorsModel(train_box_scores, train_matches)
+        if "recent_boxscore" in model_names:
+            models["recent_boxscore"] = RecentBoxScoreModel(
+                train_box_scores,
+                train_matches,
+                feature_window=sport.get("recent_boxscore_window", 8),
+                min_games=sport.get("recent_boxscore_min_games", 30),
+            )
+    if sport_key == "nba" and train_box_scores is not None and not train_box_scores.empty and "nba_matchup" in model_names:
+        models["nba_matchup"] = NbaMatchupModel(
+            train_box_scores,
+            train_matches,
+            feature_window=sport.get("nba_matchup_window", 8),
+            min_games=sport.get("nba_matchup_min_games", 30),
+        )
+    if sport_key == "nhl" and "nhl_matchup" in model_names:
+        models["nhl_matchup"] = NhlMatchupModel(
+            train_matches,
+            feature_window=sport.get("nhl_matchup_window", 10),
+            min_games=sport.get("nhl_matchup_min_games", 40),
+        )
+    if sport_key == "mlb":
+        if "pitcher_features" in model_names:
+            models["pitcher_features"] = PitcherMatchupModel(
+                train_matches,
+                feature_window=sport.get("pitcher_feature_window", 8),
+                min_games=sport.get("pitcher_feature_min_games", 20),
+            )
+        if "bullpen_features" in model_names:
+            models["bullpen_features"] = BullpenMatchupModel(
+                train_matches,
+                feature_window=sport.get("bullpen_feature_window", 12),
+                recent_usage_window=sport.get("bullpen_recent_usage_window", 5),
+                min_games=sport.get("bullpen_feature_min_games", 20),
+            )
+        if "run_environment" in model_names:
+            models["run_environment"] = RunEnvironmentModel(
+                train_matches,
+                feature_window=sport.get("run_environment_window", 12),
+                min_games=sport.get("run_environment_min_games", 20),
+            )
+        if "handedness_features" in model_names:
+            models["handedness_features"] = HandednessMatchupModel(
+                train_matches,
+                feature_window=sport.get("handedness_feature_window", 18),
+                min_games=sport.get("handedness_feature_min_games", 20),
+            )
+    return models
+
+
+def _predict_walkforward_fixture(
+    sport_key: str,
+    sport: dict,
+    fixture: dict,
+    models: dict,
+    accuracy_log: dict[str, list[dict]],
+    model_names: list[str],
+) -> tuple[dict | None, dict[str, dict[str, float]]]:
+    """Generate a blended walk-forward prediction for one historical fixture."""
+    home = fixture["home_team"]
+    away = fixture["away_team"]
+    game_date = str(fixture.get("date", ""))[:10]
+    is_neutral = bool(fixture.get("neutral", False))
+
+    predictions = []
+    weights = []
+    individual = {}
+
+    active_model_names = [name for name in model_names if name in models]
+    if not active_model_names:
+        return None, {}
+
+    accuracies = [get_rolling_accuracy(accuracy_log, name, window=sport.get("accuracy_window")) for name in active_model_names]
+    weight_values = compute_model_weights(accuracies, temperature=sport.get("accuracy_softmax_temperature", 2.0))
+    weight_map = dict(zip(active_model_names, weight_values))
+
+    if "elo" in models:
+        probs = elo_predict(models["elo"], home, away, outcomes=sport["outcomes"])
+        predictions.append(probs)
+        weights.append(weight_map["elo"])
+        individual["elo"] = probs
+    if "results_features" in models:
+        probs = results_features_predict(models["results_features"], home, away, neutral_site=is_neutral, game_date=game_date)
+        predictions.append(probs)
+        weights.append(weight_map["results_features"])
+        individual["results_features"] = probs
+    if "efficiency" in models and home in models["efficiency"].off_efficiency and away in models["efficiency"].off_efficiency:
+        probs = efficiency_predict(models["efficiency"], home, away, home_bonus=0.0 if is_neutral else sport.get("efficiency_home_bonus", 3.5))
+        predictions.append(probs)
+        weights.append(weight_map["efficiency"])
+        individual["efficiency"] = probs
+    if "four_factors" in models and models["four_factors"].model is not None:
+        if home in models["four_factors"].team_stats and away in models["four_factors"].team_stats:
+            probs = four_factors_predict(models["four_factors"], home, away)
+            predictions.append(probs)
+            weights.append(weight_map["four_factors"])
+            individual["four_factors"] = probs
+    if "recent_boxscore" in models:
+        probs = recent_boxscore_predict(models["recent_boxscore"], home, away)
+        predictions.append(probs)
+        weights.append(weight_map["recent_boxscore"])
+        individual["recent_boxscore"] = probs
+    if "nba_matchup" in models:
+        probs = nba_matchup_predict(models["nba_matchup"], home, away, game_date=game_date)
+        predictions.append(probs)
+        weights.append(weight_map["nba_matchup"])
+        individual["nba_matchup"] = probs
+    if "nhl_matchup" in models:
+        probs = nhl_matchup_predict(
+            models["nhl_matchup"],
+            home,
+            away,
+            game_date=game_date,
+            home_goalie=fixture.get("home_goalie"),
+            away_goalie=fixture.get("away_goalie"),
+        )
+        predictions.append(probs)
+        weights.append(weight_map["nhl_matchup"])
+        individual["nhl_matchup"] = probs
+    if "pitcher_features" in models:
+        probs = pitcher_matchup_predict(models["pitcher_features"], fixture.get("home_pitcher"), fixture.get("away_pitcher"), game_date=game_date)
+        predictions.append(probs)
+        weights.append(weight_map["pitcher_features"])
+        individual["pitcher_features"] = probs
+    if "bullpen_features" in models:
+        probs = bullpen_matchup_predict(models["bullpen_features"], home, away)
+        predictions.append(probs)
+        weights.append(weight_map["bullpen_features"])
+        individual["bullpen_features"] = probs
+    if "run_environment" in models:
+        probs = run_environment_predict(models["run_environment"], home, away)
+        predictions.append(probs)
+        weights.append(weight_map["run_environment"])
+        individual["run_environment"] = probs
+    if "handedness_features" in models:
+        probs = handedness_matchup_predict(
+            models["handedness_features"],
+            home,
+            away,
+            home_pitcher_hand=fixture.get("home_pitcher_hand"),
+            away_pitcher_hand=fixture.get("away_pitcher_hand"),
+        )
+        predictions.append(probs)
+        weights.append(weight_map["handedness_features"])
+        individual["handedness_features"] = probs
+
+    if not predictions:
+        return None, {}
+    return blend_predictions(predictions, weights), individual
+
+
+def run_raw_walkforward_for_sport(
+    sport_key: str,
+    matches: pd.DataFrame,
+    box_scores_df: pd.DataFrame | None = None,
+    max_days: int | None = None,
+    model_names: list[str] | None = None,
+    min_training_games: int = 20,
+) -> dict:
+    """Run a raw-data walk-forward replay for one sport using historical inputs."""
+    sport = SPORTS[sport_key]
+    if matches is None or matches.empty:
+        return {
+            "sport": sport_key,
+            "dates_evaluated": 0,
+            "predictions": _summarize_scored_predictions([]),
+            "models": {},
+            "daily": [],
+        }
+
+    games = matches.copy().sort_values("date").reset_index(drop=True)
+    if box_scores_df is not None and not box_scores_df.empty:
+        box_scores_df = box_scores_df.copy().sort_values("date").reset_index(drop=True)
+
+    dates = sorted(str(value)[:10] for value in games["date"].dropna().unique())
+    if max_days is not None and max_days > 0:
+        dates = dates[-max_days:]
+
+    active_model_names = model_names or list(sport.get("models", []))
+    accuracy_log: dict[str, list[dict]] = {}
+    all_model_results: dict[str, list[dict]] = defaultdict(list)
+    scored_rows = []
+    daily = []
+
+    for current_date in dates:
+        train_matches = games[games["date"].astype(str).str[:10] < current_date].copy()
+        eval_matches = games[games["date"].astype(str).str[:10] == current_date].copy()
+        if len(train_matches) < min_training_games or eval_matches.empty:
+            continue
+
+        train_box = None
+        if box_scores_df is not None and not box_scores_df.empty:
+            train_box = box_scores_df[box_scores_df["date"].astype(str).str[:10] < current_date].copy()
+
+        models = _build_walkforward_models(sport_key, sport, train_matches, train_box, active_model_names)
+        day_rows = []
+        for _, row in eval_matches.iterrows():
+            fixture = row.to_dict()
+            blended, individual = _predict_walkforward_fixture(sport_key, sport, fixture, models, accuracy_log, active_model_names)
+            if blended is None:
+                continue
+
+            scored = evaluate_prediction(blended, int(row["home_goals"]), int(row["away_goals"]))
+            scored["brier"] = compute_brier_score(blended, int(row["home_goals"]), int(row["away_goals"]))
+            scored["date"] = current_date
+            scored["home_team"] = row["home_team"]
+            scored["away_team"] = row["away_team"]
+            scored["model_prob"] = round(float(blended.get(scored["predicted"], 0.0)), 4)
+            day_rows.append(scored)
+            scored_rows.append(scored)
+
+            for name, probs in individual.items():
+                result = evaluate_prediction(probs, int(row["home_goals"]), int(row["away_goals"]))
+                result["brier"] = compute_brier_score(probs, int(row["home_goals"]), int(row["away_goals"]))
+                update_accuracy_log(accuracy_log, name, result, window=sport.get("accuracy_window"))
+                all_model_results[name].append(result)
+
+        if day_rows:
+            cumulative = _summarize_scored_predictions(scored_rows)
+            daily.append({
+                "date": current_date,
+                "games": len(day_rows),
+                "predictions": _summarize_scored_predictions(day_rows),
+                "cumulative_predictions": cumulative,
+            })
+
+    model_summaries = {
+        name: _summarize_scored_predictions(results)
+        for name, results in sorted(all_model_results.items())
+        if results
+    }
+    return {
+        "sport": sport_key,
+        "name": sport.get("display_name", sport_key.upper()),
+        "dates_evaluated": len(daily),
+        "predictions": _summarize_scored_predictions(scored_rows),
+        "models": model_summaries,
+        "daily": daily,
+        "_scored_rows": scored_rows,
+    }
+
+
+def build_raw_walkforward_report(
+    data_dir: str = "data",
+    sports: list[str] | None = None,
+    max_days: int | None = None,
+    min_training_games: int = 20,
+) -> dict:
+    """Build a raw-data walk-forward replay report across sports."""
+    selected_sports = sports or list(SPORTS.keys())
+    sport_reports = {}
+    aggregate_rows = []
+
+    for sport_key in selected_sports:
+        matches, box_scores_df = _load_raw_walkforward_inputs(sport_key, data_dir=data_dir)
+        report = run_raw_walkforward_for_sport(
+            sport_key,
+            matches,
+            box_scores_df=box_scores_df,
+            max_days=max_days,
+            min_training_games=min_training_games,
+        )
+        sport_reports[sport_key] = report
+        aggregate_rows.extend(report.get("_scored_rows", []))
+
+    for report in sport_reports.values():
+        report.pop("_scored_rows", None)
+
+    return {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sports": sport_reports,
+        "aggregate": _summarize_scored_predictions(aggregate_rows),
+        "max_days": max_days,
+        "min_training_games": min_training_games,
+    }
 
 
 def build_walkforward_report(data_dir: str = "data", sports: list[str] | None = None, as_of: str | None = None) -> dict:
@@ -1037,9 +1415,19 @@ def main() -> None:
     parser.add_argument("sports", nargs="*", help="Optional sport keys to limit the report.")
     parser.add_argument("--data-dir", default="data", help="Directory containing per-sport pipeline outputs.")
     parser.add_argument("--walkforward", action="store_true", help="Emit the walk-forward replay report instead of the aggregate summary.")
+    parser.add_argument("--raw-walkforward", action="store_true", help="Replay models day by day from raw historical inputs.")
+    parser.add_argument("--max-days", type=int, default=None, help="Optional cap on replay days for raw walk-forward runs.")
+    parser.add_argument("--min-training-games", type=int, default=20, help="Minimum prior games required before evaluating a replay day.")
     args = parser.parse_args()
 
-    if args.walkforward:
+    if args.raw_walkforward:
+        report = build_raw_walkforward_report(
+            data_dir=args.data_dir,
+            sports=args.sports or None,
+            max_days=args.max_days,
+            min_training_games=args.min_training_games,
+        )
+    elif args.walkforward:
         report = build_walkforward_report(data_dir=args.data_dir, sports=args.sports or None)
     else:
         report = build_backtest_report(data_dir=args.data_dir, sports=args.sports or None)

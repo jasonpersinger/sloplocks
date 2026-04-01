@@ -539,13 +539,24 @@ Configured models live in `pipeline/config.py:138-160`.
   - Late-news handling is now based on game-specific injury state, not just generic roster listings.
   - That gives the model a better chance to react to day-of absences and uncertainties before lock.
 
+#### 37. Added a raw-data walk-forward replay harness
+
+- What changed:
+  - Added `build_raw_walkforward_report()` and `run_raw_walkforward_for_sport()` in `pipeline/backtest.py`.
+  - The new replay path fits sport-specific models on prior historical games only, then predicts each later day in order using rolling model-accuracy weights.
+  - Added CLI support via `python -m pipeline.backtest --raw-walkforward ...` plus focused coverage in `tests/test_backtest.py`.
+- Why it matters:
+  - The project now has an actual historical rebuild path over raw match inputs instead of only summaries over saved outputs and settled pick logs.
+  - That makes threshold and model tuning much less guess-driven, even though it still does not replay every live odds and injury snapshot perfectly.
+
 ## Future Improvements
 
-### 1. Rebuild historical model state from raw inputs day by day
+### 1. Deepen the raw replay toward full live-state parity
 
-`pipeline/backtest.py` now has a real replay over settled tracked outputs, but it still does not retrain or reconstruct each sport model from raw data one day at a time. The next step is a deeper replay script that:
+`pipeline/backtest.py` now has a raw-data walk-forward harness, but it still does not replay every live market and late-news input exactly as they existed historically. The next step is a deeper replay script that:
 
 - reconstruct the feature state as of each historical date
+- reconstruct the historical odds state per market, not just the game results state
 - run the live model logic against that state
 - compare generated picks to actual outcomes
 - emit ROI, Brier, log loss, and calibration curves by sport

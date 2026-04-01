@@ -3,11 +3,13 @@
 import json
 import math
 import os
+import pandas as pd
 import pytest
 
 from pipeline.backtest import (
     build_dashboard_data,
     build_backtest_report,
+    build_raw_walkforward_report,
     build_walkforward_report,
     build_threshold_guidance,
     compute_brier_score,
@@ -19,6 +21,7 @@ from pipeline.backtest import (
     summarize_pick_breakdowns,
     summarize_pick_history,
     summarize_prediction_history,
+    run_raw_walkforward_for_sport,
     update_accuracy_log,
 )
 from pipeline.config import ENSEMBLE_ACCURACY_WINDOW
@@ -401,3 +404,47 @@ class TestBacktestSummary:
 
         assert report["aggregate"]["predictions"]["evaluated"] == 1
         assert report["aggregate"]["picks"]["evaluated"] == 0
+
+    def test_run_raw_walkforward_for_sport(self):
+        matches = pd.DataFrame([
+            {"date": "2026-01-01", "home_team": "A", "away_team": "B", "home_goals": 1, "away_goals": 0},
+            {"date": "2026-01-02", "home_team": "A", "away_team": "C", "home_goals": 1, "away_goals": 0},
+            {"date": "2026-01-03", "home_team": "B", "away_team": "C", "home_goals": 0, "away_goals": 1},
+            {"date": "2026-01-04", "home_team": "A", "away_team": "B", "home_goals": 1, "away_goals": 0},
+        ])
+
+        report = run_raw_walkforward_for_sport(
+            "mma",
+            matches,
+            box_scores_df=None,
+            min_training_games=2,
+            model_names=["elo"],
+        )
+
+        assert report["dates_evaluated"] == 2
+        assert report["predictions"]["evaluated"] == 2
+        assert "elo" in report["models"]
+        assert report["daily"][-1]["cumulative_predictions"]["evaluated"] == 2
+
+    def test_build_raw_walkforward_report(self, monkeypatch):
+        matches = pd.DataFrame([
+            {"date": "2026-01-01", "home_team": "A", "away_team": "B", "home_goals": 110, "away_goals": 100},
+            {"date": "2026-01-02", "home_team": "A", "away_team": "C", "home_goals": 108, "away_goals": 101},
+            {"date": "2026-01-03", "home_team": "B", "away_team": "C", "home_goals": 99, "away_goals": 105},
+            {"date": "2026-01-04", "home_team": "A", "away_team": "B", "home_goals": 111, "away_goals": 102},
+        ])
+        monkeypatch.setattr(
+            "pipeline.backtest._load_raw_walkforward_inputs",
+            lambda sport_key, data_dir="data": (matches, None),
+        )
+
+        report = build_raw_walkforward_report(
+            data_dir="data",
+            sports=["nba"],
+            max_days=4,
+            min_training_games=2,
+        )
+
+        assert report["aggregate"]["evaluated"] == 2
+        assert "nba" in report["sports"]
+        assert report["sports"]["nba"]["predictions"]["evaluated"] == 2
