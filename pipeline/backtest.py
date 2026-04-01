@@ -274,6 +274,273 @@ def _calibration_bin_summary(rows: list[dict], bucket_size: float = 0.1) -> list
     return summary
 
 
+def _snapshot_pick_signature(record: dict) -> tuple | None:
+    """Build a stable comparison key for one saved pick."""
+    if not isinstance(record, dict):
+        return None
+    market_type = str(record.get("market_type") or "moneyline")
+    match_date = str(record.get("date") or record.get("match_date") or "")[:10]
+    total_line = record.get("total_line")
+    if total_line is not None:
+        total_line = round(float(total_line), 3)
+    return (
+        market_type,
+        record.get("home_team"),
+        record.get("away_team"),
+        match_date,
+        record.get("pick"),
+        total_line if market_type == "total" else None,
+    )
+
+
+def _snapshot_exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
+    """Mirror the production conflict filter for moneyline locks."""
+    def picked(lock):
+        return lock["home_team"] if lock["pick"] == "home" else lock["away_team"]
+
+    def unpicked(lock):
+        return lock["away_team"] if lock["pick"] == "home" else lock["home_team"]
+
+    unpicked_map = {unpicked(lock): lock for lock in locks}
+    to_remove = set()
+    for lock in locks:
+        picked_team = picked(lock)
+        other = unpicked_map.get(picked_team)
+        if other is None or other is lock:
+            continue
+        if float(lock.get("edge", 0.0)) <= float(other.get("edge", 0.0)):
+            to_remove.add(id(lock))
+        else:
+            to_remove.add(id(other))
+    return [lock for lock in locks if id(lock) not in to_remove]
+
+
+def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], config: dict) -> list[dict]:
+    """Recompute SLOP LOCKS from one saved snapshot."""
+    candidates = []
+    for rec in records:
+        if rec.get("completed"):
+            continue
+        for outcome in outcomes:
+            edge_data = (rec.get("edges") or {}).get(outcome)
+            if not edge_data:
+                continue
+            confidence = float(edge_data.get("confidence_score", 0.0) or 0.0)
+            edge = float(edge_data.get("edge", 0.0) or 0.0)
+            prob = float(edge_data.get("model_prob", 0.0) or 0.0)
+            ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+            if (
+                edge >= float(config.get("edge_floor", 0.03))
+                and prob >= float(config.get("probability_floor", 0.45))
+                and ev >= float(config.get("min_expected_value", 0.0))
+            ):
+                candidates.append({
+                    "market_type": "moneyline",
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": str(rec.get("date") or rec.get("match_date") or "")[:10],
+                    "pick": outcome,
+                    "edge": edge,
+                    "confidence_score": confidence,
+                })
+
+    candidates.sort(key=lambda item: (item["confidence_score"], item["edge"]), reverse=True)
+    if not candidates:
+        return []
+
+    selected = [candidates[0]]
+    top_confidence = candidates[0]["confidence_score"]
+    for candidate in candidates[1:]:
+        if len(selected) >= int(config.get("max_picks", 3)):
+            break
+        if (
+            candidate["confidence_score"] >= float(config.get("additional_confidence_floor", 65.0))
+            or candidate["confidence_score"] >= (top_confidence - float(config.get("confidence_dropoff", 0.0)))
+        ):
+            selected.append(candidate)
+    return _snapshot_exclude_opponent_conflicts(selected)
+
+
+def _snapshot_compute_longslop(records: list[dict], outcomes: list[str], config: dict) -> dict | None:
+    """Recompute LONGSLOP from one saved snapshot."""
+    candidates = []
+    for rec in records:
+        if rec.get("completed"):
+            continue
+        for outcome in outcomes:
+            edge_data = (rec.get("edges") or {}).get(outcome)
+            if not edge_data:
+                continue
+            american = edge_data.get("american_odds")
+            if american is None or float(american) < 500:
+                continue
+            confidence = float(edge_data.get("confidence_score", 0.0) or 0.0)
+            edge = float(edge_data.get("edge", 0.0) or 0.0)
+            ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+            if confidence >= float(config.get("confidence_floor", 65.0)) and edge >= 0.0 and ev >= float(config.get("min_expected_value", 0.0)):
+                candidates.append({
+                    "market_type": "moneyline",
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": str(rec.get("date") or rec.get("match_date") or "")[:10],
+                    "pick": outcome,
+                    "edge": edge,
+                    "confidence_score": confidence,
+                })
+    candidates.sort(key=lambda item: (item["confidence_score"], item["edge"]), reverse=True)
+    return candidates[0] if candidates else None
+
+
+def _snapshot_compute_totals_locks(records: list[dict], config: dict) -> list[dict]:
+    """Recompute totals locks from one saved snapshot."""
+    candidates = []
+    for rec in records:
+        if rec.get("completed"):
+            continue
+        for outcome in ("over", "under"):
+            edge_data = (rec.get("edges") or {}).get(outcome)
+            if not edge_data:
+                continue
+            edge = float(edge_data.get("edge", 0.0) or 0.0)
+            prob = float(edge_data.get("model_prob", 0.0) or 0.0)
+            ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+            confidence = float(edge_data.get("confidence_score", 0.0) or 0.0)
+            if (
+                edge >= float(config.get("edge_floor", 0.02))
+                and prob >= float(config.get("probability_floor", 0.53))
+                and ev >= float(config.get("min_expected_value", 0.0))
+                and confidence >= float(config.get("confidence_floor", 54.0))
+            ):
+                candidates.append({
+                    "market_type": "total",
+                    "home_team": rec["home_team"],
+                    "away_team": rec["away_team"],
+                    "date": str(rec.get("date") or rec.get("match_date") or "")[:10],
+                    "pick": outcome,
+                    "total_line": rec.get("total_line"),
+                    "edge": edge,
+                    "confidence_score": confidence,
+                    "expected_value": ev,
+                })
+    candidates.sort(
+        key=lambda item: (
+            item.get("confidence_score", 0.0),
+            item.get("expected_value", 0.0),
+            item.get("edge", 0.0),
+        ),
+        reverse=True,
+    )
+    return candidates[: int(config.get("max_picks", 3))]
+
+
+def _iter_snapshot_payloads(data_dir: str = "data", sports: list[str] | None = None) -> list[dict]:
+    """Load saved live-state snapshots from disk."""
+    root = os.path.join(data_dir, "tracking", "snapshots")
+    if not os.path.exists(root):
+        return []
+    selected_sports = set(sports or SPORTS.keys())
+    payloads = []
+    for current_root, _, files in os.walk(root):
+        for filename in files:
+            if not filename.endswith(".json"):
+                continue
+            path = os.path.join(current_root, filename)
+            try:
+                with open(path) as f:
+                    payload = json.load(f) or {}
+            except (OSError, json.JSONDecodeError):
+                continue
+            if payload.get("sport") not in selected_sports:
+                continue
+            payload["_path"] = path
+            payloads.append(payload)
+    payloads.sort(key=lambda item: (item.get("snapshot_timestamp") or "", item.get("sport") or "", item.get("run_id") or ""))
+    return payloads
+
+
+def _replay_snapshot_payload(snapshot: dict) -> dict:
+    """Replay official pick selection from one saved snapshot bundle."""
+    selection_config = snapshot.get("selection_config") or {}
+    outcomes = selection_config.get("outcomes") or snapshot.get("outcomes") or []
+    records = (snapshot.get("records") or {}).get("matches") or []
+    totals_records = (snapshot.get("records") or {}).get("totals_matches") or []
+    outputs = snapshot.get("outputs") or {}
+
+    replayed = []
+    replayed.extend(_snapshot_compute_slop_locks(records, outcomes, selection_config.get("slop_locks") or {}))
+    longslop = _snapshot_compute_longslop(records, outcomes, selection_config.get("longslop") or {})
+    if longslop:
+        replayed.append(longslop)
+    replayed.extend(_snapshot_compute_totals_locks(totals_records, selection_config.get("totals_locks") or {}))
+
+    expected = []
+    expected.extend(outputs.get("slop_locks") or [])
+    if isinstance(outputs.get("longslop"), dict):
+        expected.append(outputs["longslop"])
+    expected.extend(outputs.get("totals_locks") or [])
+
+    expected_signatures = sorted(filter(None, (_snapshot_pick_signature(item) for item in expected)))
+    replayed_signatures = sorted(filter(None, (_snapshot_pick_signature(item) for item in replayed)))
+    expected_set = set(expected_signatures)
+    replayed_set = set(replayed_signatures)
+
+    return {
+        "run_id": snapshot.get("run_id"),
+        "run_type": snapshot.get("run_type"),
+        "sport": snapshot.get("sport"),
+        "snapshot_timestamp": snapshot.get("snapshot_timestamp"),
+        "snapshot_path": snapshot.get("_path"),
+        "expected_count": len(expected_signatures),
+        "replayed_count": len(replayed_signatures),
+        "matched_count": len(expected_set & replayed_set),
+        "exact_match": expected_signatures == replayed_signatures,
+        "missing_in_replay": [list(item) for item in sorted(expected_set - replayed_set)],
+        "unexpected_in_replay": [list(item) for item in sorted(replayed_set - expected_set)],
+    }
+
+
+def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+    """Replay selection from saved snapshots instead of live fetchers."""
+    snapshots = _iter_snapshot_payloads(data_dir=data_dir, sports=sports)
+    sport_reports = defaultdict(lambda: {
+        "snapshots": 0,
+        "exact_matches": 0,
+        "exact_match_rate": None,
+        "mismatches": 0,
+        "recent_mismatches": [],
+    })
+    entries = []
+    for snapshot in snapshots:
+        replay = _replay_snapshot_payload(snapshot)
+        entries.append(replay)
+        sport_report = sport_reports[replay["sport"]]
+        sport_report["snapshots"] += 1
+        if replay["exact_match"]:
+            sport_report["exact_matches"] += 1
+        else:
+            sport_report["mismatches"] += 1
+            if len(sport_report["recent_mismatches"]) < 5:
+                sport_report["recent_mismatches"].append(replay)
+
+    for sport_report in sport_reports.values():
+        if sport_report["snapshots"] > 0:
+            sport_report["exact_match_rate"] = round(sport_report["exact_matches"] / sport_report["snapshots"], 4)
+
+    aggregate = {
+        "snapshots": len(entries),
+        "exact_matches": sum(1 for entry in entries if entry["exact_match"]),
+        "exact_match_rate": round(sum(1 for entry in entries if entry["exact_match"]) / len(entries), 4) if entries else None,
+        "mismatches": sum(1 for entry in entries if not entry["exact_match"]),
+    }
+    recent_mismatches = [entry for entry in reversed(entries) if not entry["exact_match"]][:5]
+    return {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "aggregate": aggregate,
+        "sports": dict(sport_reports),
+        "recent_mismatches": recent_mismatches,
+    }
+
+
 def _summarize_scored_predictions(rows: list[dict]) -> dict:
     """Summarize a list of already-scored prediction rows."""
     if not rows:
@@ -1247,6 +1514,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
     selected_sports = sports or list(SPORTS.keys())
     report = build_backtest_report(data_dir=data_dir, sports=selected_sports)
     walkforward = build_walkforward_report(data_dir=data_dir, sports=selected_sports, as_of=as_of)
+    snapshot_replay = build_snapshot_replay_report(data_dir=data_dir, sports=selected_sports)
 
     manifest_path = os.path.join(data_dir, "manifest.json")
     manifest = {}
@@ -1323,6 +1591,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
             "calibration": walkforward.get("aggregate", {}).get("calibration", []),
             "recent_days": walkforward.get("daily", [])[-7:],
         },
+        "snapshot_replay": snapshot_replay,
         "recommended_actions": _build_recommended_actions(report, manifest, windows, leaders),
         "insights": _build_dashboard_insights(report, manifest, windows, leaders),
     }
@@ -1416,6 +1685,7 @@ def main() -> None:
     parser.add_argument("--data-dir", default="data", help="Directory containing per-sport pipeline outputs.")
     parser.add_argument("--walkforward", action="store_true", help="Emit the walk-forward replay report instead of the aggregate summary.")
     parser.add_argument("--raw-walkforward", action="store_true", help="Replay models day by day from raw historical inputs.")
+    parser.add_argument("--snapshot-replay", action="store_true", help="Replay pick selection from saved live-state snapshots.")
     parser.add_argument("--max-days", type=int, default=None, help="Optional cap on replay days for raw walk-forward runs.")
     parser.add_argument("--min-training-games", type=int, default=20, help="Minimum prior games required before evaluating a replay day.")
     args = parser.parse_args()
@@ -1427,6 +1697,8 @@ def main() -> None:
             max_days=args.max_days,
             min_training_games=args.min_training_games,
         )
+    elif args.snapshot_replay:
+        report = build_snapshot_replay_report(data_dir=args.data_dir, sports=args.sports or None)
     elif args.walkforward:
         report = build_walkforward_report(data_dir=args.data_dir, sports=args.sports or None)
     else:

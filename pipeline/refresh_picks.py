@@ -40,6 +40,8 @@ from pipeline.fetch_mlb import fetch_mlb_schedule
 from pipeline.fetch_mma import normalize_mma_name
 from pipeline.run import (
     _append_odds_snapshot_log,
+    _attach_run_metadata,
+    _attach_run_metadata_list,
     _apply_mlb_bullpen_availability_adjustment,
     _apply_mlb_bullpen_total_adjustment,
     _apply_mlb_lineup_adjustment,
@@ -52,6 +54,7 @@ from pipeline.run import (
     _apply_nhl_goalie_status_adjustment,
     _apply_latest_market_snapshots,
     _build_pipeline_diagnostics,
+    _build_run_context,
     _build_odds_snapshot_rows,
     _compute_slimegrinder as _run_compute_slimegrinder,
     _compute_slop_locks as _run_compute_slop_locks,
@@ -60,6 +63,9 @@ from pipeline.run import (
     _load_latest_odds_snapshots,
     _lookup_match_odds,
     _save_json,
+    _selection_snapshot_config,
+    _snapshot_relative_path,
+    _write_run_snapshot,
 )
 
 _NORMALIZERS = {
@@ -124,11 +130,12 @@ def _merge_live_fixture(record: dict, live_fixture: dict | None) -> dict:
     return merged
 
 
-def refresh_sport(sport_key: str) -> None:
+def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
     """Refresh odds and slop locks for one sport.
 
     Returns None if predictions.json doesn't exist for this sport.
     """
+    run_context = dict(run_context or _build_run_context(run_type="refresh"))
     sport = SPORTS[sport_key]
     data_path = Path(f"data/{sport_key}/predictions.json")
     if not data_path.exists():
@@ -361,6 +368,15 @@ def refresh_sport(sport_key: str) -> None:
         confidence_floor=sport.get("totals_confidence_threshold", 54.0),
         max_picks=sport.get("totals_max_picks", 3),
     ) if totals_matches else []
+    snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
+    selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
+    _attach_run_metadata_list(matches, run_context, snapshot_relpath)
+    _attach_run_metadata_list(totals_matches, run_context, snapshot_relpath)
+    _attach_run_metadata_list(slop_locks, run_context, snapshot_relpath)
+    _attach_run_metadata_list(slimegrinder, run_context, snapshot_relpath)
+    _attach_run_metadata_list(totals_locks, run_context, snapshot_relpath)
+    if isinstance(data.get("longslop"), dict):
+        _attach_run_metadata(data["longslop"], run_context, snapshot_relpath)
     in_window = sum(
         1 for s in slop_locks
         if SLOP_LOCK_MIN_ODDS <= s["american_odds"] <= SLOP_LOCK_MAX_ODDS
@@ -373,6 +389,11 @@ def refresh_sport(sport_key: str) -> None:
     data["totals_locks"] = totals_locks
     data["slimegrinder"] = slimegrinder
     data["updated_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    data["run_id"] = run_context.get("run_id")
+    data["run_type"] = run_context.get("run_type")
+    data["snapshot_timestamp"] = run_context.get("run_timestamp")
+    data["snapshot_path"] = snapshot_relpath
+    data["selection_config"] = selection_config
 
     diagnostics = _build_pipeline_diagnostics(
         matches=pd.DataFrame(),
@@ -401,10 +422,49 @@ def refresh_sport(sport_key: str) -> None:
         if isinstance(picks, list):
             _apply_latest_market_snapshots(picks, latest_snapshots)
             pick_history["picks"] = picks
+            pick_history["run_id"] = run_context.get("run_id")
+            pick_history["run_type"] = run_context.get("run_type")
+            pick_history["snapshot_timestamp"] = run_context.get("run_timestamp")
+            pick_history["snapshot_path"] = snapshot_relpath
             _save_json(str(pick_history_path), pick_history)
 
     with data_path.open("w") as f:
         json.dump(data, f, indent=2)
+
+    _write_run_snapshot(
+        str(data_path.parent.parent),
+        sport_key,
+        run_context,
+        {
+            "snapshot_version": 1,
+            "generated_at": data["updated_at"],
+            "sport": sport_key,
+            "sport_name": sport["display_name"],
+            "run_id": run_context.get("run_id"),
+            "run_type": run_context.get("run_type"),
+            "snapshot_timestamp": run_context.get("run_timestamp"),
+            "selection_config": selection_config,
+            "outcomes": outcomes,
+            "inputs": {
+                "fixtures_fetched": live_fixtures,
+                "fixtures_in_window": live_fixtures,
+                "odds": odds_list,
+                "model_weights": model_weights,
+                "models": sorted(model_weights.keys()),
+            },
+            "records": {
+                "matches": matches,
+                "totals_matches": totals_matches,
+            },
+            "outputs": {
+                "slop_locks": slop_locks,
+                "totals_locks": totals_locks,
+                "slimegrinder": slimegrinder,
+                "longslop": data.get("longslop"),
+            },
+            "diagnostics": diagnostics,
+        },
+    )
 
     print(
         f"  {sport_key}: {matches_with_odds} matches with odds → "
@@ -415,12 +475,13 @@ def refresh_sport(sport_key: str) -> None:
 
 def main() -> None:
     sports = sys.argv[1:] if len(sys.argv) > 1 else list(SPORTS.keys())
+    run_context = _build_run_context(run_type="refresh")
     print(f"Refreshing picks for: {', '.join(sports)}")
     succeeded = 0
     failed = []
     for sport_key in sports:
         try:
-            refresh_sport(sport_key)
+            refresh_sport(sport_key, run_context=run_context)
             succeeded += 1
         except Exception as exc:
             failed.append((sport_key, str(exc)))

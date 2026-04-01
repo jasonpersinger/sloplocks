@@ -26,6 +26,7 @@ The live pipeline runs through `pipeline/run.py:647-1169`.
 6. Odds-aware edges, EV, Kelly fractions, and confidence scores are computed in `pipeline/ensemble.py:210-276`.
 7. Picks are filtered into `slop_locks`, `longslop`, and `slimegrinder` in `pipeline/run.py:445-605`.
 8. Resolved predictions and picks feed `history.json`, `pick_history.json`, `model_accuracy.json`, and the persistent CSV log at `data/tracking/results_log.csv` through `pipeline/run.py:87-183` and `pipeline/run.py:981-1128`.
+9. Full runs and refresh runs now persist live-state snapshots under `data/tracking/snapshots/YYYY-MM-DD/<sport>/<run_id>.json`, carrying the exact modeled records, live odds, diagnostics, and selection config used for that execution.
 
 ### Feature inventory by sport
 
@@ -166,8 +167,8 @@ Configured models live in `pipeline/config.py:138-160`.
   - `summarize_prediction_history()` in `pipeline/backtest.py:172-201`
   - `summarize_pick_history()` in `pipeline/backtest.py:204-227`
   - CLI report builder in `pipeline/backtest.py:230-285`
-- Ongoing post-result logging now persists resolved predictions and picks to `data/tracking/results_log.csv` through `pipeline/run.py:87-183`.
-- The stack now has a true date-ordered replay layer over settled tracked outputs in `pipeline/backtest.py`, including daily cumulative prediction accuracy, pick ROI, and calibration bins. It still does not retrain the underlying sport models from raw inputs for every historical date, but it is no longer limited to static aggregate summaries.
+- Ongoing post-result logging now persists resolved predictions and picks to `data/tracking/results_log.csv` through `pipeline/run.py:87-183`, and those rows now carry `run_id`, `run_type`, `snapshot_timestamp`, and `snapshot_path` metadata so picks can be traced back to the exact execution that created them.
+- The stack now has a true date-ordered replay layer over settled tracked outputs in `pipeline/backtest.py`, including daily cumulative prediction accuracy, pick ROI, and calibration bins. It also now has snapshot-replay support that replays official-pick selection from saved live-state bundles instead of using today's fetchers.
 
 ## Changes Implemented
 
@@ -549,19 +550,44 @@ Configured models live in `pipeline/config.py:138-160`.
   - The project now has an actual historical rebuild path over raw match inputs instead of only summaries over saved outputs and settled pick logs.
   - That makes threshold and model tuning much less guess-driven, even though it still does not replay every live odds and injury snapshot perfectly.
 
+#### 38. Added live-state snapshot persistence for full runs and refreshes
+
+- What changed:
+  - `pipeline/run.py` now generates a shared `run_id` / `run_type` context, writes per-sport snapshot bundles under `data/tracking/snapshots/...`, and tags predictions, picks, and outputs with snapshot metadata.
+  - `pipeline/refresh_picks.py` now uses the same run-context pattern and persists refresh snapshots with the live fixtures, odds payloads, recalculated records, diagnostics, and selection gates used during that refresh.
+- Why it matters:
+  - The system now preserves the actual live inputs that produced each card instead of only the final picks.
+  - That is the foundation required for true historical parity checks and for debugging “what did the model know at the time?” questions.
+
+#### 39. Added run metadata to tracked picks and resolved results
+
+- What changed:
+  - `pick_history.json`, `predictions.json`, and `history.json` now record `run_id`, `run_type`, `snapshot_timestamp`, and `snapshot_path`.
+  - `data/tracking/results_log.csv` now stores the same metadata for resolved predictions and picks.
+- Why it matters:
+  - Historical performance is now traceable to a specific daily run or refresh run.
+  - That makes debugging late-day drift and comparing daily vs refresh behavior much easier.
+
+#### 40. Added snapshot-replay reporting and dashboard parity visibility
+
+- What changed:
+  - `pipeline/backtest.py` now has `build_snapshot_replay_report()` plus CLI support via `python -m pipeline.backtest --snapshot-replay`.
+  - `data/dashboard.json` now includes a `snapshot_replay` section, and `index.html` renders a dedicated parity block in the dashboard.
+- Why it matters:
+  - The reporting layer can now verify whether the current selection logic reproduces the official picks that were saved in each snapshot bundle.
+  - That gives the project a real production-parity check instead of relying only on aggregate outcome summaries.
+
 ## Future Improvements
 
-### 1. Deepen the raw replay toward full live-state parity
+### 1. Deepen snapshot replay from selection parity to full feature parity
 
-`pipeline/backtest.py` now has a raw-data walk-forward harness, but it still does not replay every live market and late-news input exactly as they existed historically. The next step is a deeper replay script that:
+The stack now persists live-state snapshots and can replay official pick selection from those bundles, but it still does not fully recompute every upstream feature from the saved raw payloads. The next step is to:
 
-- reconstruct the feature state as of each historical date
-- reconstruct the historical odds state per market, not just the game results state
-- run the live model logic against that state
-- compare generated picks to actual outcomes
-- emit ROI, Brier, log loss, and calibration curves by sport
+- rebuild probabilities directly from saved snapshot inputs instead of reusing saved modeled records
+- replay late-news adjustments exactly as they were applied at the time
+- compare regenerated probabilities and picks against both the saved snapshot output and the eventual result
 
-Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, all `pipeline/fetch_*.py` modules.
+Primary touchpoints: `pipeline/backtest.py`, `pipeline/run.py`, `pipeline/refresh_picks.py`, all `pipeline/fetch_*.py` modules.
 
 ### 2. Add truly confirmed batting-order quality and bullpen-role context to MLB
 

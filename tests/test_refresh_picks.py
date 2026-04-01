@@ -104,6 +104,9 @@ def test_refresh_nba_updates_live_metadata_and_preserves_baseline(monkeypatch, t
     assert match["home_availability_profile"]["available_core_players"] == 12
     assert data["totals_matches"][0]["base_expected_total"] == 224.0
     assert data["diagnostics"]["historical_matches"] == 100
+    assert data["run_type"] == "refresh"
+    assert data["snapshot_path"].endswith(".json")
+    assert (tmp_path / "data" / data["snapshot_path"]).exists()
 
 
 def test_refresh_nhl_updates_goalie_metadata(monkeypatch, tmp_path):
@@ -225,7 +228,7 @@ def test_main_continues_when_one_sport_refresh_fails(monkeypatch, tmp_path, caps
     (tmp_path / "data").mkdir()
     calls = []
 
-    def fake_refresh(sport_key):
+    def fake_refresh(sport_key, run_context=None):
         calls.append(sport_key)
         if sport_key == "nhl":
             raise RuntimeError("bad live payload")

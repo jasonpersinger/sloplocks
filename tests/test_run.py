@@ -301,6 +301,12 @@ class TestRunNBAPipeline:
         with open(os.path.join(output_dir, "pick_history.json")) as f:
             pick_history = json.load(f)
         assert any(pick["type"] == "total_lock" for pick in pick_history["picks"])
+        assert data["run_type"] == "manual"
+        assert data["run_id"]
+        assert data["snapshot_path"].endswith(".json")
+        assert os.path.exists(os.path.join(tmp_path, data["snapshot_path"]))
+        assert pick_history["run_id"] == data["run_id"]
+        assert all(pick.get("snapshot_path") == data["snapshot_path"] for pick in pick_history["picks"])
 
 
 class TestRunMMAPipeline:

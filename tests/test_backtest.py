@@ -10,6 +10,7 @@ from pipeline.backtest import (
     build_dashboard_data,
     build_backtest_report,
     build_raw_walkforward_report,
+    build_snapshot_replay_report,
     build_walkforward_report,
     build_threshold_guidance,
     compute_brier_score,
@@ -359,6 +360,104 @@ class TestBacktestSummary:
         assert dashboard["insights"]
         assert "walkforward" in dashboard
         assert "calibration" in dashboard["walkforward"]
+        assert dashboard["snapshot_replay"]["aggregate"]["snapshots"] == 0
+
+    def test_build_snapshot_replay_report(self, tmp_path):
+        data_dir = tmp_path / "data"
+        snapshot_dir = data_dir / "tracking" / "snapshots" / "2026-03-29" / "nba"
+        snapshot_dir.mkdir(parents=True)
+
+        payload = {
+            "sport": "nba",
+            "run_id": "daily-20260329T120000000000Z",
+            "run_type": "daily",
+            "snapshot_timestamp": "2026-03-29T12:00:00Z",
+            "outcomes": ["home", "away"],
+            "selection_config": {
+                "outcomes": ["home", "away"],
+                "slop_locks": {
+                    "min_expected_value": 0.0,
+                    "edge_floor": 0.03,
+                    "probability_floor": 0.45,
+                    "additional_confidence_floor": 65.0,
+                    "confidence_dropoff": 0.0,
+                    "max_picks": 3,
+                },
+                "longslop": {"min_expected_value": 0.0, "confidence_floor": 65.0},
+                "totals_locks": {
+                    "min_expected_value": 0.0,
+                    "edge_floor": 0.02,
+                    "probability_floor": 0.53,
+                    "confidence_floor": 54.0,
+                    "max_picks": 3,
+                },
+            },
+            "records": {
+                "matches": [
+                    {
+                        "home_team": "Lakers",
+                        "away_team": "Warriors",
+                        "date": "2026-03-29",
+                        "edges": {
+                            "home": {
+                                "edge": 0.07,
+                                "model_prob": 0.6,
+                                "expected_value": 0.08,
+                                "confidence_score": 70.0,
+                            }
+                        },
+                    }
+                ],
+                "totals_matches": [
+                    {
+                        "home_team": "Lakers",
+                        "away_team": "Warriors",
+                        "date": "2026-03-29",
+                        "total_line": 224.5,
+                        "edges": {
+                            "over": {
+                                "edge": 0.03,
+                                "model_prob": 0.56,
+                                "expected_value": 0.04,
+                                "confidence_score": 58.0,
+                            }
+                        },
+                    }
+                ],
+            },
+            "outputs": {
+                "slop_locks": [
+                    {
+                        "market_type": "moneyline",
+                        "home_team": "Lakers",
+                        "away_team": "Warriors",
+                        "date": "2026-03-29",
+                        "pick": "home",
+                    }
+                ],
+                "totals_locks": [
+                    {
+                        "market_type": "total",
+                        "home_team": "Lakers",
+                        "away_team": "Warriors",
+                        "date": "2026-03-29",
+                        "pick": "over",
+                        "total_line": 224.5,
+                    }
+                ],
+                "longslop": None,
+            },
+        }
+
+        with open(snapshot_dir / "daily-20260329T120000000000Z.json", "w") as f:
+            json.dump(payload, f)
+
+        report = build_snapshot_replay_report(str(data_dir), sports=["nba"])
+
+        assert report["aggregate"]["snapshots"] == 1
+        assert report["aggregate"]["exact_matches"] == 1
+        assert report["aggregate"]["exact_match_rate"] == pytest.approx(1.0)
+        assert report["sports"]["nba"]["snapshots"] == 1
 
     def test_build_walkforward_report(self, tmp_path):
         data_dir = tmp_path / "data"

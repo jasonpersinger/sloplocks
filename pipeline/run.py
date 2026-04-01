@@ -135,8 +135,15 @@ def _resolve_start_time(fixture: dict, match_odds: dict | None) -> str | None:
     return None
 
 
+_SNAPSHOT_VERSION = 1
+
+
 _RESULTS_LOG_FIELDS = [
     "logged_at",
+    "run_id",
+    "run_type",
+    "snapshot_timestamp",
+    "snapshot_path",
     "sport",
     "entry_type",
     "market_type",
@@ -196,6 +203,87 @@ def _odds_history_path(base_dir: str) -> str:
     return os.path.join(base_dir, TRACKING_DIRNAME, ODDS_HISTORY_FILENAME)
 
 
+def _snapshot_root_dir(base_dir: str) -> str:
+    """Return the directory that stores persisted live-state snapshots."""
+    return os.path.join(base_dir, TRACKING_DIRNAME, "snapshots")
+
+
+def _build_run_context(run_type: str = "manual", now: datetime | None = None) -> dict:
+    """Build metadata for one pipeline or refresh execution."""
+    now = now or datetime.now(timezone.utc)
+    return {
+        "run_id": f"{run_type}-{now.strftime('%Y%m%dT%H%M%S%fZ')}",
+        "run_type": run_type,
+        "run_timestamp": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }
+
+
+def _snapshot_relative_path(sport_key: str, run_context: dict) -> str:
+    """Return the relative JSON path for one sport snapshot."""
+    run_date = str(run_context.get("run_timestamp") or "")[:10] or datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    return os.path.join("tracking", "snapshots", run_date, sport_key, f"{run_context['run_id']}.json")
+
+
+def _snapshot_full_path(base_dir: str, sport_key: str, run_context: dict) -> str:
+    """Return the absolute JSON path for one sport snapshot."""
+    return os.path.join(base_dir, _snapshot_relative_path(sport_key, run_context))
+
+
+def _attach_run_metadata(record: dict, run_context: dict, snapshot_path: str | None) -> dict:
+    """Attach stable run metadata to one record."""
+    if not isinstance(record, dict):
+        return record
+    record["run_id"] = run_context.get("run_id")
+    record["run_type"] = run_context.get("run_type")
+    record["snapshot_timestamp"] = run_context.get("run_timestamp")
+    record["snapshot_path"] = snapshot_path
+    return record
+
+
+def _attach_run_metadata_list(records: list[dict], run_context: dict, snapshot_path: str | None) -> list[dict]:
+    """Attach run metadata to each record in a list."""
+    for record in records:
+        _attach_run_metadata(record, run_context, snapshot_path)
+    return records
+
+
+def _selection_snapshot_config(sport: dict, outcomes: list[str], min_expected_value: float) -> dict:
+    """Capture the selection gates used by this run."""
+    return {
+        "outcomes": list(outcomes),
+        "slop_locks": {
+            "min_expected_value": min_expected_value,
+            "edge_floor": sport.get("slop_lock_edge_threshold", 0.03),
+            "probability_floor": sport.get("slop_lock_probability_floor", 0.45),
+            "additional_confidence_floor": sport.get("slop_lock_confidence_threshold", 65.0),
+            "confidence_dropoff": sport.get("slop_lock_confidence_dropoff", 0.0),
+            "max_picks": sport.get("slop_lock_max_picks", 3),
+        },
+        "longslop": {
+            "min_expected_value": min_expected_value,
+            "confidence_floor": sport.get("longslop_confidence_threshold", 65.0),
+        },
+        "slimegrinder": {
+            "min_expected_value": min_expected_value,
+            "confidence_floor": sport.get("slimegrinder_confidence_threshold", 65.0),
+        },
+        "totals_locks": {
+            "min_expected_value": sport.get("totals_min_expected_value", min_expected_value),
+            "edge_floor": sport.get("totals_edge_threshold", 0.02),
+            "probability_floor": sport.get("totals_probability_floor", 0.53),
+            "confidence_floor": sport.get("totals_confidence_threshold", 54.0),
+            "max_picks": sport.get("totals_max_picks", 3),
+        },
+    }
+
+
+def _write_run_snapshot(base_dir: str, sport_key: str, run_context: dict, snapshot_payload: dict) -> str:
+    """Persist a live-state snapshot and return its relative path."""
+    snapshot_path = _snapshot_full_path(base_dir, sport_key, run_context)
+    _save_json(snapshot_path, snapshot_payload)
+    return _snapshot_relative_path(sport_key, run_context)
+
+
 def _results_log_key(row: dict) -> tuple:
     """Stable dedupe key for results-log rows."""
     return (
@@ -216,6 +304,10 @@ def _build_results_log_row(sport_key: str, entry_type: str, record: dict, match_
     push = actual == "push" or bool(record.get("push"))
     return {
         "logged_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_id": record.get("run_id"),
+        "run_type": record.get("run_type"),
+        "snapshot_timestamp": record.get("snapshot_timestamp"),
+        "snapshot_path": record.get("snapshot_path"),
         "sport": sport_key,
         "entry_type": entry_type,
         "market_type": market_type,
@@ -1589,7 +1681,7 @@ def _print_pipeline_diagnostics(sport_key: str, diagnostics: dict) -> None:
 # Per-sport pipeline
 # ---------------------------------------------------------------------------
 
-def run_sport_pipeline(sport_key, output_dir=None):
+def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     """Run prediction pipeline for a single sport.
 
     Parameters
@@ -1599,15 +1691,17 @@ def run_sport_pipeline(sport_key, output_dir=None):
     output_dir : str or None
         Override the sport's data directory.
     """
+    run_context = dict(run_context or _build_run_context())
     sport = SPORTS[sport_key]
     sport_dir = output_dir or sport["data_dir"]
+    base_dir = os.path.dirname(sport_dir)
     outcomes = sport["outcomes"]
 
     predictions_path = os.path.join(sport_dir, "predictions.json")
     history_path = os.path.join(sport_dir, "history.json")
     accuracy_path = os.path.join(sport_dir, "model_accuracy.json")
-    results_log_path = _results_log_path(os.path.dirname(sport_dir))
-    odds_history_path = _odds_history_path(os.path.dirname(sport_dir))
+    results_log_path = _results_log_path(base_dir)
+    odds_history_path = _odds_history_path(base_dir)
 
     # ------------------------------------------------------------------
     # 1. Fetch data (sport-specific)
@@ -2317,6 +2411,16 @@ def run_sport_pipeline(sport_key, output_dir=None):
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
     longslop = _generate_blurbs(longslop, pick_type="longslop")
 
+    snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
+    selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
+    _attach_run_metadata_list(prediction_records, run_context, snapshot_relpath)
+    _attach_run_metadata_list(totals_prediction_records, run_context, snapshot_relpath)
+    _attach_run_metadata_list(slop_locks, run_context, snapshot_relpath)
+    _attach_run_metadata_list(slimegrinder, run_context, snapshot_relpath)
+    _attach_run_metadata_list(totals_locks, run_context, snapshot_relpath)
+    if isinstance(longslop, dict):
+        _attach_run_metadata(longslop, run_context, snapshot_relpath)
+
     result_lookup = {}
     if matches is not None and not matches.empty:
         for _, row in matches.iterrows():
@@ -2447,6 +2551,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "confidence_score": lock.get("confidence_score"),
                 "kelly_fraction": lock.get("kelly_fraction"),
                 "fractional_kelly": lock.get("fractional_kelly"),
+                "run_id": run_context.get("run_id"),
+                "run_type": run_context.get("run_type"),
+                "snapshot_timestamp": run_context.get("run_timestamp"),
+                "snapshot_path": snapshot_relpath,
                 "evaluated": False,
             })
 
@@ -2473,6 +2581,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "confidence_score": longslop.get("confidence_score"),
                 "kelly_fraction": longslop.get("kelly_fraction"),
                 "fractional_kelly": longslop.get("fractional_kelly"),
+                "run_id": run_context.get("run_id"),
+                "run_type": run_context.get("run_type"),
+                "snapshot_timestamp": run_context.get("run_timestamp"),
+                "snapshot_path": snapshot_relpath,
                 "evaluated": False,
             })
 
@@ -2501,6 +2613,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
                 "confidence_score": total_lock.get("confidence_score"),
                 "kelly_fraction": total_lock.get("kelly_fraction"),
                 "fractional_kelly": total_lock.get("fractional_kelly"),
+                "run_id": run_context.get("run_id"),
+                "run_type": run_context.get("run_type"),
+                "snapshot_timestamp": run_context.get("run_timestamp"),
+                "snapshot_path": snapshot_relpath,
                 "evaluated": False,
             })
 
@@ -2508,6 +2624,10 @@ def run_sport_pipeline(sport_key, output_dir=None):
 
     pick_history = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_id": run_context.get("run_id"),
+        "run_type": run_context.get("run_type"),
+        "snapshot_timestamp": run_context.get("run_timestamp"),
+        "snapshot_path": snapshot_relpath,
         "picks": past_picks,
     }
     _save_json(pick_history_path, pick_history)
@@ -2539,22 +2659,8 @@ def run_sport_pipeline(sport_key, output_dir=None):
     # ------------------------------------------------------------------
     # 8. Write output files
     # ------------------------------------------------------------------
-    predictions_output = {
-        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "sport": sport_key,
-        "sport_name": sport["display_name"],
-        "outcomes": outcomes,
-        "slop_locks": slop_locks,
-        "totals_locks": totals_locks,
-        "slimegrinder": slimegrinder,
-        "longslop": longslop,
-        "matches": prediction_records,
-        "totals_matches": totals_prediction_records,
-        "season_stats": season_stats,
-        "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
-        "pick_stats": pick_stats,
-    }
-    predictions_output["diagnostics"] = _build_pipeline_diagnostics(
+    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    diagnostics = _build_pipeline_diagnostics(
         matches=matches,
         fixtures_fetched=fixtures_fetched,
         fixtures_in_window=fixtures,
@@ -2568,6 +2674,28 @@ def run_sport_pipeline(sport_key, output_dir=None):
         longslop=longslop,
         slimegrinder=slimegrinder,
     )
+
+    predictions_output = {
+        "generated_at": generated_at,
+        "run_id": run_context.get("run_id"),
+        "run_type": run_context.get("run_type"),
+        "snapshot_timestamp": run_context.get("run_timestamp"),
+        "snapshot_path": snapshot_relpath,
+        "sport": sport_key,
+        "sport_name": sport["display_name"],
+        "outcomes": outcomes,
+        "slop_locks": slop_locks,
+        "totals_locks": totals_locks,
+        "slimegrinder": slimegrinder,
+        "longslop": longslop,
+        "matches": prediction_records,
+        "totals_matches": totals_prediction_records,
+        "season_stats": season_stats,
+        "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
+        "pick_stats": pick_stats,
+        "selection_config": selection_config,
+        "diagnostics": diagnostics,
+    }
     _save_json(predictions_path, predictions_output)
 
     # Deduplicate: only add prediction_records not already in history
@@ -2583,12 +2711,51 @@ def run_sport_pipeline(sport_key, output_dir=None):
     ]
 
     history_output = {
-        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "updated_at": generated_at,
+        "run_id": run_context.get("run_id"),
+        "run_type": run_context.get("run_type"),
+        "snapshot_timestamp": run_context.get("run_timestamp"),
+        "snapshot_path": snapshot_relpath,
         "predictions": updated_past + new_predictions,
     }
     _save_json(history_path, history_output)
 
     _save_json(accuracy_path, accuracy_log)
+
+    _write_run_snapshot(
+        base_dir,
+        sport_key,
+        run_context,
+        {
+            "snapshot_version": _SNAPSHOT_VERSION,
+            "generated_at": generated_at,
+            "sport": sport_key,
+            "sport_name": sport["display_name"],
+            "run_id": run_context.get("run_id"),
+            "run_type": run_context.get("run_type"),
+            "snapshot_timestamp": run_context.get("run_timestamp"),
+            "selection_config": selection_config,
+            "outcomes": outcomes,
+            "inputs": {
+                "fixtures_fetched": fixtures_fetched,
+                "fixtures_in_window": fixtures,
+                "odds": odds_list,
+                "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
+                "models": list(model_weight_dict.keys()),
+            },
+            "records": {
+                "matches": prediction_records,
+                "totals_matches": totals_prediction_records,
+            },
+            "outputs": {
+                "slop_locks": slop_locks,
+                "totals_locks": totals_locks,
+                "slimegrinder": slimegrinder,
+                "longslop": longslop,
+            },
+            "diagnostics": diagnostics,
+        },
+    )
 
     _print_pipeline_diagnostics(sport_key, predictions_output["diagnostics"])
 
@@ -2610,6 +2777,7 @@ def run_pipeline(output_dir=None):
     """
     base_dir = output_dir or DATA_DIR
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    run_context = _build_run_context(run_type="daily")
 
     manifest = {
         "updated_at": now,
@@ -2619,7 +2787,7 @@ def run_pipeline(output_dir=None):
     for sport_key in SPORTS:
         sport_dir = os.path.join(base_dir, sport_key) if output_dir else None
         try:
-            sport_output = run_sport_pipeline(sport_key, output_dir=sport_dir)
+            sport_output = run_sport_pipeline(sport_key, output_dir=sport_dir, run_context=run_context)
             manifest["sports"][sport_key] = {
                 "name": SPORTS[sport_key]["display_name"],
                 "status": "ok",
