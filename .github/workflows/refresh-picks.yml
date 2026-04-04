@@ -44,12 +44,6 @@ jobs:
           git pull --rebase origin master -X ours
           git push origin master
 
-      - name: Deploy Site To Netlify
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-        run: npx netlify deploy --prod --dir . --site "$NETLIFY_SITE_ID" --message "refresh picks $(date -u +%Y-%m-%dT%H:%MZ)"
-
       - name: Notify Discord
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
