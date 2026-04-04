@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-04T12:44:37Z",
+  "generated_at": "2026-04-04T21:29:26Z",
   "manifest_updated_at": "2026-04-04T12:40:51Z",
   "aggregate": {
     "record": {
@@ -10,7 +10,7 @@
       "roi": 0.2459,
       "avg_confidence": 73.6876,
       "avg_expected_value": 0.1248,
-      "avg_clv": 0.1782
+      "avg_clv": -0.4181
     },
     "predictions": {
       "evaluated": 580,
@@ -34,9 +34,9 @@
           "avg_expected_value": 0.1118,
           "clv": {
             "tracked": 46,
-            "avg_clv": -0.0208,
-            "positive_rate": 0.3261,
-            "non_negative_rate": 0.3261
+            "avg_clv": -0.0278,
+            "positive_rate": 0.3478,
+            "non_negative_rate": 0.3478
           }
         },
         "total_lock": {
@@ -53,9 +53,9 @@
           "avg_expected_value": 0.1466,
           "clv": {
             "tracked": 30,
-            "avg_clv": 0.4833,
-            "positive_rate": 0.4,
-            "non_negative_rate": 0.8
+            "avg_clv": -1.0167,
+            "positive_rate": 0.4333,
+            "non_negative_rate": 0.7
           }
         }
       },
@@ -74,9 +74,9 @@
           "avg_expected_value": 0.1118,
           "clv": {
             "tracked": 46,
-            "avg_clv": -0.0208,
-            "positive_rate": 0.3261,
-            "non_negative_rate": 0.3261
+            "avg_clv": -0.0278,
+            "positive_rate": 0.3478,
+            "non_negative_rate": 0.3478
           }
         },
         "total": {
@@ -93,15 +93,15 @@
           "avg_expected_value": 0.1466,
           "clv": {
             "tracked": 30,
-            "avg_clv": 0.4833,
-            "positive_rate": 0.4,
-            "non_negative_rate": 0.8
+            "avg_clv": -1.0167,
+            "positive_rate": 0.4333,
+            "non_negative_rate": 0.7
           }
         }
       }
     },
     "threshold_guidance": [
-      "Current thresholds look healthy; do not loosen until a larger tracked sample confirms the edge."
+      "Results are positive but CLV is weak; keep thresholds steady and watch for regression."
     ],
     "slate": {
       "modeled": 49,
@@ -127,9 +127,9 @@
       "avg_expected_value": 0.1252,
       "clv": {
         "tracked": 76,
-        "avg_clv": 0.1782,
-        "positive_rate": 0.3553,
-        "non_negative_rate": 0.5132
+        "avg_clv": -0.4181,
+        "positive_rate": 0.3816,
+        "non_negative_rate": 0.4868
       },
       "window_days": 7
     },
@@ -147,9 +147,9 @@
       "avg_expected_value": 0.1248,
       "clv": {
         "tracked": 76,
-        "avg_clv": 0.1782,
-        "positive_rate": 0.3553,
-        "non_negative_rate": 0.5132
+        "avg_clv": -0.4181,
+        "positive_rate": 0.3816,
+        "non_negative_rate": 0.4868
       },
       "window_days": 30
     }
@@ -165,7 +165,7 @@
         "positive_ev": 3,
         "eligible": 2,
         "locks": 2,
-        "totals": 2,
+        "totals": 1,
         "summary": "modeled=3 | odds=3/3 | +ev=3 | eligible=2 | locks=2"
       },
       "performance": {
@@ -176,7 +176,7 @@
         "roi": 0.0269,
         "avg_confidence": 72.536,
         "avg_expected_value": 0.0928,
-        "avg_clv": 0.5712
+        "avg_clv": -2.6228
       }
     },
     {
@@ -200,7 +200,7 @@
         "roi": 0.86,
         "avg_confidence": 68.7778,
         "avg_expected_value": 0.0915,
-        "avg_clv": -0.0154
+        "avg_clv": -0.0106
       }
     },
     {
@@ -248,7 +248,7 @@
         "roi": 0.2696,
         "avg_confidence": 75.4611,
         "avg_expected_value": 0.1453,
-        "avg_clv": 0.0981
+        "avg_clv": 0.087
       }
     },
     {
@@ -282,16 +282,16 @@
       "name": "NHL",
       "roi": 0.86,
       "hit_rate": 1.0,
-      "avg_clv": -0.0154,
+      "avg_clv": -0.0106,
       "evaluated": 2
     },
     "best_clv_sport": {
-      "sport": "nba",
-      "name": "NBA",
-      "roi": 0.0269,
-      "hit_rate": 0.6154,
-      "avg_clv": 0.5712,
-      "evaluated": 13
+      "sport": "mlb",
+      "name": "MLB",
+      "roi": 0.2696,
+      "hit_rate": 0.6727,
+      "avg_clv": 0.087,
+      "evaluated": 55
     },
     "best_lane": {
       "lane": "type",
@@ -413,45 +413,45 @@
     ]
   },
   "snapshot_replay": {
-    "generated_at": "2026-04-04T12:44:37Z",
+    "generated_at": "2026-04-04T21:29:26Z",
     "aggregate": {
-      "snapshots": 40,
-      "exact_matches": 40,
+      "snapshots": 45,
+      "exact_matches": 45,
       "exact_match_rate": 1.0,
       "mismatches": 0
     },
     "sports": {
       "mlb": {
-        "snapshots": 8,
-        "exact_matches": 8,
+        "snapshots": 9,
+        "exact_matches": 9,
         "exact_match_rate": 1.0,
         "mismatches": 0,
         "recent_mismatches": []
       },
       "mma": {
-        "snapshots": 8,
-        "exact_matches": 8,
+        "snapshots": 9,
+        "exact_matches": 9,
         "exact_match_rate": 1.0,
         "mismatches": 0,
         "recent_mismatches": []
       },
       "nba": {
-        "snapshots": 8,
-        "exact_matches": 8,
+        "snapshots": 9,
+        "exact_matches": 9,
         "exact_match_rate": 1.0,
         "mismatches": 0,
         "recent_mismatches": []
       },
       "ncaam": {
-        "snapshots": 8,
-        "exact_matches": 8,
+        "snapshots": 9,
+        "exact_matches": 9,
         "exact_match_rate": 1.0,
         "mismatches": 0,
         "recent_mismatches": []
       },
       "nhl": {
-        "snapshots": 8,
-        "exact_matches": 8,
+        "snapshots": 9,
+        "exact_matches": 9,
         "exact_match_rate": 1.0,
         "mismatches": 0,
         "recent_mismatches": []
@@ -469,6 +469,11 @@
       "priority": "medium",
       "title": "Lean Into The Strongest Lane",
       "detail": "type:total_lock is currently the best settled lane at +33.5% ROI."
+    },
+    {
+      "priority": "medium",
+      "title": "Watch CLV Before Expanding",
+      "detail": "Realized ROI is positive, but closing-line value is lagging. Avoid adding volume until the market read improves."
     }
   ],
   "insights": [
