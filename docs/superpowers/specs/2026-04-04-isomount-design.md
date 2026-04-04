@@ -107,7 +107,7 @@ No GUI tests — GTK is not headless-friendly and all meaningful logic lives in 
 
 - Python 3.11+
 - `PyGObject` (GTK4 bindings) — system package (`python-gobject`)
-- `libayatana-appindicator` — optional, for better tray support on non-GNOME DEs
+- `libayatana-appindicator` — optional, for better tray support on non-GNOME DEs. If unavailable, fall back to `Gtk.StatusIcon` (deprecated but functional). If neither works, the app still runs but close button quits instead of minimizing to tray.
 
 ## Non-Goals
 
