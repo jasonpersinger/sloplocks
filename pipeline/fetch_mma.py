@@ -22,6 +22,8 @@ _MMA_NAME_ALIASES = {
     "jiri prochazka": "Jiri Prochazka",
     "jose henrique": "Jose Henrique",
     "jose delano": "Jose Delano",
+    "kai kamaka": "Kai Kamaka III",
+    "kai kamaka iii": "Kai Kamaka III",
     "lando vannata": "Landon Vannata",
     "landon vannata": "Landon Vannata",
     "loopy godinez": "Lupita Godinez",
