@@ -5,21 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SLOP LOCKS</title>
   <meta name="description" content="Daily sports picks with model edge.">
-  <meta name="theme-color" content="#101010">
+  <meta name="theme-color" content="#151311">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap');
+
     :root {
-      --bg: #101010;
-      --bg-soft: #151515;
-      --fg: #d7d2bf;
-      --fg-dim: #8d8777;
-      --line: #3e3a31;
-      --accent: #8fce00;
-      --accent-soft: #577c00;
-      --danger: #d98c3f;
-      --font-mono: "Courier New", Courier, monospace;
+      --bg: #0d0b09;
+      --panel: #18120f;
+      --panel-soft: #1f1813;
+      --fg: #f3ead8;
+      --fg-soft: #d6c8b2;
+      --fg-dim: #ab9982;
+      --line: #5b4d3e;
+      --line-soft: #372d24;
+      --accent: #b6c773;
+      --accent-strong: #dce8ad;
+      --accent-soft: rgba(182, 199, 115, 0.14);
+      --danger: #d8a46d;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.38);
+      --radius: 18px;
+      --radius-soft: 14px;
+      --font-body: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+      --font-display: "Newsreader", "Iowan Old Style", "Palatino Linotype", serif;
     }
 
     * {
@@ -28,173 +38,593 @@
       box-sizing: border-box;
     }
 
+    html {
+      background: var(--bg);
+    }
+
     body {
       background:
-        linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0)) 0 0 / 100% 3px,
-        var(--bg);
+        radial-gradient(circle at top left, rgba(182, 199, 115, 0.12), transparent 26%),
+        radial-gradient(circle at top right, rgba(255, 224, 171, 0.06), transparent 24%),
+        linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0) 24%),
+        linear-gradient(180deg, #1b1511 0%, #0d0b09 56%, #090807 100%);
       color: var(--fg);
-      font-family: var(--font-mono);
+      font-family: var(--font-body);
       font-size: 15px;
-      line-height: 1.45;
+      line-height: 1.6;
       min-height: 100vh;
-      padding: 16px;
+      padding: 24px;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(180deg, rgba(255,255,255,0.028) 0 1px, transparent 1px 32px),
+        linear-gradient(90deg, rgba(255,255,255,0.02), transparent 18%, transparent 82%, rgba(255,255,255,0.02));
+      opacity: 0.18;
     }
 
     .container {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      max-width: 860px;
+      max-width: 1180px;
       margin: 0 auto;
       border: 1px solid var(--line);
-      background: var(--bg-soft);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+      border-radius: 24px;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0) 18%),
+        linear-gradient(180deg, rgba(30, 24, 19, 0.985), rgba(17, 14, 11, 0.99));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(6px);
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0) 20%);
     }
 
     .site-header {
-      padding: 18px 18px 8px;
-      border-bottom: 1px solid var(--line);
+      position: relative;
+      padding: 32px 32px 20px;
+      border-bottom: 1px solid var(--line-soft);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)),
+        linear-gradient(90deg, rgba(182, 199, 115, 0.04), transparent 36%);
     }
 
-    .ascii-logo {
-      color: var(--accent);
-      font-size: 14px;
-      line-height: 1.1;
-      white-space: pre;
-      overflow-x: auto;
-    }
-
-    .subtitle-row {
+    .header-band {
       display: flex;
       justify-content: space-between;
-      gap: 12px;
+      align-items: flex-start;
+      gap: 24px;
       flex-wrap: wrap;
-      padding-top: 10px;
-      color: var(--fg-dim);
-      font-size: 12px;
+    }
+
+    .identity-block {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 760px;
+    }
+
+    .eyebrow {
+      color: var(--accent-strong);
+      font-size: 11px;
       text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .wordmark {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .wordmark-title {
+      color: var(--accent-strong);
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 68px);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+
+    .wordmark-subtitle {
+      color: var(--fg);
+      font-family: var(--font-display);
+      font-size: clamp(24px, 3vw, 38px);
+      line-height: 1.02;
+      letter-spacing: -0.02em;
+    }
+
+    .masthead-rule {
+      width: min(540px, 100%);
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), rgba(182, 199, 115, 0.14), transparent);
+    }
+
+    .site-note {
+      margin-top: 22px;
+      max-width: 760px;
+      color: var(--fg-soft);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    .header-meta {
+      display: grid;
+      gap: 12px;
+      min-width: 260px;
+    }
+
+    .meta-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-soft);
+      padding: 13px 15px;
+      background: linear-gradient(180deg, rgba(14, 12, 10, 0.68), rgba(14, 12, 10, 0.44));
+    }
+
+    .meta-label {
+      color: var(--fg-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+    }
+
+    .meta-value {
+      color: var(--fg);
+      font-size: 13px;
+      text-transform: uppercase;
+      text-align: right;
     }
 
     .pill-nav {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      padding: 14px 18px;
-      border-bottom: 1px solid var(--line);
+      gap: 10px;
+      padding: 16px 32px 18px;
+      border-bottom: 1px solid var(--line-soft);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0)),
+        rgba(12, 10, 8, 0.32);
       overflow-x: auto;
     }
 
     .pill {
-      background: transparent;
-      border: 1px solid var(--line);
+      appearance: none;
+      background: linear-gradient(180deg, rgba(31, 24, 19, 0.9), rgba(20, 16, 13, 0.95));
+      border: 1px solid var(--line-soft);
+      border-radius: 999px;
       color: var(--fg-dim);
-      font-family: var(--font-mono);
-      font-size: 13px;
-      padding: 6px 10px;
+      font-family: var(--font-body);
+      font-size: 12px;
+      padding: 9px 14px;
       cursor: pointer;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
       white-space: nowrap;
-      transition: none;
+      transition: background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease;
     }
 
     .pill::before { content: "[ "; }
     .pill::after { content: " ]"; }
+
+    .pill:hover {
+      color: var(--fg);
+      border-color: var(--line);
+      transform: translateY(-1px);
+    }
+
     .pill.active {
-      color: var(--accent);
-      border-color: var(--accent-soft);
-      background: rgba(143, 206, 0, 0.06);
+      color: var(--accent-strong);
+      border-color: rgba(182, 199, 115, 0.5);
+      background: linear-gradient(180deg, rgba(182, 199, 115, 0.2), rgba(182, 199, 115, 0.08));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
     }
 
     #pick-feed {
-      display: flex;
-      flex-direction: column;
-      padding: 18px;
-      gap: 14px;
-      min-height: 320px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      align-items: start;
+      padding: 24px;
+      gap: 18px;
+      min-height: 380px;
     }
 
     .status-rail {
-      border: 1px dashed var(--line);
-      background: #111;
-      color: var(--fg-dim);
-      padding: 10px 12px;
-      font-size: 13px;
-      white-space: pre-wrap;
+      grid-column: 1 / -1;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
 
     .feed-message {
-      border: 1px dashed var(--line);
-      padding: 24px 16px;
-      color: var(--fg-dim);
+      grid-column: 1 / -1;
+      padding: 44px 20px;
+      color: var(--fg-soft);
       white-space: pre-wrap;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+
+    .status-rail,
+    .feed-message,
+    .pick-card {
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0)),
+        linear-gradient(180deg, rgba(28, 22, 18, 0.97), rgba(19, 16, 12, 0.99));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.02),
+        0 10px 24px rgba(0, 0, 0, 0.16);
+    }
+
+    .feed-message.is-loading {
+      animation: pulse 1.3s ease-in-out infinite;
     }
 
     .pick-card {
-      border: 1px solid var(--line);
-      background: #121212;
-      padding: 12px;
+      position: relative;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 16px;
+      overflow: hidden;
+      transition: transform 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
     }
 
-    .ascii-box {
-      border: 1px solid var(--line);
-      padding: 10px;
-      background: #0f0f0f;
+    .pick-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent), rgba(220, 232, 173, 0.24), transparent 78%);
+      opacity: 0.85;
     }
 
+    .pick-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(182, 199, 115, 0.24);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.02),
+        0 14px 30px rgba(0, 0, 0, 0.22);
+    }
+
+    .card-shell {
+      border: 1px solid rgba(255,255,255,0.045);
+      border-radius: var(--radius-soft);
+      padding: 18px 18px 16px;
+      background: linear-gradient(180deg, rgba(17, 14, 11, 0.74), rgba(12, 10, 8, 0.3));
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-shell::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 2px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(220, 232, 173, 0.9), rgba(220, 232, 173, 0.06));
+    }
+
+    .status-heading,
     .card-head,
-    .meta-grid,
-    .footer-grid {
+    .card-title-row,
+    .edge-copy,
+    .footer-block {
       display: flex;
       justify-content: space-between;
       gap: 12px;
       flex-wrap: wrap;
     }
 
-    .label {
+    .status-heading {
+      align-items: flex-end;
+      gap: 14px;
+    }
+
+    .status-kicker,
+    .card-kicker,
+    .card-odds-label {
       color: var(--fg-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .status-title {
+      color: var(--fg);
+      font-family: var(--font-display);
+      font-size: 34px;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+    }
+
+    .status-grid,
+    .detail-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .status-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .detail-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .status-cell,
+    .detail-item,
+    .meta-card {
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-soft);
+      background: linear-gradient(180deg, rgba(13, 11, 9, 0.56), rgba(13, 11, 9, 0.38));
+    }
+
+    .status-cell,
+    .detail-item {
+      padding: 12px 13px;
+    }
+
+    .status-cell-label,
+    .detail-label {
+      display: block;
+      color: var(--fg-dim);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .status-cell-value,
+    .detail-value {
+      display: block;
+      color: var(--fg);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .status-diagnostics {
+      border-top: 1px dashed var(--line-soft);
+      padding-top: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 8px;
+      color: var(--fg-soft);
+    }
+
+    .status-list-item,
+    .dashboard-line {
+      padding-left: 16px;
+      position: relative;
+      white-space: pre-wrap;
+    }
+
+    .status-list-item::before {
+      content: ">";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
     }
 
     .card-title {
-      color: var(--accent);
-      font-size: 18px;
+      color: var(--accent-strong);
+      font-family: var(--font-display);
+      font-size: clamp(30px, 3.4vw, 46px);
+      line-height: 0.94;
       text-transform: uppercase;
+      letter-spacing: 0;
     }
 
     .card-line {
-      text-transform: uppercase;
-      color: var(--fg);
+      color: var(--fg-soft);
       font-size: 13px;
+      text-transform: uppercase;
     }
 
     .card-vs {
       color: var(--fg-dim);
     }
 
-    .card-blurb {
-      color: var(--fg-dim);
-      white-space: pre-wrap;
-      border-top: 1px dashed var(--line);
-      padding-top: 10px;
+    .card-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 700px;
     }
 
-    .stat-good { color: var(--accent); }
-    .stat-bad { color: var(--danger); }
+    .card-odds-wrap {
+      text-align: right;
+    }
+
+    .card-odds {
+      font-size: 30px;
+      color: var(--fg);
+      line-height: 1;
+    }
+
+    .card-market {
+      align-self: flex-start;
+      border: 1px solid var(--line-soft);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 11px;
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      background: linear-gradient(180deg, rgba(182, 199, 115, 0.14), rgba(182, 199, 115, 0.08));
+    }
+
+    .detail-item {
+      min-height: 80px;
+    }
+
+    .detail-value.stat-good { color: var(--accent-strong); }
+    .detail-value.stat-bad { color: var(--danger); }
+
+    .edge-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .edge-copy {
+      color: var(--fg-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+    }
+
+    .edge-meter {
+      display: flex;
+      overflow: hidden;
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.055);
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.34);
+    }
+
+    .edge-meter-base {
+      background: linear-gradient(90deg, rgba(255,255,255,0.18), rgba(255,255,255,0.1));
+    }
+
+    .edge-meter-edge {
+      background: linear-gradient(90deg, rgba(182, 199, 115, 0.75), rgba(220, 232, 173, 0.98));
+    }
+
+    .card-blurb {
+      color: var(--fg-soft);
+      white-space: pre-wrap;
+      border-top: 1px dashed var(--line-soft);
+      padding-top: 16px;
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .card-blurb::before {
+      content: "note";
+      display: block;
+      color: var(--fg-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10px;
+      margin-bottom: 8px;
+    }
 
     .stats-footer {
-      border-top: 1px solid var(--line);
-      padding: 14px 18px 18px;
-      color: var(--fg-dim);
-      font-size: 13px;
-      white-space: pre-wrap;
+      border-top: 1px solid var(--line-soft);
+      padding: 18px 24px 22px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0)),
+        rgba(12, 10, 8, 0.48);
     }
 
     .footer-block {
+      align-items: center;
+      color: var(--fg-dim);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .footer-item {
       display: flex;
-      justify-content: space-between;
-      gap: 16px;
+      gap: 8px;
+      align-items: baseline;
       flex-wrap: wrap;
+    }
+
+    .footer-value {
+      color: var(--fg);
+    }
+
+    .dashboard-card .card-shell {
+      gap: 12px;
+    }
+
+    .dashboard-card:first-of-type {
+      grid-column: 1 / -1;
+    }
+
+    .dashboard-card .card-title {
+      font-size: 30px;
+    }
+
+    .dashboard-lines {
+      display: grid;
+      gap: 10px;
+      color: var(--fg-soft);
+    }
+
+    .dashboard-line::before {
+      content: "+";
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    .dashboard-lines-pre {
+      white-space: pre-wrap;
+      font-size: 13px;
+      color: var(--fg-soft);
+      line-height: 1.65;
+      padding: 2px 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.62; }
+      50% { opacity: 1; }
+    }
+
+    @media (max-width: 980px) {
+      #pick-feed {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 820px) {
+      body {
+        padding: 14px;
+      }
+
+      .container {
+        border-radius: 20px;
+      }
+
+      .header-meta,
+      .status-grid,
+      .detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 640px) {
@@ -202,22 +632,78 @@
         padding: 0;
       }
 
+      body::before {
+        opacity: 0.14;
+      }
+
       .container {
+        border-radius: 0;
         border-left: 0;
         border-right: 0;
         min-height: 100vh;
       }
 
-      .ascii-logo {
-        font-size: 11px;
+      .site-header {
+        padding: 22px 16px 16px;
+      }
+
+      .pill-nav {
+        padding: 14px 16px 16px;
+      }
+
+      .wordmark-title {
+        font-size: 40px;
+      }
+
+      .wordmark-subtitle {
+        font-size: 26px;
       }
 
       #pick-feed {
-        padding: 12px;
+        padding: 16px;
+        gap: 14px;
+      }
+
+      .site-note {
+        font-size: 13px;
+      }
+
+      .status-title {
+        font-size: 26px;
       }
 
       .card-title {
-        font-size: 16px;
+        font-size: 32px;
+      }
+
+      .header-meta,
+      .status-grid,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pick-card,
+      .status-rail {
+        padding: 14px;
+      }
+
+      .card-shell,
+      .meta-card,
+      .detail-item,
+      .status-cell {
+        padding: 14px 12px;
+      }
+
+      .card-odds-wrap {
+        text-align: left;
+      }
+
+      .status-heading,
+      .card-head,
+      .card-title-row,
+      .footer-block {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -226,13 +712,27 @@
   <div class="container">
 
     <header class="site-header">
-      <pre class="ascii-logo">========================================
- S L O P   L O C K S
-========================================</pre>
-      <div class="subtitle-row">
-        <div>DAILY PICKS // TEXT MODE // NO FRILLS</div>
-        <div id="header-date"></div>
+      <div class="header-band">
+        <div class="identity-block">
+          <div class="eyebrow">Model board // daily edges // text-first</div>
+          <div class="wordmark">
+            <div class="wordmark-title">SLOP LOCKS</div>
+            <div class="wordmark-subtitle">old web board for daily picks</div>
+          </div>
+          <div class="masthead-rule"></div>
+        </div>
+        <div class="header-meta">
+          <div class="meta-card">
+            <span class="meta-label">Edition</span>
+            <span class="meta-value">Field notes</span>
+          </div>
+          <div class="meta-card">
+            <span class="meta-label">Board date</span>
+            <span class="meta-value" id="header-date"></span>
+          </div>
+        </div>
       </div>
+      <p class="site-note">The stripped-down board stays intact, but this pass leans more editorial: stronger masthead, cleaner pacing, and card treatments that feel closer to a premium betting digest than a raw terminal screen.</p>
     </header>
 
     <nav class="pill-nav">
@@ -249,7 +749,7 @@
       <div class="feed-message" id="loading-msg">LOADING SCOREBOARD...</div>
     </main>
 
-    <footer class="stats-footer" id="stats-footer">RECORD -- | HIT RATE -- | ROI --</footer>
+    <footer class="stats-footer" id="stats-footer"></footer>
 
   </div>
 
@@ -343,32 +843,115 @@
   function fmtRatio(a, b) {
     return String(a || 0) + '/' + String(b || 0);
   }
-  function createDashboardBlock(title, lines, accent) {
+  function clamp01(value) {
+    var num = Number(value);
+    if (isNaN(num)) return 0;
+    return Math.max(0, Math.min(1, num));
+  }
+  function createMetric(label, value, tone) {
+    var item = document.createElement('div');
+    item.className = 'detail-item';
+
+    var labelEl = document.createElement('span');
+    labelEl.className = 'detail-label';
+    labelEl.textContent = label;
+    item.appendChild(labelEl);
+
+    var valueEl = document.createElement('span');
+    valueEl.className = 'detail-value' + (tone ? ' ' + tone : '');
+    valueEl.textContent = value;
+    item.appendChild(valueEl);
+
+    return item;
+  }
+  function createStatusCell(label, value) {
+    var cell = document.createElement('div');
+    cell.className = 'status-cell';
+
+    var labelEl = document.createElement('span');
+    labelEl.className = 'status-cell-label';
+    labelEl.textContent = label;
+    cell.appendChild(labelEl);
+
+    var valueEl = document.createElement('span');
+    valueEl.className = 'status-cell-value';
+    valueEl.textContent = value;
+    cell.appendChild(valueEl);
+
+    return cell;
+  }
+  function setStatsFooter(items) {
+    statsFooter.innerHTML = '';
+
+    var block = document.createElement('div');
+    block.className = 'footer-block';
+
+    items.forEach(function (item) {
+      var row = document.createElement('div');
+      row.className = 'footer-item';
+
+      var label = document.createElement('span');
+      label.className = 'meta-label';
+      label.textContent = item.label;
+      row.appendChild(label);
+
+      var value = document.createElement('span');
+      value.className = 'footer-value';
+      value.textContent = item.value;
+      row.appendChild(value);
+
+      block.appendChild(row);
+    });
+
+    statsFooter.appendChild(block);
+  }
+  function setStatsPlaceholder() {
+    setStatsFooter([
+      { label: 'Record', value: '--' },
+      { label: 'Hit rate', value: '--' },
+      { label: 'ROI', value: '--' }
+    ]);
+  }
+  function createDashboardBlock(title, lines, accent, options) {
+    options = options || {};
+
     var card = document.createElement('article');
-    card.className = 'pick-card';
-    var box = document.createElement('div');
-    box.className = 'ascii-box';
+    card.className = 'pick-card dashboard-card';
+
+    var shell = document.createElement('div');
+    shell.className = 'card-shell';
 
     var head = document.createElement('div');
     head.className = 'card-head';
-    head.innerHTML =
-      '<span class="label">[ DASHBOARD ]</span>' +
-      '<span class="label">' + (accent || '') + '</span>';
-    box.appendChild(head);
+    head.innerHTML = '<span class="card-kicker">Dashboard block</span>';
+    shell.appendChild(head);
 
     var titleEl = document.createElement('div');
     titleEl.className = 'card-title';
-    titleEl.textContent = '> ' + title.toUpperCase();
-    box.appendChild(titleEl);
+    titleEl.textContent = title.toUpperCase();
+    shell.appendChild(titleEl);
+
+    var tag = document.createElement('div');
+    tag.className = 'card-market';
+    tag.textContent = accent || 'READOUT';
+    shell.appendChild(tag);
 
     var body = document.createElement('div');
-    body.className = 'card-blurb';
-    body.style.borderTop = '0';
-    body.style.paddingTop = '6px';
-    body.textContent = lines.join('\n');
-    box.appendChild(body);
+    if (options.preformatted) {
+      body.className = 'dashboard-lines-pre';
+      body.textContent = lines.join('\n');
+    } else {
+      body.className = 'dashboard-lines';
+      lines.forEach(function (line) {
+        var row = document.createElement('div');
+        row.className = 'dashboard-line';
+        row.textContent = line;
+        body.appendChild(row);
+      });
+    }
+    shell.appendChild(body);
 
-    card.appendChild(box);
+    card.appendChild(shell);
     return card;
   }
 
@@ -390,48 +973,101 @@
     var card = document.createElement('article');
     card.className = 'pick-card';
 
-    var box = document.createElement('div');
-    box.className = 'ascii-box';
+    var shell = document.createElement('div');
+    shell.className = 'card-shell';
 
     var head = document.createElement('div');
     head.className = 'card-head';
-    head.innerHTML =
-      '<span class="label">[' + formatSportLabel(pick.sport) + ' // ' + formatWhen(pick.start_time, pick.date) + ']</span>' +
-      '<span class="label">ODDS ' + formatOdds(pick.american_odds) + '</span>';
-    box.appendChild(head);
+    head.innerHTML = '<span class="card-kicker">' + formatSportLabel(pick.sport) + ' // ' + formatWhen(pick.start_time, pick.date) + '</span>';
+
+    var oddsWrap = document.createElement('div');
+    oddsWrap.className = 'card-odds-wrap';
+
+    var oddsLabel = document.createElement('div');
+    oddsLabel.className = 'card-odds-label';
+    oddsLabel.textContent = 'Market line';
+    oddsWrap.appendChild(oddsLabel);
+
+    var oddsValue = document.createElement('div');
+    oddsValue.className = 'card-odds';
+    oddsValue.textContent = formatOdds(pick.american_odds);
+    oddsWrap.appendChild(oddsValue);
+
+    head.appendChild(oddsWrap);
+    shell.appendChild(head);
+
+    var titleRow = document.createElement('div');
+    titleRow.className = 'card-title-row';
+
+    var titleBlock = document.createElement('div');
+    titleBlock.className = 'card-title-block';
 
     var title = document.createElement('div');
     title.className = 'card-title';
-    title.textContent = '> ' + pickedTeam.toUpperCase();
-    box.appendChild(title);
+    title.textContent = pickedTeam.toUpperCase();
+    titleBlock.appendChild(title);
 
     var versus = document.createElement('div');
     versus.className = 'card-line card-vs';
-    versus.textContent = '  VS ' + opponent.toUpperCase();
-    box.appendChild(versus);
+    versus.textContent = isTotal
+      ? pick.home_team.toUpperCase() + ' VS ' + pick.away_team.toUpperCase()
+      : 'VS ' + opponent.toUpperCase();
+    titleBlock.appendChild(versus);
 
-    var meta = document.createElement('div');
-    meta.className = 'meta-grid';
-    meta.innerHTML =
-      '<span><span class="label">MODEL</span> ' + pct(pick.model_prob) + '</span>' +
-      '<span><span class="label">' + (isTotal ? 'LINE' : 'FAIR') + '</span> ' + (isTotal ? (pick.total_line != null ? pick.total_line : '--') : pct(pick.implied_prob || 0)) + '</span>' +
-      '<span class="' + ((pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad') + '"><span class="label">EDGE</span> ' + edgePct(pick.edge || 0) + '</span>';
-    box.appendChild(meta);
+    titleRow.appendChild(titleBlock);
 
-    var footer = document.createElement('div');
-    footer.className = 'footer-grid';
-    footer.innerHTML =
-      '<span><span class="label">' + (isTotal ? 'PROJ' : 'EV') + '</span> ' + (isTotal ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--') : units(pick.expected_value)) + '</span>' +
-      '<span><span class="label">CONF</span> ' + confidenceText(pick.confidence_score, pick.confidence_stars) + '</span>' +
-      '<span><span class="label">KELLY</span> ' + (pick.fractional_kelly != null ? (pick.fractional_kelly * 100).toFixed(1) + '%' : '--') + '</span>';
-    box.appendChild(footer);
+    var marketTag = document.createElement('div');
+    marketTag.className = 'card-market';
+    marketTag.textContent = isTotal ? 'Total' : 'Moneyline';
+    titleRow.appendChild(marketTag);
+    shell.appendChild(titleRow);
 
-    card.appendChild(box);
+    var details = document.createElement('div');
+    details.className = 'detail-grid';
+    details.appendChild(createMetric('Model', fmtPct(pick.model_prob), null));
+    details.appendChild(createMetric(isTotal ? 'Line' : 'Market', isTotal
+      ? (pick.total_line != null ? Number(pick.total_line).toFixed(1) : '--')
+      : fmtPct(pick.implied_prob), null));
+    details.appendChild(createMetric('Edge', edgePct(pick.edge), (pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad'));
+    details.appendChild(createMetric(isTotal ? 'Projection' : 'Expected value', isTotal
+      ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--')
+      : units(pick.expected_value), null));
+    details.appendChild(createMetric('Confidence', confidenceText(pick.confidence_score, pick.confidence_stars), null));
+    details.appendChild(createMetric('Kelly', pick.fractional_kelly != null ? (pick.fractional_kelly * 100).toFixed(1) + '%' : '--', null));
+    shell.appendChild(details);
+
+    var edgeStrip = document.createElement('div');
+    edgeStrip.className = 'edge-strip';
+
+    var edgeCopy = document.createElement('div');
+    edgeCopy.className = 'edge-copy';
+    edgeCopy.innerHTML =
+      '<span>Market implied ' + fmtPct(pick.implied_prob) + '</span>' +
+      '<span>Model ' + fmtPct(pick.model_prob) + '</span>';
+    edgeStrip.appendChild(edgeCopy);
+
+    var meter = document.createElement('div');
+    meter.className = 'edge-meter';
+
+    var base = document.createElement('div');
+    base.className = 'edge-meter-base';
+    base.style.width = (clamp01(pick.implied_prob) * 100).toFixed(1) + '%';
+    meter.appendChild(base);
+
+    var edge = document.createElement('div');
+    edge.className = 'edge-meter-edge';
+    edge.style.width = (Math.max(0, clamp01(pick.model_prob) - clamp01(pick.implied_prob)) * 100).toFixed(1) + '%';
+    meter.appendChild(edge);
+
+    edgeStrip.appendChild(meter);
+    shell.appendChild(edgeStrip);
+
+    card.appendChild(shell);
 
     if (pick.blurb && pick.blurb.trim() !== '') {
       var blurbEl = document.createElement('div');
       blurbEl.className = 'card-blurb';
-      blurbEl.textContent = '> ' + pick.blurb;
+      blurbEl.textContent = pick.blurb;
       card.appendChild(blurbEl);
     }
 
@@ -454,12 +1090,13 @@
     clearFeed();
     var el = document.createElement('div');
     el.className = 'feed-message';
+    if (pulse) el.classList.add('is-loading');
     el.textContent = text;
     feed.appendChild(el);
   }
 
   function createStatusRail(mode, picks) {
-    var el = document.createElement('div');
+    var el = document.createElement('section');
     el.className = 'status-rail';
 
     var label = mode === 'all' ? 'ALL SPORTS' : (mode === 'dashboard' ? 'DASHBOARD' : formatSportLabel(mode));
@@ -513,11 +1150,48 @@
       }
     }
 
-    el.textContent =
-      '> MODE: ' + label + '\n' +
-      '> PICKS LOADED: ' + (picks ? picks.length : 0) + '\n' +
-      '> LAST BUILD: ' + generated +
-      (diagnosticLines.length ? '\n> DIAGNOSTICS\n> ' + diagnosticLines.join('\n> ') : '');
+    var heading = document.createElement('div');
+    heading.className = 'status-heading';
+
+    var headingCopy = document.createElement('div');
+    headingCopy.innerHTML =
+      '<div class="status-kicker">Current board</div>' +
+      '<div class="status-title">' + label + '</div>';
+    heading.appendChild(headingCopy);
+
+    var updated = document.createElement('div');
+    updated.className = 'status-kicker';
+    updated.textContent = 'Last build ' + generated;
+    heading.appendChild(updated);
+    el.appendChild(heading);
+
+    var grid = document.createElement('div');
+    grid.className = 'status-grid';
+    grid.appendChild(createStatusCell('Mode', label));
+    grid.appendChild(createStatusCell('Picks loaded', String(picks ? picks.length : 0)));
+    grid.appendChild(createStatusCell('Last build', generated));
+    el.appendChild(grid);
+
+    if (diagnosticLines.length) {
+      var diag = document.createElement('div');
+      diag.className = 'status-diagnostics';
+
+      var diagLabel = document.createElement('div');
+      diagLabel.className = 'status-kicker';
+      diagLabel.textContent = 'Diagnostics';
+      diag.appendChild(diagLabel);
+
+      var list = document.createElement('div');
+      list.className = 'status-list';
+      diagnosticLines.forEach(function (line) {
+        var item = document.createElement('div');
+        item.className = 'status-list-item';
+        item.textContent = line;
+        list.appendChild(item);
+      });
+      diag.appendChild(list);
+      el.appendChild(diag);
+    }
 
     return el;
   }
@@ -583,7 +1257,7 @@
         String((sport.current.locks || 0) + 'L/' + (sport.current.totals || 0) + 'T')
       );
     });
-    feed.appendChild(createDashboardBlock('Sport Splits', sportLines, 'BY SPORT'));
+    feed.appendChild(createDashboardBlock('Sport Splits', sportLines, 'BY SPORT', { preformatted: true }));
 
     var leaderLines = [];
     if (leaders.best_roi_sport) {
@@ -624,12 +1298,13 @@
     if (mode === 'dashboard') {
       var record = ((dashboardData || {}).aggregate || {}).record || {};
       if (record.hit_rate == null) {
-        statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+        setStatsPlaceholder();
       } else {
-        statsFooter.textContent =
-          'RECORD ' + (record.record || '--') +
-          ' | HIT RATE ' + fmtPct(record.hit_rate) +
-          ' | ROI ' + fmtSignedPct(record.roi);
+        setStatsFooter([
+          { label: 'Record', value: record.record || '--' },
+          { label: 'Hit rate', value: fmtPct(record.hit_rate) },
+          { label: 'ROI', value: fmtSignedPct(record.roi) }
+        ]);
       }
       return;
     }
@@ -643,31 +1318,30 @@
       });
       var hitRate = evaluated > 0 ? wins / evaluated : null;
       if (hitRate === null) {
-        statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+        setStatsPlaceholder();
       } else {
-        statsFooter.textContent =
-          'RECORD ' + wins + '-' + losses +
-          ' | HIT RATE ' + (hitRate * 100).toFixed(1) + '%' +
-          ' | ROI --';
+        setStatsFooter([
+          { label: 'Record', value: wins + '-' + losses },
+          { label: 'Hit rate', value: (hitRate * 100).toFixed(1) + '%' },
+          { label: 'ROI', value: '--' }
+        ]);
       }
       return;
     }
 
     var data = loadedSportsData[mode];
-    if (!data) { statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --'; return; }
+    if (!data) { setStatsPlaceholder(); return; }
     var ps = (data.pick_stats || {}).all || {};
     var hitRate = ps.hit_rate != null ? ps.hit_rate : null;
     var roi     = ps.roi      != null ? ps.roi      : null;
     if (hitRate === null) {
-      statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+      setStatsPlaceholder();
     } else {
-      var roiStr = roi != null
-        ? 'ROI ' + (roi >= 0 ? '+' : '') + (roi * 100).toFixed(1) + '%'
-        : 'ROI --';
-      statsFooter.textContent =
-        'RECORD ' + (ps.wins || 0) + '-' + (ps.losses || 0) +
-        ' | HIT RATE ' + (hitRate * 100).toFixed(1) + '%' +
-        ' | ' + roiStr;
+      setStatsFooter([
+        { label: 'Record', value: (ps.wins || 0) + '-' + (ps.losses || 0) },
+        { label: 'Hit rate', value: (hitRate * 100).toFixed(1) + '%' },
+        { label: 'ROI', value: roi != null ? ((roi >= 0 ? '+' : '') + (roi * 100).toFixed(1) + '%') : '--' }
+      ]);
     }
   }
 
@@ -688,7 +1362,7 @@
       })
       .catch(function () {
         showMessage('[ DASHBOARD ERROR ]\n\nThe reporting payload is missing or invalid.', false);
-        statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+        setStatsPlaceholder();
       });
   }
 
@@ -727,7 +1401,7 @@
 
       if (Object.keys(loadedSportsData).length === 0) {
         showMessage('[ ERROR LOADING DATA ]\n\nThe site could not fetch any sport files.', false);
-        statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+        setStatsPlaceholder();
         return;
       }
 
@@ -756,7 +1430,7 @@
       })
       .catch(function () {
         showMessage('[ ERROR LOADING ' + formatSportLabel(sport) + ' ]\n\nThe JSON file for this sport is missing or invalid.', false);
-        statsFooter.textContent = 'RECORD -- | HIT RATE -- | ROI --';
+        setStatsPlaceholder();
       });
   }
 
@@ -780,6 +1454,7 @@
     });
   });
 
+  setStatsPlaceholder();
   loadAllSports();
 
 })();
