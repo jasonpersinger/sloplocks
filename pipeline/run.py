@@ -140,7 +140,7 @@ def _is_live_public_output(base_dir: str) -> bool:
         return False
 
 
-def _prediction_calendar_day(prediction: dict) -> Optional[date]:
+def _parse_prediction_date(prediction: dict) -> Optional[date]:
     """Parse the best available calendar day from one saved prediction."""
     for key in ("date", "match_date", "snapshot_timestamp", "generated_at"):
         value = prediction.get(key)
@@ -174,7 +174,7 @@ def _select_calibration_predictions(
     for prediction in predictions:
         if not prediction.get("evaluated"):
             continue
-        pred_day = _prediction_calendar_day(prediction)
+        pred_day = _parse_prediction_date(prediction)
         if pred_day is None:
             continue
         if pred_day > cutoff:
