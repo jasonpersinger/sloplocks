@@ -33,9 +33,9 @@ SPORT_EMOJIS = {
 PICK_LABELS = {"draw": "DRAW"}
 DATA_DIR = Path("data")
 SPORT_ORDER = ("nba", "nhl", "ncaam", "mlb")
-MAX_CURATED_FIELDS = 8
-MAX_SLIME_FIELDS = 5
-MAX_RADAR_FIELDS = 5
+MAX_CURATED_FIELDS = 6
+MAX_SLIME_FIELDS = 4
+MAX_RADAR_FIELDS = 3
 MAX_DIAGNOSTIC_FIELDS = 4
 
 _ET_OFFSET_SPORTS = {"nba", "ncaam"}
@@ -336,7 +336,7 @@ def _pitcher_note(item: dict) -> str:
     return f"\nPitchers: {away_pitcher} vs {home_pitcher}"
 
 
-def _lock_field(item: dict, sport_key: str) -> dict:
+def _lock_field(item: dict, sport_key: str, show_ai: bool = True) -> dict:
     """Build one Discord embed field for a pick or radar matchup."""
     emoji = SPORT_EMOJIS.get(sport_key, "🎯")
     pick = _pick_team(item)
@@ -359,8 +359,12 @@ def _lock_field(item: dict, sport_key: str) -> dict:
     if pitcher_note:
         value += pitcher_note
     
-    if item.get("qualitative_summary"):
-        value += f"\n**AI Sense:** {item['qualitative_summary']}"
+    if show_ai and item.get("qualitative_summary"):
+        # Truncate summary if too long for one field
+        summary = item['qualitative_summary']
+        if len(summary) > 200:
+            summary = summary[:197] + "..."
+        value += f"\n**AI Sense:** {summary}"
 
     if item.get("blurb"):
         value += f"\n> {item['blurb']}"
@@ -428,7 +432,7 @@ def build_payload() -> dict:
         embeds.append({
             "title": "📡  MODEL RADAR",
             "color": COLOR_RADAR,
-            "fields": [_lock_field(item, item["sport"]) for item in radar[:MAX_RADAR_FIELDS]],
+            "fields": [_lock_field(item, item["sport"], show_ai=False) for item in radar[:MAX_RADAR_FIELDS]],
             "footer": {"text": "leftover model leans only; not official picks or qualified slimegrinders"},
         })
 
