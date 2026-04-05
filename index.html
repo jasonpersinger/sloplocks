@@ -897,20 +897,32 @@
     marketTag.className = 'card-market';
     marketTag.textContent = isTotal ? 'TOTAL' : 'ML';
     titleRow.appendChild(marketTag);
+
+    if (pick.qualitative_summary && pick.qualitative_summary !== 'No qualitative impact.') {
+      var senseTag = document.createElement('div');
+      senseTag.className = 'card-market';
+      senseTag.style.marginLeft = '6px';
+      senseTag.style.borderColor = '#ff72f9';
+      senseTag.style.color = '#ffbafc';
+      senseTag.style.background = 'rgba(255, 114, 249, 0.1)';
+      senseTag.textContent = 'SENSE';
+      titleRow.appendChild(senseTag);
+    }
     shell.appendChild(titleRow);
+
+    var marketSnapshot = pick.market_snapshot || {};
+    var marketBench = marketSnapshot.benchmark || {};
 
     var details = document.createElement('div');
     details.className = 'detail-grid';
     details.appendChild(createMetric('MODEL', fmtPct(pick.model_prob), null));
-    details.appendChild(createMetric(isTotal ? 'LINE' : 'BOOK', isTotal
-      ? (pick.total_line != null ? Number(pick.total_line).toFixed(1) : '--')
-      : fmtPct(pick.implied_prob), null));
+    details.appendChild(createMetric('BOOKS', marketBench.books_tracked || '--', null));
     details.appendChild(createMetric('EDGE', edgePct(pick.edge), (pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad'));
     details.appendChild(createMetric(isTotal ? 'PROJ' : 'EV', isTotal
       ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--')
       : units(pick.expected_value), null));
     details.appendChild(createMetric('CONF', confidenceText(pick.confidence_score, pick.confidence_stars), null));
-    details.appendChild(createMetric('KELLY', pick.fractional_kelly != null ? (pick.fractional_kelly * 100).toFixed(1) + '%' : '--', null));
+    details.appendChild(createMetric('HOLD', marketBench.hold != null ? (marketBench.hold * 100).toFixed(1) + '%' : '--', null));
     shell.appendChild(details);
 
     var edgeStrip = document.createElement('div');
@@ -919,7 +931,7 @@
     var edgeCopy = document.createElement('div');
     edgeCopy.className = 'edge-copy';
     edgeCopy.innerHTML =
-      '<span>BOOK ' + fmtPct(pick.implied_prob) + '</span>' +
+      '<span>MARKET ' + fmtPct(pick.implied_prob) + '</span>' +
       '<span>MODEL ' + fmtPct(pick.model_prob) + '</span>';
     edgeStrip.appendChild(edgeCopy);
 
@@ -940,6 +952,14 @@
     shell.appendChild(edgeStrip);
 
     card.appendChild(shell);
+
+    if (pick.qualitative_summary && pick.qualitative_summary.trim() !== '' && pick.qualitative_summary !== 'No qualitative impact.') {
+      var senseEl = document.createElement('div');
+      senseEl.className = 'card-blurb';
+      senseEl.style.color = '#ffbafc';
+      senseEl.textContent = pick.qualitative_summary;
+      card.appendChild(senseEl);
+    }
 
     if (pick.blurb && pick.blurb.trim() !== '') {
       var blurbEl = document.createElement('div');
@@ -1098,25 +1118,30 @@
       'ROI         ' + fmtSignedPct(record.roi),
       'AVG CONF    ' + (record.avg_confidence != null ? Math.round(record.avg_confidence) + '/100' : '--'),
       'AVG EV      ' + units(record.avg_expected_value),
-      'ML CLV      ' + fmtSignedPct(record.avg_clv, 2),
+      'CLV         ' + fmtSignedPct(record.avg_clv, 2),
       'PRED ACC    ' + fmtPct(predictions.accuracy),
       'LOG LOSS    ' + (predictions.avg_log_loss != null ? Number(predictions.avg_log_loss).toFixed(3) : '--'),
       'SLATE NOW   modeled=' + (slate.modeled || 0) + ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) + ' | +ev=' + (slate.positive_ev || 0) + ' | locks=' + (slate.locks || 0)
-    ], 'TOTAL'));
+    ], 'GEMINI'));
 
     feed.appendChild(createDashboardBlock('Recent', [
       'LAST 7D     ' + fmtRecord(windows['7d']) + ' | HIT ' + fmtPct((windows['7d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['7d'] || {}).roi),
       'LAST 30D    ' + fmtRecord(windows['30d']) + ' | HIT ' + fmtPct((windows['30d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['30d'] || {}).roi),
-      '7D ML CLV   ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
-      '30D ML CLV  ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
+      '7D CLV      ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
+      '30D CLV     ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
     ], 'WINDOW'));
 
-    feed.appendChild(createDashboardBlock('Replay', [
-      'RUNS        ' + String((snapshotReplay.aggregate || {}).snapshots || 0),
-      'PARITY      ' + fmtRatio((snapshotReplay.aggregate || {}).exact_matches, (snapshotReplay.aggregate || {}).snapshots),
-      'MATCH RATE  ' + fmtPct((snapshotReplay.aggregate || {}).exact_match_rate),
-      'MISMATCHES  ' + String((snapshotReplay.aggregate || {}).mismatches || 0)
-    ], 'SYNC'));
+    var replayAgg = (dashboardData.decision_replay || {}).aggregate || {};
+    var replaySettled = replayAgg.settled_picks || {};
+    feed.appendChild(createDashboardBlock('Slop Replay', [
+      'LOGGED      ' + String(replayAgg.logged_picks || 0) + ' PICKS',
+      'SETTLED     ' + fmtRatio(replaySettled.evaluated, replayAgg.logged_picks),
+      'HIT RATE    ' + fmtPct(replaySettled.hit_rate),
+      'REPLAY ROI  ' + fmtSignedPct(replaySettled.roi),
+      'REPLAY CLV  ' + fmtSignedPct((replaySettled.clv || {}).avg_clv, 2),
+      'SNAPSHOTS   ' + String((snapshotReplay.aggregate || {}).snapshots || 0) + ' RUNS',
+      'SYNC RATE   ' + fmtPct((snapshotReplay.aggregate || {}).exact_match_rate)
+    ], 'LEDGER'));
 
     if (actions.length) {
       feed.appendChild(createDashboardBlock('Queue', actions.map(function (action, idx) {
@@ -1124,14 +1149,14 @@
       }), 'TASKS'));
     }
 
-    var sportLines = ['SPORT   REC        HIT      ROI      ML CLV   LIVE'];
+    var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE'];
     (dashboardData.sports || []).forEach(function (sport) {
       sportLines.push(
         (sport.name || '').padEnd(6, ' ').slice(0, 6) + ' ' +
         fmtRecord(sport.performance).padEnd(10, ' ').slice(0, 10) + ' ' +
         fmtPct(sport.performance.hit_rate).padEnd(8, ' ').slice(0, 8) + ' ' +
         fmtSignedPct(sport.performance.roi).padEnd(8, ' ').slice(0, 8) + ' ' +
-        fmtSignedPct(sport.performance.avg_clv, 2).padEnd(8, ' ').slice(0, 8) + ' ' +
+        fmtSignedPct((sport.performance.clv || {}).avg_clv || sport.performance.avg_clv, 2).padEnd(8, ' ').slice(0, 8) + ' ' +
         String((sport.current.locks || 0) + 'L/' + (sport.current.totals || 0) + 'T')
       );
     });
