@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SLOP LOCKS</title>
-  <meta name="description" content="Daily sports picks with model edge.">
-  <meta name="theme-color" content="#151311">
+  <meta name="description" content="Sports picks and model edge readouts.">
+  <meta name="theme-color" content="#08110b">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192.png">
@@ -13,18 +13,21 @@
     @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
 
     :root {
-      --bg: #000;
-      --panel: #000;
-      --panel-soft: #000;
-      --fg: #00FF41;
-      --fg-soft: #00FF41;
-      --fg-dim: #008F11;
-      --fg-deep: #003B00;
-      --line: #003B00;
-      --line-strong: #008F11;
-      --accent: #00FF41;
-      --accent-soft: rgba(0, 255, 65, 0.1);
-      --danger: #FF0000;
+      --bg: #030503;
+      --bg-deep: #010201;
+      --panel: rgba(3, 9, 4, 0.94);
+      --panel-soft: rgba(5, 15, 7, 0.78);
+      --fg: #86ff72;
+      --fg-soft: #b9ffaf;
+      --fg-dim: #4f9950;
+      --fg-faint: rgba(134, 255, 114, 0.55);
+      --fg-deep: #15371a;
+      --line: rgba(73, 150, 70, 0.45);
+      --line-strong: rgba(118, 255, 104, 0.7);
+      --accent: #9bff6e;
+      --accent-soft: rgba(155, 255, 110, 0.12);
+      --danger: #ff6464;
+      --shadow: 0 0 0 1px rgba(135, 255, 114, 0.08), 0 0 24px rgba(53, 160, 62, 0.18);
       --font-body: "Share Tech Mono", "SFMono-Regular", Menlo, Consolas, monospace;
     }
 
@@ -35,17 +38,20 @@
     }
 
     html {
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top, rgba(20, 56, 18, 0.38), transparent 38%),
+        linear-gradient(180deg, #061008 0%, var(--bg) 22%, var(--bg-deep) 100%);
+      color-scheme: dark;
     }
 
     body {
-      background: var(--bg);
+      background: transparent;
       color: var(--fg);
       font-family: var(--font-body);
       font-size: 14px;
-      line-height: 1.5;
+      line-height: 1.45;
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px;
       position: relative;
     }
 
@@ -54,194 +60,304 @@
       position: fixed;
       inset: 0;
       pointer-events: none;
+      background:
+        radial-gradient(circle at center, transparent 55%, rgba(0, 0, 0, 0.32) 100%),
+        linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.12) 100%);
       z-index: 100;
-      background: repeating-linear-gradient(180deg, rgba(0, 255, 65, 0.05) 0 1px, transparent 1px 2px);
-      opacity: 0.5;
-    }
-
-    body::after {
-      content: "";
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 101;
-      background: rgba(18, 16, 16, 0.1);
-      opacity: 0;
-      animation: flicker 0.15s infinite;
     }
 
     @keyframes flicker {
-      0% { opacity: 0.123; }
-      5% { opacity: 0.145; }
-      10% { opacity: 0.134; }
-      15% { opacity: 0.123; }
-      20% { opacity: 0.156; }
-      25% { opacity: 0.123; }
-      30% { opacity: 0.134; }
-      35% { opacity: 0.145; }
-      40% { opacity: 0.123; }
-      45% { opacity: 0.156; }
-      50% { opacity: 0.123; }
-      55% { opacity: 0.134; }
-      60% { opacity: 0.145; }
-      65% { opacity: 0.123; }
-      70% { opacity: 0.156; }
-      75% { opacity: 0.123; }
-      80% { opacity: 0.134; }
-      85% { opacity: 0.145; }
-      90% { opacity: 0.123; }
-      95% { opacity: 0.156; }
-      100% { opacity: 0.123; }
-    }
-
-    .container {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      border: 1px solid var(--line-strong);
-      background: var(--panel);
-    }
-
-    .site-header {
-      padding: 15px;
-      border-bottom: 2px solid var(--line-strong);
-    }
-
-    .eyebrow {
-      color: var(--fg-dim);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    .wordmark-title {
-      color: var(--fg);
-      font-size: clamp(30px, 6vw, 50px);
-      line-height: 1;
-      text-transform: uppercase;
-      text-shadow: 0 0 10px var(--fg-dim);
-    }
-
-    .pill-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0;
-      border-bottom: 1px solid var(--line-strong);
-    }
-
-    .pill {
-      appearance: none;
-      background: transparent;
-      border: none;
-      border-right: 1px solid var(--line-strong);
-      color: var(--fg-dim);
-      font-family: var(--font-body);
-      font-size: 12px;
-      padding: 10px 15px;
-      cursor: pointer;
-      text-transform: uppercase;
-    }
-
-    .pill:hover {
-      color: var(--fg);
-      background: var(--fg-deep);
-    }
-
-    .pill.active {
-      color: #000;
-      background: var(--fg);
-      font-weight: bold;
-    }
-
-    .pill.active::after {
-      content: "_";
-      animation: blink 1s step-end infinite;
+      0% { opacity: 0.1; }
+      20% { opacity: 0.14; }
+      40% { opacity: 0.09; }
+      60% { opacity: 0.16; }
+      80% { opacity: 0.12; }
+      100% { opacity: 0.1; }
     }
 
     @keyframes blink {
       50% { opacity: 0; }
     }
 
-    #pick-feed {
-      display: flex;
-      flex-direction: column;
-      padding: 15px;
-      gap: 15px;
+    @keyframes rise-in {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .status-rail {
-      padding: 10px;
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
+      overflow: hidden;
       border: 1px solid var(--line-strong);
-      margin-bottom: 15px;
+      background:
+        linear-gradient(180deg, rgba(8, 19, 10, 0.95) 0%, rgba(3, 7, 4, 0.98) 100%);
+      box-shadow: var(--shadow);
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        repeating-linear-gradient(180deg, rgba(138, 255, 117, 0.06) 0 1px, transparent 1px 3px),
+        linear-gradient(90deg, rgba(134, 255, 114, 0.05), transparent 10%, transparent 90%, rgba(134, 255, 114, 0.05));
+      mix-blend-mode: screen;
+      opacity: 0.5;
+      z-index: 2;
+    }
+
+    .container::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: rgba(16, 18, 16, 0.08);
+      animation: flicker 0.16s infinite;
+      z-index: 3;
+    }
+
+    .site-header {
+      position: relative;
+      z-index: 1;
+      padding: 18px 22px 16px;
+      border-bottom: 1px solid var(--line-strong);
+      background:
+        linear-gradient(180deg, rgba(12, 28, 14, 0.72) 0%, rgba(6, 14, 7, 0.35) 100%);
+    }
+
+    .identity-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .eyebrow {
+      color: var(--fg-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.24em;
+    }
+
+    .wordmark-title {
+      color: var(--fg-soft);
+      font-size: clamp(2.6rem, 8vw, 5.5rem);
+      line-height: 0.92;
+      text-transform: uppercase;
+      text-shadow: 0 0 18px rgba(121, 255, 108, 0.22);
+    }
+
+    .pill-nav {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 14px 22px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(4, 10, 5, 0.9);
+    }
+
+    .pill {
+      appearance: none;
+      background: var(--panel-soft);
+      border: 1px solid var(--line);
+      color: var(--fg-dim);
+      font-family: var(--font-body);
+      font-size: 12px;
+      line-height: 1;
+      padding: 10px 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .pill:hover,
+    .pill:focus-visible {
+      color: var(--fg-soft);
+      border-color: var(--line-strong);
+      background: rgba(13, 31, 15, 0.92);
+      box-shadow: 0 0 0 1px rgba(134, 255, 114, 0.12);
+      outline: none;
+    }
+
+    .pill.active {
+      color: var(--bg);
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: bold;
+      box-shadow: 0 0 18px rgba(155, 255, 110, 0.3);
+    }
+
+    .pill.active::after {
+      content: " _";
+      animation: blink 1s step-end infinite;
+    }
+
+    #pick-feed {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 18px;
+      gap: 18px;
+    }
+
+    .status-rail,
+    .pick-card,
+    .dashboard-card,
+    .stats-footer {
+      position: relative;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(7, 18, 9, 0.85) 0%, rgba(3, 8, 4, 0.9) 100%);
+      box-shadow: inset 0 1px 0 rgba(140, 255, 120, 0.05);
+    }
+
+    .status-rail,
+    .pick-card,
+    .dashboard-card {
+      padding: 14px;
+      animation: rise-in 0.26s ease both;
+    }
+
+    .status-heading,
+    .card-head,
+    .card-title-row,
+    .footer-block {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .status-heading,
+    .card-head {
+      margin-bottom: 12px;
+    }
+
+    .status-kicker,
+    .card-kicker,
+    .meta-label,
+    .card-odds-label {
+      color: var(--fg-dim);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .status-title,
+    .card-title {
+      color: var(--fg-soft);
+      text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(134, 255, 114, 0.14);
+    }
+
+    .status-title {
+      font-size: clamp(1.3rem, 2vw, 1.7rem);
+      line-height: 1;
+      margin-top: 5px;
     }
 
     .feed-message {
-      padding: 40px 10px;
+      min-height: 240px;
+      display: grid;
+      place-items: center;
+      padding: 32px 18px;
       color: var(--fg-dim);
       text-align: center;
       text-transform: uppercase;
+      white-space: pre-line;
+      letter-spacing: 0.14em;
+      border: 1px solid var(--line);
+      background: rgba(4, 10, 5, 0.84);
     }
 
-    .pick-card, .dashboard-card {
-      border: 1px solid var(--line-strong);
-      padding: 12px;
-      position: relative;
+    .feed-message.is-loading::after {
+      content: " _";
+      color: var(--fg-soft);
+      animation: blink 1s step-end infinite;
     }
 
     .card-shell {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .card-kicker {
-      color: var(--fg-dim);
-      font-size: 10px;
-      text-transform: uppercase;
+    .card-title-row {
+      align-items: flex-end;
+    }
+
+    .card-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
     }
 
     .card-title {
-      color: var(--fg);
-      font-size: 28px;
-      line-height: 1;
-      text-transform: uppercase;
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      line-height: 0.92;
+      word-break: break-word;
     }
 
+    .dashboard-card .card-title {
+      font-size: clamp(1.55rem, 3vw, 2.2rem);
+    }
+
+    .card-line,
     .card-vs {
       color: var(--fg-dim);
       font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
     }
 
     .card-odds-wrap {
+      min-width: 96px;
       text-align: right;
     }
 
     .card-odds {
-      font-size: 20px;
-      color: var(--fg);
+      font-size: clamp(1.25rem, 2.5vw, 1.9rem);
+      color: var(--fg-soft);
+      line-height: 1;
     }
 
     .card-market {
-      border: 1px solid var(--fg-dim);
-      padding: 3px 6px;
+      flex: 0 0 auto;
+      align-self: flex-start;
+      border: 1px solid var(--line-strong);
+      padding: 4px 8px;
       font-size: 10px;
-      color: var(--fg-dim);
+      color: var(--fg-soft);
+      background: var(--accent-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
       display: inline-block;
     }
 
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 1px;
-      background: var(--line-strong);
-      border: 1px solid var(--line-strong);
+      background: var(--line);
+      border: 1px solid var(--line);
     }
 
     .detail-item {
-      padding: 8px;
-      background: var(--bg);
+      padding: 10px 11px;
+      background: rgba(2, 6, 3, 0.94);
     }
 
     .detail-label {
@@ -249,98 +365,234 @@
       color: var(--fg-dim);
       font-size: 9px;
       text-transform: uppercase;
-      margin-bottom: 4px;
+      letter-spacing: 0.16em;
+      margin-bottom: 5px;
     }
 
     .detail-value {
       display: block;
-      color: var(--fg);
-      font-size: 14px;
+      color: var(--fg-soft);
+      font-size: 16px;
     }
 
-    .detail-value.stat-good { color: var(--fg); text-shadow: 0 0 5px var(--fg-dim); }
-    .detail-value.stat-bad { color: #800; }
+    .detail-value.stat-good {
+      color: var(--fg-soft);
+      text-shadow: 0 0 10px rgba(134, 255, 114, 0.18);
+    }
+
+    .detail-value.stat-bad {
+      color: var(--danger);
+    }
 
     .edge-strip {
-      border-top: 1px dashed var(--line-strong);
-      padding-top: 10px;
-      margin-top: 5px;
+      border-top: 1px dashed var(--line);
+      padding-top: 12px;
+      margin-top: 2px;
     }
 
     .edge-copy {
       display: flex;
       justify-content: space-between;
+      gap: 10px;
       color: var(--fg-dim);
       font-size: 10px;
       text-transform: uppercase;
-      margin-bottom: 5px;
+      letter-spacing: 0.14em;
+      margin-bottom: 7px;
     }
 
     .edge-meter {
-      height: 4px;
-      background: var(--fg-deep);
+      height: 6px;
+      background: rgba(17, 44, 19, 0.85);
       position: relative;
+      overflow: hidden;
     }
 
-    .edge-meter-base { background: var(--fg-dim); height: 100%; }
-    .edge-meter-edge { background: var(--fg); height: 100%; position: absolute; left: 0; }
+    .edge-meter-base {
+      background: rgba(88, 157, 82, 0.6);
+      height: 100%;
+    }
+
+    .edge-meter-edge {
+      background: linear-gradient(90deg, rgba(155, 255, 110, 0.5), var(--accent));
+      height: 100%;
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
 
     .card-blurb {
-      border-top: 1px dashed var(--line-strong);
-      padding-top: 10px;
-      color: var(--fg-dim);
+      border-top: 1px dashed var(--line);
+      padding-top: 12px;
+      color: var(--fg-faint);
       font-size: 12px;
     }
-
-    .stats-footer {
-      border-top: 2px solid var(--line-strong);
-      padding: 15px;
-      font-size: 12px;
-    }
-
-    .footer-block {
-      display: flex;
-      justify-content: space-between;
-      color: var(--fg-dim);
-      text-transform: uppercase;
-    }
-
-    .footer-value { color: var(--fg); margin-left: 5px; }
 
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
     }
 
     .status-cell {
-      padding: 5px;
+      padding: 10px 11px;
+      border: 1px solid rgba(73, 150, 70, 0.28);
+      background: rgba(2, 6, 3, 0.72);
     }
 
-    .status-cell-label { color: var(--fg-dim); font-size: 10px; display: block; }
-    .status-cell-value { color: var(--fg); font-size: 12px; display: block; }
+    .status-cell-label {
+      color: var(--fg-dim);
+      font-size: 10px;
+      display: block;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 4px;
+    }
+
+    .status-cell-value {
+      color: var(--fg-soft);
+      font-size: 13px;
+      display: block;
+    }
 
     .status-diagnostics {
-      margin-top: 10px;
-      border-top: 1px solid var(--line-strong);
-      padding-top: 10px;
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
       font-size: 11px;
+    }
+
+    .status-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .status-list-item {
+      color: var(--fg-faint);
+      overflow-wrap: anywhere;
+    }
+
+    .dashboard-lines,
+    .dashboard-lines-pre {
+      border: 1px solid rgba(73, 150, 70, 0.34);
+      background: rgba(2, 6, 3, 0.86);
+      padding: 10px 12px;
+    }
+
+    .dashboard-lines {
+      display: grid;
+      gap: 7px;
+    }
+
+    .dashboard-line {
+      color: var(--fg-soft);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
 
     .dashboard-lines-pre {
       white-space: pre-wrap;
       font-size: 12px;
-      color: var(--fg);
-      border: 1px solid var(--line-strong);
-      padding: 10px;
-      background: #050505;
+      color: var(--fg-soft);
+    }
+
+    .stats-footer {
+      position: relative;
+      z-index: 1;
+      padding: 14px 18px;
+      border-top: 1px solid var(--line-strong);
+      font-size: 12px;
+    }
+
+    .footer-block {
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      text-transform: uppercase;
+    }
+
+    .footer-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .footer-value {
+      color: var(--fg-soft);
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 14px;
+      }
+
+      .detail-grid,
+      .status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
 
     @media (max-width: 640px) {
-      body { padding: 0; }
-      .container { border: none; }
-      .detail-grid { grid-template-columns: 1fr 1fr; }
-      .status-grid { grid-template-columns: 1fr; }
+      body {
+        padding: 0;
+      }
+
+      .container {
+        border-left: none;
+        border-right: none;
+      }
+
+      .site-header,
+      .pill-nav,
+      #pick-feed,
+      .stats-footer {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .status-heading,
+      .card-head,
+      .footer-block {
+        flex-direction: column;
+      }
+
+      .card-title-row {
+        display: block;
+      }
+
+      .card-title-block {
+        width: 100%;
+      }
+
+      .card-market {
+        margin-bottom: 10px;
+      }
+
+      .card-odds-wrap {
+        min-width: 0;
+        text-align: left;
+      }
+
+      .card-title {
+        font-size: clamp(1.65rem, 11vw, 2.35rem);
+      }
+
+      .dashboard-card .card-title {
+        font-size: 1.4rem;
+      }
+
+      .detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .edge-copy {
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -349,13 +601,13 @@
 
     <header class="site-header">
       <div class="identity-block">
-        <div class="eyebrow">MODE: EDGE_DETECTION // STATUS: NOMINAL</div>
+        <div class="eyebrow">PICKS // DASHBOARD // ET</div>
         <div class="wordmark-title">SLOP LOCKS</div>
       </div>
     </header>
 
     <nav class="pill-nav">
-      <button class="pill" data-sport="dashboard">DASHBOARD</button>
+      <button class="pill" data-sport="dashboard">BOARD</button>
       <button class="pill active" data-sport="all">ALL</button>
       <button class="pill" data-sport="nba">NBA</button>
       <button class="pill" data-sport="nhl">NHL</button>
@@ -365,7 +617,7 @@
     </nav>
 
     <main id="pick-feed">
-      <div class="feed-message" id="loading-msg">BOOTING_SYSTEM...</div>
+      <div class="feed-message" id="loading-msg">SYNCING...</div>
     </main>
 
     <footer class="stats-footer" id="stats-footer"></footer>
@@ -539,7 +791,7 @@
 
     var head = document.createElement('div');
     head.className = 'card-head';
-    head.innerHTML = '<span class="card-kicker">SYS_DATA_BLOCK</span>';
+    head.innerHTML = '<span class="card-kicker">REPORT</span>';
     shell.appendChild(head);
 
     var titleEl = document.createElement('div');
@@ -549,7 +801,7 @@
 
     var tag = document.createElement('div');
     tag.className = 'card-market';
-    tag.textContent = accent || 'READOUT';
+    tag.textContent = accent || 'DATA';
     shell.appendChild(tag);
 
     var body = document.createElement('div');
@@ -601,7 +853,8 @@
 
     var oddsLabel = document.createElement('div');
     oddsLabel.className = 'card-odds-label';
-    oddsLabel.textContent = 'ML_LINE';
+    // Fallback: all markets render into the same odds slot because the payload only exposes one American odds field.
+    oddsLabel.textContent = 'ODDS';
     oddsWrap.appendChild(oddsLabel);
 
     var oddsValue = document.createElement('div');
@@ -634,18 +887,18 @@
 
     var marketTag = document.createElement('div');
     marketTag.className = 'card-market';
-    marketTag.textContent = isTotal ? 'Total' : 'Moneyline';
+    marketTag.textContent = isTotal ? 'TOTAL' : 'ML';
     titleRow.appendChild(marketTag);
     shell.appendChild(titleRow);
 
     var details = document.createElement('div');
     details.className = 'detail-grid';
-    details.appendChild(createMetric('MDL_PROB', fmtPct(pick.model_prob), null));
-    details.appendChild(createMetric(isTotal ? 'LINE' : 'IMPLIED', isTotal
+    details.appendChild(createMetric('MODEL', fmtPct(pick.model_prob), null));
+    details.appendChild(createMetric(isTotal ? 'LINE' : 'BOOK', isTotal
       ? (pick.total_line != null ? Number(pick.total_line).toFixed(1) : '--')
       : fmtPct(pick.implied_prob), null));
-    details.appendChild(createMetric('DELTA', edgePct(pick.edge), (pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad'));
-    details.appendChild(createMetric(isTotal ? 'PROJECTION' : 'XP_VAL', isTotal
+    details.appendChild(createMetric('EDGE', edgePct(pick.edge), (pick.edge || 0) >= 0 ? 'stat-good' : 'stat-bad'));
+    details.appendChild(createMetric(isTotal ? 'PROJ' : 'EV', isTotal
       ? (pick.expected_total != null ? pick.expected_total.toFixed(1) : '--')
       : units(pick.expected_value), null));
     details.appendChild(createMetric('CONF', confidenceText(pick.confidence_score, pick.confidence_stars), null));
@@ -658,8 +911,8 @@
     var edgeCopy = document.createElement('div');
     edgeCopy.className = 'edge-copy';
     edgeCopy.innerHTML =
-      '<span>IMPLIED ' + fmtPct(pick.implied_prob) + '</span>' +
-      '<span>MDL_DET ' + fmtPct(pick.model_prob) + '</span>';
+      '<span>BOOK ' + fmtPct(pick.implied_prob) + '</span>' +
+      '<span>MODEL ' + fmtPct(pick.model_prob) + '</span>';
     edgeStrip.appendChild(edgeCopy);
 
     var meter = document.createElement('div');
@@ -720,6 +973,7 @@
     if (mode === 'dashboard') {
       generated = formatStamp((dashboardData || {}).generated_at || (dashboardData || {}).manifest_updated_at || '');
     } else if (mode === 'all') {
+      // Fallback: for the combined view, use the newest available sport timestamp instead of inventing a synthetic sync time.
       var stamps = Object.keys(loadedSportsData).map(function (sport) {
         var data = loadedSportsData[sport] || {};
         return data.generated_at || data.updated_at || '';
@@ -771,21 +1025,21 @@
 
     var headingCopy = document.createElement('div');
     headingCopy.innerHTML =
-      '<div class="status-kicker">SLATE_SNAPSHOT</div>' +
+      '<div class="status-kicker">VIEW</div>' +
       '<div class="status-title">' + label + '</div>';
     heading.appendChild(headingCopy);
 
     var updated = document.createElement('div');
     updated.className = 'status-kicker';
-    updated.textContent = 'TS_BUILD ' + generated;
+    updated.textContent = 'UPDATED ' + generated;
     heading.appendChild(updated);
     el.appendChild(heading);
 
     var grid = document.createElement('div');
     grid.className = 'status-grid';
-    grid.appendChild(createStatusCell('SYS_MODE', label));
-    grid.appendChild(createStatusCell('LOCKS_ACTIVE', String(picks ? picks.length : 0)));
-    grid.appendChild(createStatusCell('TS_BUILD', generated));
+    grid.appendChild(createStatusCell('MODE', label));
+    grid.appendChild(createStatusCell('LOCKS', String(picks ? picks.length : 0)));
+    grid.appendChild(createStatusCell('UPDATED', generated));
     el.appendChild(grid);
 
     if (diagnosticLines.length) {
@@ -794,7 +1048,7 @@
 
       var diagLabel = document.createElement('div');
       diagLabel.className = 'status-kicker';
-      diagLabel.textContent = 'Diagnostics';
+      diagLabel.textContent = 'LOG';
       diag.appendChild(diagLabel);
 
       var list = document.createElement('div');
@@ -815,7 +1069,7 @@
   function renderDashboard() {
     clearFeed();
     if (!dashboardData) {
-      showMessage('[ DASHBOARD UNAVAILABLE ]\n\nNo dashboard payload was found.', false);
+      showMessage('[ NO BOARD ]\n\nDashboard data unavailable.', false);
       return;
     }
 
@@ -840,26 +1094,26 @@
       'PRED ACC    ' + fmtPct(predictions.accuracy),
       'LOG LOSS    ' + (predictions.avg_log_loss != null ? Number(predictions.avg_log_loss).toFixed(3) : '--'),
       'SLATE NOW   modeled=' + (slate.modeled || 0) + ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) + ' | +ev=' + (slate.positive_ev || 0) + ' | locks=' + (slate.locks || 0)
-    ], 'AGGREGATE'));
+    ], 'TOTAL'));
 
-    feed.appendChild(createDashboardBlock('Recent Windows', [
+    feed.appendChild(createDashboardBlock('Recent', [
       'LAST 7D     ' + fmtRecord(windows['7d']) + ' | HIT ' + fmtPct((windows['7d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['7d'] || {}).roi),
       'LAST 30D    ' + fmtRecord(windows['30d']) + ' | HIT ' + fmtPct((windows['30d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['30d'] || {}).roi),
       '7D CLV      ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
       '30D CLV     ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
-    ], 'RECENCY'));
+    ], 'WINDOW'));
 
-    feed.appendChild(createDashboardBlock('Snapshot Sync', [
+    feed.appendChild(createDashboardBlock('Replay', [
       'RUNS        ' + String((snapshotReplay.aggregate || {}).snapshots || 0),
       'PARITY      ' + fmtRatio((snapshotReplay.aggregate || {}).exact_matches, (snapshotReplay.aggregate || {}).snapshots),
       'MATCH RATE  ' + fmtPct((snapshotReplay.aggregate || {}).exact_match_rate),
       'MISMATCHES  ' + String((snapshotReplay.aggregate || {}).mismatches || 0)
-    ], 'PARITY'));
+    ], 'SYNC'));
 
     if (actions.length) {
-      feed.appendChild(createDashboardBlock('Auto Operations', actions.map(function (action, idx) {
+      feed.appendChild(createDashboardBlock('Queue', actions.map(function (action, idx) {
         return createActionPrefix(action.priority) + ' ' + action.title.toUpperCase() + '\n    ' + action.detail;
-      }), 'OPERATE'));
+      }), 'TASKS'));
     }
 
     var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE'];
@@ -873,7 +1127,7 @@
         String((sport.current.locks || 0) + 'L/' + (sport.current.totals || 0) + 'T')
       );
     });
-    feed.appendChild(createDashboardBlock('Sport Splits', sportLines, 'BY SPORT', { preformatted: true }));
+    feed.appendChild(createDashboardBlock('Sports', sportLines, 'SPLITS', { preformatted: true }));
 
     var leaderLines = [];
     if (leaders.best_roi_sport) {
@@ -888,19 +1142,19 @@
     ((aggregate.threshold_guidance || []).slice(0, 3)).forEach(function (line, idx) {
       leaderLines.push('GUIDE ' + (idx + 1) + '    ' + line);
     });
-    feed.appendChild(createDashboardBlock('Leaders + Guidance', leaderLines, 'READOUT'));
+    feed.appendChild(createDashboardBlock('Leaders', leaderLines, 'LEAD'));
 
     if ((dashboardData.insights || []).length) {
       var insightLines = (dashboardData.insights || []).map(function (line, idx) {
         return (idx + 1) + '. ' + line;
       });
-      feed.appendChild(createDashboardBlock('Notes', insightLines, 'INSIGHTS'));
+      feed.appendChild(createDashboardBlock('Notes', insightLines, 'LOG'));
     }
   }
 
   function renderFeed(picks) {
     if (!picks || picks.length === 0) {
-      showMessage('[ NO PICKS POSTED ]\n\nTry another sport or check again after the next pipeline run.', false);
+      showMessage('[ NO PICKS ]\n\nTry another tab later.', false);
       return;
     }
     clearFeed();
@@ -965,7 +1219,7 @@
 
   function loadDashboard() {
     currentSport = 'dashboard';
-    showMessage('[ INITIALIZING_DASHBOARD ]', true);
+    showMessage('[ LOADING BOARD ]', true);
     fetch('data/dashboard.json?t=' + Date.now())
       .then(function (res) {
         if (!res.ok) throw new Error(res.status);
@@ -977,7 +1231,7 @@
         renderStats('dashboard');
       })
       .catch(function () {
-        showMessage('[ DASHBOARD ERROR ]\n\nThe reporting payload is missing or invalid.', false);
+        showMessage('[ BOARD ERROR ]\n\nDashboard data invalid.', false);
         setStatsPlaceholder();
       });
   }
@@ -985,7 +1239,7 @@
   function loadAllSports() {
     currentSport = 'all';
     loadedSportsData = {};
-    showMessage('[ INITIALIZING_SYSTEM ]', true);
+    showMessage('[ LOADING FEEDS ]', true);
 
     var fetches = ALL_SPORTS.map(function (sport) {
       return fetch('data/' + sport + '/predictions.json?t=' + Date.now())
@@ -1016,7 +1270,7 @@
       });
 
       if (Object.keys(loadedSportsData).length === 0) {
-        showMessage('[ ERROR LOADING DATA ]\n\nThe site could not fetch any sport files.', false);
+        showMessage('[ DATA ERROR ]\n\nNo sport files loaded.', false);
         setStatsPlaceholder();
         return;
       }
@@ -1029,7 +1283,7 @@
 
   function loadSportData(sport) {
     currentSport = sport;
-    showMessage('[ BOOTING_' + formatSportLabel(sport) + ' ]', true);
+    showMessage('[ LOADING ' + formatSportLabel(sport) + ' ]', true);
 
     fetch('data/' + sport + '/predictions.json?t=' + Date.now())
       .then(function (res) {
@@ -1045,7 +1299,7 @@
         renderStats(sport);
       })
       .catch(function () {
-        showMessage('[ ERROR LOADING ' + formatSportLabel(sport) + ' ]\n\nThe JSON file for this sport is missing or invalid.', false);
+        showMessage('[ ' + formatSportLabel(sport) + ' ERROR ]\n\nMissing or invalid JSON.', false);
         setStatsPlaceholder();
       });
   }

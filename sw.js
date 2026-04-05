@@ -1,11 +1,11 @@
-const CACHE_NAME = 'sloplocks-v6';
+const CACHE_NAME = 'sloplocks-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap'
+  'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap'
 ];
 
 // Install — cache shell assets
