@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 # Load environment variables from .env file if it exists
-load_dotenv()
+load_dotenv(override=True)
 
 TRACKING_DIRNAME = "tracking"
 RESULTS_LOG_FILENAME = "results_log.csv"
