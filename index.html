@@ -394,11 +394,16 @@
       display: flex;
       justify-content: space-between;
       gap: 10px;
-      color: var(--fg-dim);
-      font-size: 9px;
+      color: var(--fg-soft);
+      font-size: 11px;
+      line-height: 1.2;
       text-transform: uppercase;
       letter-spacing: 0.14em;
       margin-bottom: 5px;
+    }
+
+    .edge-copy span {
+      text-shadow: 0 0 8px rgba(134, 255, 114, 0.12);
     }
 
     .edge-meter {
@@ -1183,21 +1188,28 @@
       return;
     }
     if (mode === 'all') {
-      var wins = 0, losses = 0, evaluated = 0;
+      var wins = 0, losses = 0, evaluated = 0, roiWeightedSum = 0, roiWeight = 0;
       Object.keys(loadedSportsData).forEach(function (sport) {
         var ps = (loadedSportsData[sport].pick_stats || {}).all || {};
         wins      += ps.wins      || 0;
         losses    += ps.losses    || 0;
         evaluated += ps.evaluated || 0;
+        if (ps.roi != null && ps.evaluated) {
+          // Fallback: aggregate all-sport ROI by weighting each sport ROI by its evaluated picks because
+          // the payload does not expose a unified cross-sport return series or total stake basis.
+          roiWeightedSum += ps.roi * ps.evaluated;
+          roiWeight += ps.evaluated;
+        }
       });
       var hitRate = evaluated > 0 ? wins / evaluated : null;
+      var roiAll = roiWeight > 0 ? roiWeightedSum / roiWeight : null;
       if (hitRate === null) {
         setStatsPlaceholder();
       } else {
         setStatsFooter([
           { label: 'RECORD', value: wins + '-' + losses },
           { label: 'HIT_RATE', value: (hitRate * 100).toFixed(1) + '%' },
-          { label: 'ROI', value: '--' }
+          { label: 'ROI', value: roiAll != null ? ((roiAll >= 0 ? '+' : '') + (roiAll * 100).toFixed(1) + '%') : '--' }
         ]);
       }
       return;
