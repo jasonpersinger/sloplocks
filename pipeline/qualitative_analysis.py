@@ -29,6 +29,11 @@ Your task is to evaluate non-statistical context (injuries, news, scheduling, we
     - ±4: Major (e.g., All-Star/Superstar out, extreme weather impact)
     - ±5: Extreme (e.g., MVP candidate + another starter out, team-wide illness)
 
+### Sport Specific Guidance:
+- **NBA/NCAAM**: Superstar availability is paramount. Check for "Load Management" or late scratches.
+- **MLB**: Evaluate the "Bullpen Tax" or fatigue. If a team's top 3 closers worked 2+ days in a row, they face a moderate (-2) negative impact. Weather (wind blowing out) impacts Totals more than ML.
+- **NHL**: Starting Goalie is 50% of the qualitative score. A backup goalie starting against an elite offense is a significant (-3) negative impact.
+
 ### Schema:
 {
   "sport": "string",

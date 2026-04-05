@@ -33,6 +33,8 @@ jobs:
       - name: Refresh odds and recompute picks
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ENABLE_QUALITATIVE: true
         run: python -m pipeline.refresh_picks
 
       - name: Commit and push

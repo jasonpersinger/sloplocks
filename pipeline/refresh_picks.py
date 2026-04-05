@@ -23,8 +23,11 @@ from pipeline.config import (
     SLOP_LOCK_MAX_ODDS,
     SPORTS,
     DATA_DIR,
+    ENABLE_QUALITATIVE,
 )
 
+from pipeline.qualitative_analysis import analyze_game_qualitative
+from pipeline.context_scraper import get_game_context
 from pipeline.ensemble import (
     compute_edges,
     compute_totals_edges,
@@ -51,11 +54,13 @@ from pipeline.run import (
     _apply_nba_availability_total_adjustment,
     _apply_nhl_injury_adjustment,
     _apply_nhl_goalie_status_adjustment,
+    _apply_qualitative_adjustment,
     _apply_latest_market_snapshots,
     _build_publication_guard,
     _build_pipeline_diagnostics,
     _build_run_context,
     _build_odds_snapshot_rows,
+    _format_qualitative_summary,
     _is_live_public_output,
     _compute_slimegrinder as _run_compute_slimegrinder,
     _compute_slop_locks as _run_compute_slop_locks,
@@ -234,6 +239,28 @@ def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
                 match.get("away_goalie_status"),
                 max_delta=sport.get("goalie_status_adjustment_max_delta", 0.012),
             )
+
+        # ------------------------------------------------------------------
+        # Qualitative Gemini Integration (Refresh)
+        # ------------------------------------------------------------------
+        if ENABLE_QUALITATIVE and sport.get("enable_qualitative", False):
+            context_text = get_game_context(sport_key, match)
+            game_for_ai = {
+                "sport": sport_key,
+                "home_team": match["home_team"],
+                "away_team": match["away_team"],
+                "date": match["date"],
+                "start_time": match.get("start_time"),
+            }
+            qualitative_data = analyze_game_qualitative(game_for_ai, context_text)
+            match["qualitative_analysis"] = qualitative_data
+            match["qualitative_summary"] = _format_qualitative_summary(refreshed_probs, qualitative_data)
+            refreshed_probs = _apply_qualitative_adjustment(
+                refreshed_probs,
+                qualitative_data,
+                weight=sport.get("qualitative_weight", 0.5)
+            )
+
         match["model_probs"] = {k: round(v, 4) for k, v in refreshed_probs.items()}
         top_pick = max(refreshed_probs, key=refreshed_probs.get)
         match["pick"] = top_pick

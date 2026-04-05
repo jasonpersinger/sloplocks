@@ -181,6 +181,9 @@ def _enrich_item(item: dict, sport_key: str, source: str, match: dict | None = N
         enriched["away_pitcher"] = match.get("away_pitcher")
     if enriched.get("start_time") is None:
         enriched["start_time"] = match.get("start_time")
+    
+    if enriched.get("qualitative_summary") is None:
+        enriched["qualitative_summary"] = match.get("qualitative_summary")
 
     return enriched
 
@@ -354,6 +357,10 @@ def _lock_field(item: dict, sport_key: str) -> dict:
     pitcher_note = _pitcher_note(item)
     if pitcher_note:
         value += pitcher_note
+    
+    if item.get("qualitative_summary"):
+        value += f"\n**AI Sense:** {item['qualitative_summary']}"
+
     if item.get("blurb"):
         value += f"\n> {item['blurb']}"
 
