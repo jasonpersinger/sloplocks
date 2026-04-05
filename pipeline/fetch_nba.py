@@ -518,7 +518,11 @@ def fetch_nba_espn_games(
     cache = _load_espn_cache(cache_path)
     fetch_dates = _incremental_dates(cache, dates)
 
+    if fetch_dates:
+        print(f"[*] Fetching box scores for {len(fetch_dates)} dates...")
+
     for date_str in fetch_dates:
+        print(f"  - {date_str}...", end=" ", flush=True)
         espn_date = date_str.replace("-", "")
         url = f"{NBA_ESPN_BASE}/scoreboard?dates={espn_date}&limit=50&seasontype=2"
         resp = requests.get(url, timeout=30)
@@ -574,6 +578,7 @@ def fetch_nba_espn_games(
             except requests.RequestException:
                 continue
 
+        print("DONE")
         time.sleep(_ESPN_REQUEST_DELAY)
 
     _save_espn_cache(cache_path, cache)
@@ -641,11 +646,15 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
     data = resp.json()
 
     fixtures = []
-    for event in data.get("events", []):
+    events = data.get("events", [])
+    if events:
+        print(f"[*] Fetching summaries for {len(events)} matchups...")
+
+    for event in events:
         comp = event["competitions"][0]
         status_type = comp.get("status", {}).get("type", {})
         is_completed = status_type.get("completed", False)
-
+        
         home = away = None
         for competitor in comp["competitors"]:
             if competitor["homeAway"] == "home":
@@ -655,6 +664,8 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
 
         if home is None or away is None:
             continue
+        
+        print(f"  - {away['team']['displayName']} @ {home['team']['displayName']}...", end=" ", flush=True)
 
         home_leader_weights = {}
         away_leader_weights = {}
@@ -715,6 +726,7 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
             "away_availability_profile": away_profile,
             "summary_injuries": summary_data.get("injuries", []),
         })
+        print("DONE")
 
     _save_espn_cache(cache_path, cache)
     return fixtures

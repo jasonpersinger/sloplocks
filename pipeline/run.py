@@ -7,6 +7,7 @@ and JSON output into a single ``run_pipeline()`` entry point.
 import json
 import os
 import csv
+import logging
 from datetime import datetime, timedelta, timezone
 
 import numpy as np
@@ -2200,11 +2201,15 @@ def _build_pipeline_diagnostics(
     matches_with_positive_ev = set()
     lock_eligible_matches = set()
     lock_eligible_outcomes = 0
+    matches_with_qualitative = 0
 
     for record in prediction_records:
         edges = record.get("edges") or {}
         if edges:
             matches_with_market += 1
+
+        if record.get("qualitative_summary") and record.get("qualitative_summary") != "No qualitative impact.":
+            matches_with_qualitative += 1
 
         has_positive_ev = False
         has_lock_eligible_outcome = False
@@ -2246,6 +2251,7 @@ def _build_pipeline_diagnostics(
         "matches_modeled": len(prediction_records),
         "matches_with_market": matches_with_market,
         "matches_with_positive_ev": len(matches_with_positive_ev),
+        "matches_with_qualitative": matches_with_qualitative,
         "lock_eligible_matches": len(lock_eligible_matches),
         "lock_eligible_outcomes": lock_eligible_outcomes,
         "slop_locks_posted": len(slop_locks),
@@ -2257,6 +2263,7 @@ def _build_pipeline_diagnostics(
         f"modeled={diagnostics['matches_modeled']} | "
         f"odds={diagnostics['fixtures_with_odds']}/{diagnostics['fixtures_in_window']} | "
         f"+ev={diagnostics['matches_with_positive_ev']} | "
+        f"sense={diagnostics['matches_with_qualitative']} | "
         f"eligible={diagnostics['lock_eligible_matches']} | "
         f"locks={diagnostics['slop_locks_posted']}"
     )
@@ -2316,12 +2323,14 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     output_dir : str or None
         Override the sport's data directory.
     """
+    print(f"[*] Starting {sport_key.upper()} pipeline run...")
     run_context = dict(run_context or _build_run_context())
     sport = SPORTS[sport_key]
     sport_dir = output_dir or sport["data_dir"]
     base_dir = os.path.dirname(sport_dir)
     outcomes = sport["outcomes"]
 
+    # ... (paths)
     predictions_path = os.path.join(sport_dir, "predictions.json")
     history_path = os.path.join(sport_dir, "history.json")
     accuracy_path = os.path.join(sport_dir, "model_accuracy.json")
@@ -2333,6 +2342,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     # ------------------------------------------------------------------
     # 1. Fetch data (sport-specific)
     # ------------------------------------------------------------------
+    print(f"[*] Fetching {sport_key.upper()} data and schedule...")
     box_scores_df = None
 
     if sport_key == "nba":
@@ -2343,6 +2353,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
+    # ...
     elif sport_key == "nhl":
         games_df, box_scores_df = fetch_nhl_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
@@ -3496,6 +3507,36 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 # Main pipeline — runs all sports
 # ---------------------------------------------------------------------------
 
+def _update_global_metadata(base_dir):
+    """Update the global manifest.json and dashboard.json."""
+    manifest_path = os.path.join(base_dir, "manifest.json")
+    manifest = _load_json(manifest_path)
+    
+    # Update timestamp and ensure structure exists
+    manifest["updated_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    if "sports" not in manifest:
+        manifest["sports"] = {}
+        
+    # Re-build sports status from current directory state
+    for sk in SPORTS:
+        pred_path = os.path.join(base_dir, sk, "predictions.json")
+        if os.path.exists(pred_path):
+            with open(pred_path) as f:
+                data = json.load(f)
+                manifest["sports"][sk] = {
+                    "name": SPORTS[sk]["display_name"],
+                    "status": "ok",
+                    "updated_at": data.get("generated_at", manifest["updated_at"]),
+                    "diagnostics": data.get("diagnostics", {}),
+                }
+
+    _backfill_pick_decision_log_from_snapshots(base_dir)
+    _hydrate_pick_decision_log_market_snapshots(base_dir)
+    _backfill_pick_history_market_snapshots(base_dir)
+    _save_json(manifest_path, manifest)
+    _save_json(os.path.join(base_dir, "dashboard.json"), build_dashboard_data(base_dir))
+
+
 def run_pipeline(output_dir=None):
     """Run the SLOP LOCKS pipeline for all configured sports.
 
@@ -3532,11 +3573,8 @@ def run_pipeline(output_dir=None):
                 "updated_at": now,
             }
 
-    _backfill_pick_decision_log_from_snapshots(base_dir)
-    _hydrate_pick_decision_log_market_snapshots(base_dir)
-    _backfill_pick_history_market_snapshots(base_dir)
-    _save_json(os.path.join(base_dir, "manifest.json"), manifest)
-    _save_json(os.path.join(base_dir, "dashboard.json"), build_dashboard_data(base_dir))
+    # Post-run cleanup and dashboard refresh
+    _update_global_metadata(base_dir)
 
     return manifest
 
@@ -3549,10 +3587,19 @@ def _main(argv=None):
     parser = argparse.ArgumentParser(description="Run the SLOP LOCKS pipeline.")
     parser.add_argument("--sport", choices=sorted(SPORTS.keys()))
     parser.add_argument("--output-dir")
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
+
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+        for handler in logging.getLogger().handlers:
+            handler.setLevel(logging.DEBUG)
 
     if args.sport:
         run_sport_pipeline(args.sport, output_dir=args.output_dir)
+        # Update manifest and dashboard even for single sport runs
+        base_dir = os.path.dirname(args.output_dir) if args.output_dir else DATA_DIR
+        _update_global_metadata(base_dir)
         return 0
 
     manifest = run_pipeline(output_dir=args.output_dir)

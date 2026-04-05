@@ -4,7 +4,6 @@ import logging
 import time
 import warnings
 from datetime import datetime
-
 from google import genai
 from google.genai import types
 
@@ -12,8 +11,8 @@ from google.genai import types
 logger = logging.getLogger(__name__)
 
 # Log file path consistent with other pipeline logs
-DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
-QUALITATIVE_LOG_FILE = os.path.join(DATA_DIR, "tracking", "qualitative_log.jsonl")
+# We'll put it in data/tracking for permanence
+QUALITATIVE_LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tracking", "qualitative_log.jsonl")
 
 SYSTEM_PROMPT = """You are an expert sports betting analyst specializing in qualitative factors.
 Your task is to evaluate non-statistical context (injuries, news, scheduling, weather) and provide impact scores for each team.
@@ -51,17 +50,9 @@ Your task is to evaluate non-statistical context (injuries, news, scheduling, we
 }
 """
 
-_client = None
-
-def _get_client(api_key):
-    global _client
-    if _client is None:
-        _client = genai.Client(api_key=api_key)
-    return _client
-
 def analyze_game_qualitative(game_dict, context_text):
     """
-    Calls Gemini API to score qualitative factors.
+    Calls Gemini API to score qualitative factors using the modern google-genai package.
     """
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
@@ -71,7 +62,8 @@ def analyze_game_qualitative(game_dict, context_text):
     if not context_text or context_text.strip() == "":
         return _get_default_response(game_dict)
 
-    client = _get_client(api_key)
+    client = genai.Client(api_key=api_key, http_options={'api_version': 'v1beta'})
+    model_id = "gemini-2.5-flash" 
 
     user_prompt = f"""Evaluate the qualitative impact for the following game:
 Sport: {game_dict.get('sport')}
@@ -86,7 +78,7 @@ Current Line: {game_dict.get('american_odds', 'N/A')}
 
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model=model_id,
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
@@ -96,6 +88,12 @@ Current Line: {game_dict.get('american_odds', 'N/A')}
         )
         
         raw_text = response.text
+        # Clean up in case it still returned markdown despite instructions
+        if raw_text.startswith("```"):
+            raw_text = raw_text.strip("`").strip()
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:].strip()
+                
         result = json.loads(raw_text)
         
         # Log raw response and parsed result
@@ -134,6 +132,7 @@ def _log_api_call(game_dict, context_sent, raw_response, parsed_result=None):
     }
     
     try:
+        os.makedirs(os.path.dirname(QUALITATIVE_LOG_FILE), exist_ok=True)
         with open(QUALITATIVE_LOG_FILE, "a") as f:
             f.write(json.dumps(log_entry) + "\n")
     except Exception as e:

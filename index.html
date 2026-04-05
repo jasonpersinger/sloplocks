@@ -955,9 +955,12 @@
 
     if (pick.qualitative_summary && pick.qualitative_summary.trim() !== '' && pick.qualitative_summary !== 'No qualitative impact.') {
       var senseEl = document.createElement('div');
-      senseEl.className = 'card-blurb';
+      senseEl.className = 'card-blurb sense-blurb';
       senseEl.style.color = '#ffbafc';
-      senseEl.textContent = pick.qualitative_summary;
+      senseEl.style.borderLeft = '2px solid #ff72f9';
+      senseEl.style.paddingLeft = '8px';
+      senseEl.style.marginTop = '8px';
+      senseEl.innerHTML = '<span style="font-weight:bold; color:#ff72f9; font-size:9px; letter-spacing:1px;">GEMINI_SENSE</span><br>' + pick.qualitative_summary;
       card.appendChild(senseEl);
     }
 
@@ -1019,6 +1022,7 @@
         'slate modeled=' + (slate.modeled || 0) +
         ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) +
         ' | +ev=' + (slate.positive_ev || 0) +
+        ' | sense=' + (slate.sense || 0) +
         ' | eligible=' + (slate.eligible || 0) +
         ' | locks=' + (slate.locks || 0)
       );
@@ -1121,7 +1125,7 @@
       'CLV         ' + fmtSignedPct(record.avg_clv, 2),
       'PRED ACC    ' + fmtPct(predictions.accuracy),
       'LOG LOSS    ' + (predictions.avg_log_loss != null ? Number(predictions.avg_log_loss).toFixed(3) : '--'),
-      'SLATE NOW   modeled=' + (slate.modeled || 0) + ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) + ' | +ev=' + (slate.positive_ev || 0) + ' | locks=' + (slate.locks || 0)
+      'SLATE NOW   modeled=' + (slate.modeled || 0) + ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) + ' | +ev=' + (slate.positive_ev || 0) + ' | sense=' + (slate.sense || 0) + ' | locks=' + (slate.locks || 0)
     ], 'GEMINI'));
 
     feed.appendChild(createDashboardBlock('Recent', [
@@ -1149,7 +1153,7 @@
       }), 'TASKS'));
     }
 
-    var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE'];
+    var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE    SENSE'];
     (dashboardData.sports || []).forEach(function (sport) {
       sportLines.push(
         (sport.name || '').padEnd(6, ' ').slice(0, 6) + ' ' +
@@ -1157,7 +1161,8 @@
         fmtPct(sport.performance.hit_rate).padEnd(8, ' ').slice(0, 8) + ' ' +
         fmtSignedPct(sport.performance.roi).padEnd(8, ' ').slice(0, 8) + ' ' +
         fmtSignedPct((sport.performance.clv || {}).avg_clv || sport.performance.avg_clv, 2).padEnd(8, ' ').slice(0, 8) + ' ' +
-        String((sport.current.locks || 0) + 'L/' + (sport.current.totals || 0) + 'T')
+        String((sport.current.locks || 0) + 'L/' + (sport.current.totals || 0) + 'T').padEnd(7, ' ').slice(0, 7) + ' ' +
+        String(sport.current.sense || 0)
       );
     });
     feed.appendChild(createDashboardBlock('Sports', sportLines, 'SPLITS', { preformatted: true }));

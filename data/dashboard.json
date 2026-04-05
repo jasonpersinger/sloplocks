@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-04-05T03:46:50Z",
-  "manifest_updated_at": "2026-04-05T03:46:02Z",
+  "generated_at": "2026-04-05T06:28:34Z",
+  "manifest_updated_at": "2026-04-05T06:28:33Z",
   "aggregate": {
     "record": {
       "record": "54-31-1",
@@ -136,10 +136,11 @@
       "Results are positive but CLV is weak; keep thresholds steady and watch for regression."
     ],
     "slate": {
-      "modeled": 36,
+      "modeled": 44,
       "with_odds": 0,
-      "fixtures": 36,
+      "fixtures": 44,
       "positive_ev": 0,
+      "sense": 11,
       "eligible": 0,
       "locks": 0
     }
@@ -208,13 +209,14 @@
       "name": "NBA",
       "status": "ok",
       "current": {
-        "modeled": 3,
-        "odds_coverage": "0/3",
+        "modeled": 11,
+        "odds_coverage": "0/11",
         "positive_ev": 0,
         "eligible": 0,
         "locks": 0,
         "totals": 0,
-        "summary": "modeled=3 | odds=0/3 | +ev=0 | eligible=0 | locks=0 | hold moneylines until settled picks reach 17/20"
+        "sense": 11,
+        "summary": "modeled=11 | odds=0/11 | +ev=0 | sense=11 | eligible=0 | locks=0 | hold moneylines until settled picks reach 17/20"
       },
       "performance": {
         "record": "9-8",
@@ -238,6 +240,7 @@
         "eligible": 0,
         "locks": 0,
         "totals": 0,
+        "sense": 0,
         "summary": "modeled=15 | odds=0/15 | +ev=0 | eligible=0 | locks=0 | hold moneylines until settled picks reach 4/20"
       },
       "performance": {
@@ -262,6 +265,7 @@
         "eligible": 0,
         "locks": 0,
         "totals": 0,
+        "sense": 0,
         "summary": "modeled=2 | odds=0/2 | +ev=0 | eligible=0 | locks=0 | hold moneylines until settled picks reach 3/20"
       },
       "performance": {
@@ -286,6 +290,7 @@
         "eligible": 0,
         "locks": 0,
         "totals": 0,
+        "sense": 0,
         "summary": "modeled=16 | odds=0/16 | +ev=0 | eligible=0 | locks=0"
       },
       "performance": {
@@ -414,7 +419,7 @@
     ]
   },
   "decision_replay": {
-    "generated_at": "2026-04-05T03:46:50Z",
+    "generated_at": "2026-04-05T06:28:34Z",
     "aggregate": {
       "logged_picks": 67,
       "settled_picks": {
@@ -1121,11 +1126,11 @@
     }
   },
   "snapshot_replay": {
-    "generated_at": "2026-04-05T03:46:50Z",
+    "generated_at": "2026-04-05T06:28:33Z",
     "aggregate": {
-      "snapshots": 56,
-      "exact_matches": 38,
-      "exact_match_rate": 0.6786,
+      "snapshots": 59,
+      "exact_matches": 41,
+      "exact_match_rate": 0.6949,
       "mismatches": 18,
       "expected_picks": {
         "evaluated": 21,
@@ -2564,9 +2569,9 @@
         }
       },
       "nba": {
-        "snapshots": 14,
-        "exact_matches": 8,
-        "exact_match_rate": 0.5714,
+        "snapshots": 17,
+        "exact_matches": 11,
+        "exact_match_rate": 0.6471,
         "mismatches": 6,
         "recent_mismatches": [
           {
@@ -5653,7 +5658,7 @@
     {
       "priority": "high",
       "title": "Fix Live Coverage Gaps",
-      "detail": "Late-day value is still being lost to missing odds or schedule coverage in MLB 0/16, NHL 0/15, NBA 0/3."
+      "detail": "Late-day value is still being lost to missing odds or schedule coverage in MLB 0/16, NHL 0/15, NBA 0/11."
     },
     {
       "priority": "medium",
@@ -5670,6 +5675,6 @@
     "Totals are currently outperforming moneylines on both hit rate and ROI.",
     "The last 7 days are trailing the 30-day baseline; stay selective.",
     "NCAAM is the top settled sport right now by ROI (+35.0% across 3 graded picks).",
-    "Odds coverage is still the main live bottleneck for: NBA 0/3, NHL 0/15, NCAAM 0/2, MLB 0/16."
+    "Odds coverage is still the main live bottleneck for: NBA 0/11, NHL 0/15, NCAAM 0/2, MLB 0/16."
   ]
 }

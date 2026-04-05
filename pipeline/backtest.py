@@ -1808,6 +1808,7 @@ def _sport_dashboard_summary(
             "eligible": int(diagnostics.get("lock_eligible_matches") or 0),
             "locks": locks,
             "totals": totals,
+            "sense": int(diagnostics.get("matches_with_qualitative") or 0),
             "summary": diagnostics.get("summary"),
         },
         "performance": {
@@ -2057,6 +2058,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
         "with_odds": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("fixtures_with_odds") or 0) for s in selected_sports),
         "fixtures": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("fixtures_in_window") or 0) for s in selected_sports),
         "positive_ev": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("matches_with_positive_ev") or 0) for s in selected_sports),
+        "sense": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("matches_with_qualitative") or 0) for s in selected_sports),
         "eligible": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("lock_eligible_matches") or 0) for s in selected_sports),
         "locks": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("slop_locks_posted") or 0) for s in selected_sports),
     }
