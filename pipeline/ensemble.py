@@ -283,6 +283,41 @@ def compute_edges(
     benchmark_hold = benchmark.get("hold")
 
     edges: dict[str, dict] = {}
+    
+    # If no odds are active, return pure model projections as a baseline
+    if not active_odds:
+        for outcome, prob in model_probs.items():
+            outcome_model_probs = []
+            if individual_probs:
+                for p in individual_probs:
+                    if outcome in p:
+                        outcome_model_probs.append(p[outcome])
+            
+            # Confidence without market context is lower but not zero
+            conf_score = compute_confidence_score(
+                outcome_model_probs, prob, 0.0, prob, expected_value=0.0
+            )
+            
+            edges[outcome] = {
+                "model_prob": round(prob, 4),
+                "raw_model_prob": round(prob, 4),
+                "implied_prob": None,
+                "market_implied_prob": None,
+                "edge": 0.0,
+                "expected_value": 0.0,
+                "decimal_odds": None,
+                "american_odds": None,
+                "kelly_fraction": 0.0,
+                "fractional_kelly": 0.0,
+                "confidence_score": conf_score,
+                "is_value": False,
+                "unrealistic_flag": False,
+                "hold": None,
+                "market_source": "none",
+                "market_books": 0,
+            }
+        return edges
+
     for outcome, dec_odds in active_odds.items():
         imp_prob = float(benchmark_fair.get(outcome, fair_probs[outcome]))
         raw_imp_prob = float(benchmark_raw.get(outcome, raw_probs[outcome]))
@@ -350,6 +385,40 @@ def compute_totals_edges(
     benchmark_raw = benchmark.get("raw_probs") or {}
     benchmark_hold = benchmark.get("hold")
     edges: dict[str, dict] = {}
+
+    # If no odds are active, return pure model projections as a baseline
+    if not active_odds:
+        for outcome, prob in model_probs.items():
+            outcome_model_probs = []
+            if individual_probs:
+                for p in individual_probs:
+                    if outcome in p:
+                        outcome_model_probs.append(p[outcome])
+            
+            conf_score = compute_confidence_score(
+                outcome_model_probs, prob, 0.0, prob, expected_value=0.0
+            )
+            
+            edges[outcome] = {
+                "model_prob": round(prob, 4),
+                "raw_model_prob": round(prob, 4),
+                "implied_prob": None,
+                "market_implied_prob": None,
+                "edge": 0.0,
+                "expected_value": 0.0,
+                "decimal_odds": None,
+                "american_odds": None,
+                "kelly_fraction": 0.0,
+                "fractional_kelly": 0.0,
+                "confidence_score": conf_score,
+                "is_value": False,
+                "unrealistic_flag": False,
+                "hold": None,
+                "market_source": "none",
+                "market_books": 0,
+            }
+        return edges
+
     for outcome, dec_odds in active_odds.items():
         imp_prob = float(benchmark_fair.get(outcome, fair_probs[outcome]))
         raw_imp_prob = float(benchmark_raw.get(outcome, raw_probs[outcome]))

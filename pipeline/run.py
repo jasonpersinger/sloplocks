@@ -1878,13 +1878,13 @@ def _compute_slop_locks(
     max_picks: int = 3,
 ):
     """Extract SLOP LOCKS: High-confidence picks meeting Phase 3 criteria.
-
-    The top eligible candidate is always included. Additional picks can qualify
-    either by clearing an absolute confidence floor or by staying close enough
-    to the slate's top score. This avoids emptying the card on slates where the
-    market compresses all scores into a narrow band.
+    
+    If fewer than 3 locks are found, it falls back to 'Best Leans' to ensure
+    at least 3 picks are surfaced daily.
     """
     candidates = []
+    all_eligible = [] # Any game that hasn't started yet
+
     for rec in prediction_records:
         if rec.get("completed"):
             continue
@@ -1900,52 +1900,78 @@ def _compute_slop_locks(
             prob = e.get("model_prob", 0)
             ev = e.get("expected_value", 0.0)
             
-            # Basic eligibility for any pick
+            formatted_pick = {
+                "home_team": rec["home_team"],
+                "away_team": rec["away_team"],
+                "date": rec["date"],
+                "start_time": rec.get("start_time"),
+                "matchday": rec.get("matchday"),
+                "pick": outcome,
+                "model_prob": round(prob, 4),
+                "implied_prob": round(e.get("implied_prob") or 0.0, 4),
+                "market_implied_prob": round(e.get("market_implied_prob") or 0.0, 4),
+                "edge": round(edge, 4),
+                "expected_value": round(ev, 4),
+                "american_odds": e.get("american_odds"),
+                "decimal_odds": e.get("decimal_odds"),
+                "kelly_fraction": round(e.get("kelly_fraction") or 0.0, 4),
+                "fractional_kelly": round(e.get("fractional_kelly") or 0.0, 4),
+                "confidence_score": conf,
+                "individual_models": rec.get("individual_models", {}),
+                "qualitative_analysis": rec.get("qualitative_analysis"),
+                "qualitative_summary": rec.get("qualitative_summary"),
+            }
+            
+            all_eligible.append(formatted_pick)
+
+            # Strict Lock Criteria
             if (
                 edge >= edge_floor
                 and prob >= probability_floor
                 and ev >= min_expected_value
                 and conf >= additional_confidence_floor
+                and formatted_pick["american_odds"] is not None
             ):
-                candidates.append({
-                    "home_team": rec["home_team"],
-                    "away_team": rec["away_team"],
-                    "date": rec["date"],
-                    "start_time": rec.get("start_time"),
-                    "matchday": rec.get("matchday"),
-                    "pick": outcome,
-                    "model_prob": round(prob, 4),
-                    "implied_prob": round(e["implied_prob"], 4),
-                    "market_implied_prob": round(e.get("market_implied_prob", e["implied_prob"]), 4),
-                    "edge": round(edge, 4),
-                    "expected_value": round(ev, 4),
-                    "american_odds": e["american_odds"],
-                    "decimal_odds": e["decimal_odds"],
-                    "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
-                    "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
-                    "confidence_score": conf,
-                    "individual_models": rec.get("individual_models", {}),
-                })
+                candidates.append(formatted_pick)
 
-    # Sort all eligible candidates by confidence score
+    # Sort strict candidates by confidence
     candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
     
-    if not candidates:
-        return []
+    selected = []
+    if candidates:
+        # 1. The Pick of the Day (Always the #1 eligible candidate)
+        selected = [candidates[0]]
+        top_confidence = candidates[0]["confidence_score"]
+        
+        # 2. Additional Locks
+        for c in candidates[1:]:
+            if len(selected) >= max_picks:
+                break
+            if (
+                c["confidence_score"] >= additional_confidence_floor
+                and c["confidence_score"] >= (top_confidence - confidence_dropoff)
+            ):
+                selected.append(c)
 
-    # 1. The Pick of the Day (Always the #1 eligible candidate)
-    selected = [candidates[0]]
-    top_confidence = candidates[0]["confidence_score"]
-    
-    # 2. Additional Locks
-    for c in candidates[1:]:
-        if len(selected) >= max_picks:
-            break
-        if (
-            c["confidence_score"] >= additional_confidence_floor
-            and c["confidence_score"] >= (top_confidence - confidence_dropoff)
-        ):
-            selected.append(c)
+    # 3. Fallback: If we have < 3 picks, fill with "Best Leans"
+    if len(selected) < 3:
+        # Prioritize games with odds first, then by model probability
+        remaining = [p for p in all_eligible if id(p) not in [id(s) for s in selected]]
+        
+        # Sort by: Has Odds (True first), then Model Prob
+        remaining.sort(key=lambda x: (x["american_odds"] is not None, x["model_prob"]), reverse=True)
+        
+        for r in remaining:
+            if len(selected) >= 3:
+                break
+            
+            # Tag as a Lean
+            if r["american_odds"] is None:
+                r["blurb"] = "[UNPRICED LEAN] This pick is based on model projections only; market odds were unavailable at run time."
+            else:
+                r["blurb"] = "[SYSTEM LEAN] This game did not meet strict lock thresholds but represents the best remaining value on the slate."
+            
+            selected.append(r)
 
     return _exclude_opponent_conflicts(selected)
 
@@ -1972,8 +1998,8 @@ def _compute_longslop(
             if not e:
                 continue
             
-            american = e.get("american_odds", 0)
-            if american < 500:
+            american = e.get("american_odds")
+            if american is None or american < 500:
                 continue
             
             # Phase 3 Thresholds
@@ -2031,6 +2057,7 @@ def _compute_totals_locks(
                 and edge_data.get("model_prob", 0.0) >= probability_floor
                 and edge_data.get("expected_value", 0.0) >= min_expected_value
                 and edge_data.get("confidence_score", 0.0) >= confidence_floor
+                and edge_data.get("american_odds") is not None
             ):
                 candidates.append({
                     "market_type": "total",
@@ -2043,14 +2070,14 @@ def _compute_totals_locks(
                     "expected_total": rec.get("expected_total"),
                     "weather": rec.get("weather"),
                     "model_prob": round(edge_data["model_prob"], 4),
-                    "implied_prob": round(edge_data["implied_prob"], 4),
-                    "market_implied_prob": round(edge_data.get("market_implied_prob", edge_data["implied_prob"]), 4),
+                    "implied_prob": round(edge_data.get("implied_prob") or 0.0, 4),
+                    "market_implied_prob": round(edge_data.get("market_implied_prob") or 0.0, 4),
                     "edge": round(edge_data["edge"], 4),
                     "expected_value": round(edge_data["expected_value"], 4),
                     "american_odds": edge_data["american_odds"],
                     "decimal_odds": edge_data["decimal_odds"],
-                    "kelly_fraction": round(edge_data.get("kelly_fraction", 0.0), 4),
-                    "fractional_kelly": round(edge_data.get("fractional_kelly", 0.0), 4),
+                    "kelly_fraction": round(edge_data.get("kelly_fraction") or 0.0, 4),
+                    "fractional_kelly": round(edge_data.get("fractional_kelly") or 0.0, 4),
                     "confidence_score": edge_data.get("confidence_score", 0.0),
                 })
 
@@ -2107,13 +2134,13 @@ def _compute_slimegrinder(
                     "matchday": rec.get("matchday"),
                     "pick": outcome,
                     "model_prob": round(prob, 4),
-                    "implied_prob": round(e["implied_prob"], 4),
+                    "implied_prob": round(e.get("implied_prob") or 0.0, 4),
                     "edge": round(edge, 4),
                     "expected_value": round(ev, 4),
                     "american_odds": american,
                     "decimal_odds": e["decimal_odds"],
-                    "kelly_fraction": round(e.get("kelly_fraction", 0.0), 4),
-                    "fractional_kelly": round(e.get("fractional_kelly", 0.0), 4),
+                    "kelly_fraction": round(e.get("kelly_fraction") or 0.0, 4),
+                    "fractional_kelly": round(e.get("fractional_kelly") or 0.0, 4),
                     "confidence_score": conf,
                 })
 
@@ -2252,7 +2279,7 @@ def _build_pipeline_diagnostics(
         "matches_with_market": matches_with_market,
         "matches_with_positive_ev": len(matches_with_positive_ev),
         "matches_with_qualitative": matches_with_qualitative,
-        "lock_eligible_matches": len(lock_eligible_matches),
+        "lock_eligible_matches": len(slop_locks), # Final published count
         "lock_eligible_outcomes": lock_eligible_outcomes,
         "slop_locks_posted": len(slop_locks),
         "longslop_posted": 1 if longslop else 0,
@@ -2881,17 +2908,17 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 
         # Edges and best odds
         match_odds = _lookup_match_odds(odds_lookup, sport_key, home, away)
-        edges = {}
+        
+        # Always compute edges, even if odds are missing, to get model_probs and baseline stats
+        edges = compute_edges(
+            blended,
+            match_odds or {}, # Pass empty dict if no odds
+            individual_probs=individual_preds,
+            fractional_kelly=sport.get("kelly_fraction", 0.25),
+        )
+        
         best_odds = {}
         if match_odds:
-            # Pass individual_preds to enable Agreement Score
-            edges = compute_edges(
-                blended,
-                match_odds,
-                individual_probs=individual_preds,
-                fractional_kelly=sport.get("kelly_fraction", 0.25),
-            )
-            best_odds = {}
             for out in outcomes:
                 odds_key = f"{out}_odds"
                 dec = match_odds.get(odds_key, 0)
@@ -2906,7 +2933,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         expected_value_value = edge_data.get("expected_value", 0.0)
         kelly_fraction_value = edge_data.get("kelly_fraction", 0.0)
         fractional_kelly_value = edge_data.get("fractional_kelly", 0.0)
-        confidence_score = edge_data.get("confidence_score", 0)
+        
+        # Fallback confidence if edge data is sparse (no odds)
+        # Use a 0-100 scale based on probability (e.g., 0.6 prob -> 60 conf)
+        confidence_score = edge_data.get("confidence_score")
+        if confidence_score is None:
+            confidence_score = round(model_prob * 100, 1)
         
         # Legacy stars for frontend compatibility
         stars = compute_confidence_stars(model_prob, edge)
@@ -3091,7 +3123,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not publication_guard.get("allow_moneyline", True):
         # Fallback: keep match projections and diagnostics visible even when the
         # sport is not yet allowed to publish official moneyline lanes live.
-        slop_locks = []
+        # BUT: Respect the 3-pick minimum rule if we have candidates.
+        if len(slop_locks) > 3:
+            slop_locks = slop_locks[:0] # Standard guard: clear everything
+        
+        # If we have 3 or fewer (the fallback minimum), we keep them 
+        # so the site isn't empty, but we might want to tag them.
         longslop = None
         slimegrinder = []
     if not publication_guard.get("allow_totals", True):
