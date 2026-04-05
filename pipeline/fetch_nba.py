@@ -713,6 +713,7 @@ def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
             "neutral": comp.get("neutralSite", False),
             "home_availability_profile": home_profile,
             "away_availability_profile": away_profile,
+            "summary_injuries": summary_data.get("injuries", []),
         })
 
     _save_espn_cache(cache_path, cache)

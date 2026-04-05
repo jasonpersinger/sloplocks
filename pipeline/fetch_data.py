@@ -15,6 +15,16 @@ from pipeline.ensemble import no_vig_probabilities
 
 # ---- The Odds API ------------------------------------------------------------
 
+
+def _book_label(bookmaker: dict) -> str:
+    """Return a stable display label for one bookmaker payload."""
+    return (
+        bookmaker.get("title")
+        or bookmaker.get("key")
+        or bookmaker.get("name")
+        or "unknown_book"
+    )
+
 def _median_market_probabilities(book_probs: list[dict[str, float]]) -> dict[str, float]:
     """Aggregate per-book fair probabilities into a stable benchmark.
 
@@ -48,6 +58,7 @@ def _extract_best_totals_market(bookmakers: list[dict]) -> dict:
     fair_probs_by_line: dict[float, list[dict[str, float]]] = {}
     raw_probs_by_line: dict[float, list[dict[str, float]]] = {}
     holds_by_line: dict[float, list[float]] = {}
+    books_by_line: dict[float, list[dict]] = {}
 
     for bookmaker in bookmakers or []:
         for market in bookmaker.get("markets", []):
@@ -73,6 +84,17 @@ def _extract_best_totals_market(bookmakers: list[dict]) -> dict:
             fair_probs_by_line.setdefault(line, []).append(fair_probs)
             raw_probs_by_line.setdefault(line, []).append(raw_probs)
             holds_by_line.setdefault(line, []).append(float(hold))
+            books_by_line.setdefault(line, []).append({
+                "book": _book_label(bookmaker),
+                "last_update": bookmaker.get("last_update"),
+                "outcomes": {
+                    "over": over_price,
+                    "under": under_price,
+                },
+                "raw_probs": {k: round(float(v), 4) for k, v in raw_probs.items()},
+                "fair_probs": {k: round(float(v), 4) for k, v in fair_probs.items()},
+                "hold": round(float(hold), 4),
+            })
 
     if not line_counter:
         return {
@@ -98,6 +120,21 @@ def _extract_best_totals_market(bookmakers: list[dict]) -> dict:
             "hold": round(float(median(holds_by_line.get(consensus_line, [0.0]))), 4),
             "books_tracked": len(fair_probs_by_line.get(consensus_line, [])),
             "source": "median_complete_book_no_vig",
+        },
+        "totals_market_snapshot": {
+            "line": consensus_line,
+            "execution_prices": {
+                "over": max(price[0] for price in prices),
+                "under": max(price[1] for price in prices),
+            },
+            "benchmark": {
+                "fair_probs": _median_market_probabilities(fair_probs_by_line.get(consensus_line, [])),
+                "raw_probs": _median_market_probabilities(raw_probs_by_line.get(consensus_line, [])),
+                "hold": round(float(median(holds_by_line.get(consensus_line, [0.0]))), 4),
+                "books_tracked": len(fair_probs_by_line.get(consensus_line, [])),
+                "source": "median_complete_book_no_vig",
+            },
+            "books": books_by_line.get(consensus_line, []),
         },
     }
 
@@ -133,6 +170,7 @@ def fetch_odds(sport_key: str, include_totals: bool = False) -> list[dict]:
         book_fair_probs = []
         book_raw_probs = []
         book_holds = []
+        moneyline_books = []
 
         for bookmaker in event.get("bookmakers", []):
             for market in bookmaker.get("markets", []):
@@ -165,6 +203,14 @@ def fetch_odds(sport_key: str, include_totals: bool = False) -> list[dict]:
                 book_raw_probs.append(raw_probs)
                 book_fair_probs.append(fair_probs)
                 book_holds.append(float(hold))
+                moneyline_books.append({
+                    "book": _book_label(bookmaker),
+                    "last_update": bookmaker.get("last_update"),
+                    "outcomes": {k: round(float(v), 4) for k, v in market_odds.items()},
+                    "raw_probs": {k: round(float(v), 4) for k, v in raw_probs.items()},
+                    "fair_probs": {k: round(float(v), 4) for k, v in fair_probs.items()},
+                    "hold": round(float(hold), 4),
+                })
 
         record = {
             "home_team": event["home_team"],
@@ -181,6 +227,25 @@ def fetch_odds(sport_key: str, include_totals: bool = False) -> list[dict]:
                 # falls back to the execution-line normalization for continuity.
                 "books_tracked": len(book_fair_probs),
                 "source": "median_complete_book_no_vig",
+            },
+            "moneyline_market_snapshot": {
+                "execution_prices": {
+                    key: value
+                    for key, value in {
+                        "home": best_home,
+                        "draw": best_draw,
+                        "away": best_away,
+                    }.items()
+                    if value and value > 1.0
+                },
+                "benchmark": {
+                    "fair_probs": _median_market_probabilities(book_fair_probs),
+                    "raw_probs": _median_market_probabilities(book_raw_probs),
+                    "hold": round(float(median(book_holds)), 4) if book_holds else None,
+                    "books_tracked": len(book_fair_probs),
+                    "source": "median_complete_book_no_vig",
+                },
+                "books": moneyline_books,
             },
         }
         if include_totals:

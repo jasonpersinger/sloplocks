@@ -816,14 +816,19 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
         away_team_id = away["team"].get("id")
         confirmed_lineups = {}
         summary_url = f"{MLB_ESPN_BASE}/summary?event={event.get('id')}"
+        summary_injuries = []
         try:
             time.sleep(_REQUEST_DELAY)
             summary_resp = requests.get(summary_url, timeout=30)
             summary_resp.raise_for_status()
-            confirmed_lineups = _extract_confirmed_mlb_lineups(summary_resp.json(), cache)
+            summary_json = summary_resp.json()
+            confirmed_lineups = _extract_confirmed_mlb_lineups(summary_json, cache)
+            summary_injuries = summary_json.get("injuries", [])
         except requests.RequestException:
             confirmed_lineups = {}
+
         weather = _fetch_ballpark_weather(
+
             normalize_mlb_team_name(home["team"]["displayName"]),
             start_time,
             cache,
@@ -855,6 +860,7 @@ def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
             "home_lineup_profile": home_lineup_profile,
             "away_lineup_profile": away_lineup_profile,
             "weather": weather,
+            "summary_injuries": summary_injuries,
         })
 
     _save_espn_cache(cache_path, cache)

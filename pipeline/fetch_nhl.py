@@ -663,6 +663,7 @@ def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
                 away["team"].get("id"),
                 leader_weights=away_leader_weights,
             ),
+            "summary_injuries": summary_data.get("injuries", []),
         })
 
     return fixtures

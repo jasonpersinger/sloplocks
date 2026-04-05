@@ -481,6 +481,7 @@ class TestBacktestSummary:
                     "match_date",
                     "pick",
                     "model_prob",
+                    "market_implied_prob",
                     "expected_value",
                     "confidence_score",
                     "american_odds",
@@ -498,6 +499,7 @@ class TestBacktestSummary:
                 "match_date": "2026-03-29",
                 "pick": "home",
                 "model_prob": 0.61,
+                "market_implied_prob": 0.48,
                 "expected_value": 0.07,
                 "confidence_score": 72,
                 "american_odds": 105,
@@ -520,8 +522,6 @@ class TestBacktestSummary:
                     "won",
                     "push",
                     "decimal_odds",
-                    "closing_line_value",
-                    "closing_line_value_unit",
                 ],
             )
             writer.writeheader()
@@ -538,8 +538,50 @@ class TestBacktestSummary:
                 "won": "true",
                 "push": "false",
                 "decimal_odds": 2.05,
-                "closing_line_value": 0.015,
-                "closing_line_value_unit": "implied_probability_points",
+            })
+
+        with open(tracking_dir / "odds_history.csv", "w", newline="") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "logged_at",
+                    "sport",
+                    "market_type",
+                    "home_team",
+                    "away_team",
+                    "match_date",
+                    "start_time",
+                    "outcome",
+                    "total_line",
+                    "decimal_odds",
+                    "american_odds",
+                    "implied_prob",
+                    "market_implied_prob",
+                    "market_source",
+                    "market_books",
+                    "hold",
+                    "market_snapshot_json",
+                ],
+            )
+            writer.writeheader()
+            writer.writerow({
+                "logged_at": "2026-03-29T20:00:00Z",
+                "sport": "nba",
+                "market_type": "moneyline",
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "match_date": "2026-03-29",
+                "start_time": "2026-03-29T23:00:00Z",
+                "outcome": "home",
+                "total_line": "",
+                "decimal_odds": "1.95",
+                "american_odds": "-105",
+                "implied_prob": "0.512",
+                "market_implied_prob": "0.525",
+                "market_source": "median_complete_book_no_vig",
+                "market_books": "8",
+                "hold": "0.0234",
+                "market_snapshot_json": "{\"execution_prices\":{\"home\":1.95,\"away\":1.9}}",
             })
 
         report = build_pick_decision_replay_report(str(data_dir), sports=["nba"])
@@ -548,6 +590,7 @@ class TestBacktestSummary:
         assert report["aggregate"]["settled_picks"]["evaluated"] == 1
         assert report["aggregate"]["settled_picks"]["wins"] == 1
         assert report["aggregate"]["settled_picks"]["clv"]["tracked"] == 1
+        assert report["aggregate"]["settled_picks"]["clv"]["avg_clv"] == pytest.approx(0.032, abs=1e-6)
         assert report["sports"]["nba"]["settled_picks"]["breakdowns"]["type"]["slop_lock"]["evaluated"] == 1
 
     def test_build_walkforward_report(self, tmp_path):

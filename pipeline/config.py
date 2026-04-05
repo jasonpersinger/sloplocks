@@ -1,6 +1,10 @@
 """Central configuration for the SLOP LOCKS pipeline."""
 
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file if it exists
+load_dotenv()
 
 TRACKING_DIRNAME = "tracking"
 RESULTS_LOG_FILENAME = "results_log.csv"
@@ -131,6 +135,10 @@ MARKET_RESPECT_FACTOR = 0.4  # 0.4 means 40% weight to market, 60% to model
 MAX_ALLOWED_DIVERGENCE = 0.20 # If model is >20% from books, it's flagged as unrealistic
 RTM_WINDOW = 20              # Games required before reducing shrinkage
 
+# Phase 5: Qualitative Gemini Integration
+ENABLE_QUALITATIVE = os.environ.get("ENABLE_QUALITATIVE", "true").lower() == "true"
+QUALITATIVE_DEFAULT_WEIGHT = 0.005 # Default probability delta per impact point
+
 # Per-sport configuration
 SPORTS = {
     "nba": {
@@ -187,6 +195,8 @@ SPORTS = {
         "rest_bonus_days": 3,
         "rest_bonus_points": 8,
         "accuracy_window": 40,
+        "qualitative_weight": 0.5,
+        "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "nba"),
     },
     "nhl": {
@@ -227,6 +237,8 @@ SPORTS = {
         "rest_bonus_days": 3,
         "rest_bonus_points": 6,
         "accuracy_window": 40,
+        "qualitative_weight": 0.4,
+        "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "nhl"),
     },
     "ncaam": {
@@ -266,6 +278,8 @@ SPORTS = {
         "rest_bonus_days": 4,
         "rest_bonus_points": 5,
         "accuracy_window": 40,
+        "qualitative_weight": 0.6,
+        "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "ncaam"),
     },
     "mlb": {
@@ -330,6 +344,8 @@ SPORTS = {
         "accuracy_window": 80,
         "season_start_month": 2, # Feb 20 — captures spring training as Elo warmup
         "season_start_day": 20,
+        "qualitative_weight": 0.3,
+        "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "mlb"),
     },
 }

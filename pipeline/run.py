@@ -16,6 +16,8 @@ from scipy.stats import norm
 from pipeline.config import (
     ANTHROPIC_API_KEY,
     DATA_DIR,
+    ENABLE_QUALITATIVE,
+    QUALITATIVE_DEFAULT_WEIGHT,
     NBA_B2B_PENALTY,
     NBA_3IN4_PENALTY,
     TRACKING_DIRNAME,
@@ -30,6 +32,8 @@ from pipeline.config import (
     SLIMEGRINDER_MAX_ODDS,
     SPORTS,
 )
+from pipeline.qualitative_analysis import analyze_game_qualitative
+from pipeline.context_scraper import get_game_context
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
@@ -289,6 +293,10 @@ _ODDS_HISTORY_FIELDS = [
     "american_odds",
     "implied_prob",
     "market_implied_prob",
+    "market_source",
+    "market_books",
+    "hold",
+    "market_snapshot_json",
 ]
 
 _PICK_DECISION_FIELDS = [
@@ -333,6 +341,7 @@ _PICK_DECISION_FIELDS = [
     "selection_confidence_floor",
     "selection_confidence_dropoff",
     "selection_max_picks",
+    "market_snapshot_json",
     "model_probs_json",
     "individual_models_json",
     "decision_context_json",
@@ -746,6 +755,7 @@ def _build_pick_decision_row(
         "selection_confidence_floor": lane_config.get("additional_confidence_floor", lane_config.get("confidence_floor")),
         "selection_confidence_dropoff": lane_config.get("confidence_dropoff"),
         "selection_max_picks": lane_config.get("max_picks"),
+        "market_snapshot_json": _json_compact(source_record.get("market_snapshot")),
         "model_probs_json": _json_compact(model_probs),
         "individual_models_json": _json_compact(source_record.get("individual_models")),
         "decision_context_json": _json_compact(decision_context),
@@ -857,6 +867,7 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
             moneyline_benchmark = odds.get("moneyline_benchmark") or {}
             fair_probs = moneyline_benchmark.get("fair_probs") or fair_probs
             raw_probs = moneyline_benchmark.get("raw_probs") or raw_probs
+            market_snapshot = odds.get("moneyline_market_snapshot") or {}
             for outcome, decimal_odds in moneyline_decimals.items():
                 rows.append({
                     "logged_at": logged_at,
@@ -872,6 +883,10 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
                     "american_odds": decimal_to_american(float(decimal_odds)),
                     "implied_prob": round(float(fair_probs.get(outcome, 0.0)), 4),
                     "market_implied_prob": round(float(raw_probs.get(outcome, 0.0)), 4),
+                    "market_source": moneyline_benchmark.get("source"),
+                    "market_books": moneyline_benchmark.get("books_tracked"),
+                    "hold": moneyline_benchmark.get("hold"),
+                    "market_snapshot_json": _json_compact(market_snapshot),
                 })
 
         totals_decimals = {
@@ -884,6 +899,7 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
             totals_benchmark = odds.get("totals_benchmark") or {}
             fair_probs = totals_benchmark.get("fair_probs") or fair_probs
             raw_probs = totals_benchmark.get("raw_probs") or raw_probs
+            market_snapshot = odds.get("totals_market_snapshot") or {}
             for outcome, decimal_odds in totals_decimals.items():
                 rows.append({
                     "logged_at": logged_at,
@@ -899,6 +915,10 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
                     "american_odds": decimal_to_american(float(decimal_odds)),
                     "implied_prob": round(float(fair_probs.get(outcome, 0.0)), 4),
                     "market_implied_prob": round(float(raw_probs.get(outcome, 0.0)), 4),
+                    "market_source": totals_benchmark.get("source"),
+                    "market_books": totals_benchmark.get("books_tracked"),
+                    "hold": totals_benchmark.get("hold"),
+                    "market_snapshot_json": _json_compact(market_snapshot),
                 })
 
     return rows
@@ -947,6 +967,10 @@ def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tupl
         pick["closing_american_odds"] = _safe_int(snapshot.get("american_odds"))
         pick["closing_implied_prob"] = _safe_float(snapshot.get("implied_prob"))
         pick["closing_market_implied_prob"] = _safe_float(snapshot.get("market_implied_prob"))
+        pick["closing_market_source"] = snapshot.get("market_source")
+        pick["closing_market_books"] = _safe_int(snapshot.get("market_books"))
+        pick["closing_hold"] = _safe_float(snapshot.get("hold"))
+        pick["closing_market_snapshot_json"] = snapshot.get("market_snapshot_json")
 
         if market_type == "total":
             closing_total_line = _safe_float(snapshot.get("total_line"))
@@ -967,6 +991,125 @@ def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tupl
             if opening_prob is not None and closing_prob is not None:
                 pick["closing_line_value"] = round(closing_prob - opening_prob, 4)
                 pick["closing_line_value_unit"] = "implied_probability_points"
+
+
+def _backfill_pick_history_market_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+    """Backfill missing closing-line fields in saved pick history from odds snapshots."""
+    odds_history_path = _odds_history_path(base_dir)
+    selected_sports = list(sports or SPORTS.keys())
+    updated = 0
+    for sport_key in selected_sports:
+        pick_history_path = os.path.join(base_dir, sport_key, "pick_history.json")
+        pick_history = _load_json(pick_history_path)
+        if not isinstance(pick_history, dict):
+            continue
+        picks = pick_history.get("picks")
+        if not isinstance(picks, list) or not picks:
+            continue
+        latest_snapshot_lookup = _load_latest_odds_snapshots(odds_history_path, sport_key)
+        before = [
+            (
+                pick.get("closing_line_value"),
+                pick.get("closing_american_odds"),
+                pick.get("closing_total_line"),
+            )
+            for pick in picks
+        ]
+        _apply_latest_market_snapshots(picks, latest_snapshot_lookup)
+        after = [
+            (
+                pick.get("closing_line_value"),
+                pick.get("closing_american_odds"),
+                pick.get("closing_total_line"),
+            )
+            for pick in picks
+        ]
+        if after != before:
+            pick_history["picks"] = picks
+            _save_json(pick_history_path, pick_history)
+            updated += 1
+    return updated
+
+
+def _basic_market_snapshot_from_odds_row(odds_row: dict, market_type: str) -> dict:
+    """Build a minimal market snapshot from one saved odds payload."""
+    if not isinstance(odds_row, dict):
+        return {}
+    if market_type == "total":
+        total_line = odds_row.get("total_line")
+        if total_line in (None, "", "None"):
+            return {}
+        snapshot = {
+            "line": _safe_float(total_line),
+            "execution_prices": {},
+        }
+        for outcome in ("over", "under"):
+            price = _safe_float(odds_row.get(f"{outcome}_odds"))
+            if price and price > 1.0:
+                snapshot["execution_prices"][outcome] = round(float(price), 4)
+        return snapshot if snapshot["execution_prices"] else {}
+
+    snapshot = {"execution_prices": {}}
+    for outcome in ("home", "away", "draw"):
+        price = _safe_float(odds_row.get(f"{outcome}_odds"))
+        if price and price > 1.0:
+            snapshot["execution_prices"][outcome] = round(float(price), 4)
+    return snapshot if snapshot["execution_prices"] else {}
+
+
+def _hydrate_pick_decision_log_market_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+    """Fill missing market snapshot JSON in the decision ledger from saved snapshots."""
+    ledger_path = _pick_decision_log_path(base_dir)
+    if not os.path.exists(ledger_path):
+        return 0
+
+    selected_sports = set(sports or SPORTS.keys())
+    updated = 0
+    snapshot_cache: dict[str, dict | None] = {}
+
+    with open(ledger_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+
+    for row in rows:
+        if row.get("sport") not in selected_sports:
+            continue
+        if row.get("market_snapshot_json"):
+            continue
+        snapshot_relpath = row.get("snapshot_path")
+        if not snapshot_relpath:
+            continue
+        snapshot_full_path = os.path.join(base_dir, snapshot_relpath)
+        if snapshot_full_path not in snapshot_cache:
+            try:
+                with open(snapshot_full_path) as f:
+                    snapshot_cache[snapshot_full_path] = json.load(f) or {}
+            except (OSError, json.JSONDecodeError):
+                snapshot_cache[snapshot_full_path] = None
+        snapshot = snapshot_cache.get(snapshot_full_path) or {}
+        odds_rows = ((snapshot.get("inputs") or {}).get("odds") or [])
+        match_date = str(row.get("match_date") or "")[:10]
+        odds_row = next((
+            item for item in odds_rows
+            if item.get("home_team") == row.get("home_team")
+            and item.get("away_team") == row.get("away_team")
+            and str(item.get("commence_time") or "")[:10] == match_date
+        ), None)
+        market_snapshot = _basic_market_snapshot_from_odds_row(
+            odds_row or {},
+            str(row.get("market_type") or "moneyline"),
+        )
+        if not market_snapshot:
+            continue
+        row["market_snapshot_json"] = _json_compact(market_snapshot)
+        updated += 1
+
+    if updated:
+        with open(ledger_path, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=_PICK_DECISION_FIELDS)
+            writer.writeheader()
+            for row in rows:
+                writer.writerow({field: row.get(field, "") for field in _PICK_DECISION_FIELDS})
+    return updated
 
 
 
@@ -1103,6 +1246,28 @@ def _rest_adjustment(team: str, before_date: str, matches: pd.DataFrame, sport: 
         adjustment -= fatigue_penalty
 
     return adjustment
+
+
+def _apply_qualitative_adjustment(
+    blended: dict[str, float],
+    qualitative_data: dict,
+    weight: float = 0.5,
+) -> dict[str, float]:
+    """Apply qualitative impact scores as a probability adjustment."""
+    home_impact = float(qualitative_data.get("home_impact", 0.0))
+    away_impact = float(qualitative_data.get("away_impact", 0.0))
+    
+    # Differential: positive means home team has qualitative edge
+    differential = home_impact - away_impact
+    
+    # Scale: QUALITATIVE_DEFAULT_WEIGHT (0.005) * weight per impact point
+    delta = differential * QUALITATIVE_DEFAULT_WEIGHT * weight
+    
+    adjusted = {
+        "home": min(0.99, max(0.01, blended.get("home", 0.5) + delta)),
+        "away": min(0.99, max(0.01, blended.get("away", 0.5) - delta)),
+    }
+    return _normalize_two_way_probs(adjusted)
 
 
 def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
@@ -2109,6 +2274,38 @@ def _print_pipeline_diagnostics(sport_key: str, diagnostics: dict) -> None:
 # Per-sport pipeline
 # ---------------------------------------------------------------------------
 
+def _format_qualitative_summary(blended_pre_qual, qualitative_data):
+    """Return a human-readable summary of qualitative impact and its effect."""
+    if not qualitative_data or qualitative_data.get("summary") == "No significant qualitative factors identified or API error.":
+        return "No qualitative impact."
+
+    home_impact = qualitative_data.get("home_impact", 0.0)
+    away_impact = qualitative_data.get("away_impact", 0.0)
+    diff = home_impact - away_impact
+    
+    # Check if qualitative signal agreed with pre-qualitative pick
+    pre_pick = max(blended_pre_qual.keys(), key=lambda k: blended_pre_qual[k])
+    
+    impact_direction = "none"
+    if diff > 0.5:
+        impact_direction = "home"
+    elif diff < -0.5:
+        impact_direction = "away"
+        
+    agreement = "no effect"
+    if impact_direction != "none":
+        if impact_direction == pre_pick:
+            agreement = "agreed"
+        else:
+            agreement = "disagreed"
+            
+    scores = f"H:{home_impact} A:{away_impact}"
+    factors = [f["description"] for f in qualitative_data.get("individual_factors", [])]
+    factors_str = "; ".join(factors[:2]) # Top 2 factors
+    
+    return f"Qualitative ({scores}): {agreement}. {factors_str}"
+
+
 def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     """Run prediction pipeline for a single sport.
 
@@ -2421,9 +2618,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     prediction_records = []
     totals_prediction_records = []
 
+    print(f"--- Running projections for {len(fixtures)} {sport_key.upper()} games ---")
+
     for fix in fixtures:
         home = fix["home_team"]
         away = fix["away_team"]
+        print(f"  - {away} @ {home}...", end=" ", flush=True)
         is_neutral = fix.get("neutral", False)
 
         individual_preds = []
@@ -2645,6 +2845,29 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             blend=sport.get("probability_calibration_blend", 0.5),
         )
 
+        # ------------------------------------------------------------------
+        # Qualitative Gemini Integration
+        # ------------------------------------------------------------------
+        qualitative_data = None
+        if ENABLE_QUALITATIVE and sport.get("enable_qualitative", False):
+            context_text = get_game_context(sport_key, fix)
+            game_for_ai = {
+                "sport": sport_key,
+                "home_team": home,
+                "away_team": away,
+                "date": fix["date"],
+                "start_time": fix.get("start_time"),
+            }
+            qualitative_data = analyze_game_qualitative(game_for_ai, context_text)
+            qualitative_summary = _format_qualitative_summary(blended, qualitative_data)
+            blended = _apply_qualitative_adjustment(
+                blended,
+                qualitative_data,
+                weight=sport.get("qualitative_weight", 0.5)
+            )
+        else:
+            qualitative_summary = None
+
         # Edges and best odds
         match_odds = _lookup_match_odds(odds_lookup, sport_key, home, away)
         edges = {}
@@ -2718,7 +2941,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             },
             "edges": edges,
             "best_odds": best_odds,
+            "market_snapshot": (match_odds or {}).get("moneyline_market_snapshot"),
+            "qualitative_analysis": qualitative_data,
+            "qualitative_summary": qualitative_summary,
         }
+        print("DONE")
         prediction_records.append(record)
 
         if totals_model is not None and match_odds and match_odds.get("total_line") is not None:
@@ -2802,6 +3029,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "model_probs": {k: round(v, 4) for k, v in total_model_probs.items()},
                 "individual_models": {"totals_model": {k: round(v, 4) for k, v in total_model_probs.items()}},
                 "edges": total_edges,
+                "market_snapshot": match_odds.get("totals_market_snapshot"),
             })
 
     # ------------------------------------------------------------------
@@ -3305,6 +3533,8 @@ def run_pipeline(output_dir=None):
             }
 
     _backfill_pick_decision_log_from_snapshots(base_dir)
+    _hydrate_pick_decision_log_market_snapshots(base_dir)
+    _backfill_pick_history_market_snapshots(base_dir)
     _save_json(os.path.join(base_dir, "manifest.json"), manifest)
     _save_json(os.path.join(base_dir, "dashboard.json"), build_dashboard_data(base_dir))
 

@@ -12,6 +12,7 @@ import pandas as pd
 
 from pipeline.config import (
     ENSEMBLE_ACCURACY_WINDOW,
+    ODDS_HISTORY_FILENAME,
     PICK_DECISION_LOG_FILENAME,
     RESULTS_AUDIT_LOG_FILENAME,
     RESULTS_LOG_FILENAME,
@@ -213,12 +214,81 @@ def _load_pick_decision_rows(data_dir: str, sports: list[str] | None = None) -> 
                 "selection_confidence_floor": _safe_float(row.get("selection_confidence_floor")),
                 "selection_confidence_dropoff": _safe_float(row.get("selection_confidence_dropoff")),
                 "selection_max_picks": _safe_float(row.get("selection_max_picks")),
+                "market_snapshot": _safe_json(row.get("market_snapshot_json")),
                 "model_probs": _safe_json(row.get("model_probs_json")),
                 "individual_models": _safe_json(row.get("individual_models_json")),
                 "decision_context": _safe_json(row.get("decision_context_json")),
                 "gate_context": _safe_json(row.get("gate_context_json")),
             })
     return rows
+
+
+def _load_latest_odds_snapshots(data_dir: str, sports: list[str] | None = None) -> dict[tuple, dict]:
+    """Load the latest tracked odds snapshot per market/outcome."""
+    path = os.path.join(data_dir, TRACKING_DIRNAME, ODDS_HISTORY_FILENAME)
+    if not os.path.exists(path):
+        return {}
+
+    selected_sports = set(sports or SPORTS.keys())
+    latest = {}
+    with open(path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row.get("sport") not in selected_sports:
+                continue
+            key = (
+                row.get("market_type", "moneyline"),
+                row.get("home_team"),
+                row.get("away_team"),
+                row.get("match_date"),
+                row.get("outcome"),
+            )
+            current = latest.get(key)
+            if current is None or row.get("logged_at", "") > current.get("logged_at", ""):
+                latest[key] = row
+    return latest
+
+
+def _apply_closing_snapshot_fallback(row: dict, snapshot: dict | None) -> dict:
+    """Hydrate missing closing-line fields from tracked odds snapshots."""
+    if not snapshot:
+        return row
+
+    result = dict(row)
+    result.setdefault("closing_decimal_odds", _safe_float(snapshot.get("decimal_odds")))
+    result.setdefault("closing_american_odds", _safe_float(snapshot.get("american_odds")))
+    result.setdefault("closing_implied_prob", _safe_float(snapshot.get("implied_prob")))
+    result.setdefault("closing_market_implied_prob", _safe_float(snapshot.get("market_implied_prob")))
+    result.setdefault("closing_market_source", snapshot.get("market_source"))
+    result.setdefault("closing_market_books", _safe_float(snapshot.get("market_books")))
+    result.setdefault("closing_hold", _safe_float(snapshot.get("hold")))
+    result.setdefault("closing_market_snapshot", _safe_json(snapshot.get("market_snapshot_json")))
+
+    if result.get("closing_line_value") is not None:
+        return result
+
+    market_type = str(result.get("market_type") or "moneyline")
+    if market_type == "total":
+        opening_total = _safe_float(result.get("total_line"))
+        closing_total = _safe_float(snapshot.get("total_line"))
+        if opening_total is None or closing_total is None:
+            return result
+        result["closing_total_line"] = closing_total
+        if result.get("pick") == "over":
+            result["closing_line_value"] = round(closing_total - opening_total, 3)
+        elif result.get("pick") == "under":
+            result["closing_line_value"] = round(opening_total - closing_total, 3)
+        if result.get("closing_line_value") is not None:
+            result["closing_line_value_unit"] = "total_points"
+        return result
+
+    opening_prob = _safe_float(result.get("market_implied_prob"))
+    if opening_prob is None:
+        opening_prob = _safe_float(result.get("implied_prob"))
+    closing_prob = _safe_float(snapshot.get("implied_prob"))
+    if opening_prob is not None and closing_prob is not None:
+        result["closing_line_value"] = round(closing_prob - opening_prob, 4)
+        result["closing_line_value_unit"] = "implied_probability_points"
+    return result
 
 
 def _prediction_probs_from_row(row: dict) -> dict[str, float]:
@@ -420,14 +490,14 @@ def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> d
     return None
 
 
-def _snapshot_pick_to_result_row(record: dict, settled: dict | None) -> dict | None:
+def _snapshot_pick_to_result_row(record: dict, settled: dict | None, snapshot_lookup: dict[tuple, dict] | None = None) -> dict | None:
     """Convert one archived snapshot pick into the summary row shape."""
     if settled is None:
         return None
     decimal_odds = record.get("decimal_odds")
     if decimal_odds is None:
         decimal_odds = _american_to_decimal(record.get("american_odds"))
-    return {
+    row = {
         "evaluated": True,
         "market_type": record.get("market_type", "moneyline"),
         "home_team": record.get("home_team"),
@@ -441,17 +511,31 @@ def _snapshot_pick_to_result_row(record: dict, settled: dict | None) -> dict | N
         "expected_value": record.get("expected_value"),
         "confidence_score": record.get("confidence_score"),
         "total_line": record.get("total_line"),
+        "implied_prob": record.get("implied_prob"),
+        "market_implied_prob": record.get("market_implied_prob"),
+        "closing_line_value": settled.get("closing_line_value"),
+        "closing_line_value_unit": settled.get("closing_line_value_unit"),
     }
+    if snapshot_lookup is None:
+        return row
+    snapshot = snapshot_lookup.get((
+        row.get("market_type", "moneyline"),
+        row.get("home_team"),
+        row.get("away_team"),
+        row.get("match_date"),
+        row.get("pick"),
+    ))
+    return _apply_closing_snapshot_fallback(row, snapshot)
 
 
-def _decision_pick_to_result_row(record: dict, settled: dict | None) -> dict | None:
+def _decision_pick_to_result_row(record: dict, settled: dict | None, snapshot_lookup: dict[tuple, dict] | None = None) -> dict | None:
     """Convert one decision-ledger pick into the summary row shape."""
     if settled is None:
         return None
     decimal_odds = record.get("decimal_odds")
     if decimal_odds is None:
         decimal_odds = _american_to_decimal(record.get("american_odds"))
-    return {
+    row = {
         "type": record.get("pick_type"),
         "evaluated": True,
         "market_type": record.get("market_type", "moneyline"),
@@ -469,7 +553,19 @@ def _decision_pick_to_result_row(record: dict, settled: dict | None) -> dict | N
         "closing_line_value": settled.get("closing_line_value"),
         "closing_line_value_unit": settled.get("closing_line_value_unit"),
         "total_line": record.get("total_line"),
+        "implied_prob": record.get("implied_prob"),
+        "market_implied_prob": record.get("market_implied_prob"),
     }
+    if snapshot_lookup is None:
+        return row
+    snapshot = snapshot_lookup.get((
+        row.get("market_type", "moneyline"),
+        row.get("home_team"),
+        row.get("away_team"),
+        row.get("match_date"),
+        row.get("pick"),
+    ))
+    return _apply_closing_snapshot_fallback(row, snapshot)
 
 
 def _snapshot_exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
@@ -685,6 +781,7 @@ def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | Non
     """Replay selection from saved snapshots instead of live fetchers."""
     snapshots = _iter_snapshot_payloads(data_dir=data_dir, sports=sports)
     result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
+    odds_snapshot_lookup = _load_latest_odds_snapshots(data_dir=data_dir, sports=sports)
     sport_reports = defaultdict(lambda: {
         "snapshots": 0,
         "exact_matches": 0,
@@ -702,7 +799,11 @@ def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | Non
         expected_rows = [
             row
             for row in (
-                _snapshot_pick_to_result_row(item, _lookup_snapshot_result(result_lookup, item))
+                _snapshot_pick_to_result_row(
+                    item,
+                    _lookup_snapshot_result(result_lookup, item),
+                    odds_snapshot_lookup,
+                )
                 for item in replay.get("expected_picks", [])
             )
             if row is not None
@@ -710,7 +811,11 @@ def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | Non
         replayed_rows = [
             row
             for row in (
-                _snapshot_pick_to_result_row(item, _lookup_snapshot_result(result_lookup, item))
+                _snapshot_pick_to_result_row(
+                    item,
+                    _lookup_snapshot_result(result_lookup, item),
+                    odds_snapshot_lookup,
+                )
                 for item in replay.get("replayed_picks", [])
             )
             if row is not None
@@ -762,6 +867,7 @@ def build_pick_decision_replay_report(data_dir: str = "data", sports: list[str] 
     """Grade picks from the immutable decision ledger against settled results."""
     decisions = _load_pick_decision_rows(data_dir=data_dir, sports=sports)
     result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
+    odds_snapshot_lookup = _load_latest_odds_snapshots(data_dir=data_dir, sports=sports)
     sport_reports = defaultdict(lambda: {
         "logged_picks": 0,
         "settled_picks": {
@@ -785,7 +891,7 @@ def build_pick_decision_replay_report(data_dir: str = "data", sports: list[str] 
         sport_report = sport_reports[decision["sport"]]
         sport_report["logged_picks"] += 1
         settled = _lookup_snapshot_result(result_lookup, decision)
-        result_row = _decision_pick_to_result_row(decision, settled)
+        result_row = _decision_pick_to_result_row(decision, settled, odds_snapshot_lookup)
         if result_row is None:
             sport_report["unsettled_logged_picks"] += 1
             if len(sport_report["recent_unsettled"]) < 5:

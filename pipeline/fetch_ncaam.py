@@ -448,6 +448,15 @@ def fetch_ncaam_schedule() -> list[dict]:
         if home is None or away is None:
             continue
 
+        summary_injuries = []
+        try:
+            summary_url = f"{NCAAM_ESPN_BASE}/summary?event={event.get('id')}"
+            s_resp = requests.get(summary_url, timeout=30)
+            if s_resp.status_code == 200:
+                summary_injuries = s_resp.json().get("injuries", [])
+        except Exception:
+            pass
+
         fixtures.append({
             "home_team": normalize_ncaam_team_name(home["team"]["displayName"]),
             "away_team": normalize_ncaam_team_name(away["team"]["displayName"]),
@@ -456,6 +465,7 @@ def fetch_ncaam_schedule() -> list[dict]:
             "start_time": comp.get("date", event.get("date")),
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
+            "summary_injuries": summary_injuries,
         })
 
     return fixtures

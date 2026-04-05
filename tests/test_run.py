@@ -1314,6 +1314,127 @@ class TestResultsLog:
         assert rows[0]["snapshot_path"].endswith(".json")
         assert rows[0]["calibration_sample_size"] == "14"
 
+    def test_backfill_pick_history_market_snapshots_updates_missing_clv(self, tmp_path):
+        from pipeline.run import _backfill_pick_history_market_snapshots
+
+        tracking_dir = tmp_path / "tracking"
+        tracking_dir.mkdir(parents=True)
+        sport_dir = tmp_path / "nba"
+        sport_dir.mkdir(parents=True)
+
+        with open(sport_dir / "pick_history.json", "w") as f:
+            json.dump({
+                "picks": [
+                    {
+                        "market_type": "moneyline",
+                        "home_team": "Lakers",
+                        "away_team": "Celtics",
+                        "match_date": "2026-03-29",
+                        "pick": "home",
+                        "market_implied_prob": 0.48,
+                    }
+                ]
+            }, f)
+
+        with open(tracking_dir / "odds_history.csv", "w", newline="") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "logged_at",
+                    "sport",
+                    "market_type",
+                    "home_team",
+                    "away_team",
+                    "match_date",
+                    "start_time",
+                    "outcome",
+                    "total_line",
+                    "decimal_odds",
+                    "american_odds",
+                    "implied_prob",
+                    "market_implied_prob",
+                    "market_source",
+                    "market_books",
+                    "hold",
+                    "market_snapshot_json",
+                ],
+            )
+            writer.writeheader()
+            writer.writerow({
+                "logged_at": "2026-03-29T17:00:00Z",
+                "sport": "nba",
+                "market_type": "moneyline",
+                "home_team": "Lakers",
+                "away_team": "Celtics",
+                "match_date": "2026-03-29",
+                "start_time": "2026-03-29T23:00:00Z",
+                "outcome": "home",
+                "total_line": "",
+                "decimal_odds": "1.95",
+                "american_odds": "-105",
+                "implied_prob": "0.512",
+                "market_implied_prob": "0.525",
+                "market_source": "median_complete_book_no_vig",
+                "market_books": "7",
+                "hold": "0.024",
+                "market_snapshot_json": "{\"execution_prices\":{\"home\":1.95}}",
+            })
+
+        updated = _backfill_pick_history_market_snapshots(str(tmp_path), sports=["nba"])
+
+        assert updated == 1
+        with open(sport_dir / "pick_history.json") as f:
+            picks = json.load(f)["picks"]
+        assert picks[0]["closing_line_value"] == pytest.approx(0.032, abs=1e-6)
+        assert picks[0]["closing_market_books"] == 7
+
+    def test_hydrate_pick_decision_log_market_snapshots_uses_saved_snapshot_odds(self, tmp_path):
+        from pipeline.run import _append_pick_decision_log, _hydrate_pick_decision_log_market_snapshots
+
+        snapshot_dir = tmp_path / "tracking" / "snapshots" / "2026-03-29" / "nba"
+        snapshot_dir.mkdir(parents=True)
+        snapshot_relpath = "tracking/snapshots/2026-03-29/nba/daily-20260329T120000000000Z.json"
+        with open(tmp_path / snapshot_relpath, "w") as f:
+            json.dump({
+                "inputs": {
+                    "odds": [
+                        {
+                            "home_team": "Lakers",
+                            "away_team": "Celtics",
+                            "commence_time": "2026-03-29T23:00:00Z",
+                            "home_odds": 1.95,
+                            "away_odds": 1.91,
+                        }
+                    ]
+                }
+            }, f)
+
+        path = str(tmp_path / "tracking" / "pick_decisions.csv")
+        _append_pick_decision_log(path, [{
+            "logged_at": "2026-03-29T12:00:00Z",
+            "run_id": "daily-20260329T120000000000Z",
+            "run_type": "daily",
+            "snapshot_timestamp": "2026-03-29T12:00:00Z",
+            "snapshot_path": snapshot_relpath,
+            "sport": "nba",
+            "pick_type": "slop_lock",
+            "market_type": "moneyline",
+            "home_team": "Lakers",
+            "away_team": "Celtics",
+            "match_date": "2026-03-29",
+            "pick": "home",
+            "decision_context_json": "{\"pick\":\"home\"}",
+            "gate_context_json": "{\"selection_config\":{}}",
+        }])
+
+        updated = _hydrate_pick_decision_log_market_snapshots(str(tmp_path), sports=["nba"])
+
+        assert updated == 1
+        with open(path, newline="") as f:
+            rows = list(csv.DictReader(f))
+        assert rows[0]["market_snapshot_json"]
+        assert "1.95" in rows[0]["market_snapshot_json"]
+
 
 class TestOddsTracking:
     def test_append_odds_snapshot_log_dedupes_same_market_state(self, tmp_path):
