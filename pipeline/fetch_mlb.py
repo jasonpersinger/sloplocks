@@ -125,7 +125,7 @@ def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
         _json.dump(cache, f)
 
 
-def _fetch_player_profile(player_id: str | Optional[int], cache: Optional[dict] = None) -> dict:
+def _fetch_player_profile(player_id: Union[str, int, None], cache: Optional[dict] = None) -> dict:
     """Fetch and cache handedness metadata for an MLB player."""
     default = {"throws": None, "bats": None}
     if not player_id:
@@ -155,7 +155,7 @@ def _fetch_player_profile(player_id: str | Optional[int], cache: Optional[dict] 
     return profile
 
 
-def _fetch_pitcher_profile(player_id: str | Optional[int], cache: Optional[dict] = None) -> dict:
+def _fetch_pitcher_profile(player_id: Union[str, int, None], cache: Optional[dict] = None) -> dict:
     """Fetch and cache MLB pitcher handedness metadata from ESPN core API."""
     profile = _fetch_player_profile(player_id, cache)
     if cache is not None and player_id:
@@ -164,9 +164,9 @@ def _fetch_pitcher_profile(player_id: str | Optional[int], cache: Optional[dict]
 
 
 def _fetch_team_lineup_profile(
-    team_id: str | Optional[int],
+    team_id: Union[str, int, None],
     cache: Optional[dict] = None,
-    leader_weights: dict[str,Optional[ float] ] = None,
+    leader_weights: Optional[dict[str, float]] = None,
     confirmed_lineup: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse current-roster lineup profile for one MLB team."""

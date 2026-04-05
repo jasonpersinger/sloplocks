@@ -262,7 +262,7 @@ def _extract_probable_goalie(competitor: dict) -> dict:
     }
 
 
-def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str,Optional[ float] ] = None) -> dict:
+def _extract_nhl_event_injury_profile(summary_data: dict, team_id: Union[str, int, None], leader_weights: Optional[dict[str, float]] = None) -> dict:
     """Extract event-specific NHL skater injury burden from an ESPN summary payload."""
     default = {
         "injury_burden": 0.0,

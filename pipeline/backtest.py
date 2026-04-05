@@ -1655,7 +1655,7 @@ def summarize_closing_line_value(picks):
             "totals_non_negative_rate": None,
         }
 
-    def _summary(values: list[float]) -> dict[str, float | Optional[int]]:
+    def _summary(values: list[float]) -> dict[str, Union[float, int, None]]:
         if not values:
             return {
                 "tracked": 0,

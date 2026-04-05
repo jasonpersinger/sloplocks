@@ -273,9 +273,9 @@ def _leader_weight(stat_name: Optional[str]) -> float:
 
 
 def _fetch_nba_team_availability_profile(
-    team_id: str | Optional[int],
+    team_id: Union[str, int, None],
     leader_ids=None,
-    leader_weights: dict[str,Optional[ float] ] = None,
+    leader_weights: Optional[dict[str, float]] = None,
     cache: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse NBA roster availability profile."""
@@ -395,7 +395,7 @@ def _fetch_nba_team_availability_profile(
     return profile
 
 
-def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str,Optional[ float] ] = None) -> dict:
+def _extract_nba_event_injury_profile(summary_data: dict, team_id: Union[str, int, None], leader_weights: Optional[dict[str, float]] = None) -> dict:
     """Extract event-specific NBA injury burden from an ESPN summary payload."""
     default = {
         "event_injury_burden": 0.0,

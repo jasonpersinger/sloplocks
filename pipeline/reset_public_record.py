@@ -71,7 +71,7 @@ def _write_rows(path: Path, fieldnames: list[str], rows: list[dict]) -> None:
 
 
 def reset_public_record(
-    data_dir: str | Path = DATA_DIR,
+    data_dir: Union[str, Path] = DATA_DIR,
     since: Optional[str] = None,
     rewrite_live_files: bool = False,
 ) -> Path:
