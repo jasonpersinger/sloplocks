@@ -98,7 +98,7 @@ def _american_to_decimal(american):
     return round(1.0 + (100.0 / abs(american)), 4)
 
 
-def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[dict]:
+def _load_results_rows(data_dir: str, sports:Optional[ list[str] ] = None) -> list[dict]:
     """Load tracked settled result rows from the shared results log."""
     audit_path = os.path.join(data_dir, TRACKING_DIRNAME, RESULTS_AUDIT_LOG_FILENAME)
     path = audit_path if os.path.exists(audit_path) else os.path.join(data_dir, TRACKING_DIRNAME, RESULTS_LOG_FILENAME)
@@ -161,7 +161,7 @@ def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[d
     return rows
 
 
-def _load_pick_decision_rows(data_dir: str, sports: list[str] | None = None) -> list[dict]:
+def _load_pick_decision_rows(data_dir: str, sports:Optional[ list[str] ] = None) -> list[dict]:
     """Load immutable pick-decision rows from the shared ledger."""
     path = os.path.join(data_dir, TRACKING_DIRNAME, PICK_DECISION_LOG_FILENAME)
     if not os.path.exists(path):
@@ -224,7 +224,7 @@ def _load_pick_decision_rows(data_dir: str, sports: list[str] | None = None) -> 
     return rows
 
 
-def _load_latest_odds_snapshots(data_dir: str, sports: list[str] | None = None) -> dict[tuple, dict]:
+def _load_latest_odds_snapshots(data_dir: str, sports:Optional[ list[str] ] = None) -> dict[tuple, dict]:
     """Load the latest tracked odds snapshot per market/outcome."""
     path = os.path.join(data_dir, TRACKING_DIRNAME, ODDS_HISTORY_FILENAME)
     if not os.path.exists(path):
@@ -491,7 +491,7 @@ def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> O
     return None
 
 
-def _snapshot_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple, dict] | None = None) -> Optional[dict]:
+def _snapshot_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple,Optional[ dict] ] = None) -> Optional[dict]:
     """Convert one archived snapshot pick into the summary row shape."""
     if settled is None:
         return None
@@ -529,7 +529,7 @@ def _snapshot_pick_to_result_row(record: dict, settled: Optional[dict], snapshot
     return _apply_closing_snapshot_fallback(row, snapshot)
 
 
-def _decision_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple, dict] | None = None) -> Optional[dict]:
+def _decision_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple,Optional[ dict] ] = None) -> Optional[dict]:
     """Convert one decision-ledger pick into the summary row shape."""
     if settled is None:
         return None
@@ -710,7 +710,7 @@ def _snapshot_compute_totals_locks(records: list[dict], config: dict) -> list[di
     return candidates[: int(config.get("max_picks", 3))]
 
 
-def _iter_snapshot_payloads(data_dir: str = "data", sports: list[str] | None = None) -> list[dict]:
+def _iter_snapshot_payloads(data_dir: str = "data", sports:Optional[ list[str] ] = None) -> list[dict]:
     """Load saved live-state snapshots from disk."""
     root = os.path.join(data_dir, "tracking", "snapshots")
     if not os.path.exists(root):
@@ -778,7 +778,7 @@ def _replay_snapshot_payload(snapshot: dict) -> dict:
     }
 
 
-def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+def build_snapshot_replay_report(data_dir: str = "data", sports:Optional[ list[str] ] = None) -> dict:
     """Replay selection from saved snapshots instead of live fetchers."""
     snapshots = _iter_snapshot_payloads(data_dir=data_dir, sports=sports)
     result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
@@ -864,7 +864,7 @@ def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | Non
     }
 
 
-def build_pick_decision_replay_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+def build_pick_decision_replay_report(data_dir: str = "data", sports:Optional[ list[str] ] = None) -> dict:
     """Grade picks from the immutable decision ledger against settled results."""
     decisions = _load_pick_decision_rows(data_dir=data_dir, sports=sports)
     result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
@@ -1058,7 +1058,7 @@ def _predict_walkforward_fixture(
     models: dict,
     accuracy_log: dict[str, list[dict]],
     model_names: list[str],
-) -> tuple[dict | None, dict[str, dict[str, float]]]:
+)Optional[ -> tuple[dict ], dict[str, dict[str, float]]]:
     """Generate a blended walk-forward prediction for one historical fixture."""
     home = fixture["home_team"]
     away = fixture["away_team"]
@@ -1161,7 +1161,7 @@ def run_raw_walkforward_for_sport(
     matches: pd.DataFrame,
     box_scores_df: Optional[pd.DataFrame] = None,
     max_days: Optional[int] = None,
-    model_names: list[str] | None = None,
+    model_names:Optional[ list[str] ] = None,
     min_training_games: int = 20,
 ) -> dict:
     """Run a raw-data walk-forward replay for one sport using historical inputs."""
@@ -1249,7 +1249,7 @@ def run_raw_walkforward_for_sport(
 
 def build_raw_walkforward_report(
     data_dir: str = "data",
-    sports: list[str] | None = None,
+    sports:Optional[ list[str] ] = None,
     max_days: Optional[int] = None,
     min_training_games: int = 20,
 ) -> dict:
@@ -1282,7 +1282,7 @@ def build_raw_walkforward_report(
     }
 
 
-def build_walkforward_report(data_dir: str = "data", sports: list[str] | None = None, as_of: Optional[str] = None) -> dict:
+def build_walkforward_report(data_dir: str = "data", sports:Optional[ list[str] ] = None, as_of: Optional[str] = None) -> dict:
     """Build a date-ordered replay report from the shared settled results log."""
     rows = _load_results_rows(data_dir, sports=sports)
     if as_of:
@@ -1408,7 +1408,7 @@ def compute_brier_score(probs, home_goals, away_goals):
 
 def compute_model_weights(
     accuracy_log_or_accuracies,
-    model_names: list[str] | None = None,
+    model_names:Optional[ list[str] ] = None,
     temperature: float = 2.0,
     window: Optional[int] = None,
     prior_strength: float = 12.0,
@@ -1999,7 +1999,7 @@ def _build_recommended_actions(report: dict, manifest: dict, windows: dict, lead
     return actions[:4]
 
 
-def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None, as_of: Optional[str] = None) -> dict:
+def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = None, as_of: Optional[str] = None) -> dict:
     """Build a site-friendly reporting dashboard payload."""
     selected_sports = sports or list(SPORTS.keys())
     report = build_backtest_report(data_dir=data_dir, sports=selected_sports)
@@ -2118,7 +2118,7 @@ def build_threshold_guidance(pick_summary: dict) -> list[str]:
     return guidance
 
 
-def build_backtest_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+def build_backtest_report(data_dir: str = "data", sports:Optional[ list[str] ] = None) -> dict:
     """Build a historical performance report from saved data files."""
     selected_sports = sports or list(SPORTS.keys())
     report = {

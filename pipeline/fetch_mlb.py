@@ -15,7 +15,7 @@ _REQUEST_DELAY = 0.5
 
 # ---- team-name normalisation ------------------------------------------------
 
-_team_map: dict[str, str] | None = None
+_team_map: dict[str,Optional[ str] ] = None
 
 
 def _mlb_leader_weight(stat_name: Optional[str]) -> float:
@@ -166,7 +166,7 @@ def _fetch_pitcher_profile(player_id: str | Optional[int], cache: Optional[dict]
 def _fetch_team_lineup_profile(
     team_id: str | Optional[int],
     cache: Optional[dict] = None,
-    leader_weights: dict[str, float] | None = None,
+    leader_weights: dict[str,Optional[ float] ] = None,
     confirmed_lineup: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse current-roster lineup profile for one MLB team."""
@@ -601,7 +601,7 @@ def _extract_mlb_starting_pitchers(summary_data: dict) -> dict[str, dict]:
 
 def fetch_mlb_games(
     season: Optional[int] = None,
-    dates: list[str] | None = None,
+    dates:Optional[ list[str] ] = None,
     cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished MLB games for a season."""

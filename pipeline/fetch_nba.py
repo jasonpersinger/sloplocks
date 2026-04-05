@@ -275,7 +275,7 @@ def _leader_weight(stat_name: Optional[str]) -> float:
 def _fetch_nba_team_availability_profile(
     team_id: str | Optional[int],
     leader_ids=None,
-    leader_weights: dict[str, float] | None = None,
+    leader_weights: dict[str,Optional[ float] ] = None,
     cache: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse NBA roster availability profile."""
@@ -395,7 +395,7 @@ def _fetch_nba_team_availability_profile(
     return profile
 
 
-def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str, float] | None = None) -> dict:
+def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str,Optional[ float] ] = None) -> dict:
     """Extract event-specific NBA injury burden from an ESPN summary payload."""
     default = {
         "event_injury_burden": 0.0,
@@ -487,7 +487,7 @@ def _parse_nba_espn_event(event: dict) -> Optional[dict]:
 
 def fetch_nba_espn_games(
     season: Optional[int] = None,
-    dates: list[str] | None = None,
+    dates:Optional[ list[str] ] = None,
     cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NBA games and box scores via ESPN API.

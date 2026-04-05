@@ -15,7 +15,7 @@ from pipeline.config import NHL_ESPN_BASE
 
 _REQUEST_DELAY = 0.25
 
-_team_map: dict[str, str] | None = None
+_team_map: dict[str,Optional[ str] ] = None
 _NHL_ALIAS_MAP = {
     "montreal canadiens": "Canadiens",
     "montréal canadiens": "Canadiens",
@@ -262,7 +262,7 @@ def _extract_probable_goalie(competitor: dict) -> dict:
     }
 
 
-def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str, float] | None = None) -> dict:
+def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str,Optional[ float] ] = None) -> dict:
     """Extract event-specific NHL skater injury burden from an ESPN summary payload."""
     default = {
         "injury_burden": 0.0,
@@ -381,7 +381,7 @@ def _parse_final_event(event: dict) -> Optional[dict]:
 
 def fetch_nhl_games(
     season: Optional[int] = None,
-    dates: list[str] | None = None,
+    dates:Optional[ list[str] ] = None,
     cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NHL games via ESPN scoreboard."""

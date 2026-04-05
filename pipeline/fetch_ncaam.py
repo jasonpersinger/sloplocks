@@ -15,7 +15,7 @@ _REQUEST_DELAY = 0.5
 
 # ---- team-name normalisation ------------------------------------------------
 
-_team_map: dict[str, str] | None = None
+_team_map: dict[str,Optional[ str] ] = None
 
 # Fallback map for Odds API team names that don't appear in ESPN's displayName list
 _ODDS_API_FALLBACK: dict[str, str] = {
@@ -258,7 +258,7 @@ def _parse_event(event: dict) -> Optional[dict]:
 
 def fetch_ncaam_games(
     season: Optional[int] = None,
-    dates: list[str] | None = None,
+    dates:Optional[ list[str] ] = None,
     cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NCAAM games and box scores for a season.

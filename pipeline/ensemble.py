@@ -369,7 +369,7 @@ def compute_edges(
 def compute_totals_edges(
     model_probs: dict[str, float],
     odds: dict[str, float],
-    individual_probs: list[dict[str, float]] | None = None,
+    individual_probs: list[dict[str,Optional[ float]] ] = None,
     fractional_kelly: float = 0.25,
 ) -> dict[str, dict]:
     """Compute over/under edges for totals markets."""

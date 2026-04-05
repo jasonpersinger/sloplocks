@@ -766,7 +766,7 @@ def _build_pick_decision_row(
     }
 
 
-def _backfill_pick_decision_log_from_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+def _backfill_pick_decision_log_from_snapshots(base_dir: str, sports:Optional[ list[str] ] = None) -> int:
     """Backfill the pick-decision ledger from immutable saved snapshots.
 
     Fallback: older snapshots may not have embedded run metadata on each pick,
@@ -996,7 +996,7 @@ def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tupl
                 pick["closing_line_value_unit"] = "implied_probability_points"
 
 
-def _backfill_pick_history_market_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+def _backfill_pick_history_market_snapshots(base_dir: str, sports:Optional[ list[str] ] = None) -> int:
     """Backfill missing closing-line fields in saved pick history from odds snapshots."""
     odds_history_path = _odds_history_path(base_dir)
     selected_sports = list(sports or SPORTS.keys())
@@ -1060,7 +1060,7 @@ def _basic_market_snapshot_from_odds_row(odds_row: dict, market_type: str) -> di
     return snapshot if snapshot["execution_prices"] else {}
 
 
-def _hydrate_pick_decision_log_market_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+def _hydrate_pick_decision_log_market_snapshots(base_dir: str, sports:Optional[ list[str] ] = None) -> int:
     """Fill missing market snapshot JSON in the decision ledger from saved snapshots."""
     ledger_path = _pick_decision_log_path(base_dir)
     if not os.path.exists(ledger_path):
@@ -1284,7 +1284,7 @@ def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
 
 def _apply_mlb_weather_adjustment(
     blended: dict[str, float],
-    run_environment_probs: dict[str, float] | None,
+    run_environment_probs: dict[str,Optional[ float] ],
     weather: Optional[dict],
     max_delta: float = 0.02,
 ) -> dict[str, float]:

@@ -169,7 +169,7 @@ def reset_public_record(
     return archive_dir
 
 
-def _main(argv: list[str] | None = None) -> int:
+def _main(argv:Optional[ list[str] ] = None) -> int:
     parser = argparse.ArgumentParser(description="Archive or explicitly rewrite the public pick record.")
     parser.add_argument(
         "--since",
