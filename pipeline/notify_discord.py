@@ -28,11 +28,10 @@ SPORT_EMOJIS = {
     "nhl": "🏒",
     "ncaam": "🎓",
     "mlb": "⚾",
-    "mma": "🥊",
 }
 PICK_LABELS = {"draw": "DRAW"}
 DATA_DIR = Path("data")
-SPORT_ORDER = ("nba", "nhl", "ncaam", "mlb", "mma")
+SPORT_ORDER = ("nba", "nhl", "ncaam", "mlb")
 MAX_CURATED_FIELDS = 8
 MAX_SLIME_FIELDS = 5
 MAX_RADAR_FIELDS = 5

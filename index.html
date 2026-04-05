@@ -622,7 +622,6 @@
       <button class="pill" data-sport="nhl">NHL</button>
       <button class="pill" data-sport="ncaam">NCAAM</button>
       <button class="pill" data-sport="mlb">MLB</button>
-      <button class="pill" data-sport="mma">MMA</button>
     </nav>
 
     <main id="pick-feed">
@@ -668,7 +667,7 @@
     return formatDate(fallbackDate);
   }
 
-  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', ncaam: 'NCAAM', mlb: 'MLB', mma: 'MMA' };
+  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', ncaam: 'NCAAM', mlb: 'MLB' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }
@@ -1099,7 +1098,7 @@
       'ROI         ' + fmtSignedPct(record.roi),
       'AVG CONF    ' + (record.avg_confidence != null ? Math.round(record.avg_confidence) + '/100' : '--'),
       'AVG EV      ' + units(record.avg_expected_value),
-      'AVG CLV     ' + fmtSignedPct(record.avg_clv, 2),
+      'ML CLV      ' + fmtSignedPct(record.avg_clv, 2),
       'PRED ACC    ' + fmtPct(predictions.accuracy),
       'LOG LOSS    ' + (predictions.avg_log_loss != null ? Number(predictions.avg_log_loss).toFixed(3) : '--'),
       'SLATE NOW   modeled=' + (slate.modeled || 0) + ' | odds=' + fmtRatio(slate.with_odds, slate.fixtures) + ' | +ev=' + (slate.positive_ev || 0) + ' | locks=' + (slate.locks || 0)
@@ -1108,8 +1107,8 @@
     feed.appendChild(createDashboardBlock('Recent', [
       'LAST 7D     ' + fmtRecord(windows['7d']) + ' | HIT ' + fmtPct((windows['7d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['7d'] || {}).roi),
       'LAST 30D    ' + fmtRecord(windows['30d']) + ' | HIT ' + fmtPct((windows['30d'] || {}).hit_rate) + ' | ROI ' + fmtSignedPct((windows['30d'] || {}).roi),
-      '7D CLV      ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
-      '30D CLV     ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
+      '7D ML CLV   ' + fmtSignedPct(((windows['7d'] || {}).clv || {}).avg_clv, 2),
+      '30D ML CLV  ' + fmtSignedPct(((windows['30d'] || {}).clv || {}).avg_clv, 2)
     ], 'WINDOW'));
 
     feed.appendChild(createDashboardBlock('Replay', [
@@ -1125,7 +1124,7 @@
       }), 'TASKS'));
     }
 
-    var sportLines = ['SPORT   REC        HIT      ROI      CLV      LIVE'];
+    var sportLines = ['SPORT   REC        HIT      ROI      ML CLV   LIVE'];
     (dashboardData.sports || []).forEach(function (sport) {
       sportLines.push(
         (sport.name || '').padEnd(6, ' ').slice(0, 6) + ' ' +
@@ -1143,7 +1142,7 @@
       leaderLines.push('BEST ROI    ' + leaders.best_roi_sport.name + ' ' + fmtSignedPct(leaders.best_roi_sport.roi));
     }
     if (leaders.best_clv_sport) {
-      leaderLines.push('BEST CLV    ' + leaders.best_clv_sport.name + ' ' + fmtSignedPct(leaders.best_clv_sport.avg_clv, 2));
+      leaderLines.push('BEST ML CLV ' + leaders.best_clv_sport.name + ' ' + fmtSignedPct(leaders.best_clv_sport.avg_clv, 2));
     }
     if (leaders.best_lane) {
       leaderLines.push('BEST LANE   ' + String(leaders.best_lane.lane).toUpperCase() + ':' + leaders.best_lane.key + ' ' + fmtSignedPct(leaders.best_lane.roi));
@@ -1231,7 +1230,7 @@
     }
   }
 
-  var ALL_SPORTS = ['nba', 'nhl', 'ncaam', 'mlb', 'mma'];
+  var ALL_SPORTS = ['nba', 'nhl', 'ncaam', 'mlb'];
 
   function loadDashboard() {
     currentSport = 'dashboard';

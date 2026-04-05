@@ -301,93 +301,19 @@ class TestRunNBAPipeline:
         with open(os.path.join(output_dir, "pick_history.json")) as f:
             pick_history = json.load(f)
         assert any(pick["type"] == "total_lock" for pick in pick_history["picks"])
+        decision_log_path = os.path.join(tmp_path, "tracking", "pick_decisions.csv")
+        assert os.path.exists(decision_log_path)
+        with open(decision_log_path, newline="") as f:
+            decision_rows = list(csv.DictReader(f))
+        assert decision_rows
+        assert any(row["market_type"] == "total" for row in decision_rows)
+        assert all(row["decision_context_json"] for row in decision_rows)
         assert data["run_type"] == "manual"
         assert data["run_id"]
         assert data["snapshot_path"].endswith(".json")
         assert os.path.exists(os.path.join(tmp_path, data["snapshot_path"]))
         assert pick_history["run_id"] == data["run_id"]
         assert all(pick.get("snapshot_path") == data["snapshot_path"] for pick in pick_history["picks"])
-
-
-class TestRunMMAPipeline:
-    @patch("pipeline.run.fetch_odds")
-    @patch("pipeline.run.fetch_mma_schedule")
-    @patch("pipeline.run.fetch_mma_games")
-    def test_produces_valid_mma_predictions(
-        self, mock_games, mock_schedule, mock_odds, sample_mma_matches, tmp_path
-    ):
-        mock_games.return_value = (sample_mma_matches, None)
-        mock_schedule.return_value = [
-            {
-                "home_team": "Fighter A",
-                "away_team": "Fighter C",
-                "date": _TODAY,
-                "start_time": f"{_TODAY}T03:00:00Z",
-                "neutral": True,
-            }
-        ]
-        mock_odds.return_value = [
-            {
-                "home_team": "Fighter A",
-                "away_team": "Fighter C",
-                "commence_time": f"{_TODAY}T00:30:00Z",
-                "home_odds": 1.85,
-                "away_odds": 2.05,
-            }
-        ]
-
-        output_dir = str(tmp_path / "mma")
-        run_sport_pipeline("mma", output_dir=output_dir)
-
-        predictions_path = os.path.join(output_dir, "predictions.json")
-        assert os.path.exists(predictions_path)
-
-        with open(predictions_path) as f:
-            data = json.load(f)
-
-        assert data["sport"] == "mma"
-        assert data["outcomes"] == ["home", "away"]
-        assert data["matches"][0]["start_time"] == f"{_TODAY}T03:00:00Z"
-        assert data["diagnostics"]["fixtures_fetched"] == 1
-        assert data["diagnostics"]["fixtures_with_odds"] == 1
-        assert data["diagnostics"]["coverage_gap_examples"] == []
-        assert "elo" in data["model_weights"]
-        assert "results_features" in data["model_weights"]
-
-    @patch("pipeline.run.fetch_odds")
-    @patch("pipeline.run.fetch_mma_schedule")
-    @patch("pipeline.run.fetch_mma_games")
-    def test_matches_mma_odds_when_fighter_order_is_reversed(
-        self, mock_games, mock_schedule, mock_odds, sample_mma_matches, tmp_path
-    ):
-        mock_games.return_value = (sample_mma_matches, None)
-        mock_schedule.return_value = [
-            {
-                "home_team": "Fighter A",
-                "away_team": "Fighter C",
-                "date": _TODAY,
-                "neutral": True,
-            }
-        ]
-        mock_odds.return_value = [
-            {
-                "home_team": "Fighter C",
-                "away_team": "Fighter A",
-                "commence_time": f"{_TODAY}T00:30:00Z",
-                "home_odds": 2.05,
-                "away_odds": 1.85,
-            }
-        ]
-
-        output_dir = str(tmp_path / "mma")
-        run_sport_pipeline("mma", output_dir=output_dir)
-
-        with open(os.path.join(output_dir, "predictions.json")) as f:
-            data = json.load(f)
-
-        match = data["matches"][0]
-        assert match["best_odds"]
-        assert match["american_odds"] is not None
 
 
 class TestRunNHLPipeline:
@@ -875,8 +801,6 @@ class TestNhlInjuryAdjustment:
 
 class TestRunPipeline:
     @patch("pipeline.run.fetch_odds")
-    @patch("pipeline.run.fetch_mma_schedule")
-    @patch("pipeline.run.fetch_mma_games")
     @patch("pipeline.run.fetch_mlb_schedule")
     @patch("pipeline.run.fetch_mlb_games")
     @patch("pipeline.run.fetch_nhl_schedule")
@@ -895,8 +819,6 @@ class TestRunPipeline:
         mock_nhl_schedule,
         mock_mlb_games,
         mock_mlb_schedule,
-        mock_mma_games,
-        mock_mma_schedule,
         mock_odds,
         sample_nba_matches, sample_nba_box_scores, sample_nhl_matches,
         ncaam_games, ncaam_box_scores, tmp_path
@@ -927,8 +849,6 @@ class TestRunPipeline:
         ]
         mock_mlb_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
         mock_mlb_schedule.return_value = []
-        mock_mma_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
-        mock_mma_schedule.return_value = []
         mock_odds.return_value = []
 
         output_dir = str(tmp_path)
@@ -942,6 +862,7 @@ class TestRunPipeline:
         assert "nba" in manifest["sports"]
         assert "nhl" in manifest["sports"]
         assert "ncaam" in manifest["sports"]
+        assert "mma" not in manifest["sports"]
         assert manifest["sports"]["nba"]["status"] == "ok"
         assert manifest["sports"]["nhl"]["status"] == "ok"
         assert manifest["sports"]["ncaam"]["status"] == "ok"
@@ -1159,7 +1080,7 @@ class TestComputeSlopLocks:
         assert locks[2]["confidence_score"] == 53
 
     def test_ranked_by_confidence_then_edge(self):
-        """Candidates are ordered by confidence score, breaking ties on edge."""
+        """Candidates are still capped by the top-confidence dropoff gate."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.80, 100, edge=0.03, confidence_score=70, expected_value=0.02),
@@ -1168,11 +1089,7 @@ class TestComputeSlopLocks:
         ]
         locks = _compute_slop_locks(records, ["home", "away"], max_picks=5, additional_confidence_floor=52, confidence_dropoff=8)
         picked = [(l["home_team"], l["away_team"], l["confidence_score"], l["edge"]) for l in locks]
-        assert picked == [
-            ("E", "F", 90, 0.06),
-            ("C", "D", 70, 0.08),
-            ("A", "B", 70, 0.03),
-        ]
+        assert picked == [("E", "F", 90, 0.06)]
 
     def test_below_threshold_picks_excluded(self):
         """Picks must clear both the edge and win-probability floors."""
@@ -1234,7 +1151,7 @@ class TestComputeSlopLocks:
         assert len(locks) <= 5
 
     def test_later_candidate_is_considered_if_earlier_ones_miss_threshold(self):
-        """The selector should scan beyond ranks 2-3 when filling the card."""
+        """The selector scans later ranks, but still enforces the top-score band."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.70, -120, edge=0.05, confidence_score=90, expected_value=0.06),
@@ -1251,10 +1168,7 @@ class TestComputeSlopLocks:
             max_picks=5,
         )
 
-        assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [
-            ("A", 90),
-            ("G", 54),
-        ]
+        assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [("A", 90)]
 
 
 class TestResultsLog:
@@ -1295,6 +1209,110 @@ class TestResultsLog:
         assert len(rows) == 1
         assert rows[0]["sport"] == "nba"
         assert rows[0]["expected_value"] == "0.07"
+
+    def test_append_pick_decision_log_creates_file_and_dedupes_rows(self, tmp_path):
+        from pipeline.run import _append_pick_decision_log
+
+        path = str(tmp_path / "tracking" / "pick_decisions.csv")
+        row = {
+            "logged_at": "2026-03-28T12:00:00Z",
+            "run_id": "daily-20260328T120000000000Z",
+            "run_type": "daily",
+            "snapshot_timestamp": "2026-03-28T12:00:00Z",
+            "snapshot_path": "tracking/snapshots/2026-03-28/nba/daily-20260328T120000000000Z.json",
+            "sport": "nba",
+            "pick_type": "slop_lock",
+            "market_type": "moneyline",
+            "home_team": "Lakers",
+            "away_team": "Celtics",
+            "match_date": "2026-03-28",
+            "start_time": "2026-03-28T23:00:00Z",
+            "pick": "home",
+            "model_prob": 0.61,
+            "implied_prob": 0.52,
+            "market_implied_prob": 0.54,
+            "edge": 0.09,
+            "expected_value": 0.07,
+            "american_odds": 110,
+            "decimal_odds": 2.1,
+            "confidence_score": 72,
+            "decision_context_json": "{\"pick\":\"home\"}",
+            "gate_context_json": "{\"selection_config\":{\"edge_floor\":0.03}}",
+        }
+
+        _append_pick_decision_log(path, [row, row])
+
+        assert os.path.exists(path)
+        with open(path, newline="") as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) == 1
+        assert rows[0]["sport"] == "nba"
+        assert rows[0]["pick_type"] == "slop_lock"
+
+    def test_backfill_pick_decision_log_from_snapshots_creates_historical_rows(self, tmp_path):
+        from pipeline.run import _backfill_pick_decision_log_from_snapshots
+
+        snapshot_dir = tmp_path / "tracking" / "snapshots" / "2026-03-29" / "nba"
+        snapshot_dir.mkdir(parents=True)
+        snapshot_path = snapshot_dir / "daily-20260329T120000000000Z.json"
+        with open(snapshot_path, "w") as f:
+            json.dump({
+                "sport": "nba",
+                "run_id": "daily-20260329T120000000000Z",
+                "run_type": "daily",
+                "snapshot_timestamp": "2026-03-29T12:00:00Z",
+                "selection_config": {"slop_locks": {"edge_floor": 0.03}},
+                "publication_guard": {"status": "live", "enforced": True},
+                "inputs": {"calibration_sample_size": 14},
+                "records": {
+                    "matches": [
+                        {
+                            "home_team": "Lakers",
+                            "away_team": "Warriors",
+                            "date": "2026-03-29",
+                            "model_probs": {"home": 0.61, "away": 0.39},
+                            "edges": {
+                                "home": {
+                                    "edge": 0.07,
+                                    "expected_value": 0.08,
+                                    "confidence_score": 71,
+                                    "american_odds": 105,
+                                    "decimal_odds": 2.05,
+                                    "implied_prob": 0.5,
+                                    "market_implied_prob": 0.54,
+                                }
+                            },
+                        }
+                    ],
+                    "totals_matches": [],
+                },
+                "outputs": {
+                    "slop_locks": [
+                        {
+                            "home_team": "Lakers",
+                            "away_team": "Warriors",
+                            "date": "2026-03-29",
+                            "pick": "home",
+                            "model_prob": 0.61,
+                            "expected_value": 0.08,
+                            "confidence_score": 71,
+                            "american_odds": 105,
+                            "decimal_odds": 2.05,
+                        }
+                    ],
+                    "longslop": None,
+                    "totals_locks": [],
+                },
+            }, f)
+
+        written = _backfill_pick_decision_log_from_snapshots(str(tmp_path), sports=["nba"])
+
+        assert written == 1
+        with open(tmp_path / "tracking" / "pick_decisions.csv", newline="") as f:
+            rows = list(csv.DictReader(f))
+        assert len(rows) == 1
+        assert rows[0]["snapshot_path"].endswith(".json")
+        assert rows[0]["calibration_sample_size"] == "14"
 
 
 class TestOddsTracking:

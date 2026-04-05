@@ -37,7 +37,6 @@ from pipeline.fetch_nba import normalize_nba_team_name, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import normalize_nhl_team_name, fetch_nhl_schedule
 from pipeline.fetch_mlb import normalize_mlb_team_name
 from pipeline.fetch_mlb import fetch_mlb_schedule
-from pipeline.fetch_mma import normalize_mma_name
 from pipeline.run import (
     _append_odds_snapshot_log,
     _attach_run_metadata,
@@ -53,9 +52,11 @@ from pipeline.run import (
     _apply_nhl_injury_adjustment,
     _apply_nhl_goalie_status_adjustment,
     _apply_latest_market_snapshots,
+    _build_publication_guard,
     _build_pipeline_diagnostics,
     _build_run_context,
     _build_odds_snapshot_rows,
+    _is_live_public_output,
     _compute_slimegrinder as _run_compute_slimegrinder,
     _compute_slop_locks as _run_compute_slop_locks,
     _compute_totals_locks,
@@ -73,7 +74,6 @@ _NORMALIZERS = {
     "nhl": normalize_nhl_team_name,
     "ncaam": normalize_ncaam_team_name,
     "mlb": normalize_mlb_team_name,
-    "mma": normalize_mma_name,
 }
 
 
@@ -368,6 +368,20 @@ def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
         confidence_floor=sport.get("totals_confidence_threshold", 54.0),
         max_picks=sport.get("totals_max_picks", 3),
     ) if totals_matches else []
+    pick_history_path = data_path.parent / "pick_history.json"
+    pick_history = _load_json(str(pick_history_path))
+    past_picks = pick_history.get("picks", []) if isinstance(pick_history, dict) else []
+    publication_guard = _build_publication_guard(
+        past_picks,
+        sport,
+        enforce_live_guard=_is_live_public_output(str(data_path.parent.parent)),
+    )
+    if not publication_guard.get("allow_moneyline", True):
+        slop_locks = []
+        data["longslop"] = None
+        slimegrinder = []
+    if not publication_guard.get("allow_totals", True):
+        totals_locks = []
     snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
     selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
     _attach_run_metadata_list(matches, run_context, snapshot_relpath)
@@ -394,6 +408,7 @@ def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
     data["snapshot_timestamp"] = run_context.get("run_timestamp")
     data["snapshot_path"] = snapshot_relpath
     data["selection_config"] = selection_config
+    data["publication_guard"] = publication_guard
 
     diagnostics = _build_pipeline_diagnostics(
         matches=pd.DataFrame(),
@@ -408,14 +423,13 @@ def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
         slop_locks=slop_locks,
         longslop=data.get("longslop"),
         slimegrinder=slimegrinder,
+        publication_guard=publication_guard,
     )
     previous_diagnostics = data.get("diagnostics") or {}
     if previous_diagnostics.get("historical_matches") is not None:
         diagnostics["historical_matches"] = previous_diagnostics.get("historical_matches")
     data["diagnostics"] = diagnostics
 
-    pick_history_path = data_path.parent / "pick_history.json"
-    pick_history = _load_json(str(pick_history_path))
     if isinstance(pick_history, dict):
         latest_snapshots = _load_latest_odds_snapshots(odds_history_path, sport_key)
         picks = pick_history.get("picks", [])

@@ -188,14 +188,14 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
 def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     _write_predictions(
         tmp_path,
-        "mma",
+        "nhl",
         {
             "slop_locks": [],
             "longslop": None,
             "matches": [
                 _base_match(
-                    home_team="Jon Jones",
-                    away_team="Tom Aspinall",
+                    home_team="Bruins",
+                    away_team="Rangers",
                     start_time="2026-03-29T03:00:00Z",
                     confidence_score=71,
                     model_prob=0.64,
@@ -217,7 +217,7 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     assert "MODEL RADAR" in full_text
     assert "not official picks or qualified slimegrinders" in full_text
     assert "Not an official pick" in full_text
-    assert "Jon Jones" in full_text
+    assert "Bruins" in full_text
     assert "Mar 28 11:00 PM ET" in full_text
     assert "SLATE DIAGNOSTICS" in full_text
 

@@ -20,7 +20,9 @@ from pipeline.config import (
     NBA_3IN4_PENALTY,
     TRACKING_DIRNAME,
     RESULTS_LOG_FILENAME,
+    RESULTS_AUDIT_LOG_FILENAME,
     ODDS_HISTORY_FILENAME,
+    PICK_DECISION_LOG_FILENAME,
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SLOP_LOCK_FALLBACK_MIN_ODDS,
@@ -33,7 +35,6 @@ from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nb
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
-from pipeline.fetch_mma import fetch_mma_games, fetch_mma_schedule, normalize_mma_name
 from pipeline.models import (
     AdjustedEfficiency,
     BullpenMatchupModel,
@@ -76,7 +77,6 @@ from pipeline.backtest import (
     compute_model_weights,
     compute_roi,
     evaluate_prediction,
-    get_rolling_accuracy,
     update_accuracy_log,
 )
 
@@ -116,13 +116,112 @@ def _save_json(path, data):
 
 
 def _lookup_match_odds(odds_lookup: dict, sport_key: str, home_team: str, away_team: str) -> dict | None:
-    """Return odds for a fixture, with MMA-specific reversed-order fallback."""
-    match_odds = odds_lookup.get((home_team, away_team))
-    if match_odds is not None:
-        return match_odds
-    if sport_key == "mma":
-        return odds_lookup.get((away_team, home_team))
+    """Return odds for a fixture."""
+    return odds_lookup.get((home_team, away_team))
+
+
+def _is_live_public_output(base_dir: str) -> bool:
+    """Return whether this run is updating the default live data directory.
+
+    Fallback: custom output dirs are treated as research/staging runs so tests
+    and offline experiments can still inspect candidate picks before a sport is
+    allowed to publish them live.
+    """
+    try:
+        return os.path.abspath(base_dir) == os.path.abspath(DATA_DIR)
+    except OSError:
+        return False
+
+
+def _prediction_calendar_day(prediction: dict) -> datetime.date | None:
+    """Parse the best available calendar day from one saved prediction."""
+    for key in ("date", "match_date", "snapshot_timestamp", "generated_at"):
+        value = prediction.get(key)
+        if not value:
+            continue
+        text = str(value).strip()
+        try:
+            return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+        except ValueError:
+            pass
+        try:
+            return datetime.strptime(text[:10], "%Y-%m-%d").date()
+        except ValueError:
+            continue
     return None
+
+
+def _select_calibration_predictions(
+    predictions: list[dict],
+    lookback_days: int | None,
+    holdout_days: int,
+    as_of: datetime.date,
+) -> list[dict]:
+    """Return the dedicated trailing slice used for probability calibration."""
+    cutoff = as_of - timedelta(days=max(holdout_days, 0))
+    floor_day = None
+    if lookback_days:
+        floor_day = cutoff - timedelta(days=max(int(lookback_days) - 1, 0))
+
+    selected = []
+    for prediction in predictions:
+        if not prediction.get("evaluated"):
+            continue
+        pred_day = _prediction_calendar_day(prediction)
+        if pred_day is None:
+            continue
+        if pred_day > cutoff:
+            continue
+        if floor_day is not None and pred_day < floor_day:
+            continue
+        selected.append(prediction)
+    return selected
+
+
+def _build_publication_guard(
+    past_picks: list[dict],
+    sport: dict,
+    enforce_live_guard: bool,
+) -> dict:
+    """Return whether a sport has enough settled evidence to publish live picks."""
+    evaluated = [pick for pick in past_picks if pick.get("evaluated")]
+    evaluated_totals = [pick for pick in evaluated if str(pick.get("market_type") or "moneyline") == "total"]
+    min_picks = int(sport.get("publication_min_evaluated_picks", 0) or 0)
+    min_totals = int(sport.get("publication_min_evaluated_totals_picks", 0) or 0)
+
+    if not enforce_live_guard:
+        return {
+            "enforced": False,
+            "allow_moneyline": True,
+            "allow_totals": True,
+            "evaluated_picks": len(evaluated),
+            "evaluated_totals_picks": len(evaluated_totals),
+            "min_evaluated_picks": min_picks,
+            "min_evaluated_totals_picks": min_totals,
+            "status": "research",
+            "reason": None,
+        }
+
+    allow_moneyline = len(evaluated) >= min_picks if min_picks > 0 else True
+    allow_totals = allow_moneyline and (len(evaluated_totals) >= min_totals if min_totals > 0 else True)
+
+    reason = None
+    if not allow_moneyline:
+        reason = f"hold moneylines until settled picks reach {len(evaluated)}/{min_picks}"
+    elif not allow_totals:
+        reason = f"hold totals until settled totals reach {len(evaluated_totals)}/{min_totals}"
+
+    return {
+        "enforced": True,
+        "allow_moneyline": allow_moneyline,
+        "allow_totals": allow_totals,
+        "evaluated_picks": len(evaluated),
+        "evaluated_totals_picks": len(evaluated_totals),
+        "min_evaluated_picks": min_picks,
+        "min_evaluated_totals_picks": min_totals,
+        "status": "live" if allow_moneyline and allow_totals else "suppressed",
+        "reason": reason,
+    }
 
 
 def _resolve_start_time(fixture: dict, match_odds: dict | None) -> str | None:
@@ -192,6 +291,54 @@ _ODDS_HISTORY_FIELDS = [
     "market_implied_prob",
 ]
 
+_PICK_DECISION_FIELDS = [
+    "logged_at",
+    "run_id",
+    "run_type",
+    "snapshot_timestamp",
+    "snapshot_path",
+    "sport",
+    "pick_type",
+    "market_type",
+    "home_team",
+    "away_team",
+    "match_date",
+    "start_time",
+    "pick",
+    "total_line",
+    "expected_total",
+    "total_stddev",
+    "model_prob",
+    "implied_prob",
+    "market_implied_prob",
+    "edge",
+    "expected_value",
+    "american_odds",
+    "decimal_odds",
+    "confidence_score",
+    "kelly_fraction",
+    "fractional_kelly",
+    "market_source",
+    "market_books",
+    "hold",
+    "publication_guard_status",
+    "publication_guard_reason",
+    "publication_guard_enforced",
+    "publication_guard_evaluated_picks",
+    "publication_guard_evaluated_totals_picks",
+    "calibration_sample_size",
+    "selection_min_expected_value",
+    "selection_edge_floor",
+    "selection_probability_floor",
+    "selection_confidence_floor",
+    "selection_confidence_dropoff",
+    "selection_max_picks",
+    "model_probs_json",
+    "individual_models_json",
+    "decision_context_json",
+    "gate_context_json",
+]
+
 
 def _results_log_path(base_dir: str) -> str:
     """Return the CSV path for the persistent resolved-results log."""
@@ -201,6 +348,16 @@ def _results_log_path(base_dir: str) -> str:
 def _odds_history_path(base_dir: str) -> str:
     """Return the CSV path for tracked odds snapshots."""
     return os.path.join(base_dir, TRACKING_DIRNAME, ODDS_HISTORY_FILENAME)
+
+
+def _results_audit_log_path(base_dir: str) -> str:
+    """Return the CSV path for the append-only results ledger."""
+    return os.path.join(base_dir, TRACKING_DIRNAME, RESULTS_AUDIT_LOG_FILENAME)
+
+
+def _pick_decision_log_path(base_dir: str) -> str:
+    """Return the CSV path for the append-only pick decision ledger."""
+    return os.path.join(base_dir, TRACKING_DIRNAME, PICK_DECISION_LOG_FILENAME)
 
 
 def _snapshot_root_dir(base_dir: str) -> str:
@@ -367,6 +524,65 @@ def _append_results_log(path: str, rows: list[dict]) -> None:
             existing_keys.add(key)
 
 
+def _append_results_audit_log(path: str, rows: list[dict]) -> None:
+    """Append rows to the immutable audit ledger.
+
+    The audit log is intentionally append-only. If a maintenance command later
+    rewrites live summary files, this ledger still preserves the original
+    settled-result stream for reporting and forensic checks.
+    """
+    if not rows:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    file_exists = os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_RESULTS_LOG_FIELDS)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            writer.writerow({field: row.get(field, "") for field in _RESULTS_LOG_FIELDS})
+
+
+def _pick_decision_key(row: dict) -> tuple:
+    """Stable dedupe key for one published pick-decision row."""
+    return (
+        row["sport"],
+        row["pick_type"],
+        row["market_type"],
+        row["home_team"],
+        row["away_team"],
+        row["match_date"],
+        row["pick"],
+    )
+
+
+def _append_pick_decision_log(path: str, rows: list[dict]) -> None:
+    """Append deduped pick-decision rows to the immutable ledger."""
+    if not rows:
+        return
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    existing_keys = set()
+    if os.path.exists(path):
+        with open(path, newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                existing_keys.add(_pick_decision_key(row))
+
+    file_exists = os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=_PICK_DECISION_FIELDS)
+        if not file_exists:
+            writer.writeheader()
+        for row in rows:
+            key = _pick_decision_key(row)
+            if key in existing_keys:
+                continue
+            writer.writerow({field: row.get(field, "") for field in _PICK_DECISION_FIELDS})
+            existing_keys.add(key)
+
+
 def _odds_snapshot_key(row: dict) -> tuple:
     """Stable dedupe key for one odds snapshot state."""
     return (
@@ -427,6 +643,200 @@ def _safe_int(value):
         return None
 
 
+def _json_compact(value):
+    """Serialize one payload into stable compact JSON for CSV storage."""
+    if value in (None, "", [], {}):
+        return ""
+    return json.dumps(value, cls=_NumpyEncoder, sort_keys=True, separators=(",", ":"))
+
+
+def _record_lookup_key(record: dict, market_type: str) -> tuple:
+    """Build a stable lookup key for one modeled fixture record."""
+    return (
+        market_type,
+        record.get("home_team"),
+        record.get("away_team"),
+        str(record.get("date") or record.get("match_date") or "")[:10],
+    )
+
+
+def _build_record_lookup(records: list[dict], market_type: str) -> dict[tuple, dict]:
+    """Index modeled records by fixture and market type."""
+    return {
+        _record_lookup_key(record, market_type): record
+        for record in records
+        if record.get("home_team") and record.get("away_team")
+    }
+
+
+def _selection_config_for_pick(selection_config: dict, pick_type: str) -> dict:
+    """Return the gate config that produced one published pick."""
+    key_map = {
+        "slop_lock": "slop_locks",
+        "longslop": "longslop",
+        "total_lock": "totals_locks",
+    }
+    return (selection_config or {}).get(key_map.get(pick_type, ""), {}) or {}
+
+
+def _build_pick_decision_row(
+    sport_key: str,
+    pick_type: str,
+    pick_record: dict,
+    source_record: dict | None,
+    publication_guard: dict,
+    selection_config: dict,
+    calibration_sample_size: int,
+) -> dict:
+    """Normalize one newly published pick into an append-only decision row."""
+    market_type = str(pick_record.get("market_type") or "moneyline")
+    source_record = source_record or {}
+    model_probs = source_record.get("model_probs") or {}
+    edge_data = ((source_record.get("edges") or {}).get(pick_record.get("pick")) or {})
+    lane_config = _selection_config_for_pick(selection_config, pick_type)
+
+    # Fallback: if the source record is missing, persist the published pick row
+    # itself so the decision ledger still captures what users actually saw.
+    decision_context = source_record or dict(pick_record)
+    gate_context = {
+        "pick_type": pick_type,
+        "selection_config": lane_config,
+        "publication_guard": publication_guard,
+    }
+
+    return {
+        "logged_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "run_id": pick_record.get("run_id"),
+        "run_type": pick_record.get("run_type"),
+        "snapshot_timestamp": pick_record.get("snapshot_timestamp"),
+        "snapshot_path": pick_record.get("snapshot_path"),
+        "sport": sport_key,
+        "pick_type": pick_type,
+        "market_type": market_type,
+        "home_team": pick_record.get("home_team"),
+        "away_team": pick_record.get("away_team"),
+        "match_date": str(pick_record.get("match_date") or pick_record.get("date") or "")[:10],
+        "start_time": pick_record.get("start_time"),
+        "pick": pick_record.get("pick"),
+        "total_line": pick_record.get("total_line", source_record.get("total_line")),
+        "expected_total": pick_record.get("expected_total", source_record.get("expected_total")),
+        "total_stddev": source_record.get("total_stddev"),
+        "model_prob": pick_record.get("model_prob"),
+        "implied_prob": pick_record.get("implied_prob", edge_data.get("implied_prob")),
+        "market_implied_prob": pick_record.get("market_implied_prob", edge_data.get("market_implied_prob")),
+        "edge": pick_record.get("edge", edge_data.get("edge")),
+        "expected_value": pick_record.get("expected_value", edge_data.get("expected_value")),
+        "american_odds": pick_record.get("american_odds", edge_data.get("american_odds")),
+        "decimal_odds": pick_record.get("decimal_odds", edge_data.get("decimal_odds")),
+        "confidence_score": pick_record.get("confidence_score", edge_data.get("confidence_score")),
+        "kelly_fraction": pick_record.get("kelly_fraction", edge_data.get("kelly_fraction")),
+        "fractional_kelly": pick_record.get("fractional_kelly", edge_data.get("fractional_kelly")),
+        "market_source": edge_data.get("market_source"),
+        "market_books": edge_data.get("market_books"),
+        "hold": edge_data.get("hold"),
+        "publication_guard_status": publication_guard.get("status"),
+        "publication_guard_reason": publication_guard.get("reason"),
+        "publication_guard_enforced": publication_guard.get("enforced"),
+        "publication_guard_evaluated_picks": publication_guard.get("evaluated_picks"),
+        "publication_guard_evaluated_totals_picks": publication_guard.get("evaluated_totals_picks"),
+        "calibration_sample_size": calibration_sample_size,
+        "selection_min_expected_value": lane_config.get("min_expected_value"),
+        "selection_edge_floor": lane_config.get("edge_floor"),
+        "selection_probability_floor": lane_config.get("probability_floor"),
+        "selection_confidence_floor": lane_config.get("additional_confidence_floor", lane_config.get("confidence_floor")),
+        "selection_confidence_dropoff": lane_config.get("confidence_dropoff"),
+        "selection_max_picks": lane_config.get("max_picks"),
+        "model_probs_json": _json_compact(model_probs),
+        "individual_models_json": _json_compact(source_record.get("individual_models")),
+        "decision_context_json": _json_compact(decision_context),
+        "gate_context_json": _json_compact(gate_context),
+    }
+
+
+def _backfill_pick_decision_log_from_snapshots(base_dir: str, sports: list[str] | None = None) -> int:
+    """Backfill the pick-decision ledger from immutable saved snapshots.
+
+    Fallback: older snapshots may not have embedded run metadata on each pick,
+    so the snapshot header is treated as the authoritative source for those
+    fields during ledger reconstruction.
+    """
+    snapshot_root = _snapshot_root_dir(base_dir)
+    if not os.path.exists(snapshot_root):
+        return 0
+
+    selected_sports = set(sports or SPORTS.keys())
+    ledger_path = _pick_decision_log_path(base_dir)
+    rows = []
+    lane_specs = (
+        ("slop_lock", "moneyline", "slop_locks"),
+        ("longslop", "moneyline", "longslop"),
+        ("total_lock", "total", "totals_locks"),
+    )
+
+    for current_root, _, files in os.walk(snapshot_root):
+        for filename in files:
+            if not filename.endswith(".json"):
+                continue
+            path = os.path.join(current_root, filename)
+            try:
+                with open(path) as f:
+                    snapshot = json.load(f) or {}
+            except (OSError, json.JSONDecodeError):
+                continue
+
+            sport_key = snapshot.get("sport")
+            if sport_key not in selected_sports:
+                continue
+
+            records = snapshot.get("records") or {}
+            record_lookup = {}
+            record_lookup.update(_build_record_lookup(records.get("matches") or [], "moneyline"))
+            record_lookup.update(_build_record_lookup(records.get("totals_matches") or [], "total"))
+            selection_config = snapshot.get("selection_config") or {}
+            publication_guard = snapshot.get("publication_guard") or {}
+            calibration_sample_size = int(((snapshot.get("inputs") or {}).get("calibration_sample_size") or 0) or 0)
+            snapshot_relpath = os.path.relpath(path, base_dir)
+            outputs = snapshot.get("outputs") or {}
+
+            for pick_type, market_type, output_key in lane_specs:
+                raw_items = outputs.get(output_key)
+                if isinstance(raw_items, dict):
+                    items = [raw_items]
+                else:
+                    items = list(raw_items or [])
+                for item in items:
+                    if not isinstance(item, dict):
+                        continue
+                    pick_record = dict(item)
+                    match_date = str(item.get("match_date") or item.get("date") or "")[:10]
+                    pick_record.setdefault("market_type", market_type)
+                    pick_record.setdefault("match_date", match_date)
+                    pick_record.setdefault("run_id", snapshot.get("run_id"))
+                    pick_record.setdefault("run_type", snapshot.get("run_type"))
+                    pick_record.setdefault("snapshot_timestamp", snapshot.get("snapshot_timestamp"))
+                    pick_record.setdefault("snapshot_path", snapshot.get("snapshot_path") or snapshot_relpath)
+                    source_record = record_lookup.get((
+                        market_type,
+                        pick_record.get("home_team"),
+                        pick_record.get("away_team"),
+                        match_date,
+                    ))
+                    rows.append(
+                        _build_pick_decision_row(
+                            sport_key,
+                            pick_type,
+                            pick_record,
+                            source_record,
+                            publication_guard,
+                            selection_config,
+                            calibration_sample_size,
+                        )
+                    )
+
+    _append_pick_decision_log(ledger_path, rows)
+    return len(rows)
+
+
 def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dict]:
     """Normalize current odds into per-outcome snapshot rows."""
     logged_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -440,9 +850,13 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
             for outcome in ("home", "away", "draw")
             if odds.get(f"{outcome}_odds", 0.0) and odds.get(f"{outcome}_odds", 0.0) > 1.0
         }
-        _, fair_probs, raw_probs = None, None, None
+        fair_probs = {}
+        raw_probs = {}
         if moneyline_decimals:
             raw_probs, fair_probs, _ = no_vig_probabilities(moneyline_decimals)
+            moneyline_benchmark = odds.get("moneyline_benchmark") or {}
+            fair_probs = moneyline_benchmark.get("fair_probs") or fair_probs
+            raw_probs = moneyline_benchmark.get("raw_probs") or raw_probs
             for outcome, decimal_odds in moneyline_decimals.items():
                 rows.append({
                     "logged_at": logged_at,
@@ -467,6 +881,9 @@ def _build_odds_snapshot_rows(sport_key: str, odds_list: list[dict]) -> list[dic
         }
         if totals_decimals and odds.get("total_line") is not None:
             raw_probs, fair_probs, _ = no_vig_probabilities(totals_decimals)
+            totals_benchmark = odds.get("totals_benchmark") or {}
+            fair_probs = totals_benchmark.get("fair_probs") or fair_probs
+            raw_probs = totals_benchmark.get("raw_probs") or raw_probs
             for outcome, decimal_odds in totals_decimals.items():
                 rows.append({
                     "logged_at": logged_at,
@@ -540,6 +957,7 @@ def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tupl
                     pick["closing_line_value"] = round(closing_total_line - opening_total_line, 3)
                 elif pick.get("pick") == "under":
                     pick["closing_line_value"] = round(opening_total_line - closing_total_line, 3)
+                pick["closing_line_value_unit"] = "total_points"
         else:
             opening_prob = pick.get("market_implied_prob")
             if opening_prob is None:
@@ -548,6 +966,7 @@ def _apply_latest_market_snapshots(picks: list[dict], snapshot_lookup: dict[tupl
             closing_prob = _safe_float(snapshot.get("implied_prob"))
             if opening_prob is not None and closing_prob is not None:
                 pick["closing_line_value"] = round(closing_prob - opening_prob, 4)
+                pick["closing_line_value_unit"] = "implied_probability_points"
 
 
 
@@ -1316,7 +1735,12 @@ def _compute_slop_locks(
             ev = e.get("expected_value", 0.0)
             
             # Basic eligibility for any pick
-            if edge >= edge_floor and prob >= probability_floor and ev >= min_expected_value:
+            if (
+                edge >= edge_floor
+                and prob >= probability_floor
+                and ev >= min_expected_value
+                and conf >= additional_confidence_floor
+            ):
                 candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -1353,7 +1777,7 @@ def _compute_slop_locks(
             break
         if (
             c["confidence_score"] >= additional_confidence_floor
-            or c["confidence_score"] >= (top_confidence - confidence_dropoff)
+            and c["confidence_score"] >= (top_confidence - confidence_dropoff)
         ):
             selected.append(c)
 
@@ -1592,6 +2016,7 @@ def _build_pipeline_diagnostics(
     slop_locks: list[dict],
     longslop: dict | None,
     slimegrinder: list[dict],
+    publication_guard: dict | None = None,
 ) -> dict:
     """Summarize why a slate did or did not produce picks."""
     min_expected_value = sport.get("min_expected_value", 0.0)
@@ -1661,6 +2086,7 @@ def _build_pipeline_diagnostics(
         "slop_locks_posted": len(slop_locks),
         "longslop_posted": 1 if longslop else 0,
         "slimegrinders_posted": len(slimegrinder),
+        "publication_guard": publication_guard or {},
     }
     diagnostics["summary"] = (
         f"modeled={diagnostics['matches_modeled']} | "
@@ -1669,6 +2095,8 @@ def _build_pipeline_diagnostics(
         f"eligible={diagnostics['lock_eligible_matches']} | "
         f"locks={diagnostics['slop_locks_posted']}"
     )
+    if publication_guard and publication_guard.get("reason"):
+        diagnostics["summary"] += f" | {publication_guard['reason']}"
     return diagnostics
 
 
@@ -1701,6 +2129,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     history_path = os.path.join(sport_dir, "history.json")
     accuracy_path = os.path.join(sport_dir, "model_accuracy.json")
     results_log_path = _results_log_path(base_dir)
+    results_audit_log_path = _results_audit_log_path(base_dir)
+    pick_decision_log_path = _pick_decision_log_path(base_dir)
     odds_history_path = _odds_history_path(base_dir)
 
     # ------------------------------------------------------------------
@@ -1753,12 +2183,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         fixtures = fetch_mlb_schedule(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
-        matches = games_df
-    elif sport_key == "mma":
-        games_df, box_scores_df = fetch_mma_games(
-            cache_path=os.path.join(sport_dir, "espn_cache.json")
-        )
-        fixtures = fetch_mma_schedule()
         matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
@@ -1929,10 +2353,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         model_names.append("handedness_features")
 
     accuracy_window = sport.get("accuracy_window", None)
-    accuracies = [get_rolling_accuracy(accuracy_log, name, window=accuracy_window) for name in model_names]
     weights = compute_model_weights(
-        accuracies,
+        accuracy_log,
+        model_names=model_names,
         temperature=sport.get("accuracy_softmax_temperature", 2.0),
+        window=accuracy_window,
     )
     model_weight_dict = dict(zip(model_names, weights))
 
@@ -1940,10 +2365,19 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not isinstance(history, dict):
         history = {}
     past_predictions = history.get("predictions", [])
-    probability_calibrators = fit_probability_calibrators(
+    calibration_predictions = _select_calibration_predictions(
         past_predictions,
+        lookback_days=sport.get("probability_calibration_window_days"),
+        holdout_days=int(sport.get("probability_calibration_holdout_days", 0) or 0),
+        as_of=datetime.now(timezone.utc).date(),
+    )
+    probability_calibrators = fit_probability_calibrators(
+        calibration_predictions,
         outcomes,
         min_samples=sport.get("probability_calibration_min_samples", 20),
+        lookback_days=sport.get("probability_calibration_window_days"),
+        holdout_days=int(sport.get("probability_calibration_holdout_days", 0) or 0),
+        as_of=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
     )
 
     # ------------------------------------------------------------------
@@ -1955,8 +2389,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         normalizer = normalize_ncaam_team_name
     elif sport_key == "mlb":
         normalizer = normalize_mlb_team_name
-    elif sport_key == "mma":
-        normalizer = normalize_mma_name
     elif sport_key == "nhl":
         normalizer = normalize_nhl_team_name
     else:
@@ -2407,6 +2839,25 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         max_picks=sport.get("totals_max_picks", 3),
     ) if totals_prediction_records else []
 
+    pick_history_path = os.path.join(sport_dir, "pick_history.json")
+    pick_history = _load_json(pick_history_path)
+    if not isinstance(pick_history, dict):
+        pick_history = {}
+    past_picks = pick_history.get("picks", [])
+    publication_guard = _build_publication_guard(
+        past_picks,
+        sport,
+        enforce_live_guard=_is_live_public_output(base_dir),
+    )
+    if not publication_guard.get("allow_moneyline", True):
+        # Fallback: keep match projections and diagnostics visible even when the
+        # sport is not yet allowed to publish official moneyline lanes live.
+        slop_locks = []
+        longslop = None
+        slimegrinder = []
+    if not publication_guard.get("allow_totals", True):
+        totals_locks = []
+
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
     longslop = _generate_blurbs(longslop, pick_type="longslop")
@@ -2433,6 +2884,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 
     updated_past = []
     resolved_results_rows = []
+    record_lookup = {}
+    record_lookup.update(_build_record_lookup(prediction_records, "moneyline"))
+    record_lookup.update(_build_record_lookup(totals_prediction_records, "total"))
+    new_pick_decision_rows = []
     for pred in past_predictions:
         if pred.get("evaluated"):
             updated_past.append(pred)
@@ -2472,11 +2927,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     # ------------------------------------------------------------------
     # 6b. Track and evaluate picks
     # ------------------------------------------------------------------
-    pick_history_path = os.path.join(sport_dir, "pick_history.json")
-    pick_history = _load_json(pick_history_path)
-    if not isinstance(pick_history, dict):
-        pick_history = {}
-    past_picks = pick_history.get("picks", [])
     _apply_latest_market_snapshots(past_picks, latest_snapshot_lookup)
 
     # Evaluate unevaluated past picks against results
@@ -2532,7 +2982,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         pk = ("slop_lock", lock["home_team"], lock["away_team"],
               str(lock["date"])[:10], lock["pick"])
         if pk not in existing_keys:
-            past_picks.append({
+            new_pick = {
                 "pick_date": today_str,
                 "type": "slop_lock",
                 "market_type": "moneyline",
@@ -2556,13 +3006,28 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "snapshot_timestamp": run_context.get("run_timestamp"),
                 "snapshot_path": snapshot_relpath,
                 "evaluated": False,
-            })
+            }
+            past_picks.append(new_pick)
+            source_record = record_lookup.get(
+                ("moneyline", lock["home_team"], lock["away_team"], str(lock["date"])[:10])
+            )
+            new_pick_decision_rows.append(
+                _build_pick_decision_row(
+                    sport_key,
+                    "slop_lock",
+                    new_pick,
+                    source_record,
+                    publication_guard,
+                    selection_config,
+                    len(calibration_predictions),
+                )
+            )
 
     if longslop:
         pk = ("longslop", longslop["home_team"], longslop["away_team"],
               str(longslop["date"])[:10], longslop["pick"])
         if pk not in existing_keys:
-            past_picks.append({
+            new_pick = {
                 "pick_date": today_str,
                 "type": "longslop",
                 "market_type": "moneyline",
@@ -2586,13 +3051,28 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "snapshot_timestamp": run_context.get("run_timestamp"),
                 "snapshot_path": snapshot_relpath,
                 "evaluated": False,
-            })
+            }
+            past_picks.append(new_pick)
+            source_record = record_lookup.get(
+                ("moneyline", longslop["home_team"], longslop["away_team"], str(longslop["date"])[:10])
+            )
+            new_pick_decision_rows.append(
+                _build_pick_decision_row(
+                    sport_key,
+                    "longslop",
+                    new_pick,
+                    source_record,
+                    publication_guard,
+                    selection_config,
+                    len(calibration_predictions),
+                )
+            )
 
     for total_lock in totals_locks:
         pk = ("total_lock", total_lock["home_team"], total_lock["away_team"],
               str(total_lock["date"])[:10], total_lock["pick"])
         if pk not in existing_keys:
-            past_picks.append({
+            new_pick = {
                 "pick_date": today_str,
                 "type": "total_lock",
                 "market_type": "total",
@@ -2618,7 +3098,22 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "snapshot_timestamp": run_context.get("run_timestamp"),
                 "snapshot_path": snapshot_relpath,
                 "evaluated": False,
-            })
+            }
+            past_picks.append(new_pick)
+            source_record = record_lookup.get(
+                ("total", total_lock["home_team"], total_lock["away_team"], str(total_lock["date"])[:10])
+            )
+            new_pick_decision_rows.append(
+                _build_pick_decision_row(
+                    sport_key,
+                    "total_lock",
+                    new_pick,
+                    source_record,
+                    publication_guard,
+                    selection_config,
+                    len(calibration_predictions),
+                )
+            )
 
     _apply_latest_market_snapshots(past_picks, latest_snapshot_lookup)
 
@@ -2632,6 +3127,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     }
     _save_json(pick_history_path, pick_history)
     _append_results_log(results_log_path, resolved_results_rows)
+    _append_results_audit_log(results_audit_log_path, resolved_results_rows)
+    _append_pick_decision_log(pick_decision_log_path, new_pick_decision_rows)
 
     # Compute pick stats for output
     pick_stats = _compute_pick_stats(past_picks)
@@ -2673,6 +3170,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         slop_locks=slop_locks,
         longslop=longslop,
         slimegrinder=slimegrinder,
+        publication_guard=publication_guard,
     )
 
     predictions_output = {
@@ -2693,6 +3191,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         "season_stats": season_stats,
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
         "pick_stats": pick_stats,
+        "publication_guard": publication_guard,
+        "calibration_sample_size": len(calibration_predictions),
         "selection_config": selection_config,
         "diagnostics": diagnostics,
     }
@@ -2735,6 +3235,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             "run_type": run_context.get("run_type"),
             "snapshot_timestamp": run_context.get("run_timestamp"),
             "selection_config": selection_config,
+            "publication_guard": publication_guard,
             "outcomes": outcomes,
             "inputs": {
                 "fixtures_fetched": fixtures_fetched,
@@ -2742,6 +3243,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "odds": odds_list,
                 "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
                 "models": list(model_weight_dict.keys()),
+                "calibration_sample_size": len(calibration_predictions),
             },
             "records": {
                 "matches": prediction_records,
@@ -2802,6 +3304,7 @@ def run_pipeline(output_dir=None):
                 "updated_at": now,
             }
 
+    _backfill_pick_decision_log_from_snapshots(base_dir)
     _save_json(os.path.join(base_dir, "manifest.json"), manifest)
     _save_json(os.path.join(base_dir, "dashboard.json"), build_dashboard_data(base_dir))
 

@@ -90,6 +90,36 @@ def _compute_weights(matches):
     return weights
 
 
+def _rolling_regression_residual_std(
+    feature_rows,
+    targets,
+    min_train_rows: int,
+    floor: float,
+    default_stddev: float,
+) -> float:
+    """Estimate residual spread from walk-forward predictions instead of fit residuals.
+
+    This is intentionally slower than a one-shot in-sample residual estimate, but
+    it avoids the optimistic sigma that comes from evaluating the model on the
+    same rows it was fit on.
+    """
+    if len(feature_rows) <= min_train_rows:
+        return float(default_stddev)
+
+    X = np.array(feature_rows)
+    y = np.array(targets)
+    residuals = []
+    for idx in range(min_train_rows, len(feature_rows)):
+        reg = LinearRegression()
+        reg.fit(X[:idx], y[:idx])
+        pred = float(reg.predict(X[idx: idx + 1])[0])
+        residuals.append(float(y[idx] - pred))
+
+    if len(residuals) < 5:
+        return float(default_stddev)
+    return max(float(floor), float(np.std(np.array(residuals))))
+
+
 def _dc_log_likelihood(params, matches, teams, weights):
     """Negative log-likelihood for the Dixon-Coles model.
 
@@ -1337,12 +1367,15 @@ class MlbTotalsModel:
         if len(X) < self.min_games:
             return
 
+        self.residual_std = _rolling_regression_residual_std(
+            X,
+            y,
+            min_train_rows=max(8, self.feature_window),
+            floor=1.5,
+            default_stddev=self.default_stddev,
+        )
         self.model = LinearRegression()
         self.model.fit(np.array(X), np.array(y))
-        preds = self.model.predict(np.array(X))
-        residuals = np.array(y) - preds
-        if len(residuals) >= 5:
-            self.residual_std = max(1.5, float(np.std(residuals)))
 
     def predict_total(self, fixture: dict) -> float:
         if self.model is None:
@@ -2186,12 +2219,15 @@ class NbaTotalsModel:
         if len(X) < self.min_games:
             return
 
+        self.residual_std = _rolling_regression_residual_std(
+            X,
+            y,
+            min_train_rows=max(8, self.feature_window),
+            floor=7.5,
+            default_stddev=self.default_stddev,
+        )
         self.model = LinearRegression()
         self.model.fit(np.array(X), np.array(y))
-        preds = self.model.predict(np.array(X))
-        residuals = np.array(y) - preds
-        if len(residuals) >= 5:
-            self.residual_std = max(7.5, float(np.std(residuals)))
 
     def predict_total(self, fixture: dict) -> float:
         if self.model is None:
@@ -2395,133 +2431,127 @@ def efficiency_predict(model, home_team, away_team, home_bonus=3.5, sigma=11.0):
 # ---------------------------------------------------------------------------
 
 class FourFactorsModel:
-    """Four Factors logistic regression model for college basketball.
+    """Walk-forward Four Factors logistic regression model.
 
-    Computes Dean Oliver's four factors (offensive and defensive) per team
-    as season averages, then trains a logistic regression on historical games.
-
-    Parameters
-    ----------
-    box_scores : pd.DataFrame
-        Columns: game_id, team, date, pts, fgm, fga, fg3m, fg3a, ftm, fta,
-        orb, drb, to, possessions.
-    games : pd.DataFrame
-        Columns: game_id, home_team, away_team, home_goals, away_goals.
+    Older versions aggregated each team's full-season box scores before fitting,
+    which leaked future games into historical training rows. This version builds
+    each row from prior box-score logs only, matching the rest of the walk-
+    forward models in the stack.
     """
 
-    def __init__(self, box_scores, games):
+    feature_keys = [
+        "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
+        "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
+    ]
+
+    def __init__(self, box_scores, games, min_games: int = 30):
+        self.min_games = min_games
         self.team_stats = {}
+        self.team_logs = {}
         self.model = None
         self._fit(box_scores, games)
 
+    @staticmethod
+    def _default_summary():
+        return {
+            "off_efg": 0.5,
+            "off_to_rate": 0.14,
+            "off_orb_pct": 0.3,
+            "off_ft_rate": 0.22,
+            "def_efg": 0.5,
+            "def_to_rate": 0.14,
+            "def_orb_pct": 0.3,
+            "def_ft_rate": 0.22,
+        }
+
+    @classmethod
+    def _aggregate(cls, logs):
+        if not logs:
+            return cls._default_summary()
+
+        def _avg(key):
+            return float(sum(item[key] for item in logs) / len(logs))
+
+        return {key: _avg(key) for key in cls.feature_keys}
+
+    @staticmethod
+    def _boxscore_log(team_bs, opp_bs):
+        team_fga = max(float(team_bs["fga"]), 1.0)
+        team_poss = max(float(team_bs["possessions"]), 1.0)
+        opp_fga = max(float(opp_bs["fga"]), 1.0)
+        opp_poss = max(float(opp_bs["possessions"]), 1.0)
+
+        return {
+            "off_efg": (float(team_bs["fgm"]) + (0.5 * float(team_bs["fg3m"]))) / team_fga,
+            "off_to_rate": float(team_bs["to"]) / team_poss,
+            "off_orb_pct": float(team_bs["orb"]) / max(float(team_bs["orb"]) + float(opp_bs["drb"]), 1.0),
+            "off_ft_rate": float(team_bs["fta"]) / team_fga,
+            "def_efg": (float(opp_bs["fgm"]) + (0.5 * float(opp_bs["fg3m"]))) / opp_fga,
+            "def_to_rate": float(opp_bs["to"]) / opp_poss,
+            "def_orb_pct": float(opp_bs["orb"]) / max(float(opp_bs["orb"]) + float(team_bs["drb"]), 1.0),
+            "def_ft_rate": float(opp_bs["fta"]) / opp_fga,
+        }
+
+    @classmethod
+    def _feature_vector(cls, home_logs, away_logs):
+        home = cls._aggregate(home_logs)
+        away = cls._aggregate(away_logs)
+        home_feats = [home[key] for key in cls.feature_keys]
+        away_feats = [away[key] for key in cls.feature_keys]
+        return np.array(home_feats + away_feats)
+
     def _fit(self, box_scores, games):
-        # Build opponent mapping
-        opponents_in_game = {}
-        for _, g in games.iterrows():
-            gid = g["game_id"]
-            opponents_in_game[(gid, g["home_team"])] = g["away_team"]
-            opponents_in_game[(gid, g["away_team"])] = g["home_team"]
+        required_box = {"game_id", "team", "fgm", "fga", "fg3m", "fta", "orb", "drb", "to", "possessions"}
+        required_games = {"game_id", "date", "home_team", "away_team", "home_goals", "away_goals"}
+        if (
+            box_scores is None
+            or games is None
+            or box_scores.empty
+            or games.empty
+            or not required_box.issubset(set(box_scores.columns))
+            or not required_games.issubset(set(games.columns))
+        ):
+            return
 
-        # Compute weights based on recency
-        weights = _compute_weights(box_scores)
-
-        # Index box_scores by (game_id, team)
         bs_lookup = {}
-        for idx, row in box_scores.iterrows():
-            bs_lookup[(row["game_id"], row["team"])] = (row, weights[box_scores.index.get_loc(idx)])
+        for _, row in box_scores.iterrows():
+            bs_lookup[(row["game_id"], row["team"])] = row
 
-        # Accumulate per-team stats
-        teams = box_scores["team"].unique()
-        accum = {t: {
-            "fgm": 0.0, "fga": 0.0, "fg3m": 0.0, "fta": 0.0, "orb": 0.0, "to": 0.0,
-            "possessions": 0.0,
-            "opp_fgm": 0.0, "opp_fga": 0.0, "opp_fg3m": 0.0, "opp_fta": 0.0,
-            "opp_orb": 0.0, "opp_drb": 0.0, "opp_to": 0.0, "opp_possessions": 0.0,
-            "drb": 0.0, "weight_sum": 0.0,
-        } for t in teams}
-
-        for idx, row in box_scores.iterrows():
-            team = row["team"]
-            gid = row["game_id"]
-            w = weights[box_scores.index.get_loc(idx)]
-            a = accum[team]
-            a["fgm"] += row["fgm"] * w
-            a["fga"] += row["fga"] * w
-            a["fg3m"] += row["fg3m"] * w
-            a["fta"] += row["fta"] * w
-            a["orb"] += row["orb"] * w
-            a["drb"] += row["drb"] * w
-            a["to"] += row["to"] * w
-            a["possessions"] += row["possessions"] * w
-            a["weight_sum"] += w
-
-            opp = opponents_in_game.get((gid, team))
-            if opp is not None:
-                lookup_res = bs_lookup.get((gid, opp))
-                if lookup_res is not None:
-                    opp_row, _ = lookup_res
-                    a["opp_fgm"] += opp_row["fgm"] * w
-                    a["opp_fga"] += opp_row["fga"] * w
-                    a["opp_fg3m"] += opp_row["fg3m"] * w
-                    a["opp_fta"] += opp_row["fta"] * w
-                    a["opp_orb"] += opp_row["orb"] * w
-                    a["opp_drb"] += opp_row["drb"] * w
-                    a["opp_to"] += opp_row["to"] * w
-                    a["opp_possessions"] += opp_row["possessions"] * w
-
-        # Compute four factors per team
-        for t in teams:
-            a = accum[t]
-            fga = max(a["fga"], 1)
-            poss = max(a["possessions"], 1)
-            opp_fga = max(a["opp_fga"], 1)
-            opp_poss = max(a["opp_possessions"], 1)
-
-            off_efg = (a["fgm"] + 0.5 * a["fg3m"]) / fga
-            off_to_rate = a["to"] / poss
-            # ORB% = team ORB / (team ORB + opponent DRB)
-            orb_denom = a["orb"] + a["opp_drb"]
-            off_orb_pct = a["orb"] / max(orb_denom, 1)
-            off_ft_rate = a["fta"] / fga
-
-            def_efg = (a["opp_fgm"] + 0.5 * a["opp_fg3m"]) / opp_fga
-            def_to_rate = a["opp_to"] / opp_poss
-            # Opponent ORB% = opponent ORB / (opponent ORB + team DRB)
-            def_orb_denom = a["opp_orb"] + a["drb"]
-            def_orb_pct = a["opp_orb"] / max(def_orb_denom, 1)
-            def_ft_rate = a["opp_fta"] / opp_fga
-
-            self.team_stats[t] = {
-                "off_efg": off_efg,
-                "off_to_rate": off_to_rate,
-                "off_orb_pct": off_orb_pct,
-                "off_ft_rate": off_ft_rate,
-                "def_efg": def_efg,
-                "def_to_rate": def_to_rate,
-                "def_orb_pct": def_orb_pct,
-                "def_ft_rate": def_ft_rate,
-            }
-
-        # Train logistic regression on historical games
-        feature_keys = [
-            "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
-            "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
-        ]
+        df = games.sort_values("date").reset_index(drop=True)
+        team_logs = {
+            team: []
+            for team in sorted(set(df["home_team"].unique()) | set(df["away_team"].unique()))
+        }
         X = []
         y = []
-        for _, g in games.iterrows():
-            ht = g["home_team"]
-            at = g["away_team"]
-            if ht not in self.team_stats or at not in self.team_stats:
-                continue
-            home_feats = [self.team_stats[ht][k] for k in feature_keys]
-            away_feats = [self.team_stats[at][k] for k in feature_keys]
-            X.append(home_feats + away_feats)
-            y.append(1 if g["home_goals"] > g["away_goals"] else 0)
 
-        if len(X) >= 5 and len(set(y)) >= 2:
-            self.model = LogisticRegression(max_iter=1000)
-            self.model.fit(np.array(X), np.array(y))
+        for _, row in df.iterrows():
+            home_team = row["home_team"]
+            away_team = row["away_team"]
+            home_bs = bs_lookup.get((row["game_id"], home_team))
+            away_bs = bs_lookup.get((row["game_id"], away_team))
+            if home_bs is None or away_bs is None:
+                continue
+            if int(row["home_goals"]) == int(row["away_goals"]):
+                continue
+
+            X.append(self._feature_vector(team_logs.get(home_team, []), team_logs.get(away_team, [])))
+            y.append(1 if int(row["home_goals"]) > int(row["away_goals"]) else 0)
+
+            team_logs.setdefault(home_team, []).append(self._boxscore_log(home_bs, away_bs))
+            team_logs.setdefault(away_team, []).append(self._boxscore_log(away_bs, home_bs))
+
+        self.team_logs = team_logs
+        self.team_stats = {
+            team: self._aggregate(logs)
+            for team, logs in team_logs.items()
+        }
+
+        if len(X) < self.min_games or len(set(y)) < 2:
+            return
+
+        self.model = LogisticRegression(max_iter=1000)
+        self.model.fit(np.array(X), np.array(y))
 
 
 def four_factors_predict(model, home_team, away_team):
@@ -2544,13 +2574,10 @@ def four_factors_predict(model, home_team, away_team):
     if home_team not in model.team_stats or away_team not in model.team_stats:
         return {"home": 0.5, "away": 0.5}
 
-    feature_keys = [
-        "off_efg", "off_to_rate", "off_orb_pct", "off_ft_rate",
-        "def_efg", "def_to_rate", "def_orb_pct", "def_ft_rate",
-    ]
-    home_feats = [model.team_stats[home_team][k] for k in feature_keys]
-    away_feats = [model.team_stats[away_team][k] for k in feature_keys]
-    X = np.array([home_feats + away_feats])
+    X = np.array([model._feature_vector(
+        model.team_logs.get(home_team, []),
+        model.team_logs.get(away_team, []),
+    )])
     proba = model.model.predict_proba(X)[0]
 
     # proba[1] = P(home wins), proba[0] = P(away wins)

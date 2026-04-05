@@ -10,10 +10,16 @@ from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
-from pipeline.config import ENSEMBLE_ACCURACY_WINDOW, SPORTS
+from pipeline.config import (
+    ENSEMBLE_ACCURACY_WINDOW,
+    PICK_DECISION_LOG_FILENAME,
+    RESULTS_AUDIT_LOG_FILENAME,
+    RESULTS_LOG_FILENAME,
+    TRACKING_DIRNAME,
+    SPORTS,
+)
 from pipeline.ensemble import blend_predictions
 from pipeline.fetch_mlb import fetch_mlb_games
-from pipeline.fetch_mma import fetch_mma_games
 from pipeline.fetch_nba import fetch_nba_espn_games
 from pipeline.fetch_ncaam import fetch_ncaam_games
 from pipeline.fetch_nhl import fetch_nhl_games
@@ -68,6 +74,18 @@ def _safe_bool(value):
     return None
 
 
+def _safe_json(value):
+    """Parse JSON strings when possible."""
+    if value in (None, "", "None"):
+        return None
+    if isinstance(value, (dict, list)):
+        return value
+    try:
+        return json.loads(value)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return None
+
+
 def _american_to_decimal(american):
     """Convert American odds to decimal odds."""
     american = _safe_float(american)
@@ -80,7 +98,8 @@ def _american_to_decimal(american):
 
 def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[dict]:
     """Load tracked settled result rows from the shared results log."""
-    path = os.path.join(data_dir, "tracking", "results_log.csv")
+    audit_path = os.path.join(data_dir, TRACKING_DIRNAME, RESULTS_AUDIT_LOG_FILENAME)
+    path = audit_path if os.path.exists(audit_path) else os.path.join(data_dir, TRACKING_DIRNAME, RESULTS_LOG_FILENAME)
     if not os.path.exists(path):
         return []
 
@@ -101,16 +120,25 @@ def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[d
                 continue
             if away_team in {"moneyline", "total", "prediction", "slop_lock", "total_lock"}:
                 continue
+            entry_type = row.get("entry_type")
+            market_type = row.get("market_type")
+            if not market_type:
+                if entry_type == "total_lock" or str(row.get("pick") or "").lower() in {"over", "under"}:
+                    market_type = "total"
+                else:
+                    market_type = "moneyline"
             rows.append({
                 "logged_at": row.get("logged_at"),
                 "sport": row.get("sport"),
-                "entry_type": row.get("entry_type"),
+                "entry_type": entry_type,
+                "market_type": market_type,
                 "home_team": home_team,
                 "away_team": away_team,
                 "match_date": match_date,
                 "pick": row.get("pick"),
                 "actual": row.get("actual"),
                 "won": _safe_bool(row.get("won")),
+                "push": _safe_bool(row.get("push")),
                 "model_prob": _safe_float(row.get("model_prob")),
                 "home_prob": _safe_float(row.get("home_prob")),
                 "away_prob": _safe_float(row.get("away_prob")),
@@ -121,9 +149,74 @@ def _load_results_rows(data_dir: str, sports: list[str] | None = None) -> list[d
                 "expected_value": _safe_float(row.get("expected_value")),
                 "american_odds": _safe_float(row.get("american_odds")),
                 "decimal_odds": _safe_float(row.get("decimal_odds")),
+                "total_line": _safe_float(row.get("total_line")),
                 "confidence_score": _safe_float(row.get("confidence_score")),
                 "kelly_fraction": _safe_float(row.get("kelly_fraction")),
                 "fractional_kelly": _safe_float(row.get("fractional_kelly")),
+                "closing_line_value": _safe_float(row.get("closing_line_value")),
+                "closing_line_value_unit": row.get("closing_line_value_unit"),
+            })
+    return rows
+
+
+def _load_pick_decision_rows(data_dir: str, sports: list[str] | None = None) -> list[dict]:
+    """Load immutable pick-decision rows from the shared ledger."""
+    path = os.path.join(data_dir, TRACKING_DIRNAME, PICK_DECISION_LOG_FILENAME)
+    if not os.path.exists(path):
+        return []
+
+    selected_sports = set(sports or SPORTS.keys())
+    rows = []
+    with open(path, newline="") as f:
+        for row in csv.DictReader(f):
+            if row.get("sport") not in selected_sports:
+                continue
+            rows.append({
+                "logged_at": row.get("logged_at"),
+                "run_id": row.get("run_id"),
+                "run_type": row.get("run_type"),
+                "snapshot_timestamp": row.get("snapshot_timestamp"),
+                "snapshot_path": row.get("snapshot_path"),
+                "sport": row.get("sport"),
+                "pick_type": row.get("pick_type"),
+                "market_type": row.get("market_type") or "moneyline",
+                "home_team": row.get("home_team"),
+                "away_team": row.get("away_team"),
+                "match_date": str(row.get("match_date") or "")[:10],
+                "start_time": row.get("start_time"),
+                "pick": row.get("pick"),
+                "total_line": _safe_float(row.get("total_line")),
+                "expected_total": _safe_float(row.get("expected_total")),
+                "total_stddev": _safe_float(row.get("total_stddev")),
+                "model_prob": _safe_float(row.get("model_prob")),
+                "implied_prob": _safe_float(row.get("implied_prob")),
+                "market_implied_prob": _safe_float(row.get("market_implied_prob")),
+                "edge": _safe_float(row.get("edge")),
+                "expected_value": _safe_float(row.get("expected_value")),
+                "american_odds": _safe_float(row.get("american_odds")),
+                "decimal_odds": _safe_float(row.get("decimal_odds")),
+                "confidence_score": _safe_float(row.get("confidence_score")),
+                "kelly_fraction": _safe_float(row.get("kelly_fraction")),
+                "fractional_kelly": _safe_float(row.get("fractional_kelly")),
+                "market_source": row.get("market_source"),
+                "market_books": _safe_float(row.get("market_books")),
+                "hold": _safe_float(row.get("hold")),
+                "publication_guard_status": row.get("publication_guard_status"),
+                "publication_guard_reason": row.get("publication_guard_reason"),
+                "publication_guard_enforced": _safe_bool(row.get("publication_guard_enforced")),
+                "publication_guard_evaluated_picks": _safe_float(row.get("publication_guard_evaluated_picks")),
+                "publication_guard_evaluated_totals_picks": _safe_float(row.get("publication_guard_evaluated_totals_picks")),
+                "calibration_sample_size": _safe_float(row.get("calibration_sample_size")),
+                "selection_min_expected_value": _safe_float(row.get("selection_min_expected_value")),
+                "selection_edge_floor": _safe_float(row.get("selection_edge_floor")),
+                "selection_probability_floor": _safe_float(row.get("selection_probability_floor")),
+                "selection_confidence_floor": _safe_float(row.get("selection_confidence_floor")),
+                "selection_confidence_dropoff": _safe_float(row.get("selection_confidence_dropoff")),
+                "selection_max_picks": _safe_float(row.get("selection_max_picks")),
+                "model_probs": _safe_json(row.get("model_probs_json")),
+                "individual_models": _safe_json(row.get("individual_models_json")),
+                "decision_context": _safe_json(row.get("decision_context_json")),
+                "gate_context": _safe_json(row.get("gate_context_json")),
             })
     return rows
 
@@ -201,12 +294,15 @@ def _summarize_pick_rows(rows: list[dict]) -> dict:
     confidence_values = []
     for row in rows:
         won = row.get("won")
-        if won is True:
+        push = bool(row.get("push"))
+        if push:
+            pushes += 1
+        elif won is True:
             wins += 1
         elif won is False:
             losses += 1
         else:
-            pushes += 1
+            continue
 
         decimal_odds = row.get("decimal_odds")
         if decimal_odds is None:
@@ -216,7 +312,7 @@ def _summarize_pick_rows(rows: list[dict]) -> dict:
                 "stake": 100.0,
                 "odds": decimal_odds,
                 "won": bool(won),
-                "push": False,
+                "push": push,
             })
         if row.get("expected_value") is not None:
             expected_values.append(float(row["expected_value"]))
@@ -293,6 +389,89 @@ def _snapshot_pick_signature(record: dict) -> tuple | None:
     )
 
 
+def _snapshot_results_lookup(rows: list[dict]) -> dict[tuple, dict]:
+    """Index settled results rows by the same pick signature used in snapshots."""
+    lookup = {}
+    for row in rows:
+        signature = _snapshot_pick_signature({
+            "market_type": row.get("market_type"),
+            "home_team": row.get("home_team"),
+            "away_team": row.get("away_team"),
+            "match_date": row.get("match_date"),
+            "pick": row.get("pick"),
+            "total_line": row.get("total_line"),
+        })
+        if signature is None or signature in lookup:
+            continue
+        lookup[signature] = row
+    return lookup
+
+
+def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> dict | None:
+    """Return the settled result row for one snapshot pick, with legacy fallback."""
+    signature = _snapshot_pick_signature(record)
+    settled = result_lookup.get(signature)
+    if settled is not None:
+        return settled
+    if signature and signature[0] == "total":
+        # Fallback: older result logs did not always persist total_line, so use a
+        # line-agnostic lookup for historical totals snapshots when needed.
+        return result_lookup.get((signature[0], signature[1], signature[2], signature[3], signature[4], None))
+    return None
+
+
+def _snapshot_pick_to_result_row(record: dict, settled: dict | None) -> dict | None:
+    """Convert one archived snapshot pick into the summary row shape."""
+    if settled is None:
+        return None
+    decimal_odds = record.get("decimal_odds")
+    if decimal_odds is None:
+        decimal_odds = _american_to_decimal(record.get("american_odds"))
+    return {
+        "evaluated": True,
+        "market_type": record.get("market_type", "moneyline"),
+        "home_team": record.get("home_team"),
+        "away_team": record.get("away_team"),
+        "match_date": str(record.get("date") or record.get("match_date") or "")[:10],
+        "pick": record.get("pick"),
+        "won": settled.get("won"),
+        "push": settled.get("push"),
+        "decimal_odds": decimal_odds,
+        "american_odds": record.get("american_odds"),
+        "expected_value": record.get("expected_value"),
+        "confidence_score": record.get("confidence_score"),
+        "total_line": record.get("total_line"),
+    }
+
+
+def _decision_pick_to_result_row(record: dict, settled: dict | None) -> dict | None:
+    """Convert one decision-ledger pick into the summary row shape."""
+    if settled is None:
+        return None
+    decimal_odds = record.get("decimal_odds")
+    if decimal_odds is None:
+        decimal_odds = _american_to_decimal(record.get("american_odds"))
+    return {
+        "type": record.get("pick_type"),
+        "evaluated": True,
+        "market_type": record.get("market_type", "moneyline"),
+        "home_team": record.get("home_team"),
+        "away_team": record.get("away_team"),
+        "match_date": str(record.get("match_date") or "")[:10],
+        "pick": record.get("pick"),
+        "won": settled.get("won"),
+        "push": settled.get("push"),
+        "actual": settled.get("actual"),
+        "decimal_odds": decimal_odds,
+        "american_odds": record.get("american_odds"),
+        "expected_value": record.get("expected_value"),
+        "confidence_score": record.get("confidence_score"),
+        "closing_line_value": settled.get("closing_line_value"),
+        "closing_line_value_unit": settled.get("closing_line_value_unit"),
+        "total_line": record.get("total_line"),
+    }
+
+
 def _snapshot_exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
     """Mirror the production conflict filter for moneyline locks."""
     def picked(lock):
@@ -333,6 +512,7 @@ def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], confi
                 edge >= float(config.get("edge_floor", 0.03))
                 and prob >= float(config.get("probability_floor", 0.45))
                 and ev >= float(config.get("min_expected_value", 0.0))
+                and confidence >= float(config.get("additional_confidence_floor", 65.0))
             ):
                 candidates.append({
                     "market_type": "moneyline",
@@ -355,7 +535,7 @@ def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], confi
             break
         if (
             candidate["confidence_score"] >= float(config.get("additional_confidence_floor", 65.0))
-            or candidate["confidence_score"] >= (top_confidence - float(config.get("confidence_dropoff", 0.0)))
+            and candidate["confidence_score"] >= (top_confidence - float(config.get("confidence_dropoff", 0.0)))
         ):
             selected.append(candidate)
     return _snapshot_exclude_opponent_conflicts(selected)
@@ -490,6 +670,8 @@ def _replay_snapshot_payload(snapshot: dict) -> dict:
         "sport": snapshot.get("sport"),
         "snapshot_timestamp": snapshot.get("snapshot_timestamp"),
         "snapshot_path": snapshot.get("_path"),
+        "expected_picks": expected,
+        "replayed_picks": replayed,
         "expected_count": len(expected_signatures),
         "replayed_count": len(replayed_signatures),
         "matched_count": len(expected_set & replayed_set),
@@ -502,35 +684,70 @@ def _replay_snapshot_payload(snapshot: dict) -> dict:
 def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
     """Replay selection from saved snapshots instead of live fetchers."""
     snapshots = _iter_snapshot_payloads(data_dir=data_dir, sports=sports)
+    result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
     sport_reports = defaultdict(lambda: {
         "snapshots": 0,
         "exact_matches": 0,
         "exact_match_rate": None,
         "mismatches": 0,
         "recent_mismatches": [],
+        "expected_picks": _summarize_pick_rows([]),
+        "replayed_picks": _summarize_pick_rows([]),
     })
     entries = []
+    aggregate_expected_rows = []
+    aggregate_replayed_rows = []
     for snapshot in snapshots:
         replay = _replay_snapshot_payload(snapshot)
+        expected_rows = [
+            row
+            for row in (
+                _snapshot_pick_to_result_row(item, _lookup_snapshot_result(result_lookup, item))
+                for item in replay.get("expected_picks", [])
+            )
+            if row is not None
+        ]
+        replayed_rows = [
+            row
+            for row in (
+                _snapshot_pick_to_result_row(item, _lookup_snapshot_result(result_lookup, item))
+                for item in replay.get("replayed_picks", [])
+            )
+            if row is not None
+        ]
+        replay["expected_pick_performance"] = _summarize_pick_rows(expected_rows)
+        replay["replayed_pick_performance"] = _summarize_pick_rows(replayed_rows)
         entries.append(replay)
         sport_report = sport_reports[replay["sport"]]
         sport_report["snapshots"] += 1
+        aggregate_expected_rows.extend(expected_rows)
+        aggregate_replayed_rows.extend(replayed_rows)
         if replay["exact_match"]:
             sport_report["exact_matches"] += 1
         else:
             sport_report["mismatches"] += 1
             if len(sport_report["recent_mismatches"]) < 5:
                 sport_report["recent_mismatches"].append(replay)
+        sport_expected_rows = sport_report.get("_expected_rows", [])
+        sport_expected_rows.extend(expected_rows)
+        sport_report["_expected_rows"] = sport_expected_rows
+        sport_replayed_rows = sport_report.get("_replayed_rows", [])
+        sport_replayed_rows.extend(replayed_rows)
+        sport_report["_replayed_rows"] = sport_replayed_rows
 
     for sport_report in sport_reports.values():
         if sport_report["snapshots"] > 0:
             sport_report["exact_match_rate"] = round(sport_report["exact_matches"] / sport_report["snapshots"], 4)
+        sport_report["expected_picks"] = _summarize_pick_rows(sport_report.pop("_expected_rows", []))
+        sport_report["replayed_picks"] = _summarize_pick_rows(sport_report.pop("_replayed_rows", []))
 
     aggregate = {
         "snapshots": len(entries),
         "exact_matches": sum(1 for entry in entries if entry["exact_match"]),
         "exact_match_rate": round(sum(1 for entry in entries if entry["exact_match"]) / len(entries), 4) if entries else None,
         "mismatches": sum(1 for entry in entries if not entry["exact_match"]),
+        "expected_picks": _summarize_pick_rows(aggregate_expected_rows),
+        "replayed_picks": _summarize_pick_rows(aggregate_replayed_rows),
     }
     recent_mismatches = [entry for entry in reversed(entries) if not entry["exact_match"]][:5]
     return {
@@ -538,6 +755,76 @@ def build_snapshot_replay_report(data_dir: str = "data", sports: list[str] | Non
         "aggregate": aggregate,
         "sports": dict(sport_reports),
         "recent_mismatches": recent_mismatches,
+    }
+
+
+def build_pick_decision_replay_report(data_dir: str = "data", sports: list[str] | None = None) -> dict:
+    """Grade picks from the immutable decision ledger against settled results."""
+    decisions = _load_pick_decision_rows(data_dir=data_dir, sports=sports)
+    result_lookup = _snapshot_results_lookup(_load_results_rows(data_dir=data_dir, sports=sports))
+    sport_reports = defaultdict(lambda: {
+        "logged_picks": 0,
+        "settled_picks": {
+            "evaluated": 0,
+            "wins": 0,
+            "losses": 0,
+            "record": "0-0",
+            "hit_rate": None,
+            "roi": None,
+            "avg_expected_value": None,
+            "avg_confidence": None,
+            "clv": {"tracked": 0, "avg_clv": None, "positive_rate": None, "non_negative_rate": None},
+            "breakdowns": {},
+        },
+        "unsettled_logged_picks": 0,
+        "recent_unsettled": [],
+    })
+    aggregate_rows = []
+
+    for decision in decisions:
+        sport_report = sport_reports[decision["sport"]]
+        sport_report["logged_picks"] += 1
+        settled = _lookup_snapshot_result(result_lookup, decision)
+        result_row = _decision_pick_to_result_row(decision, settled)
+        if result_row is None:
+            sport_report["unsettled_logged_picks"] += 1
+            if len(sport_report["recent_unsettled"]) < 5:
+                sport_report["recent_unsettled"].append({
+                    "pick_type": decision.get("pick_type"),
+                    "market_type": decision.get("market_type"),
+                    "home_team": decision.get("home_team"),
+                    "away_team": decision.get("away_team"),
+                    "match_date": decision.get("match_date"),
+                    "pick": decision.get("pick"),
+                    "snapshot_timestamp": decision.get("snapshot_timestamp"),
+                })
+            continue
+        sport_rows = sport_report.get("_rows", [])
+        sport_rows.append(result_row)
+        sport_report["_rows"] = sport_rows
+        aggregate_rows.append(result_row)
+
+    for sport_report in sport_reports.values():
+        rows = sport_report.pop("_rows", [])
+        sport_report["settled_picks"] = {
+            **_summarize_pick_rows(rows),
+            "clv": summarize_closing_line_value(rows),
+            "breakdowns": summarize_pick_breakdowns(rows),
+        }
+
+    aggregate = {
+        "logged_picks": len(decisions),
+        "settled_picks": {
+            **_summarize_pick_rows(aggregate_rows),
+            "clv": summarize_closing_line_value(aggregate_rows),
+            "breakdowns": summarize_pick_breakdowns(aggregate_rows),
+        },
+        "unsettled_logged_picks": max(0, len(decisions) - len(aggregate_rows)),
+    }
+    return {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "aggregate": aggregate,
+        "sports": dict(sport_reports),
     }
 
 
@@ -571,8 +858,6 @@ def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tupl
         return fetch_mlb_games(cache_path=cache_path)
     if sport_key == "nhl":
         return fetch_nhl_games(cache_path=cache_path)
-    if sport_key == "mma":
-        return fetch_mma_games(cache_path=cache_path)
     raise ValueError(f"Unsupported sport: {sport_key}")
 
 
@@ -681,8 +966,12 @@ def _predict_walkforward_fixture(
     if not active_model_names:
         return None, {}
 
-    accuracies = [get_rolling_accuracy(accuracy_log, name, window=sport.get("accuracy_window")) for name in active_model_names]
-    weight_values = compute_model_weights(accuracies, temperature=sport.get("accuracy_softmax_temperature", 2.0))
+    weight_values = compute_model_weights(
+        accuracy_log,
+        model_names=active_model_names,
+        temperature=sport.get("accuracy_softmax_temperature", 2.0),
+        window=sport.get("accuracy_window"),
+    )
     weight_map = dict(zip(active_model_names, weight_values))
 
     if "elo" in models:
@@ -1010,20 +1299,59 @@ def compute_brier_score(probs, home_goals, away_goals):
     return sum((probs.get(outcome, 0.0) - (1.0 if outcome == actual else 0.0)) ** 2 for outcome in probs)
 
 
-def compute_model_weights(accuracies, temperature: float = 2.0):
-    """Convert per-model accuracies into ensemble weights via softmax scaling.
+def compute_model_weights(
+    accuracy_log_or_accuracies,
+    model_names: list[str] | None = None,
+    temperature: float = 2.0,
+    window: int | None = None,
+    prior_strength: float = 12.0,
+    log_loss_blend: float = 0.35,
+):
+    """Convert model histories into ensemble weights via shrunk softmax scaling.
 
-    Parameters
-    ----------
-    accuracies : list[float]
-        Accuracy values (0–1) for each model.
+    When a full accuracy log is available, weights are based on:
+    - rolling correctness
+    - rolling log-loss quality
+    - sample-size shrinkage back toward a neutral prior
 
-    Returns
-    -------
-    list[float]
-        Weights that sum to 1.  Higher-accuracy models receive more weight.
+    The legacy list-of-accuracies call shape still works as a fallback.
     """
-    scaled = [math.exp(acc * temperature) for acc in accuracies]
+    if model_names is None:
+        accuracies = list(accuracy_log_or_accuracies or [])
+        if not accuracies:
+            return []
+        scaled = [math.exp(acc * temperature) for acc in accuracies]
+        total = sum(scaled)
+        return [s / total for s in scaled]
+
+    raw_scores = []
+    for model_name in model_names:
+        entries = list((accuracy_log_or_accuracies or {}).get(model_name, []))
+        if window is not None:
+            entries = entries[-window:]
+        sample_size = len(entries)
+        if not entries:
+            raw_scores.append(0.5)
+            continue
+
+        correct_count = sum(1 for entry in entries if entry.get("correct"))
+        shrunk_accuracy = (correct_count + (0.5 * prior_strength)) / (sample_size + prior_strength)
+
+        log_losses = [
+            float(entry.get("log_loss"))
+            for entry in entries
+            if entry.get("log_loss") is not None
+        ]
+        # Fallback: if log loss is missing, treat the model as neutral instead of
+        # rewarding it off a tiny pure-accuracy sample.
+        log_loss_quality = math.exp(-sum(log_losses) / len(log_losses)) if log_losses else 0.5
+        blended_quality = ((1.0 - log_loss_blend) * shrunk_accuracy) + (log_loss_blend * log_loss_quality)
+
+        sample_scale = sample_size / (sample_size + prior_strength)
+        stabilized_score = (sample_scale * blended_quality) + ((1.0 - sample_scale) * 0.5)
+        raw_scores.append(stabilized_score)
+
+    scaled = [math.exp(score * temperature) for score in raw_scores]
     total = sum(scaled)
     return [s / total for s in scaled]
 
@@ -1197,7 +1525,12 @@ def summarize_pick_history(picks):
 
 
 def summarize_closing_line_value(picks):
-    """Summarize CLV-style movement from saved pick records."""
+    """Summarize CLV-style movement from saved pick records.
+
+    Moneyline CLV is tracked in implied-probability points. Totals CLV is tracked
+    in line points. We keep those summaries separate and only expose the legacy
+    ``avg_clv`` alias when the tracked sample is one unit family.
+    """
     tracked = [p for p in picks if p.get("closing_line_value") is not None]
     if not tracked:
         return {
@@ -1205,16 +1538,65 @@ def summarize_closing_line_value(picks):
             "avg_clv": None,
             "positive_rate": None,
             "non_negative_rate": None,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": None,
+            "moneyline_positive_rate": None,
+            "moneyline_non_negative_rate": None,
+            "totals_tracked": 0,
+            "totals_avg_clv": None,
+            "totals_positive_rate": None,
+            "totals_non_negative_rate": None,
         }
 
-    values = [float(p["closing_line_value"]) for p in tracked]
-    positives = sum(1 for value in values if value > 0)
-    non_negative = sum(1 for value in values if value >= 0)
+    def _summary(values: list[float]) -> dict[str, float | int | None]:
+        if not values:
+            return {
+                "tracked": 0,
+                "avg_clv": None,
+                "positive_rate": None,
+                "non_negative_rate": None,
+            }
+        positives = sum(1 for value in values if value > 0)
+        non_negative = sum(1 for value in values if value >= 0)
+        return {
+            "tracked": len(values),
+            "avg_clv": round(sum(values) / len(values), 4),
+            "positive_rate": round(positives / len(values), 4),
+            "non_negative_rate": round(non_negative / len(values), 4),
+        }
+
+    moneyline_values = [
+        float(p["closing_line_value"])
+        for p in tracked
+        if str(p.get("market_type") or "moneyline") != "total"
+    ]
+    totals_values = [
+        float(p["closing_line_value"])
+        for p in tracked
+        if str(p.get("market_type") or "moneyline") == "total"
+    ]
+    moneyline_summary = _summary(moneyline_values)
+    totals_summary = _summary(totals_values)
+
+    comparable_summary = None
+    if moneyline_summary["tracked"]:
+        comparable_summary = moneyline_summary
+    elif totals_summary["tracked"]:
+        comparable_summary = totals_summary
+
     return {
         "tracked": len(tracked),
-        "avg_clv": round(sum(values) / len(values), 4),
-        "positive_rate": round(positives / len(values), 4),
-        "non_negative_rate": round(non_negative / len(values), 4),
+        "avg_clv": None if comparable_summary is None else comparable_summary["avg_clv"],
+        "positive_rate": None if comparable_summary is None else comparable_summary["positive_rate"],
+        "non_negative_rate": None if comparable_summary is None else comparable_summary["non_negative_rate"],
+        "moneyline_tracked": moneyline_summary["tracked"],
+        "moneyline_avg_clv": moneyline_summary["avg_clv"],
+        "moneyline_positive_rate": moneyline_summary["positive_rate"],
+        "moneyline_non_negative_rate": moneyline_summary["non_negative_rate"],
+        "totals_tracked": totals_summary["tracked"],
+        "totals_avg_clv": totals_summary["avg_clv"],
+        "totals_positive_rate": totals_summary["positive_rate"],
+        "totals_non_negative_rate": totals_summary["non_negative_rate"],
     }
 
 
@@ -1515,6 +1897,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
     report = build_backtest_report(data_dir=data_dir, sports=selected_sports)
     walkforward = build_walkforward_report(data_dir=data_dir, sports=selected_sports, as_of=as_of)
     snapshot_replay = build_snapshot_replay_report(data_dir=data_dir, sports=selected_sports)
+    decision_replay = build_pick_decision_replay_report(data_dir=data_dir, sports=selected_sports)
 
     manifest_path = os.path.join(data_dir, "manifest.json")
     manifest = {}
@@ -1591,6 +1974,7 @@ def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None
             "calibration": walkforward.get("aggregate", {}).get("calibration", []),
             "recent_days": walkforward.get("daily", [])[-7:],
         },
+        "decision_replay": decision_replay,
         "snapshot_replay": snapshot_replay,
         "recommended_actions": _build_recommended_actions(report, manifest, windows, leaders),
         "insights": _build_dashboard_insights(report, manifest, windows, leaders),
@@ -1635,6 +2019,15 @@ def build_backtest_report(data_dir: str = "data", sports: list[str] | None = Non
             "predictions": {"evaluated": 0, "accuracy": None, "avg_log_loss": None, "avg_brier": None},
             "picks": {"evaluated": 0, "hit_rate": None, "roi": None},
         },
+        "decision_replay": {
+            "generated_at": None,
+            "aggregate": {
+                "logged_picks": 0,
+                "settled_picks": {"evaluated": 0, "hit_rate": None, "roi": None},
+                "unsettled_logged_picks": 0,
+            },
+            "sports": {},
+        },
     }
 
     all_predictions = []
@@ -1676,6 +2069,7 @@ def build_backtest_report(data_dir: str = "data", sports: list[str] | None = Non
         "breakdowns": summarize_pick_breakdowns(all_picks),
     }
     report["aggregate"]["threshold_guidance"] = build_threshold_guidance(report["aggregate"]["picks"])
+    report["decision_replay"] = build_pick_decision_replay_report(data_dir=data_dir, sports=selected_sports)
     return report
 
 
@@ -1686,6 +2080,7 @@ def main() -> None:
     parser.add_argument("--walkforward", action="store_true", help="Emit the walk-forward replay report instead of the aggregate summary.")
     parser.add_argument("--raw-walkforward", action="store_true", help="Replay models day by day from raw historical inputs.")
     parser.add_argument("--snapshot-replay", action="store_true", help="Replay pick selection from saved live-state snapshots.")
+    parser.add_argument("--decision-replay", action="store_true", help="Grade settled picks from the immutable pick-decision ledger.")
     parser.add_argument("--max-days", type=int, default=None, help="Optional cap on replay days for raw walk-forward runs.")
     parser.add_argument("--min-training-games", type=int, default=20, help="Minimum prior games required before evaluating a replay day.")
     args = parser.parse_args()
@@ -1699,6 +2094,8 @@ def main() -> None:
         )
     elif args.snapshot_replay:
         report = build_snapshot_replay_report(data_dir=args.data_dir, sports=args.sports or None)
+    elif args.decision_replay:
+        report = build_pick_decision_replay_report(data_dir=args.data_dir, sports=args.sports or None)
     elif args.walkforward:
         report = build_walkforward_report(data_dir=args.data_dir, sports=args.sports or None)
     else:

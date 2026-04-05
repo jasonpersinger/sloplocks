@@ -1,5 +1,6 @@
 """Tests for the backtesting and accuracy-tracking utilities."""
 
+import csv
 import json
 import math
 import os
@@ -9,6 +10,7 @@ import pytest
 from pipeline.backtest import (
     build_dashboard_data,
     build_backtest_report,
+    build_pick_decision_replay_report,
     build_raw_walkforward_report,
     build_snapshot_replay_report,
     build_walkforward_report,
@@ -312,6 +314,7 @@ class TestBacktestSummary:
         assert report["sports"]["nba"]["picks"]["breakdowns"]["market_type"]["total"]["evaluated"] == 1
         assert report["sports"]["nba"]["threshold_guidance"]
         assert report["aggregate"]["picks"]["roi"] is not None
+        assert report["decision_replay"]["aggregate"]["logged_picks"] == 0
 
     def test_build_dashboard_data(self, tmp_path):
         data_dir = tmp_path / "data"
@@ -359,6 +362,7 @@ class TestBacktestSummary:
         assert dashboard["recommended_actions"]
         assert dashboard["insights"]
         assert "walkforward" in dashboard
+        assert "decision_replay" in dashboard
         assert "calibration" in dashboard["walkforward"]
         assert dashboard["snapshot_replay"]["aggregate"]["snapshots"] == 0
 
@@ -459,6 +463,93 @@ class TestBacktestSummary:
         assert report["aggregate"]["exact_match_rate"] == pytest.approx(1.0)
         assert report["sports"]["nba"]["snapshots"] == 1
 
+    def test_build_pick_decision_replay_report(self, tmp_path):
+        data_dir = tmp_path / "data"
+        tracking_dir = data_dir / "tracking"
+        tracking_dir.mkdir(parents=True)
+
+        with open(tracking_dir / "pick_decisions.csv", "w", newline="") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "logged_at",
+                    "sport",
+                    "pick_type",
+                    "market_type",
+                    "home_team",
+                    "away_team",
+                    "match_date",
+                    "pick",
+                    "model_prob",
+                    "expected_value",
+                    "confidence_score",
+                    "american_odds",
+                    "decimal_odds",
+                ],
+            )
+            writer.writeheader()
+            writer.writerow({
+                "logged_at": "2026-03-29T12:00:00Z",
+                "sport": "nba",
+                "pick_type": "slop_lock",
+                "market_type": "moneyline",
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "match_date": "2026-03-29",
+                "pick": "home",
+                "model_prob": 0.61,
+                "expected_value": 0.07,
+                "confidence_score": 72,
+                "american_odds": 105,
+                "decimal_odds": 2.05,
+            })
+
+        with open(tracking_dir / "results_log.csv", "w", newline="") as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=[
+                    "logged_at",
+                    "sport",
+                    "entry_type",
+                    "market_type",
+                    "home_team",
+                    "away_team",
+                    "match_date",
+                    "pick",
+                    "actual",
+                    "won",
+                    "push",
+                    "decimal_odds",
+                    "closing_line_value",
+                    "closing_line_value_unit",
+                ],
+            )
+            writer.writeheader()
+            writer.writerow({
+                "logged_at": "2026-03-30T12:00:00Z",
+                "sport": "nba",
+                "entry_type": "slop_lock",
+                "market_type": "moneyline",
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "match_date": "2026-03-29",
+                "pick": "home",
+                "actual": "home",
+                "won": "true",
+                "push": "false",
+                "decimal_odds": 2.05,
+                "closing_line_value": 0.015,
+                "closing_line_value_unit": "implied_probability_points",
+            })
+
+        report = build_pick_decision_replay_report(str(data_dir), sports=["nba"])
+
+        assert report["aggregate"]["logged_picks"] == 1
+        assert report["aggregate"]["settled_picks"]["evaluated"] == 1
+        assert report["aggregate"]["settled_picks"]["wins"] == 1
+        assert report["aggregate"]["settled_picks"]["clv"]["tracked"] == 1
+        assert report["sports"]["nba"]["settled_picks"]["breakdowns"]["type"]["slop_lock"]["evaluated"] == 1
+
     def test_build_walkforward_report(self, tmp_path):
         data_dir = tmp_path / "data"
         tracking_dir = data_dir / "tracking"
@@ -513,7 +604,7 @@ class TestBacktestSummary:
         ])
 
         report = run_raw_walkforward_for_sport(
-            "mma",
+            "nhl",
             matches,
             box_scores_df=None,
             min_training_games=2,

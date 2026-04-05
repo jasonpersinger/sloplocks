@@ -4,7 +4,10 @@ import os
 
 TRACKING_DIRNAME = "tracking"
 RESULTS_LOG_FILENAME = "results_log.csv"
+RESULTS_AUDIT_LOG_FILENAME = "results_audit_log.csv"
 ODDS_HISTORY_FILENAME = "odds_history.csv"
+PICK_DECISION_LOG_FILENAME = "pick_decisions.csv"
+PUBLIC_RECORD_ARCHIVE_DIRNAME = "public_record_archives"
 
 # API Keys (from environment / GitHub Secrets)
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
@@ -23,7 +26,6 @@ BALLDONTLIE_BASE = "https://api.balldontlie.io/v1"
 NCAAM_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
-MMA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/mma/ufc"
 NHL_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl"
 MLB_CORE_API_BASE = "https://sports.core.api.espn.com/v2/sports/baseball/leagues/mlb"
 OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast"
@@ -140,6 +142,8 @@ SPORTS = {
         "accuracy_softmax_temperature": 3.0,
         "probability_calibration_min_samples": 30,
         "probability_calibration_blend": 0.5,
+        "probability_calibration_window_days": 180,
+        "probability_calibration_holdout_days": 7,
         "elo_k_factor": 20,
         "elo_home_advantage": 65,
         "efficiency_home_bonus": 3.5,
@@ -172,6 +176,8 @@ SPORTS = {
         "slop_lock_confidence_threshold": 52,
         "slop_lock_confidence_dropoff": 8,
         "slop_lock_max_picks": 5,
+        "publication_min_evaluated_picks": 20,
+        "publication_min_evaluated_totals_picks": 10,
         "longslop_confidence_threshold": 55,
         "slimegrinder_confidence_threshold": 55,
         "back_to_back_penalty": NBA_B2B_PENALTY,
@@ -192,6 +198,8 @@ SPORTS = {
         "accuracy_softmax_temperature": 2.5,
         "probability_calibration_min_samples": 20,
         "probability_calibration_blend": 0.4,
+        "probability_calibration_window_days": 180,
+        "probability_calibration_holdout_days": 7,
         "elo_k_factor": 18,
         "elo_home_advantage": 28,
         "results_feature_window": 10,
@@ -209,6 +217,7 @@ SPORTS = {
         "slop_lock_confidence_threshold": 50,
         "slop_lock_confidence_dropoff": 7,
         "slop_lock_max_picks": 4,
+        "publication_min_evaluated_picks": 20,
         "longslop_confidence_threshold": 54,
         "slimegrinder_confidence_threshold": 52,
         "back_to_back_penalty": 14,
@@ -229,6 +238,8 @@ SPORTS = {
         "accuracy_softmax_temperature": 3.0,
         "probability_calibration_min_samples": 30,
         "probability_calibration_blend": 0.5,
+        "probability_calibration_window_days": 180,
+        "probability_calibration_holdout_days": 7,
         "elo_k_factor": 32,
         "elo_home_advantage": 125,
         "efficiency_home_bonus": 3.5,
@@ -245,6 +256,7 @@ SPORTS = {
         "slop_lock_confidence_threshold": 52,
         "slop_lock_confidence_dropoff": 8,
         "slop_lock_max_picks": 5,
+        "publication_min_evaluated_picks": 20,
         "longslop_confidence_threshold": 55,
         "slimegrinder_confidence_threshold": 55,
         "back_to_back_penalty": 12,
@@ -265,6 +277,8 @@ SPORTS = {
         "accuracy_softmax_temperature": 1.5,
         "probability_calibration_min_samples": 20,
         "probability_calibration_blend": 0.35,
+        "probability_calibration_window_days": 180,
+        "probability_calibration_holdout_days": 7,
         "elo_k_factor": 4, # Lower K for 162 game season
         "elo_home_advantage": 24, # Standard MLB home edge
         "pitcher_feature_window": 8,
@@ -303,6 +317,8 @@ SPORTS = {
         "slop_lock_confidence_threshold": 48,
         "slop_lock_confidence_dropoff": 6,
         "slop_lock_max_picks": 4,
+        "publication_min_evaluated_picks": 20,
+        "publication_min_evaluated_totals_picks": 10,
         "longslop_confidence_threshold": 50,
         "slimegrinder_confidence_threshold": 50,
         "back_to_back_penalty": 0,
@@ -315,38 +331,5 @@ SPORTS = {
         "season_start_month": 2, # Feb 20 — captures spring training as Elo warmup
         "season_start_day": 20,
         "data_dir": os.path.join(DATA_DIR, "mlb"),
-    },
-    "mma": {
-        "name": "MMA",
-        "display_name": "MMA",
-        "odds_sport": "mma_mixed_martial_arts", # Standard Odds API key
-        "outcomes": ["home", "away"], # Home = Favorite/First, Away = Underdog/Second
-        "models": ["elo", "results_features"],
-        "accuracy_softmax_temperature": 1.5,
-        "probability_calibration_min_samples": 12,
-        "probability_calibration_blend": 0.35,
-        "elo_k_factor": 32,
-        "elo_home_advantage": 0, # No home advantage in MMA generally
-        "results_feature_window": 5,
-        "results_feature_min_games": 12,
-        "recent_form_window": 4,
-        "recent_form_max_adjustment": 20,
-        "min_expected_value": 0.0,
-        "kelly_fraction": 0.15,
-        "slop_lock_edge_threshold": 0.02,
-        "slop_lock_probability_floor": 0.50,
-        "slop_lock_confidence_threshold": 50,
-        "slop_lock_confidence_dropoff": 8,
-        "slop_lock_max_picks": 4,
-        "longslop_confidence_threshold": 52,
-        "slimegrinder_confidence_threshold": 52,
-        "back_to_back_penalty": 0,
-        "fatigue_window_days": 0,
-        "fatigue_threshold_games": 0,
-        "fatigue_penalty": 0,
-        "rest_bonus_days": 0,
-        "rest_bonus_points": 0,
-        "accuracy_window": 20,
-        "data_dir": os.path.join(DATA_DIR, "mma"),
     },
 }

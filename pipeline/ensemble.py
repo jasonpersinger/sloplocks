@@ -2,6 +2,7 @@
 
 from pipeline.config import VALUE_EDGE_THRESHOLD
 
+from datetime import datetime, timedelta
 
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
@@ -32,7 +33,7 @@ def no_vig_probabilities(odds_by_outcome: dict[str, float]) -> tuple[dict[str, f
     if total <= 0:
         return raw, raw.copy(), 0.0
     fair = {outcome: prob / total for outcome, prob in raw.items()}
-    return raw, fair, max(0.0, total - 1.0)
+    return raw, fair, total - 1.0
 
 
 def expected_value(probability: float, decimal_odds: float, stake: float = 1.0) -> float:
@@ -75,15 +76,49 @@ def fit_probability_calibrators(
     historical_predictions: list[dict],
     outcomes: list[str],
     min_samples: int = 20,
+    lookback_days: int | None = None,
+    holdout_days: int = 0,
+    as_of: str | None = None,
 ) -> dict[str, IsotonicRegression]:
     """Fit per-outcome isotonic calibrators from resolved historical predictions."""
     calibrators: dict[str, IsotonicRegression] = {}
+    anchor = None
+    if as_of:
+        try:
+            anchor = datetime.fromisoformat(str(as_of).replace("Z", "+00:00")).date()
+        except ValueError:
+            anchor = None
+    cutoff = None if anchor is None else anchor - timedelta(days=max(holdout_days, 0))
+    floor_day = None
+    if cutoff is not None and lookback_days:
+        floor_day = cutoff - timedelta(days=max(int(lookback_days) - 1, 0))
+
+    def _prediction_day(pred: dict):
+        for key in ("date", "match_date", "snapshot_timestamp", "generated_at"):
+            value = pred.get(key)
+            if not value:
+                continue
+            text = str(value).strip()
+            try:
+                return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+            except ValueError:
+                pass
+            try:
+                return datetime.strptime(text[:10], "%Y-%m-%d").date()
+            except ValueError:
+                continue
+        return None
 
     for outcome in outcomes:
         xs = []
         ys = []
         for pred in historical_predictions:
             if not pred.get("evaluated"):
+                continue
+            pred_day = _prediction_day(pred)
+            if cutoff is not None and pred_day is not None and pred_day > cutoff:
+                continue
+            if floor_day is not None and pred_day is not None and pred_day < floor_day:
                 continue
             probs = pred.get("model_probs", {})
             if outcome not in probs:
@@ -242,11 +277,15 @@ def compute_edges(
             active_odds[outcome] = dec_odds
 
     raw_probs, fair_probs, hold = no_vig_probabilities(active_odds)
+    benchmark = odds.get("moneyline_benchmark") or {}
+    benchmark_fair = benchmark.get("fair_probs") or {}
+    benchmark_raw = benchmark.get("raw_probs") or {}
+    benchmark_hold = benchmark.get("hold")
 
     edges: dict[str, dict] = {}
     for outcome, dec_odds in active_odds.items():
-        imp_prob = fair_probs[outcome]
-        raw_imp_prob = raw_probs[outcome]
+        imp_prob = float(benchmark_fair.get(outcome, fair_probs[outcome]))
+        raw_imp_prob = float(benchmark_raw.get(outcome, raw_probs[outcome]))
         raw_mod_prob = model_probs[outcome]
         
         # Phase 4: Calibrate probability (shrink toward market)
@@ -283,7 +322,9 @@ def compute_edges(
             "confidence_score": conf_score,
             "is_value": edge >= 0.05 and conf_score >= 65,
             "unrealistic_flag": abs(raw_mod_prob - imp_prob) > MAX_ALLOWED_DIVERGENCE,
-            "hold": round(hold, 4),
+            "hold": round(float(benchmark_hold if benchmark_hold is not None else hold), 4),
+            "market_source": benchmark.get("source", "execution_line_no_vig"),
+            "market_books": int(benchmark.get("books_tracked", 0) or 0),
         }
 
     return edges
@@ -304,10 +345,14 @@ def compute_totals_edges(
             active_odds[outcome] = dec_odds
 
     raw_probs, fair_probs, hold = no_vig_probabilities(active_odds)
+    benchmark = odds.get("totals_benchmark") or {}
+    benchmark_fair = benchmark.get("fair_probs") or {}
+    benchmark_raw = benchmark.get("raw_probs") or {}
+    benchmark_hold = benchmark.get("hold")
     edges: dict[str, dict] = {}
     for outcome, dec_odds in active_odds.items():
-        imp_prob = fair_probs[outcome]
-        raw_imp_prob = raw_probs[outcome]
+        imp_prob = float(benchmark_fair.get(outcome, fair_probs[outcome]))
+        raw_imp_prob = float(benchmark_raw.get(outcome, raw_probs[outcome]))
         raw_mod_prob = model_probs[outcome]
         calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
         edge = calibrated_mod_prob - imp_prob
@@ -338,7 +383,9 @@ def compute_totals_edges(
             "confidence_score": conf_score,
             "is_value": edge >= VALUE_EDGE_THRESHOLD and conf_score >= 65,
             "unrealistic_flag": abs(raw_mod_prob - imp_prob) > MAX_ALLOWED_DIVERGENCE,
-            "hold": round(hold, 4),
+            "hold": round(float(benchmark_hold if benchmark_hold is not None else hold), 4),
+            "market_source": benchmark.get("source", "execution_line_no_vig"),
+            "market_books": int(benchmark.get("books_tracked", 0) or 0),
         }
 
     return edges
