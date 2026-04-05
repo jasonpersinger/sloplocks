@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Fetch MLB game results, box scores, and schedule from ESPN."""
 
 import json as _json
@@ -17,7 +18,7 @@ _REQUEST_DELAY = 0.5
 _team_map: dict[str, str] | None = None
 
 
-def _mlb_leader_weight(stat_name: str | None) -> float:
+def _mlb_leader_weight(stat_name: Optional[str]) -> float:
     """Assign extra importance to live batting leader categories."""
     mapping = {
         "battingAverage": 0.75,
@@ -99,7 +100,7 @@ def _season_date_range(season: int) -> list[str]:
 # ---- ESPN cache helpers -------------------------------------------------------
 
 
-def _load_espn_cache(cache_path: str | None) -> dict:
+def _load_espn_cache(cache_path: Optional[str]) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
         return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}}
@@ -115,7 +116,7 @@ def _load_espn_cache(cache_path: str | None) -> dict:
     return cache
 
 
-def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
     """Write ESPN cache to disk."""
     if cache_path is None:
         return
@@ -124,7 +125,7 @@ def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
         _json.dump(cache, f)
 
 
-def _fetch_player_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
+def _fetch_player_profile(player_id: str | Optional[int], cache: Optional[dict] = None) -> dict:
     """Fetch and cache handedness metadata for an MLB player."""
     default = {"throws": None, "bats": None}
     if not player_id:
@@ -154,7 +155,7 @@ def _fetch_player_profile(player_id: str | int | None, cache: dict | None = None
     return profile
 
 
-def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = None) -> dict:
+def _fetch_pitcher_profile(player_id: str | Optional[int], cache: Optional[dict] = None) -> dict:
     """Fetch and cache MLB pitcher handedness metadata from ESPN core API."""
     profile = _fetch_player_profile(player_id, cache)
     if cache is not None and player_id:
@@ -163,10 +164,10 @@ def _fetch_pitcher_profile(player_id: str | int | None, cache: dict | None = Non
 
 
 def _fetch_team_lineup_profile(
-    team_id: str | int | None,
-    cache: dict | None = None,
+    team_id: str | Optional[int],
+    cache: Optional[dict] = None,
     leader_weights: dict[str, float] | None = None,
-    confirmed_lineup: dict | None = None,
+    confirmed_lineup: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse current-roster lineup profile for one MLB team."""
     default = {
@@ -312,7 +313,7 @@ def _fetch_team_lineup_profile(
     return profile
 
 
-def _extract_confirmed_mlb_lineups(summary_data: dict, cache: dict | None = None) -> dict[str, dict]:
+def _extract_confirmed_mlb_lineups(summary_data: dict, cache: Optional[dict] = None) -> dict[str, dict]:
     """Extract confirmed same-day batting-order profiles from an ESPN summary payload."""
     lineups = {}
     full_order_weight = sum(_lineup_slot_weight(slot) for slot in range(1, 10))
@@ -366,12 +367,12 @@ def _extract_confirmed_mlb_lineups(summary_data: dict, cache: dict | None = None
     return lineups
 
 
-def _weather_cache_key(home_team: str, start_time: str | None) -> str:
+def _weather_cache_key(home_team: str, start_time: Optional[str]) -> str:
     """Build a stable weather-cache key for one MLB fixture."""
     return f"{home_team}|{str(start_time or '')[:13]}"
 
 
-def _fetch_ballpark_weather(home_team: str, start_time: str | None, cache: dict | None = None) -> dict:
+def _fetch_ballpark_weather(home_team: str, start_time: Optional[str], cache: Optional[dict] = None) -> dict:
     """Fetch hourly Open-Meteo weather for an MLB ballpark at first pitch."""
     park = MLB_BALLPARKS.get(home_team)
     if not park:
@@ -453,7 +454,7 @@ def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 3
 # ---- ESPN scoreboard / summary -----------------------------------------------
 
 
-def _parse_event(event: dict) -> dict | None:
+def _parse_event(event: dict) -> Optional[dict]:
     """Parse an ESPN scoreboard event into a game dict, or None if not final."""
     if "competitions" not in event or not event["competitions"]:
         return None
@@ -599,9 +600,9 @@ def _extract_mlb_starting_pitchers(summary_data: dict) -> dict[str, dict]:
 
 
 def fetch_mlb_games(
-    season: int | None = None,
+    season: Optional[int] = None,
     dates: list[str] | None = None,
-    cache_path: str | None = None,
+    cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished MLB games for a season."""
     if season is None:
@@ -741,7 +742,7 @@ def fetch_mlb_games(
     return games_df, None # Box scores not yet implemented for MLB
 
 
-def fetch_mlb_schedule(cache_path: str | None = None) -> list[dict]:
+def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch today's MLB games including probable pitchers."""
     cache = _load_espn_cache(cache_path)
     et_offset = timedelta(hours=5)

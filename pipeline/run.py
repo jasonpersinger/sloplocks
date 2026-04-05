@@ -8,7 +8,9 @@ import json
 import os
 import csv
 import logging
+import datetime as dt
 from datetime import datetime, timedelta, timezone
+from typing import Optional, Union
 
 import numpy as np
 import pandas as pd
@@ -120,7 +122,7 @@ def _save_json(path, data):
         json.dump(data, f, indent=2, cls=_NumpyEncoder)
 
 
-def _lookup_match_odds(odds_lookup: dict, sport_key: str, home_team: str, away_team: str) -> dict | None:
+def _lookup_match_odds(odds_lookup: dict, sport_key: str, home_team: str, away_team: str) -> Optional[dict]:
     """Return odds for a fixture."""
     return odds_lookup.get((home_team, away_team))
 
@@ -138,7 +140,7 @@ def _is_live_public_output(base_dir: str) -> bool:
         return False
 
 
-def _prediction_calendar_day(prediction: dict) -> datetime.date | None:
+def _prediction_calendar_day(prediction: dict) -> Optional[dt.date]:
     """Parse the best available calendar day from one saved prediction."""
     for key in ("date", "match_date", "snapshot_timestamp", "generated_at"):
         value = prediction.get(key)
@@ -158,7 +160,7 @@ def _prediction_calendar_day(prediction: dict) -> datetime.date | None:
 
 def _select_calibration_predictions(
     predictions: list[dict],
-    lookback_days: int | None,
+    lookback_days: Optional[int],
     holdout_days: int,
     as_of: datetime.date,
 ) -> list[dict]:
@@ -229,7 +231,7 @@ def _build_publication_guard(
     }
 
 
-def _resolve_start_time(fixture: dict, match_odds: dict | None) -> str | None:
+def _resolve_start_time(fixture: dict, match_odds: Optional[dict]) -> Optional[str]:
     """Return the best available start time for a fixture."""
     start_time = fixture.get("start_time")
     if start_time:
@@ -375,7 +377,7 @@ def _snapshot_root_dir(base_dir: str) -> str:
     return os.path.join(base_dir, TRACKING_DIRNAME, "snapshots")
 
 
-def _build_run_context(run_type: str = "manual", now: datetime | None = None) -> dict:
+def _build_run_context(run_type: str = "manual", now: Optional[datetime] = None) -> dict:
     """Build metadata for one pipeline or refresh execution."""
     now = now or datetime.now(timezone.utc)
     return {
@@ -396,7 +398,7 @@ def _snapshot_full_path(base_dir: str, sport_key: str, run_context: dict) -> str
     return os.path.join(base_dir, _snapshot_relative_path(sport_key, run_context))
 
 
-def _attach_run_metadata(record: dict, run_context: dict, snapshot_path: str | None) -> dict:
+def _attach_run_metadata(record: dict, run_context: dict, snapshot_path: Optional[str]) -> dict:
     """Attach stable run metadata to one record."""
     if not isinstance(record, dict):
         return record
@@ -407,7 +409,7 @@ def _attach_run_metadata(record: dict, run_context: dict, snapshot_path: str | N
     return record
 
 
-def _attach_run_metadata_list(records: list[dict], run_context: dict, snapshot_path: str | None) -> list[dict]:
+def _attach_run_metadata_list(records: list[dict], run_context: dict, snapshot_path: Optional[str]) -> list[dict]:
     """Attach run metadata to each record in a list."""
     for record in records:
         _attach_run_metadata(record, run_context, snapshot_path)
@@ -693,7 +695,7 @@ def _build_pick_decision_row(
     sport_key: str,
     pick_type: str,
     pick_record: dict,
-    source_record: dict | None,
+    source_record: Optional[dict],
     publication_guard: dict,
     selection_config: dict,
     calibration_sample_size: int,
@@ -1066,7 +1068,7 @@ def _hydrate_pick_decision_log_market_snapshots(base_dir: str, sports: list[str]
 
     selected_sports = set(sports or SPORTS.keys())
     updated = 0
-    snapshot_cache: dict[str, dict | None] = {}
+    snapshot_cache: dict[str, Optional[dict]] = {}
 
     with open(ledger_path, newline="") as f:
         rows = list(csv.DictReader(f))
@@ -1114,7 +1116,7 @@ def _hydrate_pick_decision_log_market_snapshots(base_dir: str, sports: list[str]
 
 
 
-def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) -> int | None:
+def _days_since_last_game(team: str, before_date: str, matches: pd.DataFrame) -> Optional[int]:
     """Return days since team's most recent game strictly before before_date.
 
     Parameters
@@ -1283,7 +1285,7 @@ def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
 def _apply_mlb_weather_adjustment(
     blended: dict[str, float],
     run_environment_probs: dict[str, float] | None,
-    weather: dict | None,
+    weather: Optional[dict],
     max_delta: float = 0.02,
 ) -> dict[str, float]:
     """Apply a modest MLB weather adjustment using offense-environment context.
@@ -1325,7 +1327,7 @@ def _apply_mlb_weather_adjustment(
 
 def _apply_mlb_weather_total_adjustment(
     expected_total: float,
-    weather: dict | None,
+    weather: Optional[dict],
     max_runs_delta: float = 0.8,
 ) -> float:
     """Shift an MLB total modestly for outdoor weather conditions."""
@@ -1352,7 +1354,7 @@ def _apply_mlb_weather_total_adjustment(
     return max(4.5, min(16.0, expected_total + delta))
 
 
-def _compute_mlb_lineup_index(lineup_profile: dict | None, opposing_pitcher_hand: str | None) -> float:
+def _compute_mlb_lineup_index(lineup_profile: Optional[dict], opposing_pitcher_hand: Optional[str]) -> float:
     """Score a current MLB roster profile for the handedness of today's matchup."""
     if not lineup_profile:
         return 0.0
@@ -1490,10 +1492,10 @@ def _apply_mlb_bullpen_total_adjustment(
 
 def _apply_mlb_lineup_adjustment(
     blended: dict[str, float],
-    home_lineup_profile: dict | None,
-    away_lineup_profile: dict | None,
-    home_pitcher_hand: str | None,
-    away_pitcher_hand: str | None,
+    home_lineup_profile: Optional[dict],
+    away_lineup_profile: Optional[dict],
+    home_pitcher_hand: Optional[str],
+    away_pitcher_hand: Optional[str],
     max_delta: float = 0.015,
 ) -> dict[str, float]:
     """Apply a small MLB side adjustment from current roster platoon/health context."""
@@ -1516,10 +1518,10 @@ def _apply_mlb_lineup_adjustment(
 
 def _apply_mlb_lineup_total_adjustment(
     expected_total: float,
-    home_lineup_profile: dict | None,
-    away_lineup_profile: dict | None,
-    home_pitcher_hand: str | None,
-    away_pitcher_hand: str | None,
+    home_lineup_profile: Optional[dict],
+    away_lineup_profile: Optional[dict],
+    home_pitcher_hand: Optional[str],
+    away_pitcher_hand: Optional[str],
     max_runs_delta: float = 0.35,
 ) -> float:
     """Shift an MLB total modestly for current platoon-friendly or depleted rosters."""
@@ -1533,7 +1535,7 @@ def _apply_mlb_lineup_total_adjustment(
     return max(4.5, min(16.0, expected_total + delta))
 
 
-def _compute_nba_availability_index(profile: dict | None) -> float:
+def _compute_nba_availability_index(profile: Optional[dict]) -> float:
     """Score a live NBA availability profile."""
     if not profile:
         return 0.0
@@ -1564,7 +1566,7 @@ def _compute_nba_availability_index(profile: dict | None) -> float:
 
 
 def _nba_tipoff_urgency(
-    start_time: str | None,
+    start_time: Optional[str],
     partial_hours: float = 12.0,
     full_hours: float = 2.0,
 ) -> float:
@@ -1588,9 +1590,9 @@ def _nba_tipoff_urgency(
 
 def _apply_nba_availability_adjustment(
     blended: dict[str, float],
-    home_profile: dict | None,
-    away_profile: dict | None,
-    start_time: str | None = None,
+    home_profile: Optional[dict],
+    away_profile: Optional[dict],
+    start_time: Optional[str] = None,
     max_delta: float = 0.02,
     uncertainty_weight: float = 0.35,
     leader_uncertainty_weight: float = 0.35,
@@ -1634,9 +1636,9 @@ def _apply_nba_availability_adjustment(
 
 def _apply_nba_availability_total_adjustment(
     expected_total: float,
-    home_profile: dict | None,
-    away_profile: dict | None,
-    start_time: str | None = None,
+    home_profile: Optional[dict],
+    away_profile: Optional[dict],
+    start_time: Optional[str] = None,
     max_points_delta: float = 2.2,
     uncertainty_weight: float = 0.12,
     leader_uncertainty_weight: float = 0.28,
@@ -1653,7 +1655,7 @@ def _apply_nba_availability_total_adjustment(
         full_hours=tipoff_full_hours,
     )
 
-    def _offense_drag(profile: dict | None) -> float:
+    def _offense_drag(profile: Optional[dict]) -> float:
         if not profile:
             return 0.0
         leader_absence = float(profile.get("leader_absence_burden", 0.0) or 0.0)
@@ -1685,8 +1687,8 @@ def _apply_nba_availability_total_adjustment(
 
 def _apply_nhl_goalie_status_adjustment(
     blended: dict[str, float],
-    home_status: str | None,
-    away_status: str | None,
+    home_status: Optional[str],
+    away_status: Optional[str],
     max_delta: float = 0.012,
 ) -> dict[str, float]:
     """Apply a tiny NHL live adjustment from goalie confirmation certainty."""
@@ -1711,7 +1713,7 @@ def _apply_nhl_goalie_status_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
-def _compute_nhl_injury_index(profile: dict | None) -> float:
+def _compute_nhl_injury_index(profile: Optional[dict]) -> float:
     """Score an NHL skater injury profile from event-specific news."""
     if not profile:
         return 0.0
@@ -1726,8 +1728,8 @@ def _compute_nhl_injury_index(profile: dict | None) -> float:
 
 def _apply_nhl_injury_adjustment(
     blended: dict[str, float],
-    home_profile: dict | None,
-    away_profile: dict | None,
+    home_profile: Optional[dict],
+    away_profile: Optional[dict],
     max_delta: float = 0.01,
 ) -> dict[str, float]:
     """Apply a modest NHL side adjustment from same-day skater injury news."""
@@ -2207,9 +2209,9 @@ def _build_pipeline_diagnostics(
     sport_key: str,
     sport: dict,
     slop_locks: list[dict],
-    longslop: dict | None,
+    longslop: Optional[dict],
     slimegrinder: list[dict],
-    publication_guard: dict | None = None,
+    publication_guard: Optional[dict] = None,
 ) -> dict:
     """Summarize why a slate did or did not produce picks."""
     min_expected_value = sport.get("min_expected_value", 0.0)

@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Quick refresh of odds and slop locks without re-training models.
 
 Fetches fresh odds from The Odds API, patches edges onto existing match
@@ -103,7 +104,7 @@ def _load_live_fixtures(sport_key: str, data_path: Path) -> list[dict]:
     return []
 
 
-def _merge_live_fixture(record: dict, live_fixture: dict | None) -> dict:
+def _merge_live_fixture(record: dict, live_fixture: Optional[dict]) -> dict:
     """Patch a stored match or totals record with fresh fixture metadata."""
     if not live_fixture:
         return record
@@ -135,7 +136,7 @@ def _merge_live_fixture(record: dict, live_fixture: dict | None) -> dict:
     return merged
 
 
-def refresh_sport(sport_key: str, run_context: dict | None = None) -> None:
+def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
     """Refresh odds and slop locks for one sport.
 
     Returns None if predictions.json doesn't exist for this sport.

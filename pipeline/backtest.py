@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Backtesting and accuracy-tracking utilities for SLOP LOCKS."""
 
 import argparse
@@ -248,7 +249,7 @@ def _load_latest_odds_snapshots(data_dir: str, sports: list[str] | None = None) 
     return latest
 
 
-def _apply_closing_snapshot_fallback(row: dict, snapshot: dict | None) -> dict:
+def _apply_closing_snapshot_fallback(row: dict, snapshot: Optional[dict]) -> dict:
     """Hydrate missing closing-line fields from tracked odds snapshots."""
     if not snapshot:
         return row
@@ -302,7 +303,7 @@ def _prediction_probs_from_row(row: dict) -> dict[str, float]:
     return probs
 
 
-def _score_prediction_row(row: dict) -> dict | None:
+def _score_prediction_row(row: dict) -> Optional[dict]:
     """Evaluate one settled tracked prediction row."""
     probs = _prediction_probs_from_row(row)
     actual = row.get("actual")
@@ -440,7 +441,7 @@ def _calibration_bin_summary(rows: list[dict], bucket_size: float = 0.1) -> list
     return summary
 
 
-def _snapshot_pick_signature(record: dict) -> tuple | None:
+def _snapshot_pick_signature(record: dict) -> Optional[tuple]:
     """Build a stable comparison key for one saved pick."""
     if not isinstance(record, dict):
         return None
@@ -477,7 +478,7 @@ def _snapshot_results_lookup(rows: list[dict]) -> dict[tuple, dict]:
     return lookup
 
 
-def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> dict | None:
+def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> Optional[dict]:
     """Return the settled result row for one snapshot pick, with legacy fallback."""
     signature = _snapshot_pick_signature(record)
     settled = result_lookup.get(signature)
@@ -490,7 +491,7 @@ def _lookup_snapshot_result(result_lookup: dict[tuple, dict], record: dict) -> d
     return None
 
 
-def _snapshot_pick_to_result_row(record: dict, settled: dict | None, snapshot_lookup: dict[tuple, dict] | None = None) -> dict | None:
+def _snapshot_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple, dict] | None = None) -> Optional[dict]:
     """Convert one archived snapshot pick into the summary row shape."""
     if settled is None:
         return None
@@ -528,7 +529,7 @@ def _snapshot_pick_to_result_row(record: dict, settled: dict | None, snapshot_lo
     return _apply_closing_snapshot_fallback(row, snapshot)
 
 
-def _decision_pick_to_result_row(record: dict, settled: dict | None, snapshot_lookup: dict[tuple, dict] | None = None) -> dict | None:
+def _decision_pick_to_result_row(record: dict, settled: Optional[dict], snapshot_lookup: dict[tuple, dict] | None = None) -> Optional[dict]:
     """Convert one decision-ledger pick into the summary row shape."""
     if settled is None:
         return None
@@ -637,7 +638,7 @@ def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], confi
     return _snapshot_exclude_opponent_conflicts(selected)
 
 
-def _snapshot_compute_longslop(records: list[dict], outcomes: list[str], config: dict) -> dict | None:
+def _snapshot_compute_longslop(records: list[dict], outcomes: list[str], config: dict) -> Optional[dict]:
     """Recompute LONGSLOP from one saved snapshot."""
     candidates = []
     for rec in records:
@@ -953,7 +954,7 @@ def _summarize_scored_predictions(rows: list[dict]) -> dict:
     }
 
 
-def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tuple[pd.DataFrame, pd.DataFrame | None]:
+def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tuple[pd.DataFrame, Optional[pd.DataFrame]]:
     """Load historical raw inputs for one sport using the local ESPN caches."""
     cache_path = os.path.join(data_dir, sport_key, "espn_cache.json")
     if sport_key == "nba":
@@ -971,7 +972,7 @@ def _build_walkforward_models(
     sport_key: str,
     sport: dict,
     train_matches: pd.DataFrame,
-    train_box_scores: pd.DataFrame | None,
+    train_box_scores: Optional[pd.DataFrame],
     model_names: list[str],
 ) -> dict:
     """Fit the active model set for one walk-forward training slice."""
@@ -1158,8 +1159,8 @@ def _predict_walkforward_fixture(
 def run_raw_walkforward_for_sport(
     sport_key: str,
     matches: pd.DataFrame,
-    box_scores_df: pd.DataFrame | None = None,
-    max_days: int | None = None,
+    box_scores_df: Optional[pd.DataFrame] = None,
+    max_days: Optional[int] = None,
     model_names: list[str] | None = None,
     min_training_games: int = 20,
 ) -> dict:
@@ -1249,7 +1250,7 @@ def run_raw_walkforward_for_sport(
 def build_raw_walkforward_report(
     data_dir: str = "data",
     sports: list[str] | None = None,
-    max_days: int | None = None,
+    max_days: Optional[int] = None,
     min_training_games: int = 20,
 ) -> dict:
     """Build a raw-data walk-forward replay report across sports."""
@@ -1281,7 +1282,7 @@ def build_raw_walkforward_report(
     }
 
 
-def build_walkforward_report(data_dir: str = "data", sports: list[str] | None = None, as_of: str | None = None) -> dict:
+def build_walkforward_report(data_dir: str = "data", sports: list[str] | None = None, as_of: Optional[str] = None) -> dict:
     """Build a date-ordered replay report from the shared settled results log."""
     rows = _load_results_rows(data_dir, sports=sports)
     if as_of:
@@ -1409,7 +1410,7 @@ def compute_model_weights(
     accuracy_log_or_accuracies,
     model_names: list[str] | None = None,
     temperature: float = 2.0,
-    window: int | None = None,
+    window: Optional[int] = None,
     prior_strength: float = 12.0,
     log_loss_blend: float = 0.35,
 ):
@@ -1654,7 +1655,7 @@ def summarize_closing_line_value(picks):
             "totals_non_negative_rate": None,
         }
 
-    def _summary(values: list[float]) -> dict[str, float | int | None]:
+    def _summary(values: list[float]) -> dict[str, float | Optional[int]]:
         if not values:
             return {
                 "tracked": 0,
@@ -1732,7 +1733,7 @@ def summarize_pick_breakdowns(picks):
     return breakdowns
 
 
-def _parse_pick_date(pick: dict) -> date | None:
+def _parse_pick_date(pick: dict) -> Optional[date]:
     """Return the best available calendar date for a stored pick."""
     for key in ("pick_date", "match_date", "logged_at"):
         value = pick.get(key)
@@ -1750,7 +1751,7 @@ def _parse_pick_date(pick: dict) -> date | None:
     return None
 
 
-def summarize_pick_window(picks, days: int, as_of: str | None = None):
+def summarize_pick_window(picks, days: int, as_of: Optional[str] = None):
     """Summarize picks inside a trailing window ending on *as_of*."""
     if as_of:
         anchor = datetime.fromisoformat(str(as_of).replace("Z", "+00:00")).date()
@@ -1784,8 +1785,8 @@ def _record_label(summary: dict) -> str:
 def _sport_dashboard_summary(
     sport_key: str,
     sport_report: dict,
-    manifest_sport: dict | None = None,
-    current_output: dict | None = None,
+    manifest_sport: Optional[dict] = None,
+    current_output: Optional[dict] = None,
 ) -> dict:
     """Condense one sport into dashboard-friendly fields."""
     picks = sport_report.get("picks", {})
@@ -1998,7 +1999,7 @@ def _build_recommended_actions(report: dict, manifest: dict, windows: dict, lead
     return actions[:4]
 
 
-def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None, as_of: str | None = None) -> dict:
+def build_dashboard_data(data_dir: str = "data", sports: list[str] | None = None, as_of: Optional[str] = None) -> dict:
     """Build a site-friendly reporting dashboard payload."""
     selected_sports = sports or list(SPORTS.keys())
     report = build_backtest_report(data_dir=data_dir, sports=selected_sports)

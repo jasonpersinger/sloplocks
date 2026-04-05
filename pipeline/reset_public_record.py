@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Archive or explicitly rewrite the public pick record.
 
 The default workflow is non-destructive. We export a pruned public-facing view
@@ -44,7 +45,7 @@ def _save_json(path: Path, payload: dict) -> None:
         json.dump(payload, f, indent=2)
 
 
-def _keep_row(row: dict, since: str | None, field_names: tuple[str, ...]) -> bool:
+def _keep_row(row: dict, since: Optional[str], field_names: tuple[str, ...]) -> bool:
     if since is None:
         return False
     for field in field_names:
@@ -54,7 +55,7 @@ def _keep_row(row: dict, since: str | None, field_names: tuple[str, ...]) -> boo
     return False
 
 
-def _archive_dir(base_dir: Path, updated_at: str, since: str | None) -> Path:
+def _archive_dir(base_dir: Path, updated_at: str, since: Optional[str]) -> Path:
     stamp = updated_at.replace("-", "").replace(":", "").replace("T", "-").replace("Z", "")
     label = since or "empty"
     return base_dir / TRACKING_DIRNAME / PUBLIC_RECORD_ARCHIVE_DIRNAME / f"{stamp}-{label}"
@@ -71,7 +72,7 @@ def _write_rows(path: Path, fieldnames: list[str], rows: list[dict]) -> None:
 
 def reset_public_record(
     data_dir: str | Path = DATA_DIR,
-    since: str | None = None,
+    since: Optional[str] = None,
     rewrite_live_files: bool = False,
 ) -> Path:
     """Archive or explicitly rewrite public pick-history stats.

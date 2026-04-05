@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Fetch NBA game results and schedule from balldontlie.io."""
 
 import json as _json
@@ -84,7 +85,7 @@ def _current_nba_season() -> int:
     return now.year if now.month >= 10 else now.year - 1
 
 
-def fetch_nba_games(season: int | None = None) -> pd.DataFrame:
+def fetch_nba_games(season: Optional[int] = None) -> pd.DataFrame:
     """Fetch finished NBA games for a season.
 
     Parameters
@@ -225,7 +226,7 @@ def _nba_season_date_range(season: int) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
-def _load_espn_cache(cache_path: str | None) -> dict:
+def _load_espn_cache(cache_path: Optional[str]) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
         return {"games": {}, "rosters": {}}
@@ -238,7 +239,7 @@ def _load_espn_cache(cache_path: str | None) -> dict:
     return cache
 
 
-def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
     """Write ESPN cache to disk."""
     if cache_path is None:
         return
@@ -247,7 +248,7 @@ def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
         _json.dump(cache, f)
 
 
-def _injury_weight(status: str | None) -> float:
+def _injury_weight(status: Optional[str]) -> float:
     """Convert ESPN injury text into a coarse availability penalty."""
     normalized = str(status or "").strip().lower()
     if normalized in {"out", "suspended"}:
@@ -259,7 +260,7 @@ def _injury_weight(status: str | None) -> float:
     return 0.0
 
 
-def _leader_weight(stat_name: str | None) -> float:
+def _leader_weight(stat_name: Optional[str]) -> float:
     """Assign extra importance to key leader categories."""
     mapping = {
         "pointsPerGame": 1.0,
@@ -272,10 +273,10 @@ def _leader_weight(stat_name: str | None) -> float:
 
 
 def _fetch_nba_team_availability_profile(
-    team_id: str | int | None,
+    team_id: str | Optional[int],
     leader_ids=None,
     leader_weights: dict[str, float] | None = None,
-    cache: dict | None = None,
+    cache: Optional[dict] = None,
 ) -> dict:
     """Fetch and cache a coarse NBA roster availability profile."""
     default = {
@@ -394,7 +395,7 @@ def _fetch_nba_team_availability_profile(
     return profile
 
 
-def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | int | None, leader_weights: dict[str, float] | None = None) -> dict:
+def _extract_nba_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str, float] | None = None) -> dict:
     """Extract event-specific NBA injury burden from an ESPN summary payload."""
     default = {
         "event_injury_burden": 0.0,
@@ -453,7 +454,7 @@ def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2
 # ESPN event parsing
 # ---------------------------------------------------------------------------
 
-def _parse_nba_espn_event(event: dict) -> dict | None:
+def _parse_nba_espn_event(event: dict) -> Optional[dict]:
     """Parse an ESPN NBA scoreboard event, returning None if not final."""
     comp = event["competitions"][0]
     status_type = comp.get("status", {}).get("type", {})
@@ -485,9 +486,9 @@ def _parse_nba_espn_event(event: dict) -> dict | None:
 # ---------------------------------------------------------------------------
 
 def fetch_nba_espn_games(
-    season: int | None = None,
+    season: Optional[int] = None,
     dates: list[str] | None = None,
-    cache_path: str | None = None,
+    cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NBA games and box scores via ESPN API.
 
@@ -625,7 +626,7 @@ def fetch_nba_espn_games(
     return games_df, box_scores_df
 
 
-def fetch_nba_espn_schedule(cache_path: str | None = None) -> list[dict]:
+def fetch_nba_espn_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch today's NBA games via ESPN API.
 
     Uses the ESPN scoreboard for today's date in US Eastern Time (UTC-5/UTC-4).

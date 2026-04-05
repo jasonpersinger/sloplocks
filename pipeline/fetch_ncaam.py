@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Fetch NCAAM game results, box scores, and schedule from ESPN."""
 
 import json as _json
@@ -190,7 +191,7 @@ def _season_date_range(season: int) -> list[str]:
 # ---- ESPN cache helpers -------------------------------------------------------
 
 
-def _load_espn_cache(cache_path: str | None) -> dict:
+def _load_espn_cache(cache_path: Optional[str]) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
         return {"games": {}}
@@ -198,7 +199,7 @@ def _load_espn_cache(cache_path: str | None) -> dict:
         return _json.load(f)
 
 
-def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
     """Write ESPN cache to disk."""
     if cache_path is None:
         return
@@ -224,7 +225,7 @@ def _incremental_dates(cache: dict, all_dates: list[str], lookback_days: int = 2
 # ---- ESPN scoreboard / summary -----------------------------------------------
 
 
-def _parse_event(event: dict) -> dict | None:
+def _parse_event(event: dict) -> Optional[dict]:
     """Parse an ESPN scoreboard event into a game dict, or None if not final."""
     if "competitions" not in event or not event["competitions"]:
         return None
@@ -256,9 +257,9 @@ def _parse_event(event: dict) -> dict | None:
 
 
 def fetch_ncaam_games(
-    season: int | None = None,
+    season: Optional[int] = None,
     dates: list[str] | None = None,
-    cache_path: str | None = None,
+    cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NCAAM games and box scores for a season.
 

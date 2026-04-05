@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Post daily SLOP LOCKS to a Discord webhook.
 
 Reads the current per-sport data files and sends one Discord message with:
@@ -40,7 +41,7 @@ MAX_DIAGNOSTIC_FIELDS = 4
 _ET_OFFSET_SPORTS = {"nba", "ncaam"}
 
 
-def _display_when(start_time: str | None, date_str: str, sport_key: str) -> str:
+def _display_when(start_time: Optional[str], date_str: str, sport_key: str) -> str:
     """Return a human-readable ET date/time with a date-only fallback."""
     if start_time:
         try:
@@ -59,26 +60,26 @@ def _display_when(start_time: str | None, date_str: str, sport_key: str) -> str:
     return game_date.strftime("%b %d")
 
 
-def _fmt_odds(american: int | None) -> str:
+def _fmt_odds(american: Optional[int]) -> str:
     if american is None:
         return "N/A"
     return f"+{american}" if american >= 0 else str(american)
 
 
-def _fmt_pct(probability: float | None) -> str:
+def _fmt_pct(probability: Optional[float]) -> str:
     if probability is None:
         return "N/A"
     return f"{probability * 100:.1f}%"
 
 
-def _fmt_confidence(score: float | None) -> str:
+def _fmt_confidence(score: Optional[float]) -> str:
     """Format confidence consistently for embeds."""
     if score is None:
         return "--"
     return str(int(round(float(score))))
 
 
-def _fmt_units(value: float | None) -> str:
+def _fmt_units(value: Optional[float]) -> str:
     if value is None:
         return "N/A"
     return f"{value:.2f}u"
@@ -144,7 +145,7 @@ def _match_lookup(matches: list[dict]) -> dict[tuple[str, str, str, str], dict]:
     return lookup
 
 
-def _enrich_item(item: dict, sport_key: str, source: str, match: dict | None = None) -> dict:
+def _enrich_item(item: dict, sport_key: str, source: str, match: Optional[dict] = None) -> dict:
     """Fill derived notification fields from the backing match when needed."""
     enriched = dict(item)
     enriched["sport"] = sport_key
@@ -266,7 +267,7 @@ def _build_radar_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> li
     return radar
 
 
-def _diagnostic_field(sport_key: str, data: dict) -> dict | None:
+def _diagnostic_field(sport_key: str, data: dict) -> Optional[dict]:
     diagnostics = data.get("diagnostics") or {}
     summary = diagnostics.get("summary")
     if not summary:

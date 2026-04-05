@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Ensemble blending and edge detection for SLOP LOCKS pipeline."""
 
 from pipeline.config import VALUE_EDGE_THRESHOLD
@@ -7,7 +8,7 @@ from datetime import datetime, timedelta
 import numpy as np
 from sklearn.isotonic import IsotonicRegression
 
-def decimal_to_american(decimal_odds: float) -> int | None:
+def decimal_to_american(decimal_odds: float) -> Optional[int]:
     """Convert decimal odds to American format."""
     if decimal_odds <= 1.0:
         return None
@@ -76,9 +77,9 @@ def fit_probability_calibrators(
     historical_predictions: list[dict],
     outcomes: list[str],
     min_samples: int = 20,
-    lookback_days: int | None = None,
+    lookback_days: Optional[int] = None,
     holdout_days: int = 0,
-    as_of: str | None = None,
+    as_of: Optional[str] = None,
 ) -> dict[str, IsotonicRegression]:
     """Fit per-outcome isotonic calibrators from resolved historical predictions."""
     calibrators: dict[str, IsotonicRegression] = {}

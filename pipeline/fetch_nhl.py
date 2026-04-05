@@ -1,3 +1,4 @@
+from typing import Optional, Union
 """Fetch NHL results and schedule from ESPN."""
 
 import json as _json
@@ -26,7 +27,7 @@ _NHL_ALIAS_MAP = {
 }
 
 
-def _nhl_leader_weight(stat_name: str | None) -> float:
+def _nhl_leader_weight(stat_name: Optional[str]) -> float:
     """Assign extra importance to key NHL leader categories."""
     mapping = {
         "goals": 1.0,
@@ -87,7 +88,7 @@ def _season_date_range(season: int) -> list[str]:
     return dates
 
 
-def _load_espn_cache(cache_path: str | None) -> dict:
+def _load_espn_cache(cache_path: Optional[str]) -> dict:
     """Load cached ESPN game data."""
     if cache_path is None or not os.path.exists(cache_path):
         return {"games": {}}
@@ -99,7 +100,7 @@ def _load_espn_cache(cache_path: str | None) -> dict:
     return cache
 
 
-def _save_espn_cache(cache_path: str | None, cache: dict) -> None:
+def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
     """Write ESPN game cache."""
     if cache_path is None:
         return
@@ -261,7 +262,7 @@ def _extract_probable_goalie(competitor: dict) -> dict:
     }
 
 
-def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | int | None, leader_weights: dict[str, float] | None = None) -> dict:
+def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | Optional[int], leader_weights: dict[str, float] | None = None) -> dict:
     """Extract event-specific NHL skater injury burden from an ESPN summary payload."""
     default = {
         "injury_burden": 0.0,
@@ -304,7 +305,7 @@ def _extract_nhl_event_injury_profile(summary_data: dict, team_id: str | int | N
     return {key: round(value, 3) for key, value in profile.items()}
 
 
-def _parse_final_event(event: dict) -> dict | None:
+def _parse_final_event(event: dict) -> Optional[dict]:
     """Parse one final NHL scoreboard event into a cached game row."""
     comp = event.get("competitions", [{}])[0]
     status_type = comp.get("status", {}).get("type", {})
@@ -379,9 +380,9 @@ def _parse_final_event(event: dict) -> dict | None:
 
 
 def fetch_nhl_games(
-    season: int | None = None,
+    season: Optional[int] = None,
     dates: list[str] | None = None,
-    cache_path: str | None = None,
+    cache_path: Optional[str] = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Fetch finished NHL games via ESPN scoreboard."""
     if season is None:
@@ -581,7 +582,7 @@ def fetch_nhl_games(
     return games_df, None
 
 
-def fetch_nhl_schedule(cache_path: str | None = None) -> list[dict]:
+def fetch_nhl_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch today's NHL games from ESPN."""
     et_offset = timedelta(hours=5)
     today_et = (datetime.now(timezone.utc) - et_offset).date()
