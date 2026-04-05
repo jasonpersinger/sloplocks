@@ -1058,7 +1058,7 @@ def _predict_walkforward_fixture(
     models: dict,
     accuracy_log: dict[str, list[dict]],
     model_names: list[str],
-)Optional[ -> tuple[dict ], dict[str, dict[str, float]]]:
+) -> tuple[Optional[dict], dict[str, dict[str, float]]]:
     """Generate a blended walk-forward prediction for one historical fixture."""
     home = fixture["home_team"]
     away = fixture["away_team"]
