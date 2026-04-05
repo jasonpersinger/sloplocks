@@ -9,7 +9,7 @@ import os
 import csv
 import logging
 import datetime as dt
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional, Union
 
 import numpy as np
@@ -140,7 +140,7 @@ def _is_live_public_output(base_dir: str) -> bool:
         return False
 
 
-def _prediction_calendar_day(prediction: dict) -> Optional[dt.date]:
+def _prediction_calendar_day(prediction: dict) -> Optional[date]:
     """Parse the best available calendar day from one saved prediction."""
     for key in ("date", "match_date", "snapshot_timestamp", "generated_at"):
         value = prediction.get(key)
@@ -148,11 +148,11 @@ def _prediction_calendar_day(prediction: dict) -> Optional[dt.date]:
             continue
         text = str(value).strip()
         try:
-            return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+            return dt.datetime.fromisoformat(text.replace("Z", "+00:00")).date()
         except ValueError:
             pass
         try:
-            return datetime.strptime(text[:10], "%Y-%m-%d").date()
+            return dt.datetime.strptime(text[:10], "%Y-%m-%d").date()
         except ValueError:
             continue
     return None
@@ -162,7 +162,7 @@ def _select_calibration_predictions(
     predictions: list[dict],
     lookback_days: Optional[int],
     holdout_days: int,
-    as_of: datetime.date,
+    as_of: date,
 ) -> list[dict]:
     """Return the dedicated trailing slice used for probability calibration."""
     cutoff = as_of - timedelta(days=max(holdout_days, 0))
