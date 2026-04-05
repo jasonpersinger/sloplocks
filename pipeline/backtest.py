@@ -1482,9 +1482,13 @@ def compute_roi(bets):
     if not bets:
         return 0.0
 
-    total_staked = sum(b["stake"] for b in bets)
     total_return = 0.0
-    for bet in bets:
+    valid_bets = [b for b in bets if b.get("odds") is not None]
+    if not valid_bets:
+        return 0.0
+        
+    total_staked = sum(b["stake"] for b in valid_bets)
+    for bet in valid_bets:
         if bet.get("push"):
             total_return += bet["stake"]
         elif bet["won"]:
