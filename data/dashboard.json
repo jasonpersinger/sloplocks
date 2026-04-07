@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-07T13:10:13Z",
+  "generated_at": "2026-04-07T21:40:06Z",
   "manifest_updated_at": "2026-04-07T13:10:12Z",
   "aggregate": {
     "record": {
@@ -500,7 +500,7 @@
     ]
   },
   "decision_replay": {
-    "generated_at": "2026-04-07T13:10:13Z",
+    "generated_at": "2026-04-07T21:40:06Z",
     "aggregate": {
       "logged_picks": 110,
       "settled_picks": {
@@ -1273,12 +1273,12 @@
     }
   },
   "snapshot_replay": {
-    "generated_at": "2026-04-07T13:10:13Z",
+    "generated_at": "2026-04-07T21:40:06Z",
     "aggregate": {
-      "snapshots": 109,
-      "exact_matches": 70,
-      "exact_match_rate": 0.6422,
-      "mismatches": 39,
+      "snapshots": 113,
+      "exact_matches": 73,
+      "exact_match_rate": 0.646,
+      "mismatches": 40,
       "expected_picks": {
         "evaluated": 71,
         "wins": 38,
@@ -1304,10 +1304,10 @@
     },
     "sports": {
       "mlb": {
-        "snapshots": 25,
+        "snapshots": 26,
         "exact_matches": 15,
-        "exact_match_rate": 0.6,
-        "mismatches": 10,
+        "exact_match_rate": 0.5769,
+        "mismatches": 11,
         "recent_mismatches": [
           {
             "run_id": "refresh-20260401T040413631597Z",
@@ -2716,9 +2716,9 @@
         }
       },
       "nba": {
-        "snapshots": 35,
-        "exact_matches": 19,
-        "exact_match_rate": 0.5429,
+        "snapshots": 36,
+        "exact_matches": 20,
+        "exact_match_rate": 0.5556,
         "mismatches": 16,
         "recent_mismatches": [
           {
@@ -3876,9 +3876,9 @@
         }
       },
       "ncaam": {
-        "snapshots": 24,
-        "exact_matches": 19,
-        "exact_match_rate": 0.7917,
+        "snapshots": 25,
+        "exact_matches": 20,
+        "exact_match_rate": 0.8,
         "mismatches": 5,
         "recent_mismatches": [
           {
@@ -4469,9 +4469,9 @@
         }
       },
       "nhl": {
-        "snapshots": 25,
-        "exact_matches": 17,
-        "exact_match_rate": 0.68,
+        "snapshots": 26,
+        "exact_matches": 18,
+        "exact_match_rate": 0.6923,
         "mismatches": 8,
         "recent_mismatches": [
           {
@@ -5541,6 +5541,100 @@
     },
     "recent_mismatches": [
       {
+        "run_id": "refresh-20260407T213938697304Z",
+        "run_type": "refresh",
+        "sport": "mlb",
+        "snapshot_timestamp": "2026-04-07T21:39:38Z",
+        "snapshot_path": "/home/runner/work/sloplocks/sloplocks/data/tracking/snapshots/2026-04-07/mlb/refresh-20260407T213938697304Z.json",
+        "expected_picks": [],
+        "replayed_picks": [
+          {
+            "market_type": "total",
+            "home_team": "Blue Jays",
+            "away_team": "Dodgers",
+            "date": "2026-04-07",
+            "pick": "over",
+            "total_line": 7.5,
+            "edge": 0.0876,
+            "confidence_score": 78.0,
+            "expected_value": 0.134
+          },
+          {
+            "market_type": "total",
+            "home_team": "Rangers",
+            "away_team": "Mariners",
+            "date": "2026-04-07",
+            "pick": "over",
+            "total_line": 8.0,
+            "edge": 0.0928,
+            "confidence_score": 76.5,
+            "expected_value": 0.1704
+          },
+          {
+            "market_type": "total",
+            "home_team": "Twins",
+            "away_team": "Tigers",
+            "date": "2026-04-07",
+            "pick": "over",
+            "total_line": 8.0,
+            "edge": 0.0627,
+            "confidence_score": 75.7,
+            "expected_value": 0.0943
+          }
+        ],
+        "expected_count": 0,
+        "replayed_count": 3,
+        "matched_count": 0,
+        "exact_match": false,
+        "missing_in_replay": [],
+        "unexpected_in_replay": [
+          [
+            "total",
+            "Blue Jays",
+            "Dodgers",
+            "2026-04-07",
+            "over",
+            7.5
+          ],
+          [
+            "total",
+            "Rangers",
+            "Mariners",
+            "2026-04-07",
+            "over",
+            8.0
+          ],
+          [
+            "total",
+            "Twins",
+            "Tigers",
+            "2026-04-07",
+            "over",
+            8.0
+          ]
+        ],
+        "expected_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        },
+        "replayed_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        }
+      },
+      {
         "run_id": "daily-20260407T130718530847Z",
         "run_type": "daily",
         "sport": "nba",
@@ -5837,292 +5931,11 @@
           "avg_expected_value": null,
           "avg_confidence": null
         }
-      },
-      {
-        "run_id": "refresh-20260406T213533781651Z",
-        "run_type": "refresh",
-        "sport": "nba",
-        "snapshot_timestamp": "2026-04-06T21:35:33Z",
-        "snapshot_path": "/home/runner/work/sloplocks/sloplocks/data/tracking/snapshots/2026-04-06/nba/refresh-20260406T213533781651Z.json",
-        "expected_picks": [
-          {
-            "home_team": "Grizzlies",
-            "away_team": "Cavaliers",
-            "date": "2026-04-06",
-            "start_time": "2026-04-07T00:00Z",
-            "matchday": null,
-            "pick": "away",
-            "model_prob": 0.8591,
-            "implied_prob": 0.8721,
-            "market_implied_prob": 0.9091,
-            "edge": -0.013,
-            "expected_value": -0.0464,
-            "american_odds": -909,
-            "decimal_odds": 1.11,
-            "kelly_fraction": 0.0,
-            "fractional_kelly": 0.0,
-            "confidence_score": 0.0,
-            "individual_models": {
-              "elo": {
-                "home": 0.0671,
-                "away": 0.9329
-              },
-              "efficiency": {
-                "home": 0.3463,
-                "away": 0.6537
-              },
-              "four_factors": {
-                "home": 0.518,
-                "away": 0.482
-              },
-              "results_features": {
-                "home": 0.2979,
-                "away": 0.7021
-              },
-              "recent_boxscore": {
-                "home": 0.2651,
-                "away": 0.7349
-              },
-              "nba_matchup": {
-                "home": 0.3032,
-                "away": 0.6968
-              }
-            },
-            "qualitative_analysis": {
-              "sport": "nba",
-              "home_team": "Grizzlies",
-              "away_team": "Cavaliers",
-              "home_impact": 0.0,
-              "away_impact": 0.0,
-              "individual_factors": [],
-              "net_qualitative_edge": "none",
-              "summary": "No significant qualitative factors identified or API error."
-            },
-            "qualitative_summary": "No qualitative impact.",
-            "blurb": "[SYSTEM LEAN] This game did not meet strict lock thresholds but represents the best remaining value on the slate.",
-            "run_id": "refresh-20260406T213533781651Z",
-            "run_type": "refresh",
-            "snapshot_timestamp": "2026-04-06T21:35:33Z",
-            "snapshot_path": "tracking/snapshots/2026-04-06/nba/refresh-20260406T213533781651Z.json"
-          },
-          {
-            "home_team": "Spurs",
-            "away_team": "76ers",
-            "date": "2026-04-06",
-            "start_time": "2026-04-07T00:00Z",
-            "matchday": null,
-            "pick": "home",
-            "model_prob": 0.8046,
-            "implied_prob": 0.7567,
-            "market_implied_prob": 0.7874,
-            "edge": 0.0479,
-            "expected_value": 0.0299,
-            "american_odds": -357,
-            "decimal_odds": 1.28,
-            "kelly_fraction": 0.1067,
-            "fractional_kelly": 0.0267,
-            "confidence_score": 0.0,
-            "individual_models": {
-              "elo": {
-                "home": 0.9077,
-                "away": 0.0923
-              },
-              "efficiency": {
-                "home": 0.7572,
-                "away": 0.2428
-              },
-              "four_factors": {
-                "home": 0.5759,
-                "away": 0.4241
-              },
-              "results_features": {
-                "home": 0.7931,
-                "away": 0.2069
-              },
-              "recent_boxscore": {
-                "home": 0.7524,
-                "away": 0.2476
-              },
-              "nba_matchup": {
-                "home": 0.7573,
-                "away": 0.2427
-              }
-            },
-            "qualitative_analysis": {
-              "sport": "nba",
-              "home_team": "Spurs",
-              "away_team": "76ers",
-              "home_impact": 0.0,
-              "away_impact": 0.0,
-              "individual_factors": [],
-              "net_qualitative_edge": "none",
-              "summary": "No significant qualitative factors identified or API error."
-            },
-            "qualitative_summary": "No qualitative impact.",
-            "blurb": "[SYSTEM LEAN] This game did not meet strict lock thresholds but represents the best remaining value on the slate.",
-            "run_id": "refresh-20260406T213533781651Z",
-            "run_type": "refresh",
-            "snapshot_timestamp": "2026-04-06T21:35:33Z",
-            "snapshot_path": "tracking/snapshots/2026-04-06/nba/refresh-20260406T213533781651Z.json"
-          },
-          {
-            "home_team": "Nuggets",
-            "away_team": "Trail Blazers",
-            "date": "2026-04-06",
-            "start_time": "2026-04-07T01:00Z",
-            "matchday": null,
-            "pick": "home",
-            "model_prob": 0.7083,
-            "implied_prob": 0.7292,
-            "market_implied_prob": 0.7634,
-            "edge": -0.0209,
-            "expected_value": -0.0579,
-            "american_odds": -303,
-            "decimal_odds": 1.33,
-            "kelly_fraction": 0.0,
-            "fractional_kelly": 0.0,
-            "confidence_score": 0.0,
-            "individual_models": {
-              "elo": {
-                "home": 0.7859,
-                "away": 0.2141
-              },
-              "efficiency": {
-                "home": 0.6798,
-                "away": 0.3202
-              },
-              "four_factors": {
-                "home": 0.5389,
-                "away": 0.4611
-              },
-              "results_features": {
-                "home": 0.613,
-                "away": 0.387
-              },
-              "recent_boxscore": {
-                "home": 0.6027,
-                "away": 0.3973
-              },
-              "nba_matchup": {
-                "home": 0.4753,
-                "away": 0.5247
-              }
-            },
-            "qualitative_analysis": {
-              "sport": "nba",
-              "home_team": "Nuggets",
-              "away_team": "Trail Blazers",
-              "home_impact": 0.0,
-              "away_impact": 0.0,
-              "individual_factors": [],
-              "net_qualitative_edge": "none",
-              "summary": "No significant qualitative factors identified or API error."
-            },
-            "qualitative_summary": "No qualitative impact.",
-            "blurb": "[SYSTEM LEAN] This game did not meet strict lock thresholds but represents the best remaining value on the slate.",
-            "run_id": "refresh-20260406T213533781651Z",
-            "run_type": "refresh",
-            "snapshot_timestamp": "2026-04-06T21:35:33Z",
-            "snapshot_path": "tracking/snapshots/2026-04-06/nba/refresh-20260406T213533781651Z.json"
-          }
-        ],
-        "replayed_picks": [
-          {
-            "market_type": "total",
-            "home_team": "Nuggets",
-            "away_team": "Trail Blazers",
-            "date": "2026-04-06",
-            "pick": "under",
-            "total_line": 236.5,
-            "edge": 0.0837,
-            "confidence_score": 77.5,
-            "expected_value": 0.1265
-          },
-          {
-            "market_type": "total",
-            "home_team": "Hawks",
-            "away_team": "Knicks",
-            "date": "2026-04-06",
-            "pick": "under",
-            "total_line": 226.5,
-            "edge": 0.0529,
-            "confidence_score": 64.2,
-            "expected_value": 0.0672
-          }
-        ],
-        "expected_count": 3,
-        "replayed_count": 2,
-        "matched_count": 0,
-        "exact_match": false,
-        "missing_in_replay": [
-          [
-            "moneyline",
-            "Grizzlies",
-            "Cavaliers",
-            "2026-04-06",
-            "away",
-            null
-          ],
-          [
-            "moneyline",
-            "Nuggets",
-            "Trail Blazers",
-            "2026-04-06",
-            "home",
-            null
-          ],
-          [
-            "moneyline",
-            "Spurs",
-            "76ers",
-            "2026-04-06",
-            "home",
-            null
-          ]
-        ],
-        "unexpected_in_replay": [
-          [
-            "total",
-            "Hawks",
-            "Knicks",
-            "2026-04-06",
-            "under",
-            226.5
-          ],
-          [
-            "total",
-            "Nuggets",
-            "Trail Blazers",
-            "2026-04-06",
-            "under",
-            236.5
-          ]
-        ],
-        "expected_pick_performance": {
-          "evaluated": 0,
-          "wins": 0,
-          "losses": 0,
-          "record": "0-0",
-          "hit_rate": null,
-          "roi": null,
-          "avg_expected_value": null,
-          "avg_confidence": null
-        },
-        "replayed_pick_performance": {
-          "evaluated": 0,
-          "wins": 0,
-          "losses": 0,
-          "record": "0-0",
-          "hit_rate": null,
-          "roi": null,
-          "avg_expected_value": null,
-          "avg_confidence": null
-        }
       }
     ]
   },
   "lane_health": {
-    "generated_at": "2026-04-07T13:10:13Z",
+    "generated_at": "2026-04-07T21:40:06Z",
     "sports": {
       "nba": {
         "moneyline": {
@@ -7801,7 +7614,7 @@
     }
   },
   "model_health": {
-    "generated_at": "2026-04-07T13:10:13Z",
+    "generated_at": "2026-04-07T21:40:06Z",
     "sports": {
       "nba": {
         "ensemble": {
