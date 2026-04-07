@@ -1463,6 +1463,138 @@ def compute_model_weights(
     return [s / total for s in scaled]
 
 
+def build_model_health_snapshot(
+    accuracy_log: dict,
+    model_names: list[str],
+    temperature: float = 2.0,
+    window: Optional[int] = None,
+    min_samples: int = 20,
+    disable_sample_min: int = 30,
+    disable_log_loss_margin: float = 0.08,
+    disable_accuracy_floor: float = 0.5,
+    disable_accuracy_margin: float = 0.08,
+) -> dict:
+    """Summarize per-model health from the rolling accuracy log."""
+    accuracy_log = accuracy_log or {}
+    weights = compute_model_weights(
+        accuracy_log,
+        model_names=model_names,
+        temperature=temperature,
+        window=window,
+    )
+    weight_map = dict(zip(model_names, weights))
+
+    ensemble_entries = list((accuracy_log or {}).get("ensemble", []))
+    if window is not None:
+        ensemble_entries = ensemble_entries[-window:]
+    ensemble_sample = len(ensemble_entries)
+    ensemble_accuracy = (
+        sum(1 for entry in ensemble_entries if entry.get("correct")) / ensemble_sample
+        if ensemble_sample else None
+    )
+    ensemble_log_losses = [
+        float(entry.get("log_loss"))
+        for entry in ensemble_entries
+        if entry.get("log_loss") is not None
+    ]
+    ensemble_log_loss = (
+        sum(ensemble_log_losses) / len(ensemble_log_losses)
+        if ensemble_log_losses else None
+    )
+
+    models = {}
+    disable_candidates = []
+    for model_name in model_names:
+        entries = list((accuracy_log or {}).get(model_name, []))
+        if window is not None:
+            entries = entries[-window:]
+        sample_size = len(entries)
+        accuracy = (
+            sum(1 for entry in entries if entry.get("correct")) / sample_size
+            if sample_size else None
+        )
+        log_losses = [
+            float(entry.get("log_loss"))
+            for entry in entries
+            if entry.get("log_loss") is not None
+        ]
+        avg_log_loss = (
+            sum(log_losses) / len(log_losses)
+            if log_losses else None
+        )
+
+        reasons = []
+        status = "active"
+        disable_candidate = False
+        if sample_size < min_samples:
+            status = "watch"
+            reasons.append(f"sample below model-health floor ({sample_size}/{min_samples})")
+        elif (
+            sample_size >= disable_sample_min
+            and avg_log_loss is not None
+            and ensemble_log_loss is not None
+            and accuracy is not None
+        ):
+            worse_log_loss = avg_log_loss > (ensemble_log_loss + disable_log_loss_margin)
+            accuracy_floor = float(disable_accuracy_floor)
+            worse_accuracy = accuracy < accuracy_floor
+            if worse_log_loss and worse_accuracy:
+                disable_candidate = True
+                status = "disable_candidate"
+                reasons.append(
+                    f"log loss trails ensemble by {avg_log_loss - ensemble_log_loss:.3f}"
+                )
+                reasons.append(
+                    f"accuracy trails floor {accuracy_floor:.3f} at {accuracy:.3f}"
+                )
+
+        models[model_name] = {
+            "sample_size": sample_size,
+            "accuracy": None if accuracy is None else round(accuracy, 4),
+            "avg_log_loss": None if avg_log_loss is None else round(avg_log_loss, 4),
+            "weight": round(float(weight_map.get(model_name, 0.0)), 4),
+            "status": status,
+            "disable_candidate": disable_candidate,
+            "reasons": reasons,
+        }
+        if disable_candidate:
+            disable_candidates.append(model_name)
+
+    return {
+        "ensemble": {
+            "sample_size": ensemble_sample,
+            "accuracy": None if ensemble_accuracy is None else round(ensemble_accuracy, 4),
+            "avg_log_loss": None if ensemble_log_loss is None else round(ensemble_log_loss, 4),
+        },
+        "models": models,
+        "disable_candidates": disable_candidates,
+    }
+
+
+def build_model_health_report(data_dir: str = "data", sports: Optional[list[str]] = None) -> dict:
+    """Build a per-sport model health report from stored accuracy logs."""
+    selected_sports = sports or list(SPORTS.keys())
+    report = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sports": {},
+    }
+    for sport_key in selected_sports:
+        accuracy_path = os.path.join(data_dir, sport_key, "model_accuracy.json")
+        accuracy_log = {}
+        if os.path.exists(accuracy_path):
+            with open(accuracy_path) as handle:
+                accuracy_log = json.load(handle) or {}
+        sport = SPORTS.get(sport_key, {})
+        report["sports"][sport_key] = build_model_health_snapshot(
+            accuracy_log=accuracy_log,
+            model_names=list(sport.get("models", [])),
+            temperature=sport.get("accuracy_softmax_temperature", 2.0),
+            window=sport.get("accuracy_window"),
+        )
+        report["sports"][sport_key]["disabled_by_config"] = list(sport.get("disabled_models", []))
+    return report
+
+
 def compute_roi(bets):
     """Compute return-on-investment for a sequence of bets.
 
@@ -1775,6 +1907,157 @@ def summarize_pick_window(picks, days: int, as_of: Optional[str] = None):
     }
 
 
+def summarize_lane_health(
+    picks: list[dict],
+    market_type: Optional[str] = None,
+    pick_type: Optional[str] = None,
+    recent_count: int = 8,
+) -> dict:
+    """Summarize one pick lane with recent ROI, CLV, and calibration context."""
+    lane_picks = []
+    for pick in picks:
+        current_market = str(pick.get("market_type") or "moneyline")
+        current_type = str(pick.get("type") or "slop_lock")
+        if market_type is not None and current_market != market_type:
+            continue
+        if pick_type is not None and current_type != pick_type:
+            continue
+        lane_picks.append(pick)
+
+    lane_picks.sort(key=lambda item: _parse_pick_date(item) or date.min)
+    overall = summarize_pick_history(lane_picks)
+    overall_clv = summarize_closing_line_value(lane_picks)
+
+    evaluated = [pick for pick in lane_picks if pick.get("evaluated")]
+    recent = evaluated[-recent_count:] if recent_count > 0 else list(evaluated)
+    recent_summary = summarize_pick_history(recent)
+    recent_clv = summarize_closing_line_value(recent)
+
+    resolved = [
+        pick for pick in recent
+        if pick.get("model_prob") is not None and not pick.get("push")
+    ]
+    avg_model_prob = (
+        sum(float(pick["model_prob"]) for pick in resolved) / len(resolved)
+        if resolved else None
+    )
+    actual_win_rate = (
+        sum(1.0 for pick in resolved if pick.get("won")) / len(resolved)
+        if resolved else None
+    )
+    calibration_gap = (
+        avg_model_prob - actual_win_rate
+        if avg_model_prob is not None and actual_win_rate is not None else None
+    )
+    overconfidence_gap = max(0.0, calibration_gap) if calibration_gap is not None else None
+
+    return {
+        "market_type": market_type,
+        "pick_type": pick_type,
+        "overall": {
+            **overall,
+            "clv": overall_clv,
+        },
+        "recent": {
+            **recent_summary,
+            "clv": recent_clv,
+            "recent_count": recent_count,
+            "avg_model_prob": None if avg_model_prob is None else round(avg_model_prob, 4),
+            "actual_win_rate": None if actual_win_rate is None else round(actual_win_rate, 4),
+            "calibration_gap": None if calibration_gap is None else round(calibration_gap, 4),
+            "overconfidence_gap": None if overconfidence_gap is None else round(overconfidence_gap, 4),
+        },
+    }
+
+
+def evaluate_lane_health(
+    lane_summary: dict,
+    *,
+    enabled: bool = True,
+    lane_label: str = "lane",
+    min_evaluated: int = 0,
+    min_recent_evaluated: int = 0,
+    min_tracked_clv: int = 0,
+    min_avg_clv: Optional[float] = 0.0,
+    min_recent_roi: Optional[float] = None,
+    max_overconfidence_gap: Optional[float] = None,
+) -> dict:
+    """Evaluate whether one lane is healthy enough to publish live."""
+    overall = lane_summary.get("overall", {})
+    recent = lane_summary.get("recent", {})
+    recent_clv = recent.get("clv", {})
+    reasons = []
+
+    if not enabled:
+        reasons.append(f"{lane_label} disabled by config")
+    if int(overall.get("evaluated") or 0) < int(min_evaluated or 0):
+        reasons.append(
+            f"need more settled {lane_label} picks ({int(overall.get('evaluated') or 0)}/{int(min_evaluated or 0)})"
+        )
+    if int(recent.get("evaluated") or 0) < int(min_recent_evaluated or 0):
+        reasons.append(
+            f"need more recent settled {lane_label} picks ({int(recent.get('evaluated') or 0)}/{int(min_recent_evaluated or 0)})"
+        )
+    if int(recent_clv.get("tracked") or 0) < int(min_tracked_clv or 0):
+        reasons.append(
+            f"need more tracked {lane_label} CLV ({int(recent_clv.get('tracked') or 0)}/{int(min_tracked_clv or 0)})"
+        )
+    if (
+        min_avg_clv is not None
+        and recent_clv.get("avg_clv") is not None
+        and float(recent_clv.get("avg_clv")) < float(min_avg_clv)
+    ):
+        reasons.append(
+            f"recent {lane_label} CLV {float(recent_clv.get('avg_clv')):.4f} is below {float(min_avg_clv):.4f}"
+        )
+    if (
+        min_recent_roi is not None
+        and recent.get("roi") is not None
+        and float(recent.get("roi")) < float(min_recent_roi)
+    ):
+        reasons.append(
+            f"recent {lane_label} ROI {float(recent.get('roi')):.4f} is below {float(min_recent_roi):.4f}"
+        )
+    if (
+        max_overconfidence_gap is not None
+        and recent.get("overconfidence_gap") is not None
+        and float(recent.get("overconfidence_gap")) > float(max_overconfidence_gap)
+    ):
+        reasons.append(
+            f"recent {lane_label} overconfidence gap {float(recent.get('overconfidence_gap')):.4f} exceeds {float(max_overconfidence_gap):.4f}"
+        )
+
+    if not enabled:
+        status = "disabled"
+    elif reasons:
+        insufficiency_only = all(reason.startswith("need more") for reason in reasons)
+        status = "research" if insufficiency_only else "hold"
+    else:
+        status = "live"
+
+    score = 0
+    checks = 0
+    for passed in (
+        enabled,
+        int(overall.get("evaluated") or 0) >= int(min_evaluated or 0),
+        int(recent.get("evaluated") or 0) >= int(min_recent_evaluated or 0),
+        int(recent_clv.get("tracked") or 0) >= int(min_tracked_clv or 0),
+        min_avg_clv is None or recent_clv.get("avg_clv") is None or float(recent_clv.get("avg_clv")) >= float(min_avg_clv),
+        min_recent_roi is None or recent.get("roi") is None or float(recent.get("roi")) >= float(min_recent_roi),
+        max_overconfidence_gap is None or recent.get("overconfidence_gap") is None or float(recent.get("overconfidence_gap")) <= float(max_overconfidence_gap),
+    ):
+        checks += 1
+        score += 1 if passed else 0
+
+    return {
+        **lane_summary,
+        "allow": status == "live",
+        "status": status,
+        "reasons": reasons,
+        "health_score": round(score / checks, 4) if checks else None,
+    }
+
+
 def _record_label(summary: dict) -> str:
     """Format a concise W-L-P label from a pick summary."""
     wins = int(summary.get("wins") or 0)
@@ -2010,6 +2293,8 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
     walkforward = build_walkforward_report(data_dir=data_dir, sports=selected_sports, as_of=as_of)
     snapshot_replay = build_snapshot_replay_report(data_dir=data_dir, sports=selected_sports)
     decision_replay = build_pick_decision_replay_report(data_dir=data_dir, sports=selected_sports)
+    lane_health = build_lane_health_report(data_dir=data_dir, sports=selected_sports)
+    model_health = build_model_health_report(data_dir=data_dir, sports=selected_sports)
 
     manifest_path = os.path.join(data_dir, "manifest.json")
     manifest = {}
@@ -2089,6 +2374,8 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
         },
         "decision_replay": decision_replay,
         "snapshot_replay": snapshot_replay,
+        "lane_health": lane_health,
+        "model_health": model_health,
         "recommended_actions": _build_recommended_actions(report, manifest, windows, leaders),
         "insights": _build_dashboard_insights(report, manifest, windows, leaders),
     }
@@ -2120,6 +2407,116 @@ def build_threshold_guidance(pick_summary: dict) -> list[str]:
             guidance.append("CLV is positive but realized ROI is lagging; avoid reactive threshold cuts until the sample matures.")
 
     return guidance
+
+
+def build_lane_health_report(data_dir: str = "data", sports: Optional[list[str]] = None) -> dict:
+    """Build lane-health summaries for each sport and publish lane."""
+    selected_sports = sports or list(SPORTS.keys())
+    report = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "sports": {},
+    }
+
+    for sport_key in selected_sports:
+        sport = SPORTS.get(sport_key, {})
+        pick_history_path = os.path.join(data_dir, sport_key, "pick_history.json")
+        picks = []
+        if os.path.exists(pick_history_path):
+            with open(pick_history_path) as handle:
+                picks = (json.load(handle) or {}).get("picks", [])
+
+        moneyline = evaluate_lane_health(
+            summarize_lane_health(
+                picks,
+                market_type="moneyline",
+                recent_count=int(sport.get("moneyline_health_recent_window", 8) or 8),
+            ),
+            enabled=True,
+            lane_label="moneyline",
+            min_evaluated=int(sport.get("publication_min_evaluated_picks", 0) or 0),
+            min_recent_evaluated=int(sport.get("moneyline_health_min_recent_evaluated", 0) or 0),
+            min_tracked_clv=int(sport.get("moneyline_clv_guard_min_tracked", 0) or 0),
+            min_avg_clv=float(sport.get("moneyline_clv_guard_min_avg", 0.0) or 0.0),
+            min_recent_roi=float(sport.get("moneyline_health_min_recent_roi", 0.0) or 0.0),
+            max_overconfidence_gap=float(sport.get("moneyline_health_max_overconfidence_gap", 0.12) or 0.12),
+        )
+        totals_enabled = int(sport.get("totals_max_picks", 0) or 0) > 0
+        totals = evaluate_lane_health(
+            summarize_lane_health(
+                picks,
+                market_type="total",
+                recent_count=int(sport.get("totals_health_recent_window", 8) or 8),
+            ),
+            enabled=totals_enabled,
+            lane_label="totals",
+            min_evaluated=int(sport.get("publication_min_evaluated_totals_picks", 0) or 0),
+            min_recent_evaluated=int(sport.get("totals_health_min_recent_evaluated", 0) or 0),
+            min_tracked_clv=int(sport.get("totals_clv_guard_min_tracked", 0) or 0),
+            min_avg_clv=float(sport.get("totals_clv_guard_min_avg", 0.0) or 0.0),
+            min_recent_roi=float(sport.get("totals_health_min_recent_roi", 0.0) or 0.0),
+            max_overconfidence_gap=float(sport.get("totals_health_max_overconfidence_gap", 0.1) or 0.1),
+        )
+        longslop = evaluate_lane_health(
+            summarize_lane_health(picks, pick_type="longslop", recent_count=5),
+            enabled=bool(sport.get("enable_longslop", False)),
+            lane_label="longslop",
+            min_evaluated=5,
+            min_recent_evaluated=3,
+            min_tracked_clv=3,
+            min_avg_clv=0.0,
+            min_recent_roi=0.0,
+            max_overconfidence_gap=0.1,
+        )
+        slimegrinder = evaluate_lane_health(
+            summarize_lane_health(picks, pick_type="slimegrinder", recent_count=5),
+            enabled=bool(sport.get("enable_slimegrinder", False)),
+            lane_label="slimegrinder",
+            min_evaluated=5,
+            min_recent_evaluated=3,
+            min_tracked_clv=3,
+            min_avg_clv=0.0,
+            min_recent_roi=0.0,
+            max_overconfidence_gap=0.1,
+        )
+
+        report["sports"][sport_key] = {
+            "moneyline": moneyline,
+            "total": totals,
+            "slop_lock": evaluate_lane_health(
+                summarize_lane_health(
+                    picks,
+                    pick_type="slop_lock",
+                    recent_count=int(sport.get("moneyline_health_recent_window", 8) or 8),
+                ),
+                enabled=int(sport.get("slop_lock_max_picks", 0) or 0) > 0,
+                lane_label="slop_lock",
+                min_evaluated=min(10, int(sport.get("publication_min_evaluated_picks", 0) or 0)),
+                min_recent_evaluated=int(sport.get("moneyline_health_min_recent_evaluated", 0) or 0),
+                min_tracked_clv=int(sport.get("moneyline_clv_guard_min_tracked", 0) or 0),
+                min_avg_clv=float(sport.get("moneyline_clv_guard_min_avg", 0.0) or 0.0),
+                min_recent_roi=float(sport.get("moneyline_health_min_recent_roi", 0.0) or 0.0),
+                max_overconfidence_gap=float(sport.get("moneyline_health_max_overconfidence_gap", 0.12) or 0.12),
+            ),
+            "total_lock": evaluate_lane_health(
+                summarize_lane_health(
+                    picks,
+                    pick_type="total_lock",
+                    recent_count=int(sport.get("totals_health_recent_window", 8) or 8),
+                ),
+                enabled=totals_enabled,
+                lane_label="total_lock",
+                min_evaluated=min(8, int(sport.get("publication_min_evaluated_totals_picks", 0) or 0)),
+                min_recent_evaluated=int(sport.get("totals_health_min_recent_evaluated", 0) or 0),
+                min_tracked_clv=int(sport.get("totals_clv_guard_min_tracked", 0) or 0),
+                min_avg_clv=float(sport.get("totals_clv_guard_min_avg", 0.0) or 0.0),
+                min_recent_roi=float(sport.get("totals_health_min_recent_roi", 0.0) or 0.0),
+                max_overconfidence_gap=float(sport.get("totals_health_max_overconfidence_gap", 0.1) or 0.1),
+            ),
+            "longslop": longslop,
+            "slimegrinder": slimegrinder,
+        }
+
+    return report
 
 
 def build_backtest_report(data_dir: str = "data", sports:Optional[ list[str] ] = None) -> dict:

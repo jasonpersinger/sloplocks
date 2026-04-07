@@ -8,8 +8,10 @@ import pandas as pd
 import pytest
 
 from pipeline.backtest import (
+    build_model_health_snapshot,
     build_dashboard_data,
     build_backtest_report,
+    build_lane_health_report,
     build_pick_decision_replay_report,
     build_raw_walkforward_report,
     build_snapshot_replay_report,
@@ -18,8 +20,10 @@ from pipeline.backtest import (
     compute_brier_score,
     compute_model_weights,
     compute_roi,
+    evaluate_lane_health,
     evaluate_prediction,
     get_rolling_accuracy,
+    summarize_lane_health,
     summarize_closing_line_value,
     summarize_pick_breakdowns,
     summarize_pick_history,
@@ -279,6 +283,63 @@ class TestBacktestSummary:
         assert summary["avg_log_loss"] is not None
         assert summary["avg_brier"] is not None
 
+    def test_summarize_lane_health_flags_overconfidence_and_negative_clv(self):
+        picks = []
+        for idx in range(6):
+            picks.append({
+                "pick_date": f"2026-03-{10 + idx:02d}",
+                "type": "slop_lock",
+                "market_type": "moneyline",
+                "evaluated": True,
+                "won": idx == 0,
+                "push": False,
+                "decimal_odds": 2.0,
+                "model_prob": 0.7,
+                "closing_line_value": -0.02,
+            })
+
+        summary = summarize_lane_health(picks, market_type="moneyline", recent_count=5)
+        health = evaluate_lane_health(
+            summary,
+            enabled=True,
+            lane_label="moneyline",
+            min_evaluated=5,
+            min_recent_evaluated=5,
+            min_tracked_clv=5,
+            min_avg_clv=0.0,
+            min_recent_roi=0.0,
+            max_overconfidence_gap=0.1,
+        )
+
+        assert health["status"] == "hold"
+        assert any("overconfidence gap" in reason for reason in health["reasons"])
+        assert any("CLV" in reason for reason in health["reasons"])
+
+    def test_build_model_health_snapshot_flags_disable_candidate(self):
+        strong_ensemble = [{"correct": True, "log_loss": 0.45} for _ in range(35)] + [{"correct": False, "log_loss": 0.9} for _ in range(5)]
+        weak_model = [{"correct": True, "log_loss": 0.9} for _ in range(16)] + [{"correct": False, "log_loss": 1.05} for _ in range(24)]
+        solid_model = [{"correct": True, "log_loss": 0.52} for _ in range(28)] + [{"correct": False, "log_loss": 0.8} for _ in range(12)]
+
+        snapshot = build_model_health_snapshot(
+            {
+                "ensemble": strong_ensemble,
+                "weak": weak_model,
+                "solid": solid_model,
+            },
+            ["weak", "solid"],
+            temperature=2.0,
+            window=40,
+            min_samples=20,
+            disable_sample_min=30,
+            disable_log_loss_margin=0.08,
+            disable_accuracy_floor=0.5,
+            disable_accuracy_margin=0.08,
+        )
+
+        assert snapshot["models"]["weak"]["disable_candidate"] is True
+        assert snapshot["models"]["solid"]["disable_candidate"] is False
+        assert snapshot["disable_candidates"] == ["weak"]
+
     def test_build_backtest_report(self, tmp_path):
         data_dir = tmp_path / "data"
         nba_dir = data_dir / "nba"
@@ -363,6 +424,8 @@ class TestBacktestSummary:
         assert dashboard["insights"]
         assert "walkforward" in dashboard
         assert "decision_replay" in dashboard
+        assert "lane_health" in dashboard
+        assert "model_health" in dashboard
         assert "calibration" in dashboard["walkforward"]
         assert dashboard["snapshot_replay"]["aggregate"]["snapshots"] == 0
 

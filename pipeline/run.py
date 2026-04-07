@@ -88,9 +88,12 @@ from pipeline.ensemble import (
 from pipeline.ensemble import fit_probability_calibrators, apply_probability_calibration
 from pipeline.backtest import (
     build_dashboard_data,
+    build_model_health_snapshot,
     compute_model_weights,
     compute_roi,
+    evaluate_lane_health,
     evaluate_prediction,
+    summarize_lane_health,
     update_accuracy_log,
 )
 
@@ -198,114 +201,103 @@ def _build_publication_guard(
     enforce_live_guard: bool,
 ) -> dict:
     """Return whether a sport has enough settled evidence to publish live picks."""
-    def _pick_sort_key(pick: dict) -> tuple:
-        return (
-            str(pick.get("match_date") or pick.get("date") or pick.get("pick_date") or ""),
-            str(pick.get("snapshot_timestamp") or ""),
-            str(pick.get("pick_date") or ""),
-        )
-
-    def _lane_clv_guard(
-        market_type: str,
-        window: int,
-        min_tracked: int,
-        min_avg_clv: float,
-    ) -> dict:
-        if not enforce_live_guard or window <= 0 or min_tracked <= 0:
-            return {
-                "enforced": False,
-                "allow": True,
-                "tracked": 0,
-                "window": window,
-                "avg_clv": None,
-                "reason": None,
-            }
-
-        tracked = [
-            pick for pick in past_picks
-            if pick.get("evaluated")
-            and pick.get("closing_line_value") is not None
-            and ((market_type == "total") == (str(pick.get("market_type") or "moneyline") == "total"))
-        ]
-        tracked.sort(key=_pick_sort_key)
-        recent = tracked[-window:] if window > 0 else tracked
-        if len(recent) < min_tracked:
-            return {
-                "enforced": True,
-                "allow": True,
-                "tracked": len(recent),
-                "window": window,
-                "avg_clv": None if not recent else round(sum(float(p["closing_line_value"]) for p in recent) / len(recent), 4),
-                "reason": None,
-            }
-
-        avg_clv = round(sum(float(p["closing_line_value"]) for p in recent) / len(recent), 4)
-        allow = avg_clv >= float(min_avg_clv)
-        lane_label = "totals" if market_type == "total" else "moneylines"
-        precision = 3 if market_type == "total" else 4
-        reason = None
-        if not allow:
-            reason = (
-                f"hold {lane_label} while recent {lane_label} CLV is "
-                f"{avg_clv:.{precision}f} across {len(recent)} tracked picks"
-            )
-        return {
-            "enforced": True,
-            "allow": allow,
-            "tracked": len(recent),
-            "window": window,
-            "avg_clv": avg_clv,
-            "reason": reason,
-        }
-
-    evaluated = [pick for pick in past_picks if pick.get("evaluated")]
-    evaluated_totals = [pick for pick in evaluated if str(pick.get("market_type") or "moneyline") == "total"]
+    evaluated_moneylines = [
+        pick for pick in past_picks
+        if pick.get("evaluated") and str(pick.get("market_type") or "moneyline") == "moneyline"
+    ]
+    evaluated_totals = [
+        pick for pick in past_picks
+        if pick.get("evaluated") and str(pick.get("market_type") or "moneyline") == "total"
+    ]
     min_picks = int(sport.get("publication_min_evaluated_picks", 0) or 0)
     min_totals = int(sport.get("publication_min_evaluated_totals_picks", 0) or 0)
     totals_enabled = int(sport.get("totals_max_picks", 0) or 0) > 0
+    longslop_enabled = bool(sport.get("enable_longslop", False))
+    slimegrinder_enabled = bool(sport.get("enable_slimegrinder", False))
+
+    moneyline_guard = evaluate_lane_health(
+        summarize_lane_health(
+            past_picks,
+            market_type="moneyline",
+            recent_count=int(sport.get("moneyline_health_recent_window", 8) or 8),
+        ),
+        enabled=True,
+        lane_label="moneylines",
+        min_evaluated=min_picks,
+        min_recent_evaluated=int(sport.get("moneyline_health_min_recent_evaluated", 0) or 0),
+        min_tracked_clv=int(sport.get("moneyline_clv_guard_min_tracked", 0) or 0),
+        min_avg_clv=float(sport.get("moneyline_clv_guard_min_avg", 0.0) or 0.0),
+        min_recent_roi=float(sport.get("moneyline_health_min_recent_roi", 0.0) or 0.0),
+        max_overconfidence_gap=float(sport.get("moneyline_health_max_overconfidence_gap", 0.12) or 0.12),
+    )
+    totals_guard = evaluate_lane_health(
+        summarize_lane_health(
+            past_picks,
+            market_type="total",
+            recent_count=int(sport.get("totals_health_recent_window", 8) or 8),
+        ),
+        enabled=totals_enabled,
+        lane_label="totals",
+        min_evaluated=min_totals,
+        min_recent_evaluated=int(sport.get("totals_health_min_recent_evaluated", 0) or 0),
+        min_tracked_clv=int(sport.get("totals_clv_guard_min_tracked", 0) or 0),
+        min_avg_clv=float(sport.get("totals_clv_guard_min_avg", 0.0) or 0.0),
+        min_recent_roi=float(sport.get("totals_health_min_recent_roi", 0.0) or 0.0),
+        max_overconfidence_gap=float(sport.get("totals_health_max_overconfidence_gap", 0.1) or 0.1),
+    )
+    longslop_guard = evaluate_lane_health(
+        summarize_lane_health(past_picks, pick_type="longslop", recent_count=5),
+        enabled=longslop_enabled,
+        lane_label="longslop",
+        min_evaluated=5,
+        min_recent_evaluated=3,
+        min_tracked_clv=3,
+        min_avg_clv=0.0,
+        min_recent_roi=0.0,
+        max_overconfidence_gap=0.1,
+    )
+    slimegrinder_guard = evaluate_lane_health(
+        summarize_lane_health(past_picks, pick_type="slimegrinder", recent_count=5),
+        enabled=slimegrinder_enabled,
+        lane_label="slimegrinder",
+        min_evaluated=5,
+        min_recent_evaluated=3,
+        min_tracked_clv=3,
+        min_avg_clv=0.0,
+        min_recent_roi=0.0,
+        max_overconfidence_gap=0.1,
+    )
 
     if not enforce_live_guard:
         return {
             "enforced": False,
             "allow_moneyline": True,
             "allow_totals": totals_enabled,
-            "evaluated_picks": len(evaluated),
+            "allow_longslop": longslop_enabled,
+            "allow_slimegrinder": slimegrinder_enabled,
+            "evaluated_picks": len(evaluated_moneylines),
             "evaluated_totals_picks": len(evaluated_totals),
             "min_evaluated_picks": min_picks,
             "min_evaluated_totals_picks": min_totals,
             "status": "research",
             "reason": None,
-            "lane_guards": {},
+            "lane_guards": {
+                "moneyline": {**moneyline_guard, "allow": True},
+                "totals": {**totals_guard, "allow": totals_enabled},
+                "longslop": {**longslop_guard, "allow": longslop_enabled},
+                "slimegrinder": {**slimegrinder_guard, "allow": slimegrinder_enabled},
+            },
         }
 
-    allow_moneyline = len(evaluated) >= min_picks if min_picks > 0 else True
-    allow_totals = totals_enabled and (len(evaluated_totals) >= min_totals if min_totals > 0 else True)
+    allow_moneyline = moneyline_guard.get("allow", True)
+    allow_totals = totals_guard.get("allow", totals_enabled)
+    allow_longslop = allow_moneyline and longslop_guard.get("allow", False)
+    allow_slimegrinder = allow_moneyline and slimegrinder_guard.get("allow", False)
     reasons = []
     if not allow_moneyline:
-        reasons.append(f"hold moneylines until settled picks reach {len(evaluated)}/{min_picks}")
-    if totals_enabled and not allow_totals:
-        reasons.append(f"hold totals until settled totals reach {len(evaluated_totals)}/{min_totals}")
-    if not totals_enabled:
-        reasons.append("totals disabled by config")
-
-    moneyline_guard = _lane_clv_guard(
-        "moneyline",
-        int(sport.get("moneyline_clv_guard_window", 0) or 0),
-        int(sport.get("moneyline_clv_guard_min_tracked", 0) or 0),
-        float(sport.get("moneyline_clv_guard_min_avg", 0.0) or 0.0),
-    )
-    totals_guard = _lane_clv_guard(
-        "total",
-        int(sport.get("totals_clv_guard_window", 0) or 0),
-        int(sport.get("totals_clv_guard_min_tracked", 0) or 0),
-        float(sport.get("totals_clv_guard_min_avg", 0.0) or 0.0),
-    )
-    if allow_moneyline and not moneyline_guard.get("allow", True):
-        allow_moneyline = False
-        reasons.append(moneyline_guard["reason"])
-    if allow_totals and not totals_guard.get("allow", True):
-        allow_totals = False
-        reasons.append(totals_guard["reason"])
+        reasons.extend(moneyline_guard.get("reasons", []))
+    if not allow_totals:
+        reasons.extend(totals_guard.get("reasons", []))
 
     if allow_moneyline and allow_totals:
         status = "live"
@@ -318,15 +310,19 @@ def _build_publication_guard(
         "enforced": True,
         "allow_moneyline": allow_moneyline,
         "allow_totals": allow_totals,
-        "evaluated_picks": len(evaluated),
+        "allow_longslop": allow_longslop,
+        "allow_slimegrinder": allow_slimegrinder,
+        "evaluated_picks": len(evaluated_moneylines),
         "evaluated_totals_picks": len(evaluated_totals),
         "min_evaluated_picks": min_picks,
         "min_evaluated_totals_picks": min_totals,
         "status": status,
         "reason": "; ".join(reason for reason in reasons if reason) or None,
         "lane_guards": {
-            "moneyline_clv": moneyline_guard,
-            "totals_clv": totals_guard,
+            "moneyline": moneyline_guard,
+            "totals": totals_guard,
+            "longslop": longslop_guard,
+            "slimegrinder": slimegrinder_guard,
             "totals_enabled": totals_enabled,
         },
     }
@@ -530,14 +526,17 @@ def _selection_snapshot_config(sport: dict, outcomes: list[str], min_expected_va
             "max_picks": sport.get("slop_lock_max_picks", 3),
         },
         "longslop": {
+            "enabled": bool(sport.get("enable_longslop", False)),
             "min_expected_value": min_expected_value,
             "confidence_floor": sport.get("longslop_confidence_threshold", 65.0),
         },
         "slimegrinder": {
+            "enabled": bool(sport.get("enable_slimegrinder", False)),
             "min_expected_value": min_expected_value,
             "confidence_floor": sport.get("slimegrinder_confidence_threshold", 65.0),
         },
         "totals_locks": {
+            "enabled": int(sport.get("totals_max_picks", 0) or 0) > 0,
             "min_expected_value": sport.get("totals_min_expected_value", min_expected_value),
             "edge_floor": sport.get("totals_edge_threshold", 0.02),
             "probability_floor": sport.get("totals_probability_floor", 0.53),
@@ -2499,12 +2498,28 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     except Exception:
         pass
 
+    accuracy_log = _load_json(accuracy_path)
+    if not isinstance(accuracy_log, dict):
+        accuracy_log = {}
+    model_health = build_model_health_snapshot(
+        accuracy_log=accuracy_log,
+        model_names=list(sport.get("models", [])),
+        temperature=sport.get("accuracy_softmax_temperature", 2.0),
+        window=sport.get("accuracy_window"),
+    )
+    runtime_disabled_models = set(sport.get("disabled_models", []))
+    configured_models = [
+        model_name
+        for model_name in sport.get("models", [])
+        if model_name not in runtime_disabled_models
+    ]
+
     # ------------------------------------------------------------------
     # 2. Fit models
     # ------------------------------------------------------------------
     # Elo ratings (with sport-specific parameters)
     elo = None
-    if "elo" in sport["models"]:
+    if "elo" in configured_models:
         all_teams = []
         if matches is not None and not matches.empty:
             all_teams = sorted(
@@ -2529,17 +2544,17 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 
     # Adjusted Efficiency model (NCAAM)
     efficiency_model = None
-    if "efficiency" in sport["models"] and box_scores_df is not None:
+    if "efficiency" in configured_models and box_scores_df is not None:
         efficiency_model = AdjustedEfficiency(box_scores_df, matches)
 
     # Four Factors model (NCAAM)
     four_factors_model = None
-    if "four_factors" in sport["models"] and box_scores_df is not None:
+    if "four_factors" in configured_models and box_scores_df is not None:
         four_factors_model = FourFactorsModel(box_scores_df, matches)
 
     # Results-feature logistic model (uses only historical game outcomes)
     results_feature_model = None
-    if "results_features" in sport["models"] and matches is not None and not matches.empty:
+    if "results_features" in configured_models and matches is not None and not matches.empty:
         results_feature_model = ResultsFeatureModel(
             matches,
             feature_window=sport.get("results_feature_window", 8),
@@ -2547,7 +2562,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     recent_boxscore_model = None
-    if "recent_boxscore" in sport["models"] and box_scores_df is not None and matches is not None:
+    if "recent_boxscore" in configured_models and box_scores_df is not None and matches is not None:
         recent_boxscore_model = RecentBoxScoreModel(
             box_scores_df,
             matches,
@@ -2556,7 +2571,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     nba_matchup_model = None
-    if sport_key == "nba" and "nba_matchup" in sport["models"] and box_scores_df is not None and matches is not None:
+    if sport_key == "nba" and "nba_matchup" in configured_models and box_scores_df is not None and matches is not None:
         nba_matchup_model = NbaMatchupModel(
             box_scores_df,
             matches,
@@ -2565,7 +2580,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     nhl_matchup_model = None
-    if sport_key == "nhl" and "nhl_matchup" in sport["models"] and matches is not None and not matches.empty:
+    if sport_key == "nhl" and "nhl_matchup" in configured_models and matches is not None and not matches.empty:
         nhl_matchup_model = NhlMatchupModel(
             matches,
             feature_window=sport.get("nhl_matchup_window", 10),
@@ -2573,7 +2588,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     pitcher_feature_model = None
-    if "pitcher_features" in sport["models"] and matches is not None and not matches.empty:
+    if "pitcher_features" in configured_models and matches is not None and not matches.empty:
         pitcher_feature_model = PitcherMatchupModel(
             matches,
             feature_window=sport.get("pitcher_feature_window", 8),
@@ -2581,7 +2596,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     bullpen_feature_model = None
-    if "bullpen_features" in sport["models"] and matches is not None and not matches.empty:
+    if "bullpen_features" in configured_models and matches is not None and not matches.empty:
         bullpen_feature_model = BullpenMatchupModel(
             matches,
             feature_window=sport.get("bullpen_feature_window", 12),
@@ -2590,7 +2605,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     run_environment_model = None
-    if "run_environment" in sport["models"] and matches is not None and not matches.empty:
+    if "run_environment" in configured_models and matches is not None and not matches.empty:
         run_environment_model = RunEnvironmentModel(
             matches,
             feature_window=sport.get("run_environment_window", 12),
@@ -2598,7 +2613,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
 
     handedness_feature_model = None
-    if "handedness_features" in sport["models"] and matches is not None and not matches.empty:
+    if "handedness_features" in configured_models and matches is not None and not matches.empty:
         handedness_feature_model = HandednessMatchupModel(
             matches,
             feature_window=sport.get("handedness_feature_window", 18),
@@ -2625,10 +2640,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     # ------------------------------------------------------------------
     # 3. Load accuracy log and compute model weights
     # ------------------------------------------------------------------
-    accuracy_log = _load_json(accuracy_path)
-    if not isinstance(accuracy_log, dict):
-        accuracy_log = {}
-
     # Build list of active models for this run
     model_names = []
     if elo is not None:
@@ -3159,18 +3170,22 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         confidence_dropoff=sport.get("slop_lock_confidence_dropoff", 0.0),
         max_picks=sport.get("slop_lock_max_picks", 3),
     )
-    longslop = _compute_longslop(
-        prediction_records,
-        outcomes,
-        min_expected_value=min_expected_value,
-        confidence_floor=sport.get("longslop_confidence_threshold", 65.0),
-    )
-    slimegrinder = _compute_slimegrinder(
-        prediction_records,
-        outcomes,
-        min_expected_value=min_expected_value,
-        confidence_floor=sport.get("slimegrinder_confidence_threshold", 65.0),
-    )
+    longslop = None
+    if sport.get("enable_longslop", False):
+        longslop = _compute_longslop(
+            prediction_records,
+            outcomes,
+            min_expected_value=min_expected_value,
+            confidence_floor=sport.get("longslop_confidence_threshold", 65.0),
+        )
+    slimegrinder = []
+    if sport.get("enable_slimegrinder", False):
+        slimegrinder = _compute_slimegrinder(
+            prediction_records,
+            outcomes,
+            min_expected_value=min_expected_value,
+            confidence_floor=sport.get("slimegrinder_confidence_threshold", 65.0),
+        )
     totals_locks = _compute_totals_locks(
         totals_prediction_records,
         min_expected_value=sport.get("totals_min_expected_value", min_expected_value),
@@ -3195,6 +3210,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         # sport is not yet allowed to publish official moneyline lanes live.
         longslop = None
         slop_locks = []
+        slimegrinder = []
+    elif not publication_guard.get("allow_longslop", False):
+        longslop = None
+    if publication_guard.get("allow_moneyline", True) and not publication_guard.get("allow_slimegrinder", False):
         slimegrinder = []
     if not publication_guard.get("allow_totals", True):
         totals_locks = []
@@ -3513,6 +3532,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         slimegrinder=slimegrinder,
         publication_guard=publication_guard,
     )
+    runtime_model_health = {
+        **model_health,
+        "disabled_by_config": sorted(runtime_disabled_models),
+        "active_models": list(model_weight_dict.keys()),
+    }
 
     predictions_output = {
         "generated_at": generated_at,
@@ -3533,6 +3557,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
         "pick_stats": pick_stats,
         "publication_guard": publication_guard,
+        "lane_health": publication_guard.get("lane_guards", {}),
+        "model_health": runtime_model_health,
         "calibration_sample_size": len(calibration_predictions),
         "selection_config": selection_config,
         "diagnostics": diagnostics,
@@ -3584,6 +3610,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "odds": odds_list,
                 "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
                 "models": list(model_weight_dict.keys()),
+                "model_health": runtime_model_health,
                 "calibration_sample_size": len(calibration_predictions),
             },
             "records": {

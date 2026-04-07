@@ -293,7 +293,7 @@ class TestRunNBAPipeline:
 
         assert "elo" in data["model_weights"]
         assert "efficiency" in data["model_weights"]
-        assert "four_factors" in data["model_weights"]
+        assert "four_factors" not in data["model_weights"]
         assert "results_features" in data["model_weights"]
         assert "recent_boxscore" in data["model_weights"]
         assert "nba_matchup" in data["model_weights"]
@@ -1400,18 +1400,26 @@ class TestResultsLog:
         from pipeline.run import _build_publication_guard
 
         past_picks = []
-        for idx in range(12):
+        for idx in range(8):
             past_picks.append({
                 "evaluated": True,
                 "market_type": "moneyline",
-                "closing_line_value": -0.03 if idx % 2 == 0 else -0.01,
+                "type": "slop_lock",
+                "closing_line_value": 0.02,
+                "model_prob": 0.52,
+                "won": True,
+                "decimal_odds": 2.0,
                 "match_date": f"2026-03-{10 + idx:02d}",
             })
         for idx in range(10):
             past_picks.append({
                 "evaluated": True,
                 "market_type": "total",
+                "type": "total_lock",
                 "closing_line_value": 0.2,
+                "model_prob": 0.53,
+                "won": True,
+                "decimal_odds": 2.0,
                 "match_date": f"2026-03-{10 + idx:02d}",
             })
 
@@ -1419,12 +1427,22 @@ class TestResultsLog:
             "publication_min_evaluated_picks": 10,
             "publication_min_evaluated_totals_picks": 8,
             "totals_max_picks": 2,
+            "moneyline_health_recent_window": 8,
+            "moneyline_health_min_recent_evaluated": 5,
+            "moneyline_health_min_recent_roi": 0.0,
+            "moneyline_health_max_overconfidence_gap": 0.12,
             "moneyline_clv_guard_window": 8,
             "moneyline_clv_guard_min_tracked": 5,
             "moneyline_clv_guard_min_avg": 0.0,
+            "totals_health_recent_window": 8,
+            "totals_health_min_recent_evaluated": 5,
+            "totals_health_min_recent_roi": 0.0,
+            "totals_health_max_overconfidence_gap": 0.1,
             "totals_clv_guard_window": 8,
             "totals_clv_guard_min_tracked": 8,
             "totals_clv_guard_min_avg": 0.0,
+            "enable_longslop": False,
+            "enable_slimegrinder": False,
         }
 
         guard = _build_publication_guard(past_picks, sport, enforce_live_guard=True)
@@ -1432,7 +1450,9 @@ class TestResultsLog:
         assert guard["allow_moneyline"] is False
         assert guard["allow_totals"] is True
         assert guard["status"] == "partial"
-        assert "recent moneylines CLV" in guard["reason"]
+        assert "need more settled moneylines picks (8/10)" in guard["reason"]
+        assert guard["allow_longslop"] is False
+        assert guard["allow_slimegrinder"] is False
 
     def test_hydrate_pick_decision_log_market_snapshots_uses_saved_snapshot_odds(self, tmp_path):
         from pipeline.run import _append_pick_decision_log, _hydrate_pick_decision_log_market_snapshots
