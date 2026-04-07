@@ -35,8 +35,15 @@ from pipeline.config import (
     SLIMEGRINDER_MAX_ODDS,
     SPORTS,
 )
-from pipeline.qualitative_analysis import analyze_game_qualitative
-from pipeline.context_scraper import get_game_context
+try:
+    from pipeline.qualitative_analysis import analyze_game_qualitative
+    from pipeline.context_scraper import get_game_context
+except ImportError:
+    analyze_game_qualitative = None
+
+    def get_game_context(*_args, **_kwargs):
+        """Fallback when optional qualitative dependencies are unavailable."""
+        return ""
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
@@ -191,32 +198,121 @@ def _build_publication_guard(
     enforce_live_guard: bool,
 ) -> dict:
     """Return whether a sport has enough settled evidence to publish live picks."""
+    def _pick_sort_key(pick: dict) -> tuple:
+        return (
+            str(pick.get("match_date") or pick.get("date") or pick.get("pick_date") or ""),
+            str(pick.get("snapshot_timestamp") or ""),
+            str(pick.get("pick_date") or ""),
+        )
+
+    def _lane_clv_guard(
+        market_type: str,
+        window: int,
+        min_tracked: int,
+        min_avg_clv: float,
+    ) -> dict:
+        if not enforce_live_guard or window <= 0 or min_tracked <= 0:
+            return {
+                "enforced": False,
+                "allow": True,
+                "tracked": 0,
+                "window": window,
+                "avg_clv": None,
+                "reason": None,
+            }
+
+        tracked = [
+            pick for pick in past_picks
+            if pick.get("evaluated")
+            and pick.get("closing_line_value") is not None
+            and ((market_type == "total") == (str(pick.get("market_type") or "moneyline") == "total"))
+        ]
+        tracked.sort(key=_pick_sort_key)
+        recent = tracked[-window:] if window > 0 else tracked
+        if len(recent) < min_tracked:
+            return {
+                "enforced": True,
+                "allow": True,
+                "tracked": len(recent),
+                "window": window,
+                "avg_clv": None if not recent else round(sum(float(p["closing_line_value"]) for p in recent) / len(recent), 4),
+                "reason": None,
+            }
+
+        avg_clv = round(sum(float(p["closing_line_value"]) for p in recent) / len(recent), 4)
+        allow = avg_clv >= float(min_avg_clv)
+        lane_label = "totals" if market_type == "total" else "moneylines"
+        precision = 3 if market_type == "total" else 4
+        reason = None
+        if not allow:
+            reason = (
+                f"hold {lane_label} while recent {lane_label} CLV is "
+                f"{avg_clv:.{precision}f} across {len(recent)} tracked picks"
+            )
+        return {
+            "enforced": True,
+            "allow": allow,
+            "tracked": len(recent),
+            "window": window,
+            "avg_clv": avg_clv,
+            "reason": reason,
+        }
+
     evaluated = [pick for pick in past_picks if pick.get("evaluated")]
     evaluated_totals = [pick for pick in evaluated if str(pick.get("market_type") or "moneyline") == "total"]
     min_picks = int(sport.get("publication_min_evaluated_picks", 0) or 0)
     min_totals = int(sport.get("publication_min_evaluated_totals_picks", 0) or 0)
+    totals_enabled = int(sport.get("totals_max_picks", 0) or 0) > 0
 
     if not enforce_live_guard:
         return {
             "enforced": False,
             "allow_moneyline": True,
-            "allow_totals": True,
+            "allow_totals": totals_enabled,
             "evaluated_picks": len(evaluated),
             "evaluated_totals_picks": len(evaluated_totals),
             "min_evaluated_picks": min_picks,
             "min_evaluated_totals_picks": min_totals,
             "status": "research",
             "reason": None,
+            "lane_guards": {},
         }
 
     allow_moneyline = len(evaluated) >= min_picks if min_picks > 0 else True
-    allow_totals = allow_moneyline and (len(evaluated_totals) >= min_totals if min_totals > 0 else True)
-
-    reason = None
+    allow_totals = totals_enabled and (len(evaluated_totals) >= min_totals if min_totals > 0 else True)
+    reasons = []
     if not allow_moneyline:
-        reason = f"hold moneylines until settled picks reach {len(evaluated)}/{min_picks}"
-    elif not allow_totals:
-        reason = f"hold totals until settled totals reach {len(evaluated_totals)}/{min_totals}"
+        reasons.append(f"hold moneylines until settled picks reach {len(evaluated)}/{min_picks}")
+    if totals_enabled and not allow_totals:
+        reasons.append(f"hold totals until settled totals reach {len(evaluated_totals)}/{min_totals}")
+    if not totals_enabled:
+        reasons.append("totals disabled by config")
+
+    moneyline_guard = _lane_clv_guard(
+        "moneyline",
+        int(sport.get("moneyline_clv_guard_window", 0) or 0),
+        int(sport.get("moneyline_clv_guard_min_tracked", 0) or 0),
+        float(sport.get("moneyline_clv_guard_min_avg", 0.0) or 0.0),
+    )
+    totals_guard = _lane_clv_guard(
+        "total",
+        int(sport.get("totals_clv_guard_window", 0) or 0),
+        int(sport.get("totals_clv_guard_min_tracked", 0) or 0),
+        float(sport.get("totals_clv_guard_min_avg", 0.0) or 0.0),
+    )
+    if allow_moneyline and not moneyline_guard.get("allow", True):
+        allow_moneyline = False
+        reasons.append(moneyline_guard["reason"])
+    if allow_totals and not totals_guard.get("allow", True):
+        allow_totals = False
+        reasons.append(totals_guard["reason"])
+
+    if allow_moneyline and allow_totals:
+        status = "live"
+    elif allow_moneyline or allow_totals:
+        status = "partial"
+    else:
+        status = "suppressed"
 
     return {
         "enforced": True,
@@ -226,8 +322,13 @@ def _build_publication_guard(
         "evaluated_totals_picks": len(evaluated_totals),
         "min_evaluated_picks": min_picks,
         "min_evaluated_totals_picks": min_totals,
-        "status": "live" if allow_moneyline and allow_totals else "suppressed",
-        "reason": reason,
+        "status": status,
+        "reason": "; ".join(reason for reason in reasons if reason) or None,
+        "lane_guards": {
+            "moneyline_clv": moneyline_guard,
+            "totals_clv": totals_guard,
+            "totals_enabled": totals_enabled,
+        },
     }
 
 
@@ -1879,13 +1980,11 @@ def _compute_slop_locks(
     confidence_dropoff: float = 0.0,
     max_picks: int = 3,
 ):
-    """Extract SLOP LOCKS: High-confidence picks meeting Phase 3 criteria.
-    
-    If fewer than 3 locks are found, it falls back to 'Best Leans' to ensure
-    at least 3 picks are surfaced daily.
-    """
+    """Extract SLOP LOCKS using edge/EV gates, not confidence cutoffs."""
+    if max_picks <= 0:
+        return []
+
     candidates = []
-    all_eligible = [] # Any game that hasn't started yet
 
     for rec in prediction_records:
         if rec.get("completed"):
@@ -1923,59 +2022,27 @@ def _compute_slop_locks(
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
             }
-            
-            all_eligible.append(formatted_pick)
 
             # Strict Lock Criteria
             if (
                 edge >= edge_floor
                 and prob >= probability_floor
                 and ev >= min_expected_value
-                and conf >= additional_confidence_floor
                 and formatted_pick["american_odds"] is not None
             ):
                 candidates.append(formatted_pick)
 
-    # Sort strict candidates by confidence
-    candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
-    
-    selected = []
-    if candidates:
-        # 1. The Pick of the Day (Always the #1 eligible candidate)
-        selected = [candidates[0]]
-        top_confidence = candidates[0]["confidence_score"]
-        
-        # 2. Additional Locks
-        for c in candidates[1:]:
-            if len(selected) >= max_picks:
-                break
-            if (
-                c["confidence_score"] >= additional_confidence_floor
-                and c["confidence_score"] >= (top_confidence - confidence_dropoff)
-            ):
-                selected.append(c)
-
-    # 3. Fallback: If we have < 3 picks, fill with "Best Leans"
-    if len(selected) < 3:
-        # Prioritize games with odds first, then by model probability
-        remaining = [p for p in all_eligible if id(p) not in [id(s) for s in selected]]
-        
-        # Sort by: Has Odds (True first), then Model Prob
-        remaining.sort(key=lambda x: (x["american_odds"] is not None, x["model_prob"]), reverse=True)
-        
-        for r in remaining:
-            if len(selected) >= 3:
-                break
-            
-            # Tag as a Lean
-            if r["american_odds"] is None:
-                r["blurb"] = "[UNPRICED LEAN] This pick is based on model projections only; market odds were unavailable at run time."
-            else:
-                r["blurb"] = "[SYSTEM LEAN] This game did not meet strict lock thresholds but represents the best remaining value on the slate."
-            
-            selected.append(r)
-
-    return _exclude_opponent_conflicts(selected)
+    # Confidence remains UI metadata and a tie-breaker only.
+    candidates.sort(
+        key=lambda x: (
+            x["edge"],
+            x["expected_value"],
+            x["model_prob"],
+            x["confidence_score"],
+        ),
+        reverse=True,
+    )
+    return _exclude_opponent_conflicts(candidates)[:max_picks]
 
 
 
@@ -1985,10 +2052,7 @@ def _compute_longslop(
     min_expected_value: float = 0.0,
     confidence_floor: float = 65.0,
 ):
-    """Extract LONGSLOP: High-upside longshots (+500 or better) that pass Phase 3.
-
-    Must meet the same 65+ confidence threshold as standard locks.
-    """
+    """Extract LONGSLOP using edge/EV filters, with confidence as metadata."""
     longslop_candidates = []
     for rec in prediction_records:
         if rec.get("completed"):
@@ -2010,8 +2074,7 @@ def _compute_longslop(
             prob = e.get("model_prob", 0)
             ev = e.get("expected_value", 0.0)
             
-            # For longslop, we require high confidence and positive edge
-            if conf >= confidence_floor and edge >= 0 and ev >= min_expected_value:
+            if edge >= 0 and ev >= min_expected_value:
                 longslop_candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -2032,7 +2095,10 @@ def _compute_longslop(
                     "individual_models": rec.get("individual_models", {}),
                 })
 
-    longslop_candidates.sort(key=lambda x: (x["confidence_score"], x["edge"]), reverse=True)
+    longslop_candidates.sort(
+        key=lambda x: (x["edge"], x["expected_value"], x["model_prob"], x["confidence_score"]),
+        reverse=True,
+    )
     return longslop_candidates[0] if longslop_candidates else None
 
 
@@ -2044,7 +2110,10 @@ def _compute_totals_locks(
     confidence_floor: float = 54.0,
     max_picks: int = 3,
 ):
-    """Extract curated MLB totals picks from over/under records."""
+    """Extract totals picks using market edge, not confidence thresholds."""
+    if max_picks <= 0:
+        return []
+
     candidates = []
     for rec in total_records:
         if rec.get("completed"):
@@ -2058,7 +2127,6 @@ def _compute_totals_locks(
                 edge_data.get("edge", 0.0) >= edge_floor
                 and edge_data.get("model_prob", 0.0) >= probability_floor
                 and edge_data.get("expected_value", 0.0) >= min_expected_value
-                and edge_data.get("confidence_score", 0.0) >= confidence_floor
                 and edge_data.get("american_odds") is not None
             ):
                 candidates.append({
@@ -2085,9 +2153,10 @@ def _compute_totals_locks(
 
     candidates.sort(
         key=lambda item: (
-            item.get("confidence_score", 0.0),
-            item.get("expected_value", 0.0),
             item.get("edge", 0.0),
+            item.get("expected_value", 0.0),
+            item.get("model_prob", 0.0),
+            item.get("confidence_score", 0.0),
         ),
         reverse=True,
     )
@@ -2100,10 +2169,7 @@ def _compute_slimegrinder(
     min_expected_value: float = 0.0,
     confidence_floor: float = 65.0,
 ):
-    """Extract SLIMEGRINDER: High-confidence, likely winners (odds -250 to +165).
-    
-    Must meet the same 65+ confidence threshold as Locks.
-    """
+    """Extract SLIMEGRINDER likely winners, with confidence as metadata."""
     candidates = []
     for rec in prediction_records:
         if rec.get("completed"):
@@ -2126,8 +2192,7 @@ def _compute_slimegrinder(
             prob = e.get("model_prob", 0)
             ev = e.get("expected_value", 0.0)
 
-            # Strict Phase 3 filter
-            if conf >= confidence_floor and edge > 0 and ev >= min_expected_value:
+            if edge > 0 and ev >= min_expected_value:
                 candidates.append({
                     "home_team": rec["home_team"],
                     "away_team": rec["away_team"],
@@ -2281,7 +2346,7 @@ def _build_pipeline_diagnostics(
         "matches_with_market": matches_with_market,
         "matches_with_positive_ev": len(matches_with_positive_ev),
         "matches_with_qualitative": matches_with_qualitative,
-        "lock_eligible_matches": len(slop_locks), # Final published count
+        "lock_eligible_matches": len(lock_eligible_matches),
         "lock_eligible_outcomes": lock_eligible_outcomes,
         "slop_locks_posted": len(slop_locks),
         "longslop_posted": 1 if longslop else 0,
@@ -2889,7 +2954,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         # Qualitative Gemini Integration
         # ------------------------------------------------------------------
         qualitative_data = None
-        if ENABLE_QUALITATIVE and sport.get("enable_qualitative", False):
+        if (
+            ENABLE_QUALITATIVE
+            and sport.get("enable_qualitative", False)
+            and analyze_game_qualitative is not None
+        ):
             context_text = get_game_context(sport_key, fix)
             game_for_ai = {
                 "sport": sport_key,
@@ -2990,7 +3059,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             "qualitative_analysis": qualitative_data,
             "qualitative_summary": qualitative_summary,
         }
-        print("DONE")
         prediction_records.append(record)
 
         if totals_model is not None and match_odds and match_odds.get("total_line") is not None:
@@ -3125,13 +3193,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not publication_guard.get("allow_moneyline", True):
         # Fallback: keep match projections and diagnostics visible even when the
         # sport is not yet allowed to publish official moneyline lanes live.
-        # BUT: Respect the 3-pick minimum rule if we have candidates.
-        if len(slop_locks) > 3:
-            slop_locks = slop_locks[:0] # Standard guard: clear everything
-        
-        # If we have 3 or fewer (the fallback minimum), we keep them 
-        # so the site isn't empty, but we might want to tag them.
         longslop = None
+        slop_locks = []
         slimegrinder = []
     if not publication_guard.get("allow_totals", True):
         totals_locks = []

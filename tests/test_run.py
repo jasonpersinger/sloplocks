@@ -253,6 +253,7 @@ class TestRunNBAPipeline:
         monkeypatch.setitem(SPORTS["nba"], "totals_edge_threshold", 0.0)
         monkeypatch.setitem(SPORTS["nba"], "totals_probability_floor", 0.5)
         monkeypatch.setitem(SPORTS["nba"], "totals_confidence_threshold", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "totals_max_picks", 1)
 
         output_dir = str(tmp_path / "nba")
         run_sport_pipeline("nba", output_dir=output_dir)
@@ -1055,7 +1056,7 @@ class TestComputeSlopLocks:
         }
 
     def test_pick_of_day_and_slate_aware_additional_locks(self):
-        """Later picks can qualify by floor or by staying close to the top score."""
+        """Candidates are ranked by edge and EV once they clear the base gates."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.70, -200, edge=0.04, confidence_score=58, expected_value=0.03),
@@ -1071,16 +1072,14 @@ class TestComputeSlopLocks:
             max_picks=5,
         )
 
-        assert len(locks) == 3
+        assert len(locks) == 4
         assert locks[0]["home_team"] == "C"
-        assert locks[0]["confidence_score"] == 61
-        assert locks[1]["home_team"] == "A"
-        assert locks[1]["confidence_score"] == 58
-        assert locks[2]["away_team"] == "F"
-        assert locks[2]["confidence_score"] == 53
+        assert locks[1]["away_team"] == "F"
+        assert locks[2]["away_team"] == "H"
+        assert locks[3]["home_team"] == "A"
 
     def test_ranked_by_confidence_then_edge(self):
-        """Candidates are still capped by the top-confidence dropoff gate."""
+        """Confidence no longer suppresses stronger edge candidates."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.80, 100, edge=0.03, confidence_score=70, expected_value=0.02),
@@ -1089,7 +1088,11 @@ class TestComputeSlopLocks:
         ]
         locks = _compute_slop_locks(records, ["home", "away"], max_picks=5, additional_confidence_floor=52, confidence_dropoff=8)
         picked = [(l["home_team"], l["away_team"], l["confidence_score"], l["edge"]) for l in locks]
-        assert picked == [("E", "F", 90, 0.06)]
+        assert picked == [
+            ("C", "D", 70, 0.08),
+            ("E", "F", 90, 0.06),
+            ("A", "B", 70, 0.03),
+        ]
 
     def test_below_threshold_picks_excluded(self):
         """Picks must clear both the edge and win-probability floors."""
@@ -1151,7 +1154,7 @@ class TestComputeSlopLocks:
         assert len(locks) <= 5
 
     def test_later_candidate_is_considered_if_earlier_ones_miss_threshold(self):
-        """The selector scans later ranks, but still enforces the top-score band."""
+        """Lower-confidence candidates still publish if their edge and EV qualify."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.70, -120, edge=0.05, confidence_score=90, expected_value=0.06),
@@ -1168,7 +1171,12 @@ class TestComputeSlopLocks:
             max_picks=5,
         )
 
-        assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [("A", 90)]
+        assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [
+            ("A", 90),
+            ("C", 43),
+            ("E", 41),
+            ("G", 54),
+        ]
 
 
 class TestResultsLog:
@@ -1387,6 +1395,44 @@ class TestResultsLog:
             picks = json.load(f)["picks"]
         assert picks[0]["closing_line_value"] == pytest.approx(0.032, abs=1e-6)
         assert picks[0]["closing_market_books"] == 7
+
+    def test_publication_guard_can_suppress_moneylines_but_keep_totals(self):
+        from pipeline.run import _build_publication_guard
+
+        past_picks = []
+        for idx in range(12):
+            past_picks.append({
+                "evaluated": True,
+                "market_type": "moneyline",
+                "closing_line_value": -0.03 if idx % 2 == 0 else -0.01,
+                "match_date": f"2026-03-{10 + idx:02d}",
+            })
+        for idx in range(10):
+            past_picks.append({
+                "evaluated": True,
+                "market_type": "total",
+                "closing_line_value": 0.2,
+                "match_date": f"2026-03-{10 + idx:02d}",
+            })
+
+        sport = {
+            "publication_min_evaluated_picks": 10,
+            "publication_min_evaluated_totals_picks": 8,
+            "totals_max_picks": 2,
+            "moneyline_clv_guard_window": 8,
+            "moneyline_clv_guard_min_tracked": 5,
+            "moneyline_clv_guard_min_avg": 0.0,
+            "totals_clv_guard_window": 8,
+            "totals_clv_guard_min_tracked": 8,
+            "totals_clv_guard_min_avg": 0.0,
+        }
+
+        guard = _build_publication_guard(past_picks, sport, enforce_live_guard=True)
+
+        assert guard["allow_moneyline"] is False
+        assert guard["allow_totals"] is True
+        assert guard["status"] == "partial"
+        assert "recent moneylines CLV" in guard["reason"]
 
     def test_hydrate_pick_decision_log_market_snapshots_uses_saved_snapshot_odds(self, tmp_path):
         from pipeline.run import _append_pick_decision_log, _hydrate_pick_decision_log_market_snapshots

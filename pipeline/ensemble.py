@@ -251,9 +251,26 @@ def calibrate_probability(model_prob: float, implied_prob: float) -> float:
     
     # 2. Standard Shrinkage: Respect the market's efficiency
     w_market = MARKET_RESPECT_FACTOR
+
+    # Above 60%, the current stack has been too confident in live picks.
+    # We add progressively more market weight as probabilities move deeper into
+    # the tails instead of letting high-confidence lanes stay fully model-led.
+    tail_excess = max(0.0, abs(model_prob - 0.5) - 0.10)
+    if tail_excess > 0.0:
+        w_market = min(0.7, w_market + min(0.2, tail_excess))
     w_model = 1.0 - w_market
-    
-    return (w_model * model_prob) + (w_market * implied_prob)
+
+    calibrated = (w_model * model_prob) + (w_market * implied_prob)
+
+    # Final compression of extreme confidence bands. This is symmetric around
+    # 50% and intentionally mild; it trims tail certainty without flattening
+    # ordinary 52-58% edges that can still be useful.
+    if calibrated > 0.60:
+        calibrated = 0.60 + ((calibrated - 0.60) * 0.8)
+    elif calibrated < 0.40:
+        calibrated = 0.40 - ((0.40 - calibrated) * 0.8)
+
+    return calibrated
 
 
 def compute_edges(
