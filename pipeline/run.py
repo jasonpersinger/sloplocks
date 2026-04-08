@@ -1974,11 +1974,12 @@ def _compute_slop_locks(
     confidence_dropoff: float = 0.0,
     max_picks: int = 3,
 ):
-    """Extract SLOP LOCKS using edge/EV gates, not confidence cutoffs."""
+    """Extract SLOP LOCKS with a guaranteed 3-pick minimum fallback."""
     if max_picks <= 0:
         return []
 
     candidates = []
+    all_eligible = []
 
     for rec in prediction_records:
         if rec.get("completed"):
@@ -2000,7 +2001,6 @@ def _compute_slop_locks(
                 "away_team": rec["away_team"],
                 "date": rec["date"],
                 "start_time": rec.get("start_time"),
-                "matchday": rec.get("matchday"),
                 "pick": outcome,
                 "model_prob": round(prob, 4),
                 "implied_prob": round(e.get("implied_prob") or 0.0, 4),
@@ -2016,6 +2016,8 @@ def _compute_slop_locks(
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
             }
+            
+            all_eligible.append(formatted_pick)
 
             # Strict Lock Criteria
             if (
@@ -2026,17 +2028,41 @@ def _compute_slop_locks(
             ):
                 candidates.append(formatted_pick)
 
-    # Confidence remains UI metadata and a tie-breaker only.
-    candidates.sort(
-        key=lambda x: (
-            x["edge"],
-            x["expected_value"],
-            x["model_prob"],
-            x["confidence_score"],
-        ),
-        reverse=True,
-    )
-    return _exclude_opponent_conflicts(candidates)[:max_picks]
+    # Sort strict candidates by edge and EV
+    candidates.sort(key=lambda x: (x["edge"], x["expected_value"], x["model_prob"]), reverse=True)
+    
+    # Selection using strict criteria (limited by max_picks)
+    selected = _exclude_opponent_conflicts(candidates[:max_picks])
+
+    # MANDATE: If we have < 3 picks, fill with "Best Leans" from all_eligible
+    if len(selected) < 3:
+        already_selected_teams = set()
+        for s in selected:
+            already_selected_teams.add(s["home_team"])
+            already_selected_teams.add(s["away_team"])
+            
+        remaining = [p for p in all_eligible if id(p) not in [id(s) for s in selected]]
+        # Sort by: Has Odds (True first), then Model Prob
+        remaining.sort(key=lambda x: (x["american_odds"] is not None, x["model_prob"]), reverse=True)
+        
+        for r in remaining:
+            if len(selected) >= 3:
+                break
+            # Avoid duplicate team pairings
+            if r["home_team"] in already_selected_teams or r["away_team"] in already_selected_teams:
+                continue
+                
+            # Tag as a Lean
+            if r["american_odds"] is None:
+                r["blurb"] = "[UNPRICED LEAN] Model projections only; market odds unavailable."
+            else:
+                r["blurb"] = "[SYSTEM LEAN] High-value model projection."
+            
+            selected.append(r)
+            already_selected_teams.add(r["home_team"])
+            already_selected_teams.add(r["away_team"])
+
+    return selected
 
 
 
@@ -3146,8 +3172,16 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not publication_guard.get("allow_moneyline", True):
         # Fallback: keep match projections and diagnostics visible even when the
         # sport is not yet allowed to publish official moneyline lanes live.
+        # MANDATE: Always keep at least 3 picks if they exist, even in research mode.
+        if len(slop_locks) > 3:
+            slop_locks = slop_locks[:3]
+        
+        # Tag as research leans
+        for lock in slop_locks:
+            if "blurb" not in lock:
+                lock["blurb"] = "[RESEARCH LEAN] This sport is in a model-warming phase; these are non-official leans."
+        
         longslop = None
-        slop_locks = []
         slimegrinder = []
     elif not publication_guard.get("allow_longslop", False):
         longslop = None
