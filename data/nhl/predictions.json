@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-04-08T13:09:29Z",
-  "run_id": "daily-20260408T130854907097Z",
-  "run_type": "daily",
-  "snapshot_timestamp": "2026-04-08T13:08:54Z",
-  "snapshot_path": "tracking/snapshots/2026-04-08/nhl/daily-20260408T130854907097Z.json",
+  "run_id": "refresh-20260408T213912678319Z",
+  "run_type": "refresh",
+  "snapshot_timestamp": "2026-04-08T21:39:12Z",
+  "snapshot_path": "tracking/snapshots/2026-04-08/nhl/refresh-20260408T213912678319Z.json",
   "sport": "nhl",
   "sport_name": "NHL",
   "outcomes": [
@@ -27,8 +27,8 @@
       "away_availability_profile": null,
       "home_goalie": "Igor Shesterkin",
       "away_goalie": "Ukko-Pekka Luukkonen",
-      "home_goalie_status": "expected",
-      "away_goalie_status": "expected",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "confirmed",
       "home_injury_profile": {
         "injury_burden": 2.0,
         "uncertainty_burden": 0.0,
@@ -37,7 +37,7 @@
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 3.35,
+        "injury_burden": 4.35,
         "uncertainty_burden": 0.35,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -52,18 +52,18 @@
       "home_bullpen_tax": null,
       "away_bullpen_tax": null,
       "weather": null,
-      "pick": "away",
-      "model_prob": 0.5043,
-      "edge": -0.0402,
+      "pick": "home",
+      "model_prob": 0.5011,
+      "edge": 0.0383,
       "expected_value": -0.1023,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
       "confidence_score": 23.7,
       "confidence_stars": 1,
-      "american_odds": -145,
+      "american_odds": 122,
       "model_probs": {
-        "home": 0.4957,
-        "away": 0.5043
+        "home": 0.5011,
+        "away": 0.4989
       },
       "individual_models": {
         "elo": {
@@ -81,45 +81,45 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.4688,
-          "raw_model_prob": 0.4957,
-          "implied_prob": 0.4286,
-          "market_implied_prob": 0.4444,
-          "edge": 0.0402,
-          "expected_value": 0.0783,
-          "decimal_odds": 2.3,
-          "american_odds": 130,
-          "kelly_fraction": 0.0602,
-          "fractional_kelly": 0.012,
-          "confidence_score": 44.1,
+          "model_prob": 0.4756,
+          "raw_model_prob": 0.5011,
+          "implied_prob": 0.4373,
+          "market_implied_prob": 0.4545,
+          "edge": 0.0383,
+          "expected_value": 0.0557,
+          "decimal_odds": 2.22,
+          "american_odds": 122,
+          "kelly_fraction": 0.0457,
+          "fractional_kelly": 0.0091,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0428,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.5312,
-          "raw_model_prob": 0.5043,
-          "implied_prob": 0.5714,
-          "market_implied_prob": 0.5917,
-          "edge": -0.0402,
-          "expected_value": -0.1023,
-          "decimal_odds": 1.69,
-          "american_odds": -145,
+          "model_prob": 0.5244,
+          "raw_model_prob": 0.4989,
+          "implied_prob": 0.5627,
+          "market_implied_prob": 0.5848,
+          "edge": -0.0383,
+          "expected_value": -0.0875,
+          "decimal_odds": 1.74,
+          "american_odds": -135,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 23.7,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0428,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": 130,
-        "away": -145
+        "home": 122,
+        "away": -135
       },
       "market_snapshot": {
         "execution_prices": {
@@ -297,10 +297,14 @@
       },
       "qualitative_analysis": null,
       "qualitative_summary": null,
-      "run_id": "daily-20260408T130854907097Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-08T13:08:54Z",
-      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/daily-20260408T130854907097Z.json"
+      "run_id": "refresh-20260408T213912678319Z",
+      "run_type": "refresh",
+      "snapshot_timestamp": "2026-04-08T21:39:12Z",
+      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/refresh-20260408T213912678319Z.json",
+      "base_model_probs": {
+        "home": 0.4957,
+        "away": 0.5043
+      }
     },
     {
       "home_team": "Maple Leafs",
@@ -312,13 +316,13 @@
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Joseph Woll",
+      "home_goalie": "Anthony Stolarz",
       "away_goalie": "Logan Thompson",
       "home_goalie_status": "expected",
-      "away_goalie_status": "expected",
+      "away_goalie_status": "confirmed",
       "home_injury_profile": {
-        "injury_burden": 1.35,
-        "uncertainty_burden": 0.35,
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -340,17 +344,17 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "away",
-      "model_prob": 0.5483,
-      "edge": -0.0135,
+      "model_prob": 0.5536,
+      "edge": -0.0181,
       "expected_value": -0.0471,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
       "confidence_score": 29.9,
       "confidence_stars": 1,
-      "american_odds": -141,
+      "american_odds": -149,
       "model_probs": {
-        "home": 0.4517,
-        "away": 0.5483
+        "home": 0.4464,
+        "away": 0.5536
       },
       "individual_models": {
         "elo": {
@@ -368,45 +372,45 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.4428,
-          "raw_model_prob": 0.4517,
-          "implied_prob": 0.4293,
-          "market_implied_prob": 0.4444,
-          "edge": 0.0135,
-          "expected_value": 0.0183,
-          "decimal_odds": 2.3,
-          "american_odds": 130,
-          "kelly_fraction": 0.0141,
-          "fractional_kelly": 0.0028,
-          "confidence_score": 20.7,
+          "model_prob": 0.4343,
+          "raw_model_prob": 0.4464,
+          "implied_prob": 0.4162,
+          "market_implied_prob": 0.4348,
+          "edge": 0.0181,
+          "expected_value": 0.0207,
+          "decimal_odds": 2.35,
+          "american_odds": 135,
+          "kelly_fraction": 0.0153,
+          "fractional_kelly": 0.0031,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0408,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.5572,
-          "raw_model_prob": 0.5483,
-          "implied_prob": 0.5707,
-          "market_implied_prob": 0.5952,
-          "edge": -0.0135,
-          "expected_value": -0.0471,
-          "decimal_odds": 1.71,
-          "american_odds": -141,
+          "model_prob": 0.5657,
+          "raw_model_prob": 0.5536,
+          "implied_prob": 0.5838,
+          "market_implied_prob": 0.6061,
+          "edge": -0.0181,
+          "expected_value": -0.0553,
+          "decimal_odds": 1.67,
+          "american_odds": -149,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 29.9,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0408,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": 130,
-        "away": -141
+        "home": 135,
+        "away": -149
       },
       "market_snapshot": {
         "execution_prices": {
@@ -584,10 +588,14 @@
       },
       "qualitative_analysis": null,
       "qualitative_summary": null,
-      "run_id": "daily-20260408T130854907097Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-08T13:08:54Z",
-      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/daily-20260408T130854907097Z.json"
+      "run_id": "refresh-20260408T213912678319Z",
+      "run_type": "refresh",
+      "snapshot_timestamp": "2026-04-08T21:39:12Z",
+      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/refresh-20260408T213912678319Z.json",
+      "base_model_probs": {
+        "home": 0.4517,
+        "away": 0.5483
+      }
     },
     {
       "home_team": "Sharks",
@@ -599,9 +607,9 @@
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Yaroslav Askarov",
+      "home_goalie": "Alex Nedeljkovic",
       "away_goalie": "Connor Ingram",
-      "home_goalie_status": "expected",
+      "home_goalie_status": "confirmed",
       "away_goalie_status": "expected",
       "home_injury_profile": {
         "injury_burden": 2.0,
@@ -627,17 +635,17 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "away",
-      "model_prob": 0.5338,
-      "edge": 0.0008,
+      "model_prob": 0.5264,
+      "edge": 0.0096,
       "expected_value": -0.0241,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
       "confidence_score": 30.3,
       "confidence_stars": 1,
-      "american_odds": -120,
+      "american_odds": -110,
       "model_probs": {
-        "home": 0.4662,
-        "away": 0.5338
+        "home": 0.4736,
+        "away": 0.5264
       },
       "individual_models": {
         "elo": {
@@ -655,45 +663,45 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.4667,
-          "raw_model_prob": 0.4662,
-          "implied_prob": 0.4675,
-          "market_implied_prob": 0.4878,
-          "edge": -0.0008,
-          "expected_value": -0.0339,
-          "decimal_odds": 2.07,
-          "american_odds": 107,
+          "model_prob": 0.4799,
+          "raw_model_prob": 0.4736,
+          "implied_prob": 0.4895,
+          "market_implied_prob": 0.5102,
+          "edge": -0.0096,
+          "expected_value": -0.0401,
+          "decimal_odds": 2.0,
+          "american_odds": 100,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 20.7,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0434,
+          "hold": 0.0476,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.5333,
-          "raw_model_prob": 0.5338,
-          "implied_prob": 0.5325,
-          "market_implied_prob": 0.5556,
-          "edge": 0.0008,
-          "expected_value": -0.0241,
-          "decimal_odds": 1.83,
-          "american_odds": -120,
+          "model_prob": 0.5201,
+          "raw_model_prob": 0.5264,
+          "implied_prob": 0.5105,
+          "market_implied_prob": 0.5348,
+          "edge": 0.0096,
+          "expected_value": -0.0067,
+          "decimal_odds": 1.91,
+          "american_odds": -110,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 30.3,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0434,
+          "hold": 0.0476,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": 107,
-        "away": -120
+        "home": 100,
+        "away": -110
       },
       "market_snapshot": {
         "execution_prices": {
@@ -871,10 +879,14 @@
       },
       "qualitative_analysis": null,
       "qualitative_summary": null,
-      "run_id": "daily-20260408T130854907097Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-08T13:08:54Z",
-      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/daily-20260408T130854907097Z.json"
+      "run_id": "refresh-20260408T213912678319Z",
+      "run_type": "refresh",
+      "snapshot_timestamp": "2026-04-08T21:39:12Z",
+      "snapshot_path": "tracking/snapshots/2026-04-08/nhl/refresh-20260408T213912678319Z.json",
+      "base_model_probs": {
+        "home": 0.4662,
+        "away": 0.5338
+      }
     }
   ],
   "totals_matches": [],
@@ -1891,5 +1903,6 @@
       }
     },
     "summary": "modeled=3 | odds=3/3 | +ev=2 | sense=0 | eligible=0 | locks=0 | need more settled moneylines picks (8/20); totals disabled by config"
-  }
+  },
+  "updated_at": "2026-04-08T21:39:19Z"
 }

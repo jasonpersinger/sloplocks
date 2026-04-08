@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-08T13:12:10Z",
+  "generated_at": "2026-04-08T21:39:32Z",
   "manifest_updated_at": "2026-04-08T13:12:09Z",
   "aggregate": {
     "record": {
@@ -536,7 +536,7 @@
     ]
   },
   "decision_replay": {
-    "generated_at": "2026-04-08T13:12:10Z",
+    "generated_at": "2026-04-08T21:39:32Z",
     "aggregate": {
       "logged_picks": 110,
       "settled_picks": {
@@ -1309,12 +1309,12 @@
     }
   },
   "snapshot_replay": {
-    "generated_at": "2026-04-08T13:12:10Z",
+    "generated_at": "2026-04-08T21:39:32Z",
     "aggregate": {
-      "snapshots": 117,
-      "exact_matches": 75,
-      "exact_match_rate": 0.641,
-      "mismatches": 42,
+      "snapshots": 121,
+      "exact_matches": 78,
+      "exact_match_rate": 0.6446,
+      "mismatches": 43,
       "expected_picks": {
         "evaluated": 71,
         "wins": 38,
@@ -1340,10 +1340,10 @@
     },
     "sports": {
       "mlb": {
-        "snapshots": 27,
+        "snapshots": 28,
         "exact_matches": 15,
-        "exact_match_rate": 0.5556,
-        "mismatches": 12,
+        "exact_match_rate": 0.5357,
+        "mismatches": 13,
         "recent_mismatches": [
           {
             "run_id": "refresh-20260401T040413631597Z",
@@ -2752,9 +2752,9 @@
         }
       },
       "nba": {
-        "snapshots": 37,
-        "exact_matches": 20,
-        "exact_match_rate": 0.5405,
+        "snapshots": 38,
+        "exact_matches": 21,
+        "exact_match_rate": 0.5526,
         "mismatches": 17,
         "recent_mismatches": [
           {
@@ -3912,9 +3912,9 @@
         }
       },
       "ncaam": {
-        "snapshots": 26,
-        "exact_matches": 21,
-        "exact_match_rate": 0.8077,
+        "snapshots": 27,
+        "exact_matches": 22,
+        "exact_match_rate": 0.8148,
         "mismatches": 5,
         "recent_mismatches": [
           {
@@ -4505,9 +4505,9 @@
         }
       },
       "nhl": {
-        "snapshots": 27,
-        "exact_matches": 19,
-        "exact_match_rate": 0.7037,
+        "snapshots": 28,
+        "exact_matches": 20,
+        "exact_match_rate": 0.7143,
         "mismatches": 8,
         "recent_mismatches": [
           {
@@ -5577,6 +5577,100 @@
     },
     "recent_mismatches": [
       {
+        "run_id": "refresh-20260408T213912678319Z",
+        "run_type": "refresh",
+        "sport": "mlb",
+        "snapshot_timestamp": "2026-04-08T21:39:12Z",
+        "snapshot_path": "/home/runner/work/sloplocks/sloplocks/data/tracking/snapshots/2026-04-08/mlb/refresh-20260408T213912678319Z.json",
+        "expected_picks": [],
+        "replayed_picks": [
+          {
+            "market_type": "total",
+            "home_team": "Mets",
+            "away_team": "Diamondbacks",
+            "date": "2026-04-08",
+            "pick": "over",
+            "total_line": 7.5,
+            "edge": 0.0939,
+            "confidence_score": 75.7,
+            "expected_value": 0.1596
+          },
+          {
+            "market_type": "total",
+            "home_team": "Yankees",
+            "away_team": "Athletics",
+            "date": "2026-04-08",
+            "pick": "over",
+            "total_line": 8.0,
+            "edge": 0.0613,
+            "confidence_score": 72.8,
+            "expected_value": 0.0988
+          },
+          {
+            "market_type": "total",
+            "home_team": "Angels",
+            "away_team": "Braves",
+            "date": "2026-04-08",
+            "pick": "under",
+            "total_line": 13.5,
+            "edge": 0.0862,
+            "confidence_score": 71.9,
+            "expected_value": 0.1307
+          }
+        ],
+        "expected_count": 0,
+        "replayed_count": 3,
+        "matched_count": 0,
+        "exact_match": false,
+        "missing_in_replay": [],
+        "unexpected_in_replay": [
+          [
+            "total",
+            "Angels",
+            "Braves",
+            "2026-04-08",
+            "under",
+            13.5
+          ],
+          [
+            "total",
+            "Mets",
+            "Diamondbacks",
+            "2026-04-08",
+            "over",
+            7.5
+          ],
+          [
+            "total",
+            "Yankees",
+            "Athletics",
+            "2026-04-08",
+            "over",
+            8.0
+          ]
+        ],
+        "expected_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        },
+        "replayed_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        }
+      },
+      {
         "run_id": "daily-20260408T130854907097Z",
         "run_type": "daily",
         "sport": "nba",
@@ -5872,105 +5966,11 @@
           "avg_expected_value": null,
           "avg_confidence": 80.0
         }
-      },
-      {
-        "run_id": "daily-20260407T130718530847Z",
-        "run_type": "daily",
-        "sport": "mlb",
-        "snapshot_timestamp": "2026-04-07T13:07:18Z",
-        "snapshot_path": "/home/runner/work/sloplocks/sloplocks/data/tracking/snapshots/2026-04-07/mlb/daily-20260407T130718530847Z.json",
-        "expected_picks": [],
-        "replayed_picks": [
-          {
-            "market_type": "total",
-            "home_team": "Twins",
-            "away_team": "Tigers",
-            "date": "2026-04-07",
-            "pick": "over",
-            "total_line": 6.5,
-            "edge": 0.0919,
-            "confidence_score": 81.7,
-            "expected_value": 0.1546
-          },
-          {
-            "market_type": "total",
-            "home_team": "Mets",
-            "away_team": "Diamondbacks",
-            "date": "2026-04-07",
-            "pick": "over",
-            "total_line": 7.0,
-            "edge": 0.0823,
-            "confidence_score": 78.7,
-            "expected_value": 0.1441
-          },
-          {
-            "market_type": "total",
-            "home_team": "Rangers",
-            "away_team": "Mariners",
-            "date": "2026-04-07",
-            "pick": "over",
-            "total_line": 7.5,
-            "edge": 0.0906,
-            "confidence_score": 77.7,
-            "expected_value": 0.1708
-          }
-        ],
-        "expected_count": 0,
-        "replayed_count": 3,
-        "matched_count": 0,
-        "exact_match": false,
-        "missing_in_replay": [],
-        "unexpected_in_replay": [
-          [
-            "total",
-            "Mets",
-            "Diamondbacks",
-            "2026-04-07",
-            "over",
-            7.0
-          ],
-          [
-            "total",
-            "Rangers",
-            "Mariners",
-            "2026-04-07",
-            "over",
-            7.5
-          ],
-          [
-            "total",
-            "Twins",
-            "Tigers",
-            "2026-04-07",
-            "over",
-            6.5
-          ]
-        ],
-        "expected_pick_performance": {
-          "evaluated": 0,
-          "wins": 0,
-          "losses": 0,
-          "record": "0-0",
-          "hit_rate": null,
-          "roi": null,
-          "avg_expected_value": null,
-          "avg_confidence": null
-        },
-        "replayed_pick_performance": {
-          "evaluated": 0,
-          "wins": 0,
-          "losses": 0,
-          "record": "0-0",
-          "hit_rate": null,
-          "roi": null,
-          "avg_expected_value": null,
-          "avg_confidence": null
-        }
       }
     ]
   },
   "lane_health": {
-    "generated_at": "2026-04-08T13:12:10Z",
+    "generated_at": "2026-04-08T21:39:32Z",
     "sports": {
       "nba": {
         "moneyline": {
@@ -7649,7 +7649,7 @@
     }
   },
   "model_health": {
-    "generated_at": "2026-04-08T13:12:10Z",
+    "generated_at": "2026-04-08T21:39:32Z",
     "sports": {
       "nba": {
         "ensemble": {
