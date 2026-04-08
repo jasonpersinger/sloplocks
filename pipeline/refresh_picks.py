@@ -36,7 +36,6 @@ from pipeline.ensemble import (
     compute_confidence_stars,
 )
 from pipeline.fetch_data import fetch_odds
-from pipeline.fetch_ncaam import normalize_ncaam_team_name
 from pipeline.fetch_nba import normalize_nba_team_name, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import normalize_nhl_team_name, fetch_nhl_schedule
 from pipeline.fetch_mlb import normalize_mlb_team_name
@@ -78,7 +77,6 @@ from pipeline.run import (
 _NORMALIZERS = {
     "nba": normalize_nba_team_name,
     "nhl": normalize_nhl_team_name,
-    "ncaam": normalize_ncaam_team_name,
     "mlb": normalize_mlb_team_name,
 }
 

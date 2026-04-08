@@ -47,13 +47,10 @@ except ImportError:
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
-from pipeline.fetch_ncaam import fetch_ncaam_games, fetch_ncaam_schedule, normalize_ncaam_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
 from pipeline.models import (
-    AdjustedEfficiency,
     BullpenMatchupModel,
     EloRatings,
-    FourFactorsModel,
     HandednessMatchupModel,
     MlbTotalsModel,
     NbaMatchupModel,
@@ -62,9 +59,7 @@ from pipeline.models import (
     PitcherMatchupModel,
     RecentBoxScoreModel,
     bullpen_matchup_predict,
-    efficiency_predict,
     elo_predict,
-    four_factors_predict,
     handedness_matchup_predict,
     mlb_totals_predict,
     nba_matchup_predict,
@@ -2455,28 +2450,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
-    elif sport_key == "ncaam":
-        games_df, box_scores_df = fetch_ncaam_games(
-            cache_path=os.path.join(sport_dir, "espn_cache.json")
-        )
-        fixtures = fetch_ncaam_schedule()
-        # Fallback: if scoreboard is empty, check cache for any games matching the allowed window
-        if not fixtures and games_df is not None:
-            today_utc = datetime.now(timezone.utc).date()
-            allowed = {
-                (today_utc - timedelta(days=1)).strftime("%Y-%m-%d"),
-                today_utc.strftime("%Y-%m-%d"),
-                (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
-            }
-            upcoming = games_df[games_df["date"].isin(allowed)]
-            for _, row in upcoming.iterrows():
-                fixtures.append({
-                    "home_team": row["home_team"],
-                    "away_team": row["away_team"],
-                    "date": row["date"],
-                    "completed": row.get("completed", False)
-                })
-        matches = games_df
     elif sport_key == "mlb":
         games_df, box_scores_df = fetch_mlb_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
@@ -2541,16 +2514,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
         if matches is not None and not matches.empty:
             elo.process_season(matches)
-
-    # Adjusted Efficiency model (NCAAM)
-    efficiency_model = None
-    if "efficiency" in configured_models and box_scores_df is not None:
-        efficiency_model = AdjustedEfficiency(box_scores_df, matches)
-
-    # Four Factors model (NCAAM)
-    four_factors_model = None
-    if "four_factors" in configured_models and box_scores_df is not None:
-        four_factors_model = FourFactorsModel(box_scores_df, matches)
 
     # Results-feature logistic model (uses only historical game outcomes)
     results_feature_model = None
@@ -2644,10 +2607,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     model_names = []
     if elo is not None:
         model_names.append("elo")
-    if efficiency_model is not None:
-        model_names.append("efficiency")
-    if four_factors_model is not None:
-        model_names.append("four_factors")
     if results_feature_model is not None:
         model_names.append("results_features")
     if recent_boxscore_model is not None:
@@ -2773,27 +2732,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             individual_preds.append(elo_probs)
             blend_weights.append(model_weight_dict["elo"])
             individual_models["elo"] = elo_probs
-
-        # Adjusted Efficiency (NCAAM)
-        if efficiency_model is not None and home in efficiency_model.off_efficiency and away in efficiency_model.off_efficiency:
-            # Disable home bonus for neutral sites
-            current_home_bonus = 0.0 if is_neutral else sport.get("efficiency_home_bonus", 3.5)
-            
-            eff_probs = efficiency_predict(
-                efficiency_model, home, away,
-                home_bonus=current_home_bonus,
-            )
-            individual_preds.append(eff_probs)
-            blend_weights.append(model_weight_dict["efficiency"])
-            individual_models["efficiency"] = eff_probs
-
-        # Four Factors (NCAAM)
-        if four_factors_model is not None and four_factors_model.model is not None:
-            if home in four_factors_model.team_stats and away in four_factors_model.team_stats:
-                ff_probs = four_factors_predict(four_factors_model, home, away)
-                individual_preds.append(ff_probs)
-                blend_weights.append(model_weight_dict["four_factors"])
-                individual_models["four_factors"] = ff_probs
 
         if results_feature_model is not None:
             rf_probs = results_features_predict(

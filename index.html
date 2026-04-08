@@ -620,7 +620,6 @@
       <button class="pill active" data-sport="all">ALL</button>
       <button class="pill" data-sport="nba">NBA</button>
       <button class="pill" data-sport="nhl">NHL</button>
-      <button class="pill" data-sport="ncaam">NCAAM</button>
       <button class="pill" data-sport="mlb">MLB</button>
     </nav>
 
@@ -667,7 +666,7 @@
     return formatDate(fallbackDate);
   }
 
-  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', ncaam: 'NCAAM', mlb: 'MLB' };
+  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', mlb: 'MLB' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }
@@ -1260,7 +1259,7 @@
     }
   }
 
-  var ALL_SPORTS = ['nba', 'nhl', 'ncaam', 'mlb'];
+  var ALL_SPORTS = ['nba', 'nhl', 'mlb'];
 
   function loadDashboard() {
     currentSport = 'dashboard';
