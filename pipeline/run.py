@@ -1982,13 +1982,40 @@ def _compute_slop_locks(
     all_eligible = []
 
     for rec in prediction_records:
+        # MANDATE: We need to fill at least 3 picks. 
+        # If we skip all 'completed' games, late-night runs will have empty cards.
         if rec.get("completed"):
-            continue
+            # Only skip if we have enough uncompleted games to fill the mandate
+            uncompleted_count = sum(1 for r in prediction_records if not r.get("completed"))
+            if uncompleted_count >= 3:
+                continue
+        
         edges = rec.get("edges", {})
         
+        # Determine the model's preferred side regardless of odds for the fallback list
+        model_probs = rec.get("model_probs", {})
+        best_side = max(model_probs.keys(), key=lambda k: model_probs[k]) if model_probs else None
+
         for outcome in outcomes:
             e = edges.get(outcome)
+            
+            # If we don't have edge data but this is the model's best guess,
+            # build a skeleton record for the all_eligible fallback.
             if not e:
+                if outcome == best_side:
+                    all_eligible.append({
+                        "home_team": rec["home_team"],
+                        "away_team": rec["away_team"],
+                        "date": rec["date"],
+                        "start_time": rec.get("start_time"),
+                        "pick": outcome,
+                        "model_prob": round(model_probs.get(outcome, 0), 4),
+                        "american_odds": None,
+                        "confidence_score": rec.get("confidence_score", 0),
+                        "qualitative_analysis": rec.get("qualitative_analysis"),
+                        "qualitative_summary": rec.get("qualitative_summary"),
+                        "blurb": "[UNPRICED LEAN] Model projections only; market odds unavailable."
+                    })
                 continue
             
             conf = e.get("confidence_score", 0)
@@ -2061,7 +2088,7 @@ def _compute_slop_locks(
             selected.append(r)
             already_selected_teams.add(r["home_team"])
             already_selected_teams.add(r["away_team"])
-
+    
     return selected
 
 
@@ -2711,7 +2738,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     allowed_dates = {
         (today_utc - timedelta(days=1)).strftime("%Y-%m-%d"),
         today_utc.strftime("%Y-%m-%d"),
-        (today_utc + timedelta(days=1)).strftime("%Y-%m-%d")
+        (today_utc + timedelta(days=1)).strftime("%Y-%m-%d"),
+        (today_utc + timedelta(days=2)).strftime("%Y-%m-%d")
     }
     fixtures_fetched = list(fixtures)
     fixtures = [f for f in fixtures if str(f.get("date", ""))[:10] in allowed_dates]
@@ -3172,7 +3200,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not publication_guard.get("allow_moneyline", True):
         # Fallback: keep match projections and diagnostics visible even when the
         # sport is not yet allowed to publish official moneyline lanes live.
-        # MANDATE: Always keep at least 3 picks if they exist, even in research mode.
+        # MANDATE: Always keep the top 3 fallback picks if they exist.
         if len(slop_locks) > 3:
             slop_locks = slop_locks[:3]
         

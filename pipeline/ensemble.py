@@ -342,7 +342,14 @@ def compute_edges(
         raw_mod_prob = model_probs[outcome]
         
         # Phase 4: Calibrate probability (shrink toward market)
-        calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
+        # MANDATE: Only trust the market benchmark if we have a consensus (at least 3 books).
+        # Single-book outliers (like 1.01 prices) can poison the model via calibration.
+        market_books = int(benchmark.get("books_tracked", 0) or 0)
+        if market_books >= 3:
+            calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
+        else:
+            # Low confidence in market benchmark; stick closer to raw model
+            calibrated_mod_prob = raw_mod_prob
         
         # Calculate edge using calibrated probability
         edge = calibrated_mod_prob - imp_prob
@@ -441,7 +448,17 @@ def compute_totals_edges(
         imp_prob = float(benchmark_fair.get(outcome, fair_probs[outcome]))
         raw_imp_prob = float(benchmark_raw.get(outcome, raw_probs[outcome]))
         raw_mod_prob = model_probs[outcome]
-        calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
+        
+        # Phase 4: Calibrate probability (shrink toward market)
+        # MANDATE: Only trust the market benchmark if we have a consensus (at least 3 books).
+        # Single-book outliers (like 1.01 prices) can poison the model via calibration.
+        market_books = int(benchmark.get("books_tracked", 0) or 0)
+        if market_books >= 3:
+            calibrated_mod_prob = calibrate_probability(raw_mod_prob, imp_prob)
+        else:
+            # Low confidence in market benchmark; stick closer to raw model
+            calibrated_mod_prob = raw_mod_prob
+            
         edge = calibrated_mod_prob - imp_prob
         ev = expected_value(calibrated_mod_prob, dec_odds)
         full_kelly = kelly_fraction(calibrated_mod_prob, dec_odds, fraction=1.0)
