@@ -2512,7 +2512,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
-    elif sport_key in {"epl", "ucl"}:
+    elif sport_key in {"epl", "ucl", "mls"}:
         games_df = fetch_soccer_games(
             sport_key,
             cache_path=os.path.join(sport_dir, "espn_cache.json")
@@ -2533,7 +2533,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         pass
 
     # For soccer leagues, if fixtures are empty, build them from odds
-    if sport_key in {"epl", "ucl"} and not fixtures:
+    if sport_key in {"epl", "ucl", "mls"} and not fixtures:
         for o in odds_list:
             fixtures.append({
                 "home_team": o["home_team"],

@@ -12,6 +12,7 @@ LEAGUE_MAP = {
     "uel": "uefa.europa",
     "laliga": "esp.1",
     "bundesliga": "ger.1",
+    "mls": "usa.1",
 }
 
 _REQUEST_DELAY = 0.5
@@ -145,5 +146,13 @@ def normalize_soccer_name(name):
         "AC Milan": "AC Milan",
         "AS Roma": "AS Roma",
         "Napoli": "Inter", # Check mapping
+        # MLS
+        "Inter Miami CF": "Inter Miami",
+        "LA Galaxy": "LA Galaxy",
+        "Los Angeles FC": "LAFC",
+        "New York Red Bulls": "New York Red Bulls",
+        "New York City FC": "New York City FC",
+        "Seattle Sounders FC": "Seattle Sounders",
+        "Atlanta United FC": "Atlanta United",
     }
     return mapping.get(name, name)

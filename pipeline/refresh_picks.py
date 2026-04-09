@@ -80,6 +80,7 @@ _NORMALIZERS = {
     "mlb": normalize_mlb_team_name,
     "epl": normalize_soccer_name,
     "ucl": normalize_soccer_name,
+    "mls": normalize_soccer_name,
 }
 
 
