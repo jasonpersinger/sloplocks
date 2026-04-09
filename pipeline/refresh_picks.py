@@ -38,8 +38,8 @@ from pipeline.ensemble import (
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import normalize_nba_team_name, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import normalize_nhl_team_name, fetch_nhl_schedule
-from pipeline.fetch_mlb import normalize_mlb_team_name
-from pipeline.fetch_mlb import fetch_mlb_schedule
+from pipeline.fetch_mlb import normalize_mlb_team_name, fetch_mlb_schedule
+from pipeline.fetch_soccer import normalize_soccer_name, fetch_soccer_schedule
 from pipeline.run import (
     _append_odds_snapshot_log,
     _attach_run_metadata,
@@ -78,6 +78,8 @@ _NORMALIZERS = {
     "nba": normalize_nba_team_name,
     "nhl": normalize_nhl_team_name,
     "mlb": normalize_mlb_team_name,
+    "epl": normalize_soccer_name,
+    "ucl": normalize_soccer_name,
 }
 
 

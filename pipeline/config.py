@@ -376,4 +376,30 @@ SPORTS = {
         "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "epl"),
     },
+    "ucl": {
+        "name": "UCL",
+        "display_name": "Champions League",
+        "odds_sport": "soccer_uefa_champions_league",
+        "outcomes": ["home", "away", "draw"],
+        "models": ["elo"],
+        "accuracy_softmax_temperature": 2.5,
+        "probability_calibration_min_samples": 10, # Lower for tournament format
+        "probability_calibration_blend": 0.4,
+        "probability_calibration_window_days": 730, # Longer window for multi-year tournament
+        "probability_calibration_holdout_days": 1,
+        "elo_k_factor": 30,
+        "elo_home_advantage": 40,
+        "min_expected_value": 0.0,
+        "kelly_fraction": 0.15,
+        "slop_lock_edge_threshold": 0.02,
+        "slop_lock_probability_floor": 0.30,
+        "slop_lock_confidence_threshold": 40,
+        "slop_lock_max_picks": 3,
+        "publication_min_evaluated_picks": 5,
+        "accuracy_window": 30,
+        "qualitative_weight": 0.6, # High weight for knockout motivation
+        "enable_qualitative": True,
+        "data_dir": os.path.join(DATA_DIR, "ucl"),
+    },
 }
+

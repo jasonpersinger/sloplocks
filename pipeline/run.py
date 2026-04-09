@@ -48,7 +48,7 @@ from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
-from pipeline.fetch_epl import fetch_epl_games, fetch_epl_schedule
+from pipeline.fetch_soccer import fetch_soccer_games, fetch_soccer_schedule
 from pipeline.models import (
     BullpenMatchupModel,
     EloRatings,
@@ -2512,13 +2512,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
-    elif sport_key == "epl":
-        games_df = fetch_epl_games(
+    elif sport_key in {"epl", "ucl"}:
+        games_df = fetch_soccer_games(
+            sport_key,
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
-        fixtures = fetch_epl_schedule(
-            cache_path=os.path.join(sport_dir, "espn_cache.json")
-        )
+        fixtures = fetch_soccer_schedule(sport_key)
         matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
@@ -2532,6 +2531,16 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         )
     except Exception:
         pass
+
+    # For soccer leagues, if fixtures are empty, build them from odds
+    if sport_key in {"epl", "ucl"} and not fixtures:
+        for o in odds_list:
+            fixtures.append({
+                "home_team": o["home_team"],
+                "away_team": o["away_team"],
+                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"), # Assume today
+                "completed": False,
+            })
 
     accuracy_log = _load_json(accuracy_path)
     if not isinstance(accuracy_log, dict):

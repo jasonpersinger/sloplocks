@@ -5,35 +5,43 @@ import requests
 import pandas as pd
 from datetime import datetime, timezone, timedelta
 
-# API Base for EPL
-EPL_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1"
+# Map league keys to ESPN API slugs
+LEAGUE_MAP = {
+    "epl": "eng.1",
+    "ucl": "uefa.champions",
+    "uel": "uefa.europa",
+    "laliga": "esp.1",
+    "bundesliga": "ger.1",
+}
+
 _REQUEST_DELAY = 0.5
 
-def fetch_epl_games(cache_path=None, seasons=None):
-    """
-    Fetch historical EPL games. 
-    Soccer scores are treated as 'goals' to keep consistent with NHL/MLB schema.
-    """
+def _get_base_url(league_key):
+    slug = LEAGUE_MAP.get(league_key, "eng.1")
+    return f"https://site.api.espn.com/apis/site/v2/sports/soccer/{slug}"
+
+def fetch_soccer_games(league_key, cache_path=None):
+    """Fetch historical games for a specific soccer league."""
+    base_url = _get_base_url(league_key)
+    
     if cache_path and os.path.exists(cache_path):
         with open(cache_path, 'r') as f:
             cache = json.load(f)
     else:
         cache = {"games": {}}
 
-    # For now, we'll fetch the current month's games to populate history
-    # In a full implementation, this would loop through seasons.
     today = datetime.now(timezone.utc)
+    # Fetch last 30 days to build context
     dates_to_fetch = []
-    for i in range(30): # Last 30 days
+    for i in range(30):
         d = today - timedelta(days=i)
         dates_to_fetch.append(d.strftime("%Y%m%d"))
 
-    new_count = 0
     for date_str in dates_to_fetch:
         if date_str in cache.get("fetched_dates", []):
             continue
             
-        url = f"{EPL_ESPN_BASE}/scoreboard?dates={date_str}"
+        url = f"{base_url}/scoreboard?dates={date_str}"
         try:
             resp = requests.get(url, timeout=30)
             resp.raise_for_status()
@@ -53,28 +61,29 @@ def fetch_epl_games(cache_path=None, seasons=None):
                     
                     cache["games"][game_id] = {
                         "date": event["date"][:10],
-                        "home_team": normalize_epl_name(home["team"]["displayName"]),
-                        "away_team": normalize_epl_name(away["team"]["displayName"]),
+                        "home_team": normalize_soccer_name(home["team"]["displayName"]),
+                        "away_team": normalize_soccer_name(away["team"]["displayName"]),
                         "home_goals": int(home["score"]),
                         "away_goals": int(away["score"]),
                     }
-                    new_count += 1
             
             cache.setdefault("fetched_dates", []).append(date_str)
             time.sleep(_REQUEST_DELAY)
         except Exception as e:
-            print(f"Error fetching EPL date {date_str}: {e}")
+            print(f"Error fetching {league_key} date {date_str}: {e}")
 
     if cache_path:
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
         with open(cache_path, 'w') as f:
             json.dump(cache, f)
 
     df = pd.DataFrame(cache["games"].values())
     return df
 
-def fetch_epl_schedule(cache_path=None):
-    """Fetch upcoming EPL fixtures and their injury/context data."""
-    url = f"{EPL_ESPN_BASE}/scoreboard"
+def fetch_soccer_schedule(league_key):
+    """Fetch upcoming fixtures and injury data for a soccer league."""
+    base_url = _get_base_url(league_key)
+    url = f"{base_url}/scoreboard"
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()
@@ -92,10 +101,10 @@ def fetch_epl_schedule(cache_path=None):
                 else:
                     away = team
             
-            # Fetch summary for injuries
+            # Fetch injuries from summary
             summary_injuries = []
             try:
-                summary_url = f"{EPL_ESPN_BASE}/summary?event={event['id']}"
+                summary_url = f"{base_url}/summary?event={event['id']}"
                 s_resp = requests.get(summary_url, timeout=10)
                 if s_resp.status_code == 200:
                     summary_injuries = s_resp.json().get("injuries", [])
@@ -103,8 +112,8 @@ def fetch_epl_schedule(cache_path=None):
                 pass
 
             fixtures.append({
-                "home_team": normalize_epl_name(home["team"]["displayName"]),
-                "away_team": normalize_epl_name(away["team"]["displayName"]),
+                "home_team": normalize_soccer_name(home["team"]["displayName"]),
+                "away_team": normalize_soccer_name(away["team"]["displayName"]),
                 "date": event["date"][:10],
                 "start_time": event["date"],
                 "summary_injuries": summary_injuries,
@@ -113,9 +122,10 @@ def fetch_epl_schedule(cache_path=None):
             
     return fixtures
 
-def normalize_epl_name(name):
-    """Normalize common EPL team names to match The Odds API."""
+def normalize_soccer_name(name):
+    """Map ESPN names to The Odds API names."""
     mapping = {
+        # EPL
         "Manchester United": "Manchester United",
         "Manchester City": "Manchester City",
         "Tottenham Hotspur": "Tottenham Hotspur",
@@ -125,5 +135,15 @@ def normalize_epl_name(name):
         "Nottingham Forest": "Nottingham Forest",
         "Sheffield United": "Sheffield United",
         "Luton Town": "Luton",
+        # UCL / General
+        "Bayern Munich": "Bayern Munich",
+        "Paris Saint-Germain": "Paris Saint Germain",
+        "Real Madrid": "Real Madrid",
+        "Atletico Madrid": "Atletico Madrid",
+        "Borussia Dortmund": "Borussia Dortmund",
+        "Inter Milan": "Inter Milan",
+        "AC Milan": "AC Milan",
+        "AS Roma": "AS Roma",
+        "Napoli": "Inter", # Check mapping
     }
     return mapping.get(name, name)
