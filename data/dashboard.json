@@ -1,37 +1,64 @@
 {
-  "generated_at": "2026-04-09T02:44:40Z",
-  "manifest_updated_at": "2026-04-09T02:44:38Z",
+  "generated_at": "2026-04-09T04:06:19Z",
+  "manifest_updated_at": "2026-04-09T04:06:18Z",
   "aggregate": {
     "record": {
-      "record": "68-39-2",
-      "evaluated": 109,
-      "pending": 40,
-      "hit_rate": 0.6239,
-      "roi": 0.1309,
-      "avg_confidence": 68.0646,
-      "avg_expected_value": 0.2223,
+      "record": "73-71-2",
+      "evaluated": 146,
+      "pending": 51,
+      "hit_rate": 0.5,
+      "roi": -0.0153,
+      "avg_confidence": 67.8908,
+      "avg_expected_value": 0.2208,
       "avg_clv": -0.0033
     },
     "predictions": {
-      "evaluated": 458,
-      "accuracy": 0.6376,
-      "avg_log_loss": 0.8596,
-      "avg_brier": 0.4483
+      "evaluated": 793,
+      "accuracy": 0.5801,
+      "avg_log_loss": 0.945,
+      "avg_brier": 0.5296
     },
     "breakdowns": {
       "type": {
-        "slop_lock": {
-          "total_picks": 102,
-          "evaluated": 74,
-          "pending": 28,
-          "hit_rate": 0.6351,
-          "roi": 0.0944,
+        "longslop": {
+          "total_picks": 7,
+          "evaluated": 6,
+          "pending": 1,
+          "hit_rate": 0.0,
+          "roi": -1.0,
           "push_rate": 0.0,
-          "wins": 47,
-          "losses": 27,
+          "wins": 0,
+          "losses": 6,
           "pushes": 0,
-          "avg_confidence": 62.359,
-          "avg_expected_value": 0.2578,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "slop_lock": {
+          "total_picks": 143,
+          "evaluated": 105,
+          "pending": 38,
+          "hit_rate": 0.4952,
+          "roi": -0.0331,
+          "push_rate": 0.0,
+          "wins": 52,
+          "losses": 53,
+          "pushes": 0,
+          "avg_confidence": 62.156,
+          "avg_expected_value": 0.2553,
           "clv": {
             "tracked": 69,
             "avg_clv": -0.0033,
@@ -77,17 +104,17 @@
       },
       "market_type": {
         "moneyline": {
-          "total_picks": 102,
-          "evaluated": 74,
-          "pending": 28,
-          "hit_rate": 0.6351,
-          "roi": 0.0944,
+          "total_picks": 150,
+          "evaluated": 111,
+          "pending": 39,
+          "hit_rate": 0.4685,
+          "roi": -0.0863,
           "push_rate": 0.0,
-          "wins": 47,
-          "losses": 27,
+          "wins": 52,
+          "losses": 59,
           "pushes": 0,
-          "avg_confidence": 62.359,
-          "avg_expected_value": 0.2578,
+          "avg_confidence": 62.156,
+          "avg_expected_value": 0.2553,
           "clv": {
             "tracked": 69,
             "avg_clv": -0.0033,
@@ -133,31 +160,31 @@
       }
     },
     "threshold_guidance": [
-      "Results are positive but CLV is weak; keep thresholds steady and watch for regression."
+      "Results and CLV are both negative; tighten thresholds or reduce low-confidence volume."
     ],
     "slate": {
-      "modeled": 25,
+      "modeled": 26,
       "with_odds": 13,
-      "fixtures": 25,
+      "fixtures": 26,
       "positive_ev": 12,
       "sense": 25,
       "eligible": 4,
-      "locks": 8
+      "locks": 9
     }
   },
   "windows": {
     "7d": {
-      "total_picks": 67,
+      "total_picks": 68,
       "evaluated": 46,
-      "pending": 21,
+      "pending": 22,
       "hit_rate": 0.5435,
       "roi": -0.0455,
       "push_rate": 0.0217,
       "wins": 25,
       "losses": 20,
       "pushes": 1,
-      "avg_confidence": 63.2239,
-      "avg_expected_value": 0.3415,
+      "avg_confidence": 62.9603,
+      "avg_expected_value": 0.3365,
       "clv": {
         "tracked": 51,
         "avg_clv": 0.0245,
@@ -175,17 +202,17 @@
       "window_days": 7
     },
     "30d": {
-      "total_picks": 149,
+      "total_picks": 150,
       "evaluated": 109,
-      "pending": 40,
+      "pending": 41,
       "hit_rate": 0.6239,
       "roi": 0.1309,
       "push_rate": 0.0183,
       "wins": 68,
       "losses": 39,
       "pushes": 2,
-      "avg_confidence": 68.0646,
-      "avg_expected_value": 0.2223,
+      "avg_confidence": 67.8908,
+      "avg_expected_value": 0.2208,
       "clv": {
         "tracked": 104,
         "avg_clv": -0.0033,
@@ -277,6 +304,31 @@
         "avg_confidence": 72.95,
         "avg_expected_value": 0.131,
         "avg_clv": -0.064
+      }
+    },
+    {
+      "sport": "epl",
+      "name": "EPL",
+      "status": "ok",
+      "current": {
+        "modeled": 1,
+        "odds_coverage": "0/1",
+        "positive_ev": 0,
+        "eligible": 0,
+        "locks": 1,
+        "totals": 0,
+        "sense": 0,
+        "summary": "modeled=1 | odds=0/1 | +ev=0 | sense=0 | eligible=0 | locks=1 | recent moneylines ROI -0.8013 is below 0.0000; recent moneylines overconfidence gap 0.1974 exceeds 0.1200; totals disabled by config"
+      },
+      "performance": {
+        "record": "5-32",
+        "evaluated": 37,
+        "pending": 11,
+        "hit_rate": 0.1351,
+        "roi": -0.4381,
+        "avg_confidence": 45.3,
+        "avg_expected_value": 0.0,
+        "avg_clv": null
       }
     }
   ],
@@ -548,9 +600,9 @@
     ]
   },
   "decision_replay": {
-    "generated_at": "2026-04-09T02:44:40Z",
+    "generated_at": "2026-04-09T04:06:19Z",
     "aggregate": {
-      "logged_picks": 118,
+      "logged_picks": 119,
       "settled_picks": {
         "evaluated": 42,
         "wins": 22,
@@ -690,7 +742,7 @@
           }
         }
       },
-      "unsettled_logged_picks": 76
+      "unsettled_logged_picks": 77
     },
     "sports": {
       "mlb": {
@@ -1208,16 +1260,59 @@
             "snapshot_timestamp": "2026-04-02T21:34:57Z"
           }
         ]
+      },
+      "epl": {
+        "logged_picks": 1,
+        "settled_picks": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "breakdowns": {
+            "type": {},
+            "market_type": {}
+          }
+        },
+        "unsettled_logged_picks": 1,
+        "recent_unsettled": [
+          {
+            "pick_type": "slop_lock",
+            "market_type": "moneyline",
+            "home_team": "West Ham United",
+            "away_team": "Wolverhampton",
+            "match_date": "2026-04-10",
+            "pick": "away",
+            "snapshot_timestamp": "2026-04-09T04:04:52Z"
+          }
+        ]
       }
     }
   },
   "snapshot_replay": {
-    "generated_at": "2026-04-09T02:44:39Z",
+    "generated_at": "2026-04-09T04:06:19Z",
     "aggregate": {
-      "snapshots": 111,
+      "snapshots": 112,
       "exact_matches": 57,
-      "exact_match_rate": 0.5135,
-      "mismatches": 54,
+      "exact_match_rate": 0.5089,
+      "mismatches": 55,
       "expected_picks": {
         "evaluated": 81,
         "wins": 50,
@@ -4883,9 +4978,207 @@
           "avg_expected_value": null,
           "avg_confidence": 88.0
         }
+      },
+      "epl": {
+        "snapshots": 1,
+        "exact_matches": 0,
+        "exact_match_rate": 0.0,
+        "mismatches": 1,
+        "recent_mismatches": [
+          {
+            "run_id": "manual-20260409T040617625902Z",
+            "run_type": "manual",
+            "sport": "epl",
+            "snapshot_timestamp": "2026-04-09T04:06:17Z",
+            "snapshot_path": "/home/jason/sloplocks/data/tracking/snapshots/2026-04-09/epl/manual-20260409T040617625902Z.json",
+            "expected_picks": [
+              {
+                "home_team": "West Ham United",
+                "away_team": "Wolverhampton",
+                "date": "2026-04-10",
+                "start_time": "2026-04-10T19:00Z",
+                "pick": "away",
+                "model_prob": 0.6398,
+                "implied_prob": 0.0,
+                "market_implied_prob": 0.0,
+                "edge": 0.0,
+                "expected_value": 0.0,
+                "american_odds": null,
+                "decimal_odds": null,
+                "kelly_fraction": 0.0,
+                "fractional_kelly": 0.0,
+                "confidence_score": 45.3,
+                "individual_models": {
+                  "elo": {
+                    "home": 0.4136,
+                    "draw": 0.2483,
+                    "away": 0.3381
+                  }
+                },
+                "qualitative_analysis": {
+                  "sport": "epl",
+                  "home_team": "West Ham United",
+                  "away_team": "Wolverhampton",
+                  "home_impact": 0.0,
+                  "away_impact": 0.0,
+                  "individual_factors": [],
+                  "net_qualitative_edge": "none",
+                  "summary": "No significant qualitative factors identified or API error."
+                },
+                "qualitative_summary": "No qualitative impact.",
+                "blurb": "",
+                "run_id": "manual-20260409T040617625902Z",
+                "run_type": "manual",
+                "snapshot_timestamp": "2026-04-09T04:06:17Z",
+                "snapshot_path": "tracking/snapshots/2026-04-09/epl/manual-20260409T040617625902Z.json"
+              }
+            ],
+            "replayed_picks": [],
+            "expected_count": 1,
+            "replayed_count": 0,
+            "matched_count": 0,
+            "exact_match": false,
+            "missing_in_replay": [
+              [
+                "moneyline",
+                "West Ham United",
+                "Wolverhampton",
+                "2026-04-10",
+                "away",
+                null
+              ]
+            ],
+            "unexpected_in_replay": [],
+            "expected_pick_performance": {
+              "evaluated": 0,
+              "wins": 0,
+              "losses": 0,
+              "record": "0-0",
+              "hit_rate": null,
+              "roi": null,
+              "avg_expected_value": null,
+              "avg_confidence": null
+            },
+            "replayed_pick_performance": {
+              "evaluated": 0,
+              "wins": 0,
+              "losses": 0,
+              "record": "0-0",
+              "hit_rate": null,
+              "roi": null,
+              "avg_expected_value": null,
+              "avg_confidence": null
+            }
+          }
+        ],
+        "expected_picks": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        },
+        "replayed_picks": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        }
       }
     },
     "recent_mismatches": [
+      {
+        "run_id": "manual-20260409T040617625902Z",
+        "run_type": "manual",
+        "sport": "epl",
+        "snapshot_timestamp": "2026-04-09T04:06:17Z",
+        "snapshot_path": "/home/jason/sloplocks/data/tracking/snapshots/2026-04-09/epl/manual-20260409T040617625902Z.json",
+        "expected_picks": [
+          {
+            "home_team": "West Ham United",
+            "away_team": "Wolverhampton",
+            "date": "2026-04-10",
+            "start_time": "2026-04-10T19:00Z",
+            "pick": "away",
+            "model_prob": 0.6398,
+            "implied_prob": 0.0,
+            "market_implied_prob": 0.0,
+            "edge": 0.0,
+            "expected_value": 0.0,
+            "american_odds": null,
+            "decimal_odds": null,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 45.3,
+            "individual_models": {
+              "elo": {
+                "home": 0.4136,
+                "draw": 0.2483,
+                "away": 0.3381
+              }
+            },
+            "qualitative_analysis": {
+              "sport": "epl",
+              "home_team": "West Ham United",
+              "away_team": "Wolverhampton",
+              "home_impact": 0.0,
+              "away_impact": 0.0,
+              "individual_factors": [],
+              "net_qualitative_edge": "none",
+              "summary": "No significant qualitative factors identified or API error."
+            },
+            "qualitative_summary": "No qualitative impact.",
+            "blurb": "",
+            "run_id": "manual-20260409T040617625902Z",
+            "run_type": "manual",
+            "snapshot_timestamp": "2026-04-09T04:06:17Z",
+            "snapshot_path": "tracking/snapshots/2026-04-09/epl/manual-20260409T040617625902Z.json"
+          }
+        ],
+        "replayed_picks": [],
+        "expected_count": 1,
+        "replayed_count": 0,
+        "matched_count": 0,
+        "exact_match": false,
+        "missing_in_replay": [
+          [
+            "moneyline",
+            "West Ham United",
+            "Wolverhampton",
+            "2026-04-10",
+            "away",
+            null
+          ]
+        ],
+        "unexpected_in_replay": [],
+        "expected_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        },
+        "replayed_pick_performance": {
+          "evaluated": 0,
+          "wins": 0,
+          "losses": 0,
+          "record": "0-0",
+          "hit_rate": null,
+          "roi": null,
+          "avg_expected_value": null,
+          "avg_confidence": null
+        }
+      },
       {
         "run_id": "manual-20260409T024016741651Z",
         "run_type": "manual",
@@ -5694,155 +5987,11 @@
           "avg_expected_value": null,
           "avg_confidence": null
         }
-      },
-      {
-        "run_id": "manual-20260409T022115550784Z",
-        "run_type": "manual",
-        "sport": "mlb",
-        "snapshot_timestamp": "2026-04-09T02:21:15Z",
-        "snapshot_path": "/home/jason/sloplocks/data/tracking/snapshots/2026-04-09/mlb/manual-20260409T022115550784Z.json",
-        "expected_picks": [
-          {
-            "home_team": "Twins",
-            "away_team": "Tigers",
-            "date": "2026-04-08",
-            "start_time": "2026-04-08T23:40Z",
-            "pick": "home",
-            "model_prob": 0.529,
-            "implied_prob": 0.4532,
-            "market_implied_prob": 0.4673,
-            "edge": 0.0758,
-            "expected_value": 0.1427,
-            "american_odds": 116,
-            "decimal_odds": 2.16,
-            "kelly_fraction": 0.123,
-            "fractional_kelly": 0.0246,
-            "confidence_score": 69.4,
-            "individual_models": {
-              "elo": {
-                "home": 0.5508,
-                "away": 0.4492
-              },
-              "results_features": {
-                "home": 0.5116,
-                "away": 0.4884
-              },
-              "bullpen_features": {
-                "home": 0.5651,
-                "away": 0.4349
-              },
-              "run_environment": {
-                "home": 0.5029,
-                "away": 0.4971
-              },
-              "handedness_features": {
-                "home": 0.587,
-                "away": 0.413
-              }
-            },
-            "qualitative_analysis": {
-              "sport": "mlb",
-              "home_team": "Twins",
-              "away_team": "Tigers",
-              "home_impact": -1.0,
-              "away_impact": -1.0,
-              "individual_factors": [
-                {
-                  "team": "Twins",
-                  "description": "Several bullpen pitchers (Julian Merryweather, Travis Adams, Matt Canterino) are day-to-day or on IL, potentially impacting bullpen depth.",
-                  "direction": "negative",
-                  "magnitude": 1.0,
-                  "confidence": 0.8
-                },
-                {
-                  "team": "Tigers",
-                  "description": "Several bullpen pitchers (Tyler Owens, Scott Effross, Dugan Darnell, Troy Watson) are day-to-day, potentially impacting bullpen depth.",
-                  "direction": "negative",
-                  "magnitude": 1.0,
-                  "confidence": 0.8
-                },
-                {
-                  "team": "Tigers",
-                  "description": "The listed away probable pitcher, Framber Valdez, is not a member of the Detroit Tigers, creating ambiguity regarding the actual starting pitcher for the Tigers. This factor cannot be qualitatively assessed.",
-                  "direction": "none",
-                  "magnitude": 0.0,
-                  "confidence": 1.0
-                }
-              ],
-              "net_qualitative_edge": "none",
-              "summary": "Both teams face minor negative impacts due to several bullpen pitchers being day-to-day or on the injured list, resulting in no clear qualitative edge."
-            },
-            "qualitative_summary": "Qualitative (H:-1.0 A:-1.0): no effect. Several bullpen pitchers (Julian Merryweather, Travis Adams, Matt Canterino) are day-to-day or on IL, potentially impacting bullpen depth.; Several bullpen pitchers (Tyler Owens, Scott Effross, Dugan Darnell, Troy Watson) are day-to-day, potentially impacting bullpen depth.",
-            "blurb": "",
-            "run_id": "manual-20260409T022115550784Z",
-            "run_type": "manual",
-            "snapshot_timestamp": "2026-04-09T02:21:15Z",
-            "snapshot_path": "tracking/snapshots/2026-04-09/mlb/manual-20260409T022115550784Z.json"
-          }
-        ],
-        "replayed_picks": [
-          {
-            "market_type": "total",
-            "home_team": "Twins",
-            "away_team": "Tigers",
-            "date": "2026-04-08",
-            "pick": "over",
-            "total_line": 8.0,
-            "edge": 0.0382,
-            "confidence_score": 54.9,
-            "expected_value": 0.048
-          }
-        ],
-        "expected_count": 1,
-        "replayed_count": 1,
-        "matched_count": 0,
-        "exact_match": false,
-        "missing_in_replay": [
-          [
-            "moneyline",
-            "Twins",
-            "Tigers",
-            "2026-04-08",
-            "home",
-            null
-          ]
-        ],
-        "unexpected_in_replay": [
-          [
-            "total",
-            "Twins",
-            "Tigers",
-            "2026-04-08",
-            "over",
-            8.0
-          ]
-        ],
-        "expected_pick_performance": {
-          "evaluated": 1,
-          "wins": 1,
-          "losses": 0,
-          "pushes": 0,
-          "record": "1-0",
-          "hit_rate": 1.0,
-          "roi": 1.16,
-          "avg_expected_value": 0.1427,
-          "avg_confidence": 69.4
-        },
-        "replayed_pick_performance": {
-          "evaluated": 0,
-          "wins": 0,
-          "losses": 0,
-          "record": "0-0",
-          "hit_rate": null,
-          "roi": null,
-          "avg_expected_value": null,
-          "avg_confidence": null
-        }
       }
     ]
   },
   "lane_health": {
-    "generated_at": "2026-04-09T02:44:40Z",
+    "generated_at": "2026-04-09T04:06:19Z",
     "sports": {
       "nba": {
         "moneyline": {
@@ -7101,11 +7250,429 @@
           ],
           "health_score": 0.4286
         }
+      },
+      "epl": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 48,
+            "evaluated": 37,
+            "pending": 11,
+            "hit_rate": 0.1351,
+            "roi": -0.4381,
+            "push_rate": 0.0,
+            "wins": 5,
+            "losses": 32,
+            "pushes": 0,
+            "avg_confidence": 45.3,
+            "avg_expected_value": 0.0,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.125,
+            "roi": -0.8013,
+            "push_rate": 0.0,
+            "wins": 1,
+            "losses": 7,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.3224,
+            "actual_win_rate": 0.125,
+            "calibration_gap": 0.1974,
+            "overconfidence_gap": 0.1974
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneyline ROI -0.8013 is below 0.0000",
+            "recent moneyline overconfidence gap 0.1974 exceeds 0.1200"
+          ],
+          "health_score": 0.7143
+        },
+        "total": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "totals disabled by config"
+          ],
+          "health_score": 0.8571
+        },
+        "slop_lock": {
+          "market_type": null,
+          "pick_type": "slop_lock",
+          "overall": {
+            "total_picks": 41,
+            "evaluated": 31,
+            "pending": 10,
+            "hit_rate": 0.1613,
+            "roi": -0.3294,
+            "push_rate": 0.0,
+            "wins": 5,
+            "losses": 26,
+            "pushes": 0,
+            "avg_confidence": 45.3,
+            "avg_expected_value": 0.0,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.125,
+            "roi": -0.8013,
+            "push_rate": 0.0,
+            "wins": 1,
+            "losses": 7,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.3626,
+            "actual_win_rate": 0.125,
+            "calibration_gap": 0.2376,
+            "overconfidence_gap": 0.2376
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent slop_lock ROI -0.8013 is below 0.0000",
+            "recent slop_lock overconfidence gap 0.2376 exceeds 0.1200"
+          ],
+          "health_score": 0.7143
+        },
+        "total_lock": {
+          "market_type": null,
+          "pick_type": "total_lock",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "total_lock disabled by config"
+          ],
+          "health_score": 0.8571
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 7,
+            "evaluated": 6,
+            "pending": 1,
+            "hit_rate": 0.0,
+            "roi": -1.0,
+            "push_rate": 0.0,
+            "wins": 0,
+            "losses": 6,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 5,
+            "evaluated": 5,
+            "pending": 0,
+            "hit_rate": 0.0,
+            "roi": -1.0,
+            "push_rate": 0.0,
+            "wins": 0,
+            "losses": 5,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": 0.1983,
+            "actual_win_rate": 0.0,
+            "calibration_gap": 0.1983,
+            "overconfidence_gap": 0.1983
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more tracked longslop CLV (0/3)",
+            "recent longslop ROI -1.0000 is below 0.0000",
+            "recent longslop overconfidence gap 0.1983 exceeds 0.1000"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        }
       }
     }
   },
   "model_health": {
-    "generated_at": "2026-04-09T02:44:40Z",
+    "generated_at": "2026-04-09T04:06:19Z",
     "sports": {
       "nba": {
         "ensemble": {
@@ -7283,6 +7850,28 @@
         "disabled_by_config": [
           "pitcher_features"
         ]
+      },
+      "epl": {
+        "ensemble": {
+          "sample_size": 10,
+          "accuracy": 0.6,
+          "avg_log_loss": 0.8891
+        },
+        "models": {
+          "elo": {
+            "sample_size": 10,
+            "accuracy": 0.6,
+            "avg_log_loss": 0.967,
+            "weight": 1.0,
+            "status": "watch",
+            "disable_candidate": false,
+            "reasons": [
+              "sample below model-health floor (10/20)"
+            ]
+          }
+        },
+        "disable_candidates": [],
+        "disabled_by_config": []
       }
     }
   },
@@ -7301,17 +7890,12 @@
       "priority": "medium",
       "title": "Stay Selective This Week",
       "detail": "The 7-day window is trailing the broader 30-day baseline. Do not loosen thresholds."
-    },
-    {
-      "priority": "medium",
-      "title": "Watch CLV Before Expanding",
-      "detail": "Realized ROI is positive, but closing-line value is lagging. Avoid adding volume until the market read improves."
     }
   ],
   "insights": [
     "Totals are currently outperforming moneylines on both hit rate and ROI.",
     "The last 7 days are trailing the 30-day baseline; stay selective.",
     "MLB is the top settled sport right now by ROI (+18.6% across 78 graded picks).",
-    "Odds coverage is still the main live bottleneck for: NHL 2/3, NCAAM 0/1, MLB 4/15."
+    "Odds coverage is still the main live bottleneck for: NHL 2/3, NCAAM 0/1, MLB 4/15, EPL 0/1."
   ]
 }

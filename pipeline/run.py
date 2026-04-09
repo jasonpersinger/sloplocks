@@ -48,6 +48,7 @@ from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
+from pipeline.fetch_epl import fetch_epl_games, fetch_epl_schedule
 from pipeline.models import (
     BullpenMatchupModel,
     EloRatings,
@@ -2511,6 +2512,14 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
+    elif sport_key == "epl":
+        games_df = fetch_epl_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        fixtures = fetch_epl_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
 
@@ -3496,22 +3505,37 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     # ------------------------------------------------------------------
     # 7. Compute season stats
     # ------------------------------------------------------------------
-    total_matches = len(matches)
-    home_wins = int((matches["home_goals"] > matches["away_goals"]).sum())
-    away_wins = int((matches["home_goals"] < matches["away_goals"]).sum())
+    total_matches = len(matches) if matches is not None else 0
+    if total_matches == 0:
+        season_stats = {
+            "total_matches": 0,
+            "home_wins": 0,
+            "away_wins": 0,
+            "home_win_pct": 0.0,
+            "away_win_pct": 0.0,
+        }
+        if "draw" in outcomes:
+            season_stats["draws"] = 0
+            season_stats["draw_pct"] = 0.0
+    else:
+        home_col = "home_pts" if sport_key == "nba" else "home_goals"
+        away_col = "away_pts" if sport_key == "nba" else "away_goals"
+        
+        home_wins = int((matches[home_col] > matches[away_col]).sum())
+        away_wins = int((matches[home_col] < matches[away_col]).sum())
 
-    season_stats = {
-        "total_matches": total_matches,
-        "home_wins": home_wins,
-        "away_wins": away_wins,
-        "home_win_pct": round(home_wins / max(total_matches, 1), 3),
-        "away_win_pct": round(away_wins / max(total_matches, 1), 3),
-    }
+        season_stats = {
+            "total_matches": total_matches,
+            "home_wins": home_wins,
+            "away_wins": away_wins,
+            "home_win_pct": round(home_wins / max(total_matches, 1), 3),
+            "away_win_pct": round(away_wins / max(total_matches, 1), 3),
+        }
 
-    if "draw" in outcomes:
-        draws = int((matches["home_goals"] == matches["away_goals"]).sum())
-        season_stats["draws"] = draws
-        season_stats["draw_pct"] = round(draws / max(total_matches, 1), 3)
+        if "draw" in outcomes:
+            draws = int((matches[home_col] == matches[away_col]).sum())
+            season_stats["draws"] = draws
+            season_stats["draw_pct"] = round(draws / max(total_matches, 1), 3)
 
     # ------------------------------------------------------------------
     # 8. Write output files
