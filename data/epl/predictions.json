@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-04-10T20:24:26Z",
-  "run_id": "daily-20260410T201548476363Z",
-  "run_type": "daily",
-  "snapshot_timestamp": "2026-04-10T20:15:48Z",
-  "snapshot_path": "tracking/snapshots/2026-04-10/epl/daily-20260410T201548476363Z.json",
+  "run_id": "refresh-20260410T213433501150Z",
+  "run_type": "refresh",
+  "snapshot_timestamp": "2026-04-10T21:34:33Z",
+  "snapshot_path": "tracking/snapshots/2026-04-10/epl/refresh-20260410T213433501150Z.json",
   "sport": "epl",
   "sport_name": "EPL",
   "outcomes": [
@@ -11,41 +11,7 @@
     "away",
     "draw"
   ],
-  "slop_locks": [
-    {
-      "home_team": "West Ham United",
-      "away_team": "Wolverhampton",
-      "date": "2026-04-10",
-      "start_time": "2026-04-10T19:00Z",
-      "pick": "away",
-      "model_prob": 0.6398,
-      "implied_prob": 0.0,
-      "market_implied_prob": 0.0,
-      "edge": 0.0,
-      "expected_value": 0.0,
-      "american_odds": null,
-      "decimal_odds": null,
-      "kelly_fraction": 0.0,
-      "fractional_kelly": 0.0,
-      "confidence_score": 45.3,
-      "qualitative_analysis": {
-        "sport": "epl",
-        "home_team": "West Ham United",
-        "away_team": "Wolverhampton",
-        "home_impact": 0.0,
-        "away_impact": 0.0,
-        "individual_factors": [],
-        "net_qualitative_edge": "none",
-        "summary": "No significant qualitative factors identified or API error."
-      },
-      "qualitative_summary": "No qualitative impact.",
-      "blurb": "",
-      "run_id": "daily-20260410T201548476363Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-10T20:15:48Z",
-      "snapshot_path": "tracking/snapshots/2026-04-10/epl/daily-20260410T201548476363Z.json"
-    }
-  ],
+  "slop_locks": [],
   "totals_locks": [],
   "slimegrinder": [],
   "longslop": null,
@@ -146,10 +112,14 @@
         "summary": "No significant qualitative factors identified or API error."
       },
       "qualitative_summary": "No qualitative impact.",
-      "run_id": "daily-20260410T201548476363Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-10T20:15:48Z",
-      "snapshot_path": "tracking/snapshots/2026-04-10/epl/daily-20260410T201548476363Z.json"
+      "run_id": "refresh-20260410T213433501150Z",
+      "run_type": "refresh",
+      "snapshot_timestamp": "2026-04-10T21:34:33Z",
+      "snapshot_path": "tracking/snapshots/2026-04-10/epl/refresh-20260410T213433501150Z.json",
+      "base_model_probs": {
+        "home": 0.3602,
+        "away": 0.6398
+      }
     }
   ],
   "totals_matches": [],
@@ -845,23 +815,21 @@
   },
   "diagnostics": {
     "historical_matches": 0,
-    "fixtures_fetched": 1,
-    "fixtures_in_window": 1,
+    "fixtures_fetched": 0,
+    "fixtures_in_window": 0,
     "fixtures_completed": 0,
-    "fixtures_pending": 1,
-    "odds_events_fetched": 20,
+    "fixtures_pending": 0,
+    "odds_events_fetched": 19,
     "fixtures_with_odds": 0,
-    "fixtures_without_odds": 1,
-    "coverage_gap_examples": [
-      "Wolverhampton @ West Ham United"
-    ],
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
     "matches_modeled": 1,
     "matches_with_market": 1,
     "matches_with_positive_ev": 0,
     "matches_with_qualitative": 0,
     "lock_eligible_matches": 0,
     "lock_eligible_outcomes": 0,
-    "slop_locks_posted": 1,
+    "slop_locks_posted": 0,
     "longslop_posted": 0,
     "slimegrinders_posted": 0,
     "publication_guard": {
@@ -1159,6 +1127,7 @@
         "totals_enabled": false
       }
     },
-    "summary": "modeled=1 | odds=0/1 | +ev=0 | sense=0 | eligible=0 | locks=1 | recent moneylines ROI -0.8013 is below 0.0000; recent moneylines overconfidence gap 0.1974 exceeds 0.1200; totals disabled by config"
-  }
+    "summary": "modeled=1 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0 | recent moneylines ROI -0.8013 is below 0.0000; recent moneylines overconfidence gap 0.1974 exceeds 0.1200; totals disabled by config"
+  },
+  "updated_at": "2026-04-10T21:35:43Z"
 }
