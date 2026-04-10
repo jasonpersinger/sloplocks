@@ -3527,8 +3527,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             season_stats["draws"] = 0
             season_stats["draw_pct"] = 0.0
     else:
-        home_col = "home_pts" if sport_key == "nba" else "home_goals"
-        away_col = "away_pts" if sport_key == "nba" else "away_goals"
+        home_col = "home_goals"
+        away_col = "away_goals"
         
         home_wins = int((matches[home_col] > matches[away_col]).sum())
         away_wins = int((matches[home_col] < matches[away_col]).sum())

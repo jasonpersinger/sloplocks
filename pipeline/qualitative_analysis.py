@@ -1,4 +1,4 @@
-from typing import Union, Optional
+from typing import List, Literal, Union, Optional
 import os
 import json
 import logging
@@ -7,9 +7,29 @@ import warnings
 from datetime import datetime
 from google import genai
 from google.genai import types
+from pydantic import BaseModel, Field
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+class IndividualFactor(BaseModel):
+    team: str
+    description: str
+    direction: Literal["positive", "negative"]
+    magnitude: float = Field(ge=0.0, le=5.0)
+    confidence: float = Field(ge=0.0, le=1.0)
+
+
+class QualitativeAnalysis(BaseModel):
+    sport: str
+    home_team: str
+    away_team: str
+    home_impact: float = Field(ge=-5.0, le=5.0)
+    away_impact: float = Field(ge=-5.0, le=5.0)
+    individual_factors: List[IndividualFactor]
+    net_qualitative_edge: Literal["home", "away", "none"]
+    summary: str
 
 # Log file path consistent with other pipeline logs
 # We'll put it in data/tracking for permanence
@@ -90,16 +110,11 @@ Current Line: {game_dict.get('american_odds', 'N/A')}
                 system_instruction=SYSTEM_PROMPT,
                 temperature=0.1,
                 response_mime_type="application/json",
+                response_schema=QualitativeAnalysis,
             )
         )
-        
+
         raw_text = response.text
-        # Clean up in case it still returned markdown despite instructions
-        if raw_text.startswith("```"):
-            raw_text = raw_text.strip("`").strip()
-            if raw_text.startswith("json"):
-                raw_text = raw_text[4:].strip()
-                
         result = json.loads(raw_text)
         
         # Log raw response and parsed result
