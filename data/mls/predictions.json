@@ -1,9 +1,9 @@
 {
   "generated_at": "2026-04-12T12:59:57Z",
-  "run_id": "daily-20260412T124844609882Z",
-  "run_type": "daily",
-  "snapshot_timestamp": "2026-04-12T12:48:44Z",
-  "snapshot_path": "tracking/snapshots/2026-04-12/mls/daily-20260412T124844609882Z.json",
+  "run_id": "refresh-20260412T213202576396Z",
+  "run_type": "refresh",
+  "snapshot_timestamp": "2026-04-12T21:32:02Z",
+  "snapshot_path": "tracking/snapshots/2026-04-12/mls/refresh-20260412T213202576396Z.json",
   "sport": "mls",
   "sport_name": "MLS",
   "outcomes": [
@@ -11,41 +11,7 @@
     "away",
     "draw"
   ],
-  "slop_locks": [
-    {
-      "home_team": "Columbus Crew",
-      "away_team": "Orlando City SC",
-      "date": "2026-04-12",
-      "start_time": "2026-04-12T23:00Z",
-      "pick": "home",
-      "model_prob": 0.5644,
-      "implied_prob": 0.0,
-      "market_implied_prob": 0.0,
-      "edge": 0.0,
-      "expected_value": 0.0,
-      "american_odds": null,
-      "decimal_odds": null,
-      "kelly_fraction": 0.0,
-      "fractional_kelly": 0.0,
-      "confidence_score": 34.8,
-      "qualitative_analysis": {
-        "sport": "mls",
-        "home_team": "Columbus Crew",
-        "away_team": "Orlando City SC",
-        "home_impact": 0.0,
-        "away_impact": 0.0,
-        "individual_factors": [],
-        "net_qualitative_edge": "none",
-        "summary": "No significant qualitative factors identified or API error."
-      },
-      "qualitative_summary": "No qualitative impact.",
-      "blurb": "",
-      "run_id": "daily-20260412T124844609882Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-12T12:48:44Z",
-      "snapshot_path": "tracking/snapshots/2026-04-12/mls/daily-20260412T124844609882Z.json"
-    }
-  ],
+  "slop_locks": [],
   "totals_locks": [],
   "slimegrinder": [],
   "longslop": null,
@@ -146,10 +112,14 @@
         "summary": "No significant qualitative factors identified or API error."
       },
       "qualitative_summary": "No qualitative impact.",
-      "run_id": "daily-20260412T124844609882Z",
-      "run_type": "daily",
-      "snapshot_timestamp": "2026-04-12T12:48:44Z",
-      "snapshot_path": "tracking/snapshots/2026-04-12/mls/daily-20260412T124844609882Z.json"
+      "run_id": "refresh-20260412T213202576396Z",
+      "run_type": "refresh",
+      "snapshot_timestamp": "2026-04-12T21:32:02Z",
+      "snapshot_path": "tracking/snapshots/2026-04-12/mls/refresh-20260412T213202576396Z.json",
+      "base_model_probs": {
+        "home": 0.5644,
+        "away": 0.4356
+      }
     }
   ],
   "totals_matches": [],
@@ -224,16 +194,16 @@
         "market_type": "moneyline",
         "pick_type": null,
         "overall": {
-          "total_picks": 5,
+          "total_picks": 6,
           "evaluated": 0,
-          "pending": 5,
+          "pending": 6,
           "hit_rate": null,
           "roi": null,
           "wins": 0,
           "losses": 0,
           "pushes": 0,
-          "avg_confidence": 48.36,
-          "avg_expected_value": 0.3132,
+          "avg_confidence": 46.1,
+          "avg_expected_value": 0.261,
           "clv": {
             "tracked": 5,
             "avg_clv": -0.0121,
@@ -835,23 +805,21 @@
   },
   "diagnostics": {
     "historical_matches": 0,
-    "fixtures_fetched": 1,
-    "fixtures_in_window": 1,
+    "fixtures_fetched": 0,
+    "fixtures_in_window": 0,
     "fixtures_completed": 0,
-    "fixtures_pending": 1,
+    "fixtures_pending": 0,
     "odds_events_fetched": 17,
     "fixtures_with_odds": 0,
-    "fixtures_without_odds": 1,
-    "coverage_gap_examples": [
-      "Orlando City SC @ Columbus Crew"
-    ],
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
     "matches_modeled": 1,
     "matches_with_market": 1,
     "matches_with_positive_ev": 0,
     "matches_with_qualitative": 0,
     "lock_eligible_matches": 0,
     "lock_eligible_outcomes": 0,
-    "slop_locks_posted": 1,
+    "slop_locks_posted": 0,
     "longslop_posted": 0,
     "slimegrinders_posted": 0,
     "publication_guard": {
@@ -871,16 +839,16 @@
           "market_type": "moneyline",
           "pick_type": null,
           "overall": {
-            "total_picks": 5,
+            "total_picks": 6,
             "evaluated": 0,
-            "pending": 5,
+            "pending": 6,
             "hit_rate": null,
             "roi": null,
             "wins": 0,
             "losses": 0,
             "pushes": 0,
-            "avg_confidence": 48.36,
-            "avg_expected_value": 0.3132,
+            "avg_confidence": 46.1,
+            "avg_expected_value": 0.261,
             "clv": {
               "tracked": 5,
               "avg_clv": -0.0121,
@@ -1144,6 +1112,7 @@
         "totals_enabled": false
       }
     },
-    "summary": "modeled=1 | odds=0/1 | +ev=0 | sense=0 | eligible=0 | locks=1 | need more settled moneylines picks (0/15); totals disabled by config"
-  }
+    "summary": "modeled=1 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0 | need more settled moneylines picks (0/15); totals disabled by config"
+  },
+  "updated_at": "2026-04-12T21:34:25Z"
 }
