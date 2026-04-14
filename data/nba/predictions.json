@@ -1,21 +1,1095 @@
 {
-  "generated_at": "2026-04-13T13:12:49Z",
-  "run_id": "refresh-20260413T214442432590Z",
-  "run_type": "refresh",
-  "snapshot_timestamp": "2026-04-13T21:44:42Z",
-  "snapshot_path": "tracking/snapshots/2026-04-13/nba/refresh-20260413T214442432590Z.json",
+  "generated_at": "2026-04-14T13:14:56Z",
+  "run_id": "daily-20260414T131430560687Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-04-14T13:14:30Z",
+  "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json",
   "sport": "nba",
   "sport_name": "NBA",
   "outcomes": [
     "home",
     "away"
   ],
-  "slop_locks": [],
+  "slop_locks": [
+    {
+      "home_team": "Hornets",
+      "away_team": "Heat",
+      "date": "2026-04-14",
+      "start_time": "2026-04-14T23:30Z",
+      "pick": "home",
+      "model_prob": 0.6985,
+      "implied_prob": 0.6655,
+      "market_implied_prob": 0.6944,
+      "edge": 0.033,
+      "expected_value": 0.0268,
+      "american_odds": -213,
+      "decimal_odds": 1.47,
+      "kelly_fraction": 0.057,
+      "fractional_kelly": 0.0142,
+      "confidence_score": 60.7,
+      "qualitative_analysis": {
+        "sport": "nba",
+        "home_team": "Hornets",
+        "away_team": "Heat",
+        "home_impact": -0.5,
+        "away_impact": -1.5,
+        "individual_factors": [
+          {
+            "team": "Hornets",
+            "description": "PJ Hall (Out) is a bench player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 0.5,
+            "confidence": 0.9
+          },
+          {
+            "team": "Heat",
+            "description": "Dru Smith (Out) is a bench player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 0.5,
+            "confidence": 0.9
+          },
+          {
+            "team": "Heat",
+            "description": "Nikola Jovic (Out) is a rotation player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.9
+          }
+        ],
+        "net_qualitative_edge": "none",
+        "summary": "Minor injuries to bench and rotation players for both the Hornets and Heat result in minimal qualitative impact for this game."
+      },
+      "qualitative_summary": "Qualitative (H:-0.5 A:-1.5): agreed. PJ Hall (Out) is a bench player, his absence has a minor negative impact.; Dru Smith (Out) is a bench player, his absence has a minor negative impact.",
+      "blurb": "",
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    },
+    {
+      "home_team": "Suns",
+      "away_team": "Trail Blazers",
+      "date": "2026-04-14",
+      "start_time": "2026-04-15T02:00Z",
+      "pick": "home",
+      "model_prob": 0.5601,
+      "implied_prob": 0.5834,
+      "market_implied_prob": 0.6042,
+      "edge": -0.0233,
+      "expected_value": -0.059,
+      "american_odds": -147,
+      "decimal_odds": 1.68,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 35.9,
+      "qualitative_analysis": {
+        "sport": "nba",
+        "home_team": "Suns",
+        "away_team": "Trail Blazers",
+        "home_impact": -2.0,
+        "away_impact": -5.0,
+        "individual_factors": [
+          {
+            "team": "Suns",
+            "description": "Grayson Allen (Day-To-Day) - assumed absence of a key starter",
+            "direction": "negative",
+            "magnitude": 2.0,
+            "confidence": 0.8
+          },
+          {
+            "team": "Trail Blazers",
+            "description": "Jerami Grant (Out) - absence of a key starter",
+            "direction": "negative",
+            "magnitude": 2.5,
+            "confidence": 1.0
+          },
+          {
+            "team": "Trail Blazers",
+            "description": "Damian Lillard (Out) - absence of a superstar player",
+            "direction": "negative",
+            "magnitude": 4.0,
+            "confidence": 1.0
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Trail Blazers are severely hampered by the confirmed absences of superstar Damian Lillard and key starter Jerami Grant, while the Suns face a moderate negative impact from the assumed absence of starter Grayson Allen."
+      },
+      "qualitative_summary": "Qualitative (H:-2.0 A:-5.0): agreed. Grayson Allen (Day-To-Day) - assumed absence of a key starter; Jerami Grant (Out) - absence of a key starter",
+      "blurb": "",
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    }
+  ],
   "totals_locks": [],
   "slimegrinder": [],
   "longslop": null,
-  "matches": [],
-  "totals_matches": [],
+  "matches": [
+    {
+      "home_team": "Hornets",
+      "away_team": "Heat",
+      "date": "2026-04-14",
+      "start_time": "2026-04-14T23:30Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": {
+        "active_players": 18,
+        "injured_players": 1,
+        "questionable_players": 0,
+        "doubtful_players": 0,
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0,
+        "available_core_players": 17,
+        "event_injury_burden": 1.0,
+        "event_uncertainty_burden": 0.0,
+        "event_key_absence_score": 0.0,
+        "event_leader_absence_burden": 0.0,
+        "event_leader_uncertainty_burden": 0.0
+      },
+      "away_availability_profile": {
+        "active_players": 18,
+        "injured_players": 2,
+        "questionable_players": 0,
+        "doubtful_players": 0,
+        "injury_burden": 1.35,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.35,
+        "leader_absence_burden": 0.35,
+        "leader_uncertainty_burden": 0.0,
+        "available_core_players": 16,
+        "event_injury_burden": 2.35,
+        "event_uncertainty_burden": 0.35,
+        "event_key_absence_score": 0.0,
+        "event_leader_absence_burden": 0.0,
+        "event_leader_uncertainty_burden": 0.0
+      },
+      "home_goalie": null,
+      "away_goalie": null,
+      "home_goalie_status": null,
+      "away_goalie_status": null,
+      "home_injury_profile": null,
+      "away_injury_profile": null,
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.8095,
+      "edge": 0.033,
+      "expected_value": 0.0268,
+      "kelly_fraction": 0.057,
+      "fractional_kelly": 0.0142,
+      "confidence_score": 60.7,
+      "confidence_stars": 3,
+      "american_odds": -213,
+      "model_probs": {
+        "home": 0.8095,
+        "away": 0.1905
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.8144,
+          "away": 0.1856
+        },
+        "results_features": {
+          "home": 0.635,
+          "away": 0.365
+        },
+        "recent_boxscore": {
+          "home": 0.6398,
+          "away": 0.3602
+        },
+        "nba_matchup": {
+          "home": 0.6599,
+          "away": 0.3401
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.6985,
+          "raw_model_prob": 0.8095,
+          "implied_prob": 0.6655,
+          "market_implied_prob": 0.6944,
+          "edge": 0.033,
+          "expected_value": 0.0268,
+          "decimal_odds": 1.47,
+          "american_odds": -213,
+          "kelly_fraction": 0.057,
+          "fractional_kelly": 0.0142,
+          "confidence_score": 60.7,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0419,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 8
+        },
+        "away": {
+          "model_prob": 0.3015,
+          "raw_model_prob": 0.1905,
+          "implied_prob": 0.3345,
+          "market_implied_prob": 0.349,
+          "edge": -0.033,
+          "expected_value": -0.1015,
+          "decimal_odds": 2.98,
+          "american_odds": 198,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 7.2,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0419,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 8
+        }
+      },
+      "best_odds": {
+        "home": -213,
+        "away": 198
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.47,
+          "away": 2.98
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.3345,
+            "home": 0.6655
+          },
+          "raw_probs": {
+            "away": 0.349,
+            "home": 0.6944
+          },
+          "hold": 0.0419,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "FanDuel",
+            "last_update": "2026-04-14T13:14:00Z",
+            "outcomes": {
+              "home": 1.44,
+              "away": 2.88
+            },
+            "raw_probs": {
+              "home": 0.6944,
+              "away": 0.3472
+            },
+            "fair_probs": {
+              "home": 0.6667,
+              "away": 0.3333
+            },
+            "hold": 0.0417
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "home": 1.44,
+              "away": 2.8
+            },
+            "raw_probs": {
+              "home": 0.6944,
+              "away": 0.3571
+            },
+            "fair_probs": {
+              "home": 0.6604,
+              "away": 0.3396
+            },
+            "hold": 0.0516
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "home": 1.46,
+              "away": 2.8
+            },
+            "raw_probs": {
+              "home": 0.6849,
+              "away": 0.3571
+            },
+            "fair_probs": {
+              "home": 0.6573,
+              "away": 0.3427
+            },
+            "hold": 0.0421
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "home": 1.47,
+              "away": 2.7
+            },
+            "raw_probs": {
+              "home": 0.6803,
+              "away": 0.3704
+            },
+            "fair_probs": {
+              "home": 0.6475,
+              "away": 0.3525
+            },
+            "hold": 0.0506
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "home": 1.43,
+              "away": 2.98
+            },
+            "raw_probs": {
+              "home": 0.6993,
+              "away": 0.3356
+            },
+            "fair_probs": {
+              "home": 0.6757,
+              "away": 0.3243
+            },
+            "hold": 0.0349
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-04-14T13:13:35Z",
+            "outcomes": {
+              "home": 1.43,
+              "away": 2.95
+            },
+            "raw_probs": {
+              "home": 0.6993,
+              "away": 0.339
+            },
+            "fair_probs": {
+              "home": 0.6735,
+              "away": 0.3265
+            },
+            "hold": 0.0383
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-04-14T13:12:38Z",
+            "outcomes": {
+              "home": 1.44,
+              "away": 2.85
+            },
+            "raw_probs": {
+              "home": 0.6944,
+              "away": 0.3509
+            },
+            "fair_probs": {
+              "home": 0.6643,
+              "away": 0.3357
+            },
+            "hold": 0.0453
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-04-14T13:14:10Z",
+            "outcomes": {
+              "home": 1.43,
+              "away": 2.95
+            },
+            "raw_probs": {
+              "home": 0.6993,
+              "away": 0.339
+            },
+            "fair_probs": {
+              "home": 0.6735,
+              "away": 0.3265
+            },
+            "hold": 0.0383
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nba",
+        "home_team": "Hornets",
+        "away_team": "Heat",
+        "home_impact": -0.5,
+        "away_impact": -1.5,
+        "individual_factors": [
+          {
+            "team": "Hornets",
+            "description": "PJ Hall (Out) is a bench player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 0.5,
+            "confidence": 0.9
+          },
+          {
+            "team": "Heat",
+            "description": "Dru Smith (Out) is a bench player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 0.5,
+            "confidence": 0.9
+          },
+          {
+            "team": "Heat",
+            "description": "Nikola Jovic (Out) is a rotation player, his absence has a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.9
+          }
+        ],
+        "net_qualitative_edge": "none",
+        "summary": "Minor injuries to bench and rotation players for both the Hornets and Heat result in minimal qualitative impact for this game."
+      },
+      "qualitative_summary": "Qualitative (H:-0.5 A:-1.5): agreed. PJ Hall (Out) is a bench player, his absence has a minor negative impact.; Dru Smith (Out) is a bench player, his absence has a minor negative impact.",
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    },
+    {
+      "home_team": "Suns",
+      "away_team": "Trail Blazers",
+      "date": "2026-04-14",
+      "start_time": "2026-04-15T02:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": {
+        "active_players": 18,
+        "injured_players": 4,
+        "questionable_players": 0,
+        "doubtful_players": 0,
+        "injury_burden": 4.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 1.0,
+        "leader_absence_burden": 0.65,
+        "leader_uncertainty_burden": 0.0,
+        "available_core_players": 14,
+        "event_injury_burden": 0.35,
+        "event_uncertainty_burden": 0.35,
+        "event_key_absence_score": 0.0,
+        "event_leader_absence_burden": 0.0,
+        "event_leader_uncertainty_burden": 0.0
+      },
+      "away_availability_profile": {
+        "active_players": 18,
+        "injured_players": 5,
+        "questionable_players": 0,
+        "doubtful_players": 0,
+        "injury_burden": 4.35,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0,
+        "available_core_players": 13,
+        "event_injury_burden": 2.0,
+        "event_uncertainty_burden": 0.0,
+        "event_key_absence_score": 0.0,
+        "event_leader_absence_burden": 0.0,
+        "event_leader_uncertainty_burden": 0.0
+      },
+      "home_goalie": null,
+      "away_goalie": null,
+      "home_goalie_status": null,
+      "away_goalie_status": null,
+      "home_injury_profile": null,
+      "away_injury_profile": null,
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.5446,
+      "edge": -0.0233,
+      "expected_value": -0.059,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 35.9,
+      "confidence_stars": 1,
+      "american_odds": -147,
+      "model_probs": {
+        "home": 0.5446,
+        "away": 0.4554
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.5879,
+          "away": 0.4121
+        },
+        "results_features": {
+          "home": 0.5508,
+          "away": 0.4492
+        },
+        "recent_boxscore": {
+          "home": 0.5492,
+          "away": 0.4508
+        },
+        "nba_matchup": {
+          "home": 0.5282,
+          "away": 0.4718
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.5601,
+          "raw_model_prob": 0.5446,
+          "implied_prob": 0.5834,
+          "market_implied_prob": 0.6042,
+          "edge": -0.0233,
+          "expected_value": -0.059,
+          "decimal_odds": 1.68,
+          "american_odds": -147,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 35.9,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0378,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 8
+        },
+        "away": {
+          "model_prob": 0.4399,
+          "raw_model_prob": 0.4554,
+          "implied_prob": 0.4166,
+          "market_implied_prob": 0.4301,
+          "edge": 0.0233,
+          "expected_value": 0.0558,
+          "decimal_odds": 2.4,
+          "american_odds": 140,
+          "kelly_fraction": 0.0398,
+          "fractional_kelly": 0.01,
+          "confidence_score": 35.5,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0378,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 8
+        }
+      },
+      "best_odds": {
+        "home": -147,
+        "away": 140
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.68,
+          "away": 2.4
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.4166,
+            "home": 0.5834
+          },
+          "raw_probs": {
+            "away": 0.4301,
+            "home": 0.6042
+          },
+          "hold": 0.0378,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "home": 1.62,
+              "away": 2.36
+            },
+            "raw_probs": {
+              "home": 0.6173,
+              "away": 0.4237
+            },
+            "fair_probs": {
+              "home": 0.593,
+              "away": 0.407
+            },
+            "hold": 0.041
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "home": 1.6,
+              "away": 2.33
+            },
+            "raw_probs": {
+              "home": 0.625,
+              "away": 0.4292
+            },
+            "fair_probs": {
+              "home": 0.5929,
+              "away": 0.4071
+            },
+            "hold": 0.0542
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-04-14T13:14:00Z",
+            "outcomes": {
+              "home": 1.68,
+              "away": 2.26
+            },
+            "raw_probs": {
+              "home": 0.5952,
+              "away": 0.4425
+            },
+            "fair_probs": {
+              "home": 0.5736,
+              "away": 0.4264
+            },
+            "hold": 0.0377
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "home": 1.65,
+              "away": 2.26
+            },
+            "raw_probs": {
+              "home": 0.6061,
+              "away": 0.4425
+            },
+            "fair_probs": {
+              "home": 0.578,
+              "away": 0.422
+            },
+            "hold": 0.0485
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-04-14T13:13:35Z",
+            "outcomes": {
+              "home": 1.66,
+              "away": 2.32
+            },
+            "raw_probs": {
+              "home": 0.6024,
+              "away": 0.431
+            },
+            "fair_probs": {
+              "home": 0.5829,
+              "away": 0.4171
+            },
+            "hold": 0.0334
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "home": 1.66,
+              "away": 2.33
+            },
+            "raw_probs": {
+              "home": 0.6024,
+              "away": 0.4292
+            },
+            "fair_probs": {
+              "home": 0.584,
+              "away": 0.416
+            },
+            "hold": 0.0316
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-04-14T13:12:38Z",
+            "outcomes": {
+              "home": 1.61,
+              "away": 2.4
+            },
+            "raw_probs": {
+              "home": 0.6211,
+              "away": 0.4167
+            },
+            "fair_probs": {
+              "home": 0.5985,
+              "away": 0.4015
+            },
+            "hold": 0.0378
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-04-14T13:14:10Z",
+            "outcomes": {
+              "home": 1.67,
+              "away": 2.29
+            },
+            "raw_probs": {
+              "home": 0.5988,
+              "away": 0.4367
+            },
+            "fair_probs": {
+              "home": 0.5783,
+              "away": 0.4217
+            },
+            "hold": 0.0355
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nba",
+        "home_team": "Suns",
+        "away_team": "Trail Blazers",
+        "home_impact": -2.0,
+        "away_impact": -5.0,
+        "individual_factors": [
+          {
+            "team": "Suns",
+            "description": "Grayson Allen (Day-To-Day) - assumed absence of a key starter",
+            "direction": "negative",
+            "magnitude": 2.0,
+            "confidence": 0.8
+          },
+          {
+            "team": "Trail Blazers",
+            "description": "Jerami Grant (Out) - absence of a key starter",
+            "direction": "negative",
+            "magnitude": 2.5,
+            "confidence": 1.0
+          },
+          {
+            "team": "Trail Blazers",
+            "description": "Damian Lillard (Out) - absence of a superstar player",
+            "direction": "negative",
+            "magnitude": 4.0,
+            "confidence": 1.0
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Trail Blazers are severely hampered by the confirmed absences of superstar Damian Lillard and key starter Jerami Grant, while the Suns face a moderate negative impact from the assumed absence of starter Grayson Allen."
+      },
+      "qualitative_summary": "Qualitative (H:-2.0 A:-5.0): agreed. Grayson Allen (Day-To-Day) - assumed absence of a key starter; Jerami Grant (Out) - absence of a key starter",
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    }
+  ],
+  "totals_matches": [
+    {
+      "market_type": "total",
+      "home_team": "Hornets",
+      "away_team": "Heat",
+      "date": "2026-04-14",
+      "start_time": "2026-04-14T23:30Z",
+      "completed": false,
+      "home_pitcher": null,
+      "away_pitcher": null,
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "total_line": 228.5,
+      "expected_total": 230.386,
+      "total_stddev": 24.676,
+      "pick": "over",
+      "model_prob": 0.5305,
+      "confidence_score": 33.8,
+      "american_odds": -110,
+      "model_probs": {
+        "over": 0.5305,
+        "under": 0.4695
+      },
+      "individual_models": {
+        "totals_model": {
+          "over": 0.5305,
+          "under": 0.4695
+        }
+      },
+      "edges": {
+        "over": {
+          "model_prob": 0.5199,
+          "raw_model_prob": 0.5305,
+          "implied_prob": 0.504,
+          "market_implied_prob": 0.5291,
+          "edge": 0.0159,
+          "expected_value": -0.007,
+          "decimal_odds": 1.91,
+          "american_odds": -110,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 33.8,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0472,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 3
+        },
+        "under": {
+          "model_prob": 0.4801,
+          "raw_model_prob": 0.4695,
+          "implied_prob": 0.496,
+          "market_implied_prob": 0.5236,
+          "edge": -0.0159,
+          "expected_value": -0.0734,
+          "decimal_odds": 1.93,
+          "american_odds": -108,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 23.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0472,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 3
+        }
+      },
+      "market_snapshot": {
+        "line": 228.5,
+        "execution_prices": {
+          "over": 1.91,
+          "under": 1.93
+        },
+        "benchmark": {
+          "fair_probs": {
+            "over": 0.504,
+            "under": 0.496
+          },
+          "raw_probs": {
+            "over": 0.5291,
+            "under": 0.5236
+          },
+          "hold": 0.0472,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "FanDuel",
+            "last_update": "2026-04-14T13:14:00Z",
+            "outcomes": {
+              "over": 1.89,
+              "under": 1.93
+            },
+            "raw_probs": {
+              "over": 0.5291,
+              "under": 0.5181
+            },
+            "fair_probs": {
+              "over": 0.5052,
+              "under": 0.4948
+            },
+            "hold": 0.0472
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "over": 1.91,
+              "under": 1.91
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "hold": 0.0471
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "over": 1.88,
+              "under": 1.91
+            },
+            "raw_probs": {
+              "over": 0.5319,
+              "under": 0.5236
+            },
+            "fair_probs": {
+              "over": 0.504,
+              "under": 0.496
+            },
+            "hold": 0.0555
+          }
+        ]
+      },
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    },
+    {
+      "market_type": "total",
+      "home_team": "Suns",
+      "away_team": "Trail Blazers",
+      "date": "2026-04-14",
+      "start_time": "2026-04-15T02:00Z",
+      "completed": false,
+      "home_pitcher": null,
+      "away_pitcher": null,
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "total_line": 217.0,
+      "expected_total": 220.495,
+      "total_stddev": 24.676,
+      "pick": "over",
+      "model_prob": 0.5563,
+      "confidence_score": 47.8,
+      "american_odds": -108,
+      "model_probs": {
+        "over": 0.5563,
+        "under": 0.4437
+      },
+      "individual_models": {
+        "totals_model": {
+          "over": 0.5563,
+          "under": 0.4437
+        }
+      },
+      "edges": {
+        "over": {
+          "model_prob": 0.5338,
+          "raw_model_prob": 0.5563,
+          "implied_prob": 0.5,
+          "market_implied_prob": 0.5236,
+          "edge": 0.0338,
+          "expected_value": 0.0302,
+          "decimal_odds": 1.93,
+          "american_odds": -108,
+          "kelly_fraction": 0.0325,
+          "fractional_kelly": 0.0081,
+          "confidence_score": 47.8,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 4
+        },
+        "under": {
+          "model_prob": 0.4662,
+          "raw_model_prob": 0.4437,
+          "implied_prob": 0.5,
+          "market_implied_prob": 0.5236,
+          "edge": -0.0338,
+          "expected_value": -0.1002,
+          "decimal_odds": 1.93,
+          "american_odds": -108,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 21.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 4
+        }
+      },
+      "market_snapshot": {
+        "line": 217.0,
+        "execution_prices": {
+          "over": 1.93,
+          "under": 1.93
+        },
+        "benchmark": {
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 4,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-04-14T13:13:33Z",
+            "outcomes": {
+              "over": 1.91,
+              "under": 1.91
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "hold": 0.0471
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-04-14T13:13:35Z",
+            "outcomes": {
+              "over": 1.91,
+              "under": 1.91
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "hold": 0.0471
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-04-14T13:14:24Z",
+            "outcomes": {
+              "over": 1.93,
+              "under": 1.93
+            },
+            "raw_probs": {
+              "over": 0.5181,
+              "under": 0.5181
+            },
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "hold": 0.0363
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-04-14T13:14:10Z",
+            "outcomes": {
+              "over": 1.91,
+              "under": 1.91
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "hold": 0.0471
+          }
+        ]
+      },
+      "run_id": "daily-20260414T131430560687Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-04-14T13:14:30Z",
+      "snapshot_path": "tracking/snapshots/2026-04-14/nba/daily-20260414T131430560687Z.json"
+    }
+  ],
   "season_stats": {
     "total_matches": 1306,
     "home_wins": 724,
@@ -24,19 +1098,19 @@
     "away_win_pct": 0.446
   },
   "model_weights": {
-    "elo": 0.2595,
-    "results_features": 0.2523,
-    "recent_boxscore": 0.2519,
-    "nba_matchup": 0.2363
+    "elo": 0.262,
+    "results_features": 0.2488,
+    "recent_boxscore": 0.2486,
+    "nba_matchup": 0.2406
   },
   "pick_stats": {
     "slop_lock": {
-      "total": 35,
+      "total": 37,
       "evaluated": 19,
       "wins": 14,
       "losses": 5,
       "pushes": 0,
-      "pending": 16,
+      "pending": 18,
       "hit_rate": 0.737,
       "roi": 0.052
     },
@@ -61,12 +1135,12 @@
       "roi": null
     },
     "all": {
-      "total": 49,
+      "total": 51,
       "evaluated": 25,
       "wins": 16,
       "losses": 9,
       "pushes": 0,
-      "pending": 24,
+      "pending": 26,
       "hit_rate": 0.64,
       "roi": -0.056
     }
@@ -375,12 +1449,12 @@
       "pick_type": null,
       "overall": {
         "total_picks": 35,
-        "evaluated": 18,
-        "pending": 17,
-        "hit_rate": 0.7222,
-        "roi": 0.0537,
+        "evaluated": 19,
+        "pending": 16,
+        "hit_rate": 0.7368,
+        "roi": 0.0518,
         "push_rate": 0.0,
-        "wins": 13,
+        "wins": 14,
         "losses": 5,
         "pushes": 0,
         "avg_confidence": 61.3414,
@@ -405,37 +1479,37 @@
         "evaluated": 8,
         "pending": 0,
         "hit_rate": 0.875,
-        "roi": 0.225,
+        "roi": 0.105,
         "push_rate": 0.0,
         "wins": 7,
         "losses": 1,
         "pushes": 0,
-        "avg_confidence": 58.625,
-        "avg_expected_value": 0.0399,
+        "avg_confidence": 54.5,
+        "avg_expected_value": 0.012,
         "clv": {
           "tracked": 8,
-          "avg_clv": 0.2259,
-          "positive_rate": 0.625,
-          "non_negative_rate": 0.625,
+          "avg_clv": 0.22,
+          "positive_rate": 0.5,
+          "non_negative_rate": 0.5,
           "moneyline_tracked": 8,
-          "moneyline_avg_clv": 0.2259,
-          "moneyline_positive_rate": 0.625,
-          "moneyline_non_negative_rate": 0.625,
+          "moneyline_avg_clv": 0.22,
+          "moneyline_positive_rate": 0.5,
+          "moneyline_non_negative_rate": 0.5,
           "totals_tracked": 0,
           "totals_avg_clv": null,
           "totals_positive_rate": null,
           "totals_non_negative_rate": null
         },
         "recent_count": 8,
-        "avg_model_prob": 0.7664,
+        "avg_model_prob": 0.7955,
         "actual_win_rate": 0.875,
-        "calibration_gap": -0.1086,
+        "calibration_gap": -0.0795,
         "overconfidence_gap": 0.0
       },
       "allow": false,
       "status": "research",
       "reasons": [
-        "need more settled moneylines picks (18/20)"
+        "need more settled moneylines picks (19/20)"
       ],
       "health_score": 0.8571
     },
@@ -658,14 +1732,14 @@
     "ensemble": {
       "sample_size": 40,
       "accuracy": 0.825,
-      "avg_log_loss": 0.4686
+      "avg_log_loss": 0.4668
     },
     "models": {
       "elo": {
         "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.4776,
-        "weight": 0.1787,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.4668,
+        "weight": 0.1817,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -674,7 +1748,7 @@
         "sample_size": 40,
         "accuracy": 0.75,
         "avg_log_loss": 0.5342,
-        "weight": 0.1689,
+        "weight": 0.166,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -683,7 +1757,7 @@
         "sample_size": 40,
         "accuracy": 0.65,
         "avg_log_loss": 0.6517,
-        "weight": 0.1428,
+        "weight": 0.1403,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -691,8 +1765,8 @@
       "results_features": {
         "sample_size": 40,
         "accuracy": 0.775,
-        "avg_log_loss": 0.5355,
-        "weight": 0.1737,
+        "avg_log_loss": 0.5126,
+        "weight": 0.1726,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -700,17 +1774,17 @@
       "recent_boxscore": {
         "sample_size": 40,
         "accuracy": 0.775,
-        "avg_log_loss": 0.5393,
-        "weight": 0.1734,
+        "avg_log_loss": 0.5144,
+        "weight": 0.1725,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
       },
       "nba_matchup": {
         "sample_size": 40,
-        "accuracy": 0.725,
-        "avg_log_loss": 0.5526,
-        "weight": 0.1626,
+        "accuracy": 0.75,
+        "avg_log_loss": 0.5228,
+        "weight": 0.1669,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -727,7 +1801,7 @@
       "nba_matchup"
     ]
   },
-  "calibration_sample_size": 184,
+  "calibration_sample_size": 188,
   "selection_config": {
     "outcomes": [
       "home",
@@ -762,21 +1836,21 @@
   },
   "diagnostics": {
     "historical_matches": 1306,
-    "fixtures_fetched": 0,
-    "fixtures_in_window": 0,
+    "fixtures_fetched": 2,
+    "fixtures_in_window": 2,
     "fixtures_completed": 0,
-    "fixtures_pending": 0,
+    "fixtures_pending": 2,
     "odds_events_fetched": 8,
-    "fixtures_with_odds": 0,
+    "fixtures_with_odds": 2,
     "fixtures_without_odds": 0,
     "coverage_gap_examples": [],
-    "matches_modeled": 0,
-    "matches_with_market": 0,
-    "matches_with_positive_ev": 0,
-    "matches_with_qualitative": 0,
-    "lock_eligible_matches": 0,
-    "lock_eligible_outcomes": 0,
-    "slop_locks_posted": 0,
+    "matches_modeled": 2,
+    "matches_with_market": 2,
+    "matches_with_positive_ev": 2,
+    "matches_with_qualitative": 2,
+    "lock_eligible_matches": 1,
+    "lock_eligible_outcomes": 1,
+    "slop_locks_posted": 2,
     "longslop_posted": 0,
     "slimegrinders_posted": 0,
     "publication_guard": {
@@ -1077,7 +2151,6 @@
         "totals_enabled": false
       }
     },
-    "summary": "modeled=0 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0 | need more settled moneylines picks (19/20); totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000"
-  },
-  "updated_at": "2026-04-13T21:44:42Z"
+    "summary": "modeled=2 | odds=2/2 | +ev=2 | sense=2 | eligible=1 | locks=2 | need more settled moneylines picks (19/20); totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000"
+  }
 }
