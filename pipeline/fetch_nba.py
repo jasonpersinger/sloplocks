@@ -98,7 +98,7 @@ def fetch_nba_games(season: Optional[int] = None) -> pd.DataFrame:
     -------
     pd.DataFrame
         Columns: date, home_team, away_team, home_goals, away_goals
-        (goals = points, keeping schema consistent with EPL).
+        (goals = points, keeping the legacy shared match schema intact).
     """
     if season is None:
         season = _current_nba_season()
