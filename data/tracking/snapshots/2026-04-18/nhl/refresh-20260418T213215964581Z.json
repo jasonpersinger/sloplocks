@@ -1,0 +1,4567 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-04-18T21:32:35Z",
+  "sport": "nhl",
+  "sport_name": "NHL",
+  "run_id": "refresh-20260418T213215964581Z",
+  "run_type": "refresh",
+  "snapshot_timestamp": "2026-04-18T21:32:15Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.015,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 50,
+      "confidence_dropoff": 7,
+      "max_picks": 5
+    },
+    "longslop": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 54
+    },
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 52
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54.0,
+      "max_picks": 3
+    }
+  },
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [
+      {
+        "home_team": "Hurricanes",
+        "away_team": "Senators",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T19:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Frederik Andersen",
+        "away_goalie": "Linus Ullmark",
+        "home_goalie_id": "2517899",
+        "away_goalie_id": "3069285",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 0.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "7",
+              "uid": "s:70~l:90~t:7",
+              "displayName": "Carolina Hurricanes",
+              "abbreviation": "CAR",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/car/carolina-hurricanes",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/car",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": []
+          },
+          {
+            "team": {
+              "id": "14",
+              "uid": "s:70~l:90~t:14",
+              "displayName": "Ottawa Senators",
+              "abbreviation": "OTT",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/ott/ottawa-senators",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/ott",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-18T16:10Z",
+                "athlete": {
+                  "id": "4697448",
+                  "uid": "s:70~l:90~a:4697448",
+                  "guid": "e81a8ced-09ea-3f6d-8f49-94a2a8d8d699",
+                  "lastName": "Kleven",
+                  "fullName": "Tyler Kleven",
+                  "displayName": "Tyler Kleven",
+                  "shortName": "T. Kleven",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4697448",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4697448.png",
+                    "alt": "Tyler Kleven"
+                  },
+                  "jersey": "43",
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Upper Body",
+                  "returnDate": "2026-04-20"
+                }
+              },
+              {
+                "status": "Injured Reserve",
+                "date": "2026-04-14T16:23Z",
+                "athlete": {
+                  "id": "3025608",
+                  "uid": "s:70~l:90~a:3025608",
+                  "guid": "26ae496b-d0ad-d82e-2f13-09e31b4bc3dc",
+                  "lastName": "Jensen",
+                  "fullName": "Nick Jensen",
+                  "displayName": "Nick Jensen",
+                  "shortName": "N. Jensen",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/3025608",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3025608.png",
+                    "alt": "Nick Jensen"
+                  },
+                  "jersey": "3",
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "5",
+                  "name": "INJURY_STATUS_IR",
+                  "description": "Injured Reserve",
+                  "abbreviation": "IR"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "IR",
+                    "abbreviation": "IR",
+                    "displayDescription": "IR"
+                  },
+                  "type": "Knee",
+                  "detail": "Surgery",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Stars",
+        "away_team": "Wild",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T21:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Jake Oettinger",
+        "away_goalie": "Jesper Wallstedt",
+        "home_goalie_id": "4196914",
+        "away_goalie_id": "4874737",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "9",
+              "uid": "s:70~l:90~t:9",
+              "displayName": "Dallas Stars",
+              "abbreviation": "DAL",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/dal/dallas-stars",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/dal",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-31T21:20Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-31T21:19Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-14T23:54Z",
+                "athlete": {
+                  "id": "3904183",
+                  "uid": "s:70~l:90~a:3904183",
+                  "guid": "98034927-b797-0e79-46a2-e0a1c803c801",
+                  "lastName": "Hintz",
+                  "fullName": "Roope Hintz",
+                  "displayName": "Roope Hintz",
+                  "shortName": "R. Hintz",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/3904183",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3904183.png",
+                    "alt": "Roope Hintz"
+                  },
+                  "jersey": "24",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Lower Body",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-04-06T17:26Z",
+                "athlete": {
+                  "id": "4063279",
+                  "uid": "s:70~l:90~a:4063279",
+                  "guid": "b8d8e846-6267-f222-2f03-bb8da2e8c17c",
+                  "lastName": "Bastian",
+                  "fullName": "Nathan Bastian",
+                  "displayName": "Nathan Bastian",
+                  "shortName": "N. Bastian",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4063279",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4063279.png",
+                    "alt": "Nathan Bastian"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Right Wing",
+                    "displayName": "Right Wing",
+                    "abbreviation": "RW"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Hand",
+                  "returnDate": "2026-05-04"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "30",
+              "uid": "s:70~l:90~t:30",
+              "displayName": "Minnesota Wild",
+              "abbreviation": "MIN",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/min/minnesota-wild",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/min",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-07T01:43Z",
+                "athlete": {
+                  "id": "5149196",
+                  "uid": "s:70~l:90~a:5149196",
+                  "guid": "12c7fe9f-5aec-3c76-a1fc-25c99d438349",
+                  "lastName": "Stramel",
+                  "fullName": "Charlie Stramel",
+                  "displayName": "Charlie Stramel",
+                  "shortName": "C. Stramel",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5149196",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "4",
+                    "name": "Minors",
+                    "type": "minors",
+                    "abbreviation": "Minors"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Ankle",
+                  "detail": "Fracture",
+                  "side": "Not Specified",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Penguins",
+        "away_team": "Flyers",
+        "date": "2026-04-18",
+        "start_time": "2026-04-19T00:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Stuart Skinner",
+        "away_goalie": "Dan Vladar",
+        "home_goalie_id": "4268767",
+        "away_goalie_id": "3942459",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "16",
+              "uid": "s:70~l:90~t:16",
+              "displayName": "Pittsburgh Penguins",
+              "abbreviation": "PIT",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/pit/pittsburgh-penguins",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/pit",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2025-11-24T18:30Z",
+                "athlete": {
+                  "id": "5291981",
+                  "uid": "s:70~l:90~a:5291981",
+                  "guid": "de6b624a-2cbc-33cd-ab6d-9f76e85077d4",
+                  "lastName": "Kettles",
+                  "fullName": "Peyton Kettles",
+                  "displayName": "Peyton Kettles",
+                  "shortName": "P. Kettles",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5291981",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "4",
+                    "name": "Minors",
+                    "type": "minors",
+                    "abbreviation": "Minors"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Shoulder",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "15",
+              "uid": "s:70~l:90~t:15",
+              "displayName": "Philadelphia Flyers",
+              "abbreviation": "PHI",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/phi/philadelphia-flyers",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/phi",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-16T17:42Z",
+                "athlete": {
+                  "id": "5188490",
+                  "uid": "s:70~l:90~a:5188490",
+                  "guid": "2e252267-6a94-36c6-80ed-d23754c6ceef",
+                  "lastName": "Grebenkin",
+                  "fullName": "Nikita Grebenkin",
+                  "displayName": "Nikita Grebenkin",
+                  "shortName": "N. Grebenkin",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5188490",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/5188490.png",
+                    "alt": "Nikita Grebenkin"
+                  },
+                  "jersey": "29",
+                  "position": {
+                    "name": "Right Wing",
+                    "displayName": "Right Wing",
+                    "abbreviation": "RW"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Upper Body",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Injured Reserve",
+                "date": "2026-01-22T00:33Z",
+                "athlete": {
+                  "id": "4064976",
+                  "uid": "s:70~l:90~a:4064976",
+                  "guid": "f0f7c3a7-6e8a-47fa-b290-96724da24d8a",
+                  "lastName": "Abols",
+                  "fullName": "Rodrigo Abols",
+                  "displayName": "Rodrigo Abols",
+                  "shortName": "R. Abols",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4064976",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4064976.png",
+                    "alt": "Rodrigo Abols"
+                  },
+                  "jersey": "18",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "5",
+                  "name": "INJURY_STATUS_IR",
+                  "description": "Injured Reserve",
+                  "abbreviation": "IR"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "IR",
+                    "abbreviation": "IR",
+                    "displayDescription": "IR"
+                  },
+                  "type": "Ankle",
+                  "detail": "Fracture",
+                  "side": "Right",
+                  "returnDate": "2026-05-02"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "fixtures_in_window": [
+      {
+        "home_team": "Hurricanes",
+        "away_team": "Senators",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T19:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Frederik Andersen",
+        "away_goalie": "Linus Ullmark",
+        "home_goalie_id": "2517899",
+        "away_goalie_id": "3069285",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 0.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "7",
+              "uid": "s:70~l:90~t:7",
+              "displayName": "Carolina Hurricanes",
+              "abbreviation": "CAR",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/car/carolina-hurricanes",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/car",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/car.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": []
+          },
+          {
+            "team": {
+              "id": "14",
+              "uid": "s:70~l:90~t:14",
+              "displayName": "Ottawa Senators",
+              "abbreviation": "OTT",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/ott/ottawa-senators",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/ott",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/ott.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-18T16:10Z",
+                "athlete": {
+                  "id": "4697448",
+                  "uid": "s:70~l:90~a:4697448",
+                  "guid": "e81a8ced-09ea-3f6d-8f49-94a2a8d8d699",
+                  "lastName": "Kleven",
+                  "fullName": "Tyler Kleven",
+                  "displayName": "Tyler Kleven",
+                  "shortName": "T. Kleven",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4697448",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4697448.png",
+                    "alt": "Tyler Kleven"
+                  },
+                  "jersey": "43",
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Upper Body",
+                  "returnDate": "2026-04-20"
+                }
+              },
+              {
+                "status": "Injured Reserve",
+                "date": "2026-04-14T16:23Z",
+                "athlete": {
+                  "id": "3025608",
+                  "uid": "s:70~l:90~a:3025608",
+                  "guid": "26ae496b-d0ad-d82e-2f13-09e31b4bc3dc",
+                  "lastName": "Jensen",
+                  "fullName": "Nick Jensen",
+                  "displayName": "Nick Jensen",
+                  "shortName": "N. Jensen",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/3025608",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3025608.png",
+                    "alt": "Nick Jensen"
+                  },
+                  "jersey": "3",
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "5",
+                  "name": "INJURY_STATUS_IR",
+                  "description": "Injured Reserve",
+                  "abbreviation": "IR"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "IR",
+                    "abbreviation": "IR",
+                    "displayDescription": "IR"
+                  },
+                  "type": "Knee",
+                  "detail": "Surgery",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Stars",
+        "away_team": "Wild",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T21:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Jake Oettinger",
+        "away_goalie": "Jesper Wallstedt",
+        "home_goalie_id": "4196914",
+        "away_goalie_id": "4874737",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "9",
+              "uid": "s:70~l:90~t:9",
+              "displayName": "Dallas Stars",
+              "abbreviation": "DAL",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/dal/dallas-stars",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/dal",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-31T21:20Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/dal.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-31T21:19Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-14T23:54Z",
+                "athlete": {
+                  "id": "3904183",
+                  "uid": "s:70~l:90~a:3904183",
+                  "guid": "98034927-b797-0e79-46a2-e0a1c803c801",
+                  "lastName": "Hintz",
+                  "fullName": "Roope Hintz",
+                  "displayName": "Roope Hintz",
+                  "shortName": "R. Hintz",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/3904183",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/3904183.png",
+                    "alt": "Roope Hintz"
+                  },
+                  "jersey": "24",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Lower Body",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-04-06T17:26Z",
+                "athlete": {
+                  "id": "4063279",
+                  "uid": "s:70~l:90~a:4063279",
+                  "guid": "b8d8e846-6267-f222-2f03-bb8da2e8c17c",
+                  "lastName": "Bastian",
+                  "fullName": "Nathan Bastian",
+                  "displayName": "Nathan Bastian",
+                  "shortName": "N. Bastian",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4063279",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4063279.png",
+                    "alt": "Nathan Bastian"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Right Wing",
+                    "displayName": "Right Wing",
+                    "abbreviation": "RW"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Hand",
+                  "returnDate": "2026-05-04"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "30",
+              "uid": "s:70~l:90~t:30",
+              "displayName": "Minnesota Wild",
+              "abbreviation": "MIN",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/min/minnesota-wild",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/min",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-07T01:43Z",
+                "athlete": {
+                  "id": "5149196",
+                  "uid": "s:70~l:90~a:5149196",
+                  "guid": "12c7fe9f-5aec-3c76-a1fc-25c99d438349",
+                  "lastName": "Stramel",
+                  "fullName": "Charlie Stramel",
+                  "displayName": "Charlie Stramel",
+                  "shortName": "C. Stramel",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5149196",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "4",
+                    "name": "Minors",
+                    "type": "minors",
+                    "abbreviation": "Minors"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Ankle",
+                  "detail": "Fracture",
+                  "side": "Not Specified",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Penguins",
+        "away_team": "Flyers",
+        "date": "2026-04-18",
+        "start_time": "2026-04-19T00:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_goalie": "Stuart Skinner",
+        "away_goalie": "Dan Vladar",
+        "home_goalie_id": "4268767",
+        "away_goalie_id": "3942459",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "16",
+              "uid": "s:70~l:90~t:16",
+              "displayName": "Pittsburgh Penguins",
+              "abbreviation": "PIT",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/pit/pittsburgh-penguins",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/pit",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/pit.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2025-11-24T18:30Z",
+                "athlete": {
+                  "id": "5291981",
+                  "uid": "s:70~l:90~a:5291981",
+                  "guid": "de6b624a-2cbc-33cd-ab6d-9f76e85077d4",
+                  "lastName": "Kettles",
+                  "fullName": "Peyton Kettles",
+                  "displayName": "Peyton Kettles",
+                  "shortName": "P. Kettles",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5291981",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Defense",
+                    "displayName": "Defense",
+                    "abbreviation": "D"
+                  },
+                  "status": {
+                    "id": "4",
+                    "name": "Minors",
+                    "type": "minors",
+                    "abbreviation": "Minors"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Shoulder",
+                  "returnDate": "2026-09-15"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "15",
+              "uid": "s:70~l:90~t:15",
+              "displayName": "Philadelphia Flyers",
+              "abbreviation": "PHI",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nhl/team/_/name/phi/philadelphia-flyers",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nhl/team/schedule/_/name/phi",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500/scoreboard/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-02T15:51Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nhl/500-dark/scoreboard/phi.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-02T15:46Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-16T17:42Z",
+                "athlete": {
+                  "id": "5188490",
+                  "uid": "s:70~l:90~a:5188490",
+                  "guid": "2e252267-6a94-36c6-80ed-d23754c6ceef",
+                  "lastName": "Grebenkin",
+                  "fullName": "Nikita Grebenkin",
+                  "displayName": "Nikita Grebenkin",
+                  "shortName": "N. Grebenkin",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/5188490",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/5188490.png",
+                    "alt": "Nikita Grebenkin"
+                  },
+                  "jersey": "29",
+                  "position": {
+                    "name": "Right Wing",
+                    "displayName": "Right Wing",
+                    "abbreviation": "RW"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Upper Body",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Injured Reserve",
+                "date": "2026-01-22T00:33Z",
+                "athlete": {
+                  "id": "4064976",
+                  "uid": "s:70~l:90~a:4064976",
+                  "guid": "f0f7c3a7-6e8a-47fa-b290-96724da24d8a",
+                  "lastName": "Abols",
+                  "fullName": "Rodrigo Abols",
+                  "displayName": "Rodrigo Abols",
+                  "shortName": "R. Abols",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nhl/player/_/id/4064976",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nhl/players/full/4064976.png",
+                    "alt": "Rodrigo Abols"
+                  },
+                  "jersey": "18",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "5",
+                  "name": "INJURY_STATUS_IR",
+                  "description": "Injured Reserve",
+                  "abbreviation": "IR"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "IR",
+                    "abbreviation": "IR",
+                    "displayDescription": "IR"
+                  },
+                  "type": "Ankle",
+                  "detail": "Fracture",
+                  "side": "Right",
+                  "returnDate": "2026-05-02"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "odds": [
+      {
+        "home_team": "Hurricanes",
+        "away_team": "Senators",
+        "commence_time": "2026-04-18T19:20:47Z",
+        "home_odds": 1.01,
+        "draw_odds": 0.0,
+        "away_odds": 36.0,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.0288,
+            "home": 0.9712
+          },
+          "raw_probs": {
+            "away": 0.0294,
+            "home": 0.9901
+          },
+          "hold": 0.0195,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.01,
+            "away": 36.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.0288,
+              "home": 0.9712
+            },
+            "raw_probs": {
+              "away": 0.0294,
+              "home": 0.9901
+            },
+            "hold": 0.0195,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.01,
+                "away": 34.0
+              },
+              "raw_probs": {
+                "home": 0.9901,
+                "away": 0.0294
+              },
+              "fair_probs": {
+                "home": 0.9712,
+                "away": 0.0288
+              },
+              "hold": 0.0195
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Stars",
+        "away_team": "Wild",
+        "commence_time": "2026-04-18T21:50:00Z",
+        "home_odds": 1.83,
+        "draw_odds": 0.0,
+        "away_odds": 2.1,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4684,
+            "home": 0.5316
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.554
+          },
+          "hold": 0.0434,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.83,
+            "away": 2.1
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4684,
+              "home": 0.5316
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.554
+            },
+            "hold": 0.0434,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.82,
+                "away": 2.02
+              },
+              "raw_probs": {
+                "home": 0.5495,
+                "away": 0.495
+              },
+              "fair_probs": {
+                "home": 0.526,
+                "away": 0.474
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5308,
+                "away": 0.4692
+              },
+              "hold": 0.0295
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5308,
+                "away": 0.4692
+              },
+              "hold": 0.0295
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:29:15Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.81,
+                "away": 2.02
+              },
+              "raw_probs": {
+                "home": 0.5525,
+                "away": 0.495
+              },
+              "fair_probs": {
+                "home": 0.5274,
+                "away": 0.4726
+              },
+              "hold": 0.0475
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.77,
+                "away": 2.1
+              },
+              "raw_probs": {
+                "home": 0.565,
+                "away": 0.4762
+              },
+              "fair_probs": {
+                "home": 0.5426,
+                "away": 0.4574
+              },
+              "hold": 0.0412
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Penguins",
+        "away_team": "Flyers",
+        "commence_time": "2026-04-19T00:25:26Z",
+        "home_odds": 1.7,
+        "draw_odds": 0.0,
+        "away_odds": 2.27,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.433,
+            "home": 0.567
+          },
+          "raw_probs": {
+            "away": 0.4545,
+            "home": 0.5917
+          },
+          "hold": 0.0428,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.7,
+            "away": 2.27
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.433,
+              "home": 0.567
+            },
+            "raw_probs": {
+              "away": 0.4545,
+              "home": 0.5917
+            },
+            "hold": 0.0428,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.7,
+                "away": 2.18
+              },
+              "raw_probs": {
+                "home": 0.5882,
+                "away": 0.4587
+              },
+              "fair_probs": {
+                "home": 0.5619,
+                "away": 0.4381
+              },
+              "hold": 0.047
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.7,
+                "away": 2.2
+              },
+              "raw_probs": {
+                "home": 0.5882,
+                "away": 0.4545
+              },
+              "fair_probs": {
+                "home": 0.5641,
+                "away": 0.4359
+              },
+              "hold": 0.0428
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.7,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5882,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5696,
+                "away": 0.4304
+              },
+              "hold": 0.0327
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.7,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5882,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5696,
+                "away": 0.4304
+              },
+              "hold": 0.0327
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.2
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4545
+              },
+              "fair_probs": {
+                "home": 0.567,
+                "away": 0.433
+              },
+              "hold": 0.0498
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5711,
+                "away": 0.4289
+              },
+              "hold": 0.0362
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.19
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4566
+              },
+              "fair_probs": {
+                "home": 0.5659,
+                "away": 0.4341
+              },
+              "hold": 0.0519
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.2
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4545
+              },
+              "fair_probs": {
+                "home": 0.5656,
+                "away": 0.4344
+              },
+              "hold": 0.0463
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.27
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4405
+              },
+              "fair_probs": {
+                "home": 0.5747,
+                "away": 0.4253
+              },
+              "hold": 0.0358
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Avalanche",
+        "away_team": "Kings",
+        "commence_time": "2026-04-19T19:10:00Z",
+        "home_odds": 1.38,
+        "draw_odds": 0.0,
+        "away_odds": 3.4,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2987,
+            "home": 0.7013
+          },
+          "raw_probs": {
+            "away": 0.3125,
+            "home": 0.7299
+          },
+          "hold": 0.0421,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.38,
+            "away": 3.4
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2987,
+              "home": 0.7013
+            },
+            "raw_probs": {
+              "away": 0.3125,
+              "home": 0.7299
+            },
+            "hold": 0.0421,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.38,
+                "away": 3.15
+              },
+              "raw_probs": {
+                "home": 0.7246,
+                "away": 0.3175
+              },
+              "fair_probs": {
+                "home": 0.6954,
+                "away": 0.3046
+              },
+              "hold": 0.0421
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.38,
+                "away": 3.24
+              },
+              "raw_probs": {
+                "home": 0.7246,
+                "away": 0.3086
+              },
+              "fair_probs": {
+                "home": 0.7013,
+                "away": 0.2987
+              },
+              "hold": 0.0333
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.36,
+                "away": 3.2
+              },
+              "raw_probs": {
+                "home": 0.7353,
+                "away": 0.3125
+              },
+              "fair_probs": {
+                "home": 0.7018,
+                "away": 0.2982
+              },
+              "hold": 0.0478
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.38,
+                "away": 3.24
+              },
+              "raw_probs": {
+                "home": 0.7246,
+                "away": 0.3086
+              },
+              "fair_probs": {
+                "home": 0.7013,
+                "away": 0.2987
+              },
+              "hold": 0.0333
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.38,
+                "away": 3.15
+              },
+              "raw_probs": {
+                "home": 0.7246,
+                "away": 0.3175
+              },
+              "fair_probs": {
+                "home": 0.6954,
+                "away": 0.3046
+              },
+              "hold": 0.0421
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.37,
+                "away": 3.12
+              },
+              "raw_probs": {
+                "home": 0.7299,
+                "away": 0.3205
+              },
+              "fair_probs": {
+                "home": 0.6949,
+                "away": 0.3051
+              },
+              "hold": 0.0504
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.37,
+                "away": 3.25
+              },
+              "raw_probs": {
+                "home": 0.7299,
+                "away": 0.3077
+              },
+              "fair_probs": {
+                "home": 0.7035,
+                "away": 0.2965
+              },
+              "hold": 0.0376
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.37,
+                "away": 3.2
+              },
+              "raw_probs": {
+                "home": 0.7299,
+                "away": 0.3125
+              },
+              "fair_probs": {
+                "home": 0.7002,
+                "away": 0.2998
+              },
+              "hold": 0.0424
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.33,
+                "away": 3.4
+              },
+              "raw_probs": {
+                "home": 0.7519,
+                "away": 0.2941
+              },
+              "fair_probs": {
+                "home": 0.7188,
+                "away": 0.2812
+              },
+              "hold": 0.046
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Lightning",
+        "away_team": "Canadiens",
+        "commence_time": "2026-04-19T21:45:00Z",
+        "home_odds": 1.54,
+        "draw_odds": 0.0,
+        "away_odds": 2.63,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3711,
+            "home": 0.6289
+          },
+          "raw_probs": {
+            "away": 0.3861,
+            "home": 0.6536
+          },
+          "hold": 0.0431,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.54,
+            "away": 2.63
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3711,
+              "home": 0.6289
+            },
+            "raw_probs": {
+              "away": 0.3861,
+              "home": 0.6536
+            },
+            "hold": 0.0431,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.52,
+                "away": 2.58
+              },
+              "raw_probs": {
+                "home": 0.6579,
+                "away": 0.3876
+              },
+              "fair_probs": {
+                "home": 0.6293,
+                "away": 0.3707
+              },
+              "hold": 0.0455
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.54
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.3937
+              },
+              "fair_probs": {
+                "home": 0.6225,
+                "away": 0.3775
+              },
+              "hold": 0.0431
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.61
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.3831
+              },
+              "fair_probs": {
+                "home": 0.6289,
+                "away": 0.3711
+              },
+              "hold": 0.0325
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.61
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.3831
+              },
+              "fair_probs": {
+                "home": 0.6289,
+                "away": 0.3711
+              },
+              "hold": 0.0325
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.59
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.3861
+              },
+              "fair_probs": {
+                "home": 0.6271,
+                "away": 0.3729
+              },
+              "hold": 0.0355
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.5,
+                "away": 2.6
+              },
+              "raw_probs": {
+                "home": 0.6667,
+                "away": 0.3846
+              },
+              "fair_probs": {
+                "home": 0.6341,
+                "away": 0.3659
+              },
+              "hold": 0.0513
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.58
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.3876
+              },
+              "fair_probs": {
+                "home": 0.6308,
+                "away": 0.3692
+              },
+              "hold": 0.0498
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.53,
+                "away": 2.55
+              },
+              "raw_probs": {
+                "home": 0.6536,
+                "away": 0.3922
+              },
+              "fair_probs": {
+                "home": 0.625,
+                "away": 0.375
+              },
+              "hold": 0.0458
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.53,
+                "away": 2.63
+              },
+              "raw_probs": {
+                "home": 0.6536,
+                "away": 0.3802
+              },
+              "fair_probs": {
+                "home": 0.6322,
+                "away": 0.3678
+              },
+              "hold": 0.0338
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Sabres",
+        "away_team": "Bruins",
+        "commence_time": "2026-04-19T23:30:03Z",
+        "home_odds": 1.65,
+        "draw_odds": 0.0,
+        "away_odds": 2.35,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4125,
+            "home": 0.5875
+          },
+          "raw_probs": {
+            "away": 0.4274,
+            "home": 0.6098
+          },
+          "hold": 0.0428,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.65,
+            "away": 2.35
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4125,
+              "home": 0.5875
+            },
+            "raw_probs": {
+              "away": 0.4274,
+              "home": 0.6098
+            },
+            "hold": 0.0428,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.64,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6098,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5838,
+                "away": 0.4162
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5875,
+                "away": 0.4125
+              },
+              "hold": 0.0316
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5875,
+                "away": 0.4125
+              },
+              "hold": 0.0316
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.32
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.431
+              },
+              "fair_probs": {
+                "home": 0.5888,
+                "away": 0.4112
+              },
+              "hold": 0.0483
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.64,
+                "away": 2.28
+              },
+              "raw_probs": {
+                "home": 0.6098,
+                "away": 0.4386
+              },
+              "fair_probs": {
+                "home": 0.5816,
+                "away": 0.4184
+              },
+              "hold": 0.0484
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5919,
+                "away": 0.4081
+              },
+              "hold": 0.0428
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.34
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4274
+              },
+              "fair_probs": {
+                "home": 0.5865,
+                "away": 0.4135
+              },
+              "hold": 0.0334
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5919,
+                "away": 0.4081
+              },
+              "hold": 0.0428
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Golden Knights",
+        "away_team": "Mammoth",
+        "commence_time": "2026-04-20T02:00:00Z",
+        "home_odds": 1.67,
+        "draw_odds": 0.0,
+        "away_odds": 2.37,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.415,
+            "home": 0.585
+          },
+          "raw_probs": {
+            "away": 0.431,
+            "home": 0.6024
+          },
+          "hold": 0.0431,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.67,
+            "away": 2.37
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.415,
+              "home": 0.585
+            },
+            "raw_probs": {
+              "away": 0.431,
+              "home": 0.6024
+            },
+            "hold": 0.0431,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.32
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.431
+              },
+              "fair_probs": {
+                "home": 0.5888,
+                "away": 0.4112
+              },
+              "hold": 0.0483
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.34
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4274
+              },
+              "fair_probs": {
+                "home": 0.585,
+                "away": 0.415
+              },
+              "hold": 0.0298
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.34
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4274
+              },
+              "fair_probs": {
+                "home": 0.585,
+                "away": 0.415
+              },
+              "hold": 0.0298
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.29
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4367
+              },
+              "fair_probs": {
+                "home": 0.5783,
+                "away": 0.4217
+              },
+              "hold": 0.0355
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.33
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.4292
+              },
+              "fair_probs": {
+                "home": 0.5899,
+                "away": 0.4101
+              },
+              "hold": 0.0465
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.24
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4464
+              },
+              "fair_probs": {
+                "home": 0.5744,
+                "away": 0.4256
+              },
+              "hold": 0.0488
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.574,
+                "away": 0.426
+              },
+              "hold": 0.0432
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.61,
+                "away": 2.37
+              },
+              "raw_probs": {
+                "home": 0.6211,
+                "away": 0.4219
+              },
+              "fair_probs": {
+                "home": 0.5955,
+                "away": 0.4045
+              },
+              "hold": 0.0431
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Oilers",
+        "away_team": "Ducks",
+        "commence_time": "2026-04-21T02:10:00Z",
+        "home_odds": 1.59,
+        "draw_odds": 0.0,
+        "away_odds": 2.6,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3863,
+            "home": 0.6137
+          },
+          "raw_probs": {
+            "away": 0.4,
+            "home": 0.6369
+          },
+          "hold": 0.041,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.59,
+            "away": 2.6
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3863,
+              "home": 0.6137
+            },
+            "raw_probs": {
+              "away": 0.4,
+              "home": 0.6369
+            },
+            "hold": 0.041,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T21:31:28Z",
+              "outcomes": {
+                "home": 1.56,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.641,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6158,
+                "away": 0.3842
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T21:31:42Z",
+              "outcomes": {
+                "home": 1.58,
+                "away": 2.51
+              },
+              "raw_probs": {
+                "home": 0.6329,
+                "away": 0.3984
+              },
+              "fair_probs": {
+                "home": 0.6137,
+                "away": 0.3863
+              },
+              "hold": 0.0313
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T21:31:53Z",
+              "outcomes": {
+                "home": 1.58,
+                "away": 2.51
+              },
+              "raw_probs": {
+                "home": 0.6329,
+                "away": 0.3984
+              },
+              "fair_probs": {
+                "home": 0.6137,
+                "away": 0.3863
+              },
+              "hold": 0.0313
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T21:32:20Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6188,
+                "away": 0.3812
+              },
+              "hold": 0.0494
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T21:31:40Z",
+              "outcomes": {
+                "home": 1.58,
+                "away": 2.42
+              },
+              "raw_probs": {
+                "home": 0.6329,
+                "away": 0.4132
+              },
+              "fair_probs": {
+                "home": 0.605,
+                "away": 0.395
+              },
+              "hold": 0.0461
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T21:30:22Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.42
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4132
+              },
+              "fair_probs": {
+                "home": 0.6065,
+                "away": 0.3935
+              },
+              "hold": 0.0502
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T21:32:18Z",
+              "outcomes": {
+                "home": 1.59,
+                "away": 2.46
+              },
+              "raw_probs": {
+                "home": 0.6289,
+                "away": 0.4065
+              },
+              "fair_probs": {
+                "home": 0.6074,
+                "away": 0.3926
+              },
+              "hold": 0.0354
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T21:31:34Z",
+              "outcomes": {
+                "home": 1.56,
+                "away": 2.55
+              },
+              "raw_probs": {
+                "home": 0.641,
+                "away": 0.3922
+              },
+              "fair_probs": {
+                "home": 0.6204,
+                "away": 0.3796
+              },
+              "hold": 0.0332
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T21:32:05Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.6
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.3846
+              },
+              "fair_probs": {
+                "home": 0.6326,
+                "away": 0.3674
+              },
+              "hold": 0.0469
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.3298,
+      "results_features": 0.335,
+      "nhl_matchup": 0.3351
+    },
+    "models": [
+      "elo",
+      "nhl_matchup",
+      "results_features"
+    ]
+  },
+  "records": {
+    "matches": [
+      {
+        "home_team": "Hurricanes",
+        "away_team": "Senators",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T19:00Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": null,
+        "away_availability_profile": null,
+        "home_goalie": "Frederik Andersen",
+        "away_goalie": "Linus Ullmark",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 0.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "home",
+        "model_prob": 0.5544,
+        "edge": -0.4168,
+        "expected_value": -0.052,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 36.9,
+        "confidence_stars": 1,
+        "american_odds": -10000,
+        "model_probs": {
+          "home": 0.5544,
+          "away": 0.4456
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.5869,
+            "away": 0.4131
+          },
+          "results_features": {
+            "home": 0.5408,
+            "away": 0.4592
+          },
+          "nhl_matchup": {
+            "home": 0.5515,
+            "away": 0.4485
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.5544,
+            "raw_model_prob": 0.5544,
+            "implied_prob": 0.9712,
+            "market_implied_prob": 0.9901,
+            "edge": -0.4168,
+            "expected_value": -0.4401,
+            "decimal_odds": 1.01,
+            "american_odds": -10000,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": true,
+            "hold": 0.0195,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 1
+          },
+          "away": {
+            "model_prob": 0.4456,
+            "raw_model_prob": 0.4456,
+            "implied_prob": 0.0288,
+            "market_implied_prob": 0.0294,
+            "edge": 0.4168,
+            "expected_value": 15.0416,
+            "decimal_odds": 36.0,
+            "american_odds": 3500,
+            "kelly_fraction": 0.4298,
+            "fractional_kelly": 0.086,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": true,
+            "hold": 0.0195,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 1
+          }
+        },
+        "best_odds": {
+          "home": -10000,
+          "away": 3500
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.68,
+            "away": 2.35
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4146,
+              "home": 0.5854
+            },
+            "raw_probs": {
+              "away": 0.431,
+              "home": 0.6061
+            },
+            "hold": 0.0417,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T12:50:38Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.574,
+                "away": 0.426
+              },
+              "hold": 0.0432
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T12:50:24Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.24
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4464
+              },
+              "fair_probs": {
+                "home": 0.5714,
+                "away": 0.4286
+              },
+              "hold": 0.0417
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5875,
+                "away": 0.4125
+              },
+              "hold": 0.0316
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.35
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4255
+              },
+              "fair_probs": {
+                "home": 0.5875,
+                "away": 0.4125
+              },
+              "hold": 0.0316
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.63,
+                "away": 2.32
+              },
+              "raw_probs": {
+                "home": 0.6135,
+                "away": 0.431
+              },
+              "fair_probs": {
+                "home": 0.5873,
+                "away": 0.4127
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T12:50:53Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.34
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4274
+              },
+              "fair_probs": {
+                "home": 0.5865,
+                "away": 0.4135
+              },
+              "hold": 0.0334
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T12:50:39Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5769,
+                "away": 0.4231
+              },
+              "hold": 0.0505
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.574,
+                "away": 0.426
+              },
+              "hold": 0.0432
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T12:42:17Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.33
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4292
+              },
+              "fair_probs": {
+                "home": 0.5854,
+                "away": 0.4146
+              },
+              "hold": 0.0352
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "nhl",
+          "home_team": "Hurricanes",
+          "away_team": "Senators",
+          "home_impact": 0.0,
+          "away_impact": 0.0,
+          "individual_factors": [],
+          "net_qualitative_edge": "none",
+          "summary": "Both teams have their probable starting goalies confirmed, with no other significant qualitative factors identified."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:0.0): no effect. ",
+        "run_id": "refresh-20260418T213215964581Z",
+        "run_type": "refresh",
+        "snapshot_timestamp": "2026-04-18T21:32:15Z",
+        "snapshot_path": "tracking/snapshots/2026-04-18/nhl/refresh-20260418T213215964581Z.json",
+        "base_model_probs": {
+          "home": 0.5502,
+          "away": 0.4498
+        }
+      },
+      {
+        "home_team": "Stars",
+        "away_team": "Wild",
+        "date": "2026-04-18",
+        "start_time": "2026-04-18T21:30Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": null,
+        "away_availability_profile": null,
+        "home_goalie": "Jake Oettinger",
+        "away_goalie": "Jesper Wallstedt",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "home",
+        "model_prob": 0.5332,
+        "edge": 0.001,
+        "expected_value": -0.0366,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 25.3,
+        "confidence_stars": 1,
+        "american_odds": -120,
+        "model_probs": {
+          "home": 0.5332,
+          "away": 0.4668
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.6053,
+            "away": 0.3947
+          },
+          "results_features": {
+            "home": 0.5283,
+            "away": 0.4717
+          },
+          "nhl_matchup": {
+            "home": 0.4668,
+            "away": 0.5332
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.5326,
+            "raw_model_prob": 0.5332,
+            "implied_prob": 0.5316,
+            "market_implied_prob": 0.554,
+            "edge": 0.001,
+            "expected_value": -0.0254,
+            "decimal_odds": 1.83,
+            "american_odds": -120,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0434,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          },
+          "away": {
+            "model_prob": 0.4674,
+            "raw_model_prob": 0.4668,
+            "implied_prob": 0.4684,
+            "market_implied_prob": 0.4878,
+            "edge": -0.001,
+            "expected_value": -0.0184,
+            "decimal_odds": 2.1,
+            "american_odds": 110,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0434,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          }
+        },
+        "best_odds": {
+          "home": -120,
+          "away": 110
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.83,
+            "away": 2.07
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4778,
+              "home": 0.5222
+            },
+            "raw_probs": {
+              "away": 0.5,
+              "home": 0.5464
+            },
+            "hold": 0.0464,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T12:50:38Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T12:50:24Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.06
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.4854
+              },
+              "fair_probs": {
+                "home": 0.5296,
+                "away": 0.4704
+              },
+              "hold": 0.0319
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.06
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.4854
+              },
+              "fair_probs": {
+                "home": 0.5296,
+                "away": 0.4704
+              },
+              "hold": 0.0319
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.77,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.565,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5391,
+                "away": 0.4609
+              },
+              "hold": 0.0481
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T12:50:53Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T12:50:39Z",
+              "outcomes": {
+                "home": 1.81,
+                "away": 2.01
+              },
+              "raw_probs": {
+                "home": 0.5525,
+                "away": 0.4975
+              },
+              "fair_probs": {
+                "home": 0.5262,
+                "away": 0.4738
+              },
+              "hold": 0.05
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T12:42:17Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "nhl",
+          "home_team": "Stars",
+          "away_team": "Wild",
+          "home_impact": 0.0,
+          "away_impact": -3.0,
+          "individual_factors": [
+            {
+              "team": "Wild",
+              "description": "Backup/less experienced goalie Jesper Wallstedt is confirmed to start, which is a significant downgrade from their usual starters against a strong offensive team like the Stars.",
+              "direction": "negative",
+              "magnitude": 3.0,
+              "confidence": 1.0
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Wild face a significant qualitative disadvantage with backup goalie Jesper Wallstedt starting against the Stars' strong offense."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:-3.0): agreed. Backup/less experienced goalie Jesper Wallstedt is confirmed to start, which is a significant downgrade from their usual starters against a strong offensive team like the Stars.",
+        "run_id": "refresh-20260418T213215964581Z",
+        "run_type": "refresh",
+        "snapshot_timestamp": "2026-04-18T21:32:15Z",
+        "snapshot_path": "tracking/snapshots/2026-04-18/nhl/refresh-20260418T213215964581Z.json",
+        "base_model_probs": {
+          "home": 0.5293,
+          "away": 0.4707
+        }
+      },
+      {
+        "home_team": "Penguins",
+        "away_team": "Flyers",
+        "date": "2026-04-18",
+        "start_time": "2026-04-19T00:00Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": null,
+        "away_availability_profile": null,
+        "home_goalie": "Stuart Skinner",
+        "away_goalie": "Dan Vladar",
+        "home_goalie_status": "confirmed",
+        "away_goalie_status": "confirmed",
+        "home_injury_profile": {
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "away_injury_profile": {
+          "injury_burden": 2.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0
+        },
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "away",
+        "model_prob": 0.5001,
+        "edge": 0.0403,
+        "expected_value": 0.0731,
+        "kelly_fraction": 0.0576,
+        "fractional_kelly": 0.0115,
+        "confidence_score": 51.6,
+        "confidence_stars": 1,
+        "american_odds": 127,
+        "model_probs": {
+          "home": 0.4999,
+          "away": 0.5001
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.4542,
+            "away": 0.5458
+          },
+          "results_features": {
+            "home": 0.5156,
+            "away": 0.4844
+          },
+          "nhl_matchup": {
+            "home": 0.4559,
+            "away": 0.5441
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.5267,
+            "raw_model_prob": 0.4999,
+            "implied_prob": 0.567,
+            "market_implied_prob": 0.5917,
+            "edge": -0.0403,
+            "expected_value": -0.1045,
+            "decimal_odds": 1.7,
+            "american_odds": -143,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0428,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "away": {
+            "model_prob": 0.4733,
+            "raw_model_prob": 0.5001,
+            "implied_prob": 0.433,
+            "market_implied_prob": 0.4545,
+            "edge": 0.0403,
+            "expected_value": 0.0743,
+            "decimal_odds": 2.27,
+            "american_odds": 127,
+            "kelly_fraction": 0.0585,
+            "fractional_kelly": 0.0117,
+            "confidence_score": 0.0,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0428,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "best_odds": {
+          "home": -143,
+          "away": 127
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.7,
+            "away": 2.27
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4286,
+              "home": 0.5714
+            },
+            "raw_probs": {
+              "away": 0.4444,
+              "home": 0.5917
+            },
+            "hold": 0.0417,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-18T12:50:38Z",
+              "outcomes": {
+                "home": 1.7,
+                "away": 2.18
+              },
+              "raw_probs": {
+                "home": 0.5882,
+                "away": 0.4587
+              },
+              "fair_probs": {
+                "home": 0.5619,
+                "away": 0.4381
+              },
+              "hold": 0.047
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-18T12:50:24Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.24
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4464
+              },
+              "fair_probs": {
+                "home": 0.5714,
+                "away": 0.4286
+              },
+              "hold": 0.0417
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.27
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4405
+              },
+              "fair_probs": {
+                "home": 0.5732,
+                "away": 0.4268
+              },
+              "hold": 0.0322
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.27
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4405
+              },
+              "fair_probs": {
+                "home": 0.5732,
+                "away": 0.4268
+              },
+              "hold": 0.0322
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-18T12:50:52Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.23
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4484
+              },
+              "fair_probs": {
+                "home": 0.5718,
+                "away": 0.4282
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-18T12:50:53Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5711,
+                "away": 0.4289
+              },
+              "hold": 0.0362
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-18T12:50:39Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.21
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4525
+              },
+              "fair_probs": {
+                "home": 0.5681,
+                "away": 0.4319
+              },
+              "hold": 0.0477
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-18T12:50:25Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.574,
+                "away": 0.426
+              },
+              "hold": 0.0432
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-18T12:42:17Z",
+              "outcomes": {
+                "home": 1.69,
+                "away": 2.25
+              },
+              "raw_probs": {
+                "home": 0.5917,
+                "away": 0.4444
+              },
+              "fair_probs": {
+                "home": 0.5711,
+                "away": 0.4289
+              },
+              "hold": 0.0362
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "nhl",
+          "home_team": "Penguins",
+          "away_team": "Flyers",
+          "home_impact": 0.0,
+          "away_impact": 0.0,
+          "individual_factors": [],
+          "net_qualitative_edge": "none",
+          "summary": "No significant qualitative factors identified for this game, as the confirmed starting goalies are assumed to be standard for their respective teams without further context."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:0.0): no effect. ",
+        "run_id": "refresh-20260418T213215964581Z",
+        "run_type": "refresh",
+        "snapshot_timestamp": "2026-04-18T21:32:15Z",
+        "snapshot_path": "tracking/snapshots/2026-04-18/nhl/refresh-20260418T213215964581Z.json",
+        "base_model_probs": {
+          "home": 0.4978,
+          "away": 0.5022
+        }
+      }
+    ],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 1340,
+    "fixtures_fetched": 3,
+    "fixtures_in_window": 3,
+    "fixtures_completed": 0,
+    "fixtures_pending": 3,
+    "odds_events_fetched": 8,
+    "fixtures_with_odds": 3,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 3,
+    "matches_with_market": 3,
+    "matches_with_positive_ev": 2,
+    "matches_with_qualitative": 3,
+    "lock_eligible_matches": 0,
+    "lock_eligible_outcomes": 0,
+    "slop_locks_posted": 0,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": false,
+      "allow_totals": false,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "evaluated_picks": 20,
+      "evaluated_totals_picks": 0,
+      "min_evaluated_picks": 20,
+      "min_evaluated_totals_picks": 0,
+      "status": "suppressed",
+      "reason": "recent moneylines CLV -0.0147 is below 0.0000; recent moneylines ROI -0.0838 is below 0.0000; totals disabled by config",
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 40,
+            "evaluated": 20,
+            "pending": 20,
+            "hit_rate": 0.6,
+            "roi": 0.035,
+            "push_rate": 0.0,
+            "wins": 12,
+            "losses": 8,
+            "pushes": 0,
+            "avg_confidence": 52.0075,
+            "avg_expected_value": 0.4785,
+            "clv": {
+              "tracked": 22,
+              "avg_clv": 0.0192,
+              "positive_rate": 0.3182,
+              "non_negative_rate": 0.3182,
+              "moneyline_tracked": 22,
+              "moneyline_avg_clv": 0.0192,
+              "moneyline_positive_rate": 0.3182,
+              "moneyline_non_negative_rate": 0.3182,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.5,
+            "roi": -0.0838,
+            "push_rate": 0.0,
+            "wins": 4,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 54.4875,
+            "avg_expected_value": 0.0718,
+            "clv": {
+              "tracked": 8,
+              "avg_clv": -0.0147,
+              "positive_rate": 0.5,
+              "non_negative_rate": 0.5,
+              "moneyline_tracked": 8,
+              "moneyline_avg_clv": -0.0147,
+              "moneyline_positive_rate": 0.5,
+              "moneyline_non_negative_rate": 0.5,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5827,
+            "actual_win_rate": 0.5,
+            "calibration_gap": 0.0827,
+            "overconfidence_gap": 0.0827
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneylines CLV -0.0147 is below 0.0000",
+            "recent moneylines ROI -0.0838 is below 0.0000"
+          ],
+          "health_score": 0.7143
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "totals disabled by config"
+          ],
+          "health_score": 0.8571
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": false
+      }
+    },
+    "summary": "modeled=3 | odds=3/3 | +ev=2 | sense=3 | eligible=0 | locks=0 | recent moneylines CLV -0.0147 is below 0.0000; recent moneylines ROI -0.0838 is below 0.0000; totals disabled by config"
+  }
+}
