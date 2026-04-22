@@ -1,0 +1,5910 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-04-22T13:15:04Z",
+  "sport": "nba",
+  "sport_name": "NBA",
+  "run_id": "daily-20260422T131445225298Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-04-22T13:14:45Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 52,
+      "confidence_dropoff": 8,
+      "max_picks": 5
+    },
+    "longslop": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 0
+    }
+  },
+  "publication_guard": {
+    "enforced": true,
+    "allow_moneyline": false,
+    "allow_totals": false,
+    "allow_longslop": false,
+    "allow_slimegrinder": false,
+    "evaluated_picks": 28,
+    "evaluated_totals_picks": 6,
+    "min_evaluated_picks": 20,
+    "min_evaluated_totals_picks": 10,
+    "status": "suppressed",
+    "reason": "recent moneylines CLV -0.0039 is below 0.0000; totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000",
+    "lane_guards": {
+      "moneyline": {
+        "market_type": "moneyline",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 53,
+          "evaluated": 28,
+          "pending": 25,
+          "hit_rate": 0.7857,
+          "roi": 0.1081,
+          "push_rate": 0.0,
+          "wins": 22,
+          "losses": 6,
+          "pushes": 0,
+          "avg_confidence": 55.534,
+          "avg_expected_value": 0.0081,
+          "clv": {
+            "tracked": 26,
+            "avg_clv": 0.0749,
+            "positive_rate": 0.3846,
+            "non_negative_rate": 0.3846,
+            "moneyline_tracked": 26,
+            "moneyline_avg_clv": 0.0749,
+            "moneyline_positive_rate": 0.3846,
+            "moneyline_non_negative_rate": 0.3846,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.875,
+          "roi": 0.1825,
+          "push_rate": 0.0,
+          "wins": 7,
+          "losses": 1,
+          "pushes": 0,
+          "avg_confidence": 42.85,
+          "avg_expected_value": -0.0757,
+          "clv": {
+            "tracked": 8,
+            "avg_clv": -0.0039,
+            "positive_rate": 0.125,
+            "non_negative_rate": 0.125,
+            "moneyline_tracked": 8,
+            "moneyline_avg_clv": -0.0039,
+            "moneyline_positive_rate": 0.125,
+            "moneyline_non_negative_rate": 0.125,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.6782,
+          "actual_win_rate": 0.875,
+          "calibration_gap": -0.1968,
+          "overconfidence_gap": 0.0
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent moneylines CLV -0.0039 is below 0.0000"
+        ],
+        "health_score": 0.8571
+      },
+      "totals": {
+        "market_type": "total",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 14,
+          "evaluated": 6,
+          "pending": 8,
+          "hit_rate": 0.3333,
+          "roi": -0.36,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 4,
+          "pushes": 0,
+          "avg_confidence": 75.3786,
+          "avg_expected_value": 0.1204,
+          "clv": {
+            "tracked": 6,
+            "avg_clv": -6.1667,
+            "positive_rate": 0.5,
+            "non_negative_rate": 0.6667,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 6,
+            "totals_avg_clv": -6.1667,
+            "totals_positive_rate": 0.5,
+            "totals_non_negative_rate": 0.6667
+          }
+        },
+        "recent": {
+          "total_picks": 6,
+          "evaluated": 6,
+          "pending": 0,
+          "hit_rate": 0.3333,
+          "roi": -0.36,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 4,
+          "pushes": 0,
+          "avg_confidence": 77.15,
+          "avg_expected_value": 0.1254,
+          "clv": {
+            "tracked": 6,
+            "avg_clv": -6.1667,
+            "positive_rate": 0.5,
+            "non_negative_rate": 0.6667,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 6,
+            "totals_avg_clv": -6.1667,
+            "totals_positive_rate": 0.5,
+            "totals_non_negative_rate": 0.6667
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5821,
+          "actual_win_rate": 0.3333,
+          "calibration_gap": 0.2488,
+          "overconfidence_gap": 0.2488
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "totals disabled by config",
+          "need more settled totals picks (6/10)",
+          "recent totals CLV -6.1667 is below 0.0000",
+          "recent totals ROI -0.3600 is below 0.0000",
+          "recent totals overconfidence gap 0.2488 exceeds 0.1000"
+        ],
+        "health_score": 0.2857
+      },
+      "longslop": {
+        "market_type": null,
+        "pick_type": "longslop",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "longslop disabled by config",
+          "need more settled longslop picks (0/5)",
+          "need more recent settled longslop picks (0/3)",
+          "need more tracked longslop CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "slimegrinder": {
+        "market_type": null,
+        "pick_type": "slimegrinder",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "slimegrinder disabled by config",
+          "need more settled slimegrinder picks (0/5)",
+          "need more recent settled slimegrinder picks (0/3)",
+          "need more tracked slimegrinder CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "totals_enabled": false
+    }
+  },
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [
+      {
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "date": "2026-04-22",
+        "start_time": "2026-04-22T23:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 7,
+          "questionable_players": 5,
+          "doubtful_players": 0,
+          "injury_burden": 3.75,
+          "uncertainty_burden": 1.75,
+          "key_absence_score": 1.35,
+          "leader_absence_burden": 2.627,
+          "leader_uncertainty_burden": 0.227,
+          "available_core_players": 11,
+          "event_injury_burden": 0.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 17,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "8",
+              "uid": "s:40~l:46~t:8",
+              "displayName": "Detroit Pistons",
+              "abbreviation": "DET",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/det/detroit-pistons",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/det",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": []
+          },
+          {
+            "team": {
+              "id": "19",
+              "uid": "s:40~l:46~t:19",
+              "displayName": "Orlando Magic",
+              "abbreviation": "ORL",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/orl/orlando-magic",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/orl",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2025-06-16T16:45Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2025-06-16T16:45Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2025-06-18T15:37Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2025-06-18T15:35Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-21T20:47Z",
+                "athlete": {
+                  "id": "4065654",
+                  "uid": "s:40~l:46~a:4065654",
+                  "guid": "99d3b132-e33a-2cc7-8cf9-236b06d7c625",
+                  "lastName": "Isaac",
+                  "fullName": "Jonathan Isaac",
+                  "displayName": "Jonathan Isaac",
+                  "shortName": "J. Isaac",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4065654/jonathan-isaac",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4065654.png",
+                    "alt": "Jonathan Isaac"
+                  },
+                  "jersey": "1",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4065654?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Knee",
+                  "location": "Leg",
+                  "detail": "Sprain",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "date": "2026-04-22",
+        "start_time": "2026-04-23T01:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 2,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.35,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 16,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 18,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 1.0,
+          "leader_absence_burden": 0.65,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.35,
+          "event_leader_absence_burden": 0.227,
+          "event_leader_uncertainty_burden": 0.227
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "25",
+              "uid": "s:40~l:46~t:25",
+              "displayName": "Oklahoma City Thunder",
+              "abbreviation": "OKC",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/okc/oklahoma-city-thunder",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/okc",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2025-09-05T21:43Z",
+                "athlete": {
+                  "id": "5061603",
+                  "uid": "s:40~l:46~a:5061603",
+                  "guid": "662a5a94-8cf3-33c4-8d91-f950cae85e12",
+                  "lastName": "Sorber",
+                  "fullName": "Thomas Sorber",
+                  "displayName": "Thomas Sorber",
+                  "shortName": "T. Sorber",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/5061603/thomas-sorber",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/5061603.png",
+                    "alt": "Thomas Sorber"
+                  },
+                  "jersey": "12",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/5061603?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Knee",
+                  "location": "Leg",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2026-10-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "21",
+              "uid": "s:40~l:46~t:21",
+              "displayName": "Phoenix Suns",
+              "abbreviation": "PHX",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/phx/phoenix-suns",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/phx",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Day-To-Day",
+                "date": "2026-04-21T22:24Z",
+                "athlete": {
+                  "id": "4278402",
+                  "uid": "s:40~l:46~a:4278402",
+                  "guid": "0bd90eae-7fa2-1afb-904f-535595216bb3",
+                  "lastName": "Goodwin",
+                  "fullName": "Jordan Goodwin",
+                  "displayName": "Jordan Goodwin",
+                  "shortName": "J. Goodwin",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4278402/jordan-goodwin",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4278402.png",
+                    "alt": "Jordan Goodwin"
+                  },
+                  "jersey": "23",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4278402?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Calf",
+                  "location": "Leg",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-04-21T22:21Z",
+                "athlete": {
+                  "id": "3135045",
+                  "uid": "s:40~l:46~a:3135045",
+                  "guid": "fedd8adf-a9cc-d643-0130-ff502fc58389",
+                  "lastName": "Allen",
+                  "fullName": "Grayson Allen",
+                  "displayName": "Grayson Allen",
+                  "shortName": "G. Allen",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/3135045/grayson-allen",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/3135045.png",
+                    "alt": "Grayson Allen"
+                  },
+                  "jersey": "8",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/3135045?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Hamstring",
+                  "location": "Leg",
+                  "detail": "Strain",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Day-To-Day",
+                "date": "2026-04-21T18:53Z",
+                "athlete": {
+                  "id": "4701232",
+                  "uid": "s:40~l:46~a:4701232",
+                  "guid": "93b211a2-3229-3b90-8529-f7f39ce5374d",
+                  "lastName": "Williams",
+                  "fullName": "Mark Williams",
+                  "displayName": "Mark Williams",
+                  "shortName": "M. Williams",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4701232/mark-williams",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4701232.png",
+                    "alt": "Mark Williams"
+                  },
+                  "jersey": "15",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4701232?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Foot",
+                  "location": "Leg",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "fixtures_in_window": [
+      {
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "date": "2026-04-22",
+        "start_time": "2026-04-22T23:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 7,
+          "questionable_players": 5,
+          "doubtful_players": 0,
+          "injury_burden": 3.75,
+          "uncertainty_burden": 1.75,
+          "key_absence_score": 1.35,
+          "leader_absence_burden": 2.627,
+          "leader_uncertainty_burden": 0.227,
+          "available_core_players": 11,
+          "event_injury_burden": 0.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 17,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "8",
+              "uid": "s:40~l:46~t:8",
+              "displayName": "Detroit Pistons",
+              "abbreviation": "DET",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/det/detroit-pistons",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/det",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/det.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": []
+          },
+          {
+            "team": {
+              "id": "19",
+              "uid": "s:40~l:46~t:19",
+              "displayName": "Orlando Magic",
+              "abbreviation": "ORL",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/orl/orlando-magic",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/orl",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2025-06-16T16:45Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2025-06-16T16:45Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2025-06-18T15:37Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/orl.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2025-06-18T15:35Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-04-21T20:47Z",
+                "athlete": {
+                  "id": "4065654",
+                  "uid": "s:40~l:46~a:4065654",
+                  "guid": "99d3b132-e33a-2cc7-8cf9-236b06d7c625",
+                  "lastName": "Isaac",
+                  "fullName": "Jonathan Isaac",
+                  "displayName": "Jonathan Isaac",
+                  "shortName": "J. Isaac",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4065654/jonathan-isaac",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4065654.png",
+                    "alt": "Jonathan Isaac"
+                  },
+                  "jersey": "1",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4065654?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Knee",
+                  "location": "Leg",
+                  "detail": "Sprain",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "date": "2026-04-22",
+        "start_time": "2026-04-23T01:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 2,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.35,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 16,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 18,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 1.0,
+          "leader_absence_burden": 0.65,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.35,
+          "event_leader_absence_burden": 0.227,
+          "event_leader_uncertainty_burden": 0.227
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "25",
+              "uid": "s:40~l:46~t:25",
+              "displayName": "Oklahoma City Thunder",
+              "abbreviation": "OKC",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/okc/oklahoma-city-thunder",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/okc",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/okc.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2025-09-05T21:43Z",
+                "athlete": {
+                  "id": "5061603",
+                  "uid": "s:40~l:46~a:5061603",
+                  "guid": "662a5a94-8cf3-33c4-8d91-f950cae85e12",
+                  "lastName": "Sorber",
+                  "fullName": "Thomas Sorber",
+                  "displayName": "Thomas Sorber",
+                  "shortName": "T. Sorber",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/5061603/thomas-sorber",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/5061603.png",
+                    "alt": "Thomas Sorber"
+                  },
+                  "jersey": "12",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/5061603?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Knee",
+                  "location": "Leg",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2026-10-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "21",
+              "uid": "s:40~l:46~t:21",
+              "displayName": "Phoenix Suns",
+              "abbreviation": "PHX",
+              "links": [
+                {
+                  "href": "https://www.espn.com/nba/team/_/name/phx/phoenix-suns",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/nba/team/schedule/_/name/phx",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-06-25T21:17Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:13Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500/scoreboard/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-06-25T21:18Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/nba/500-dark/scoreboard/phx.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-06-25T21:14Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Day-To-Day",
+                "date": "2026-04-21T22:24Z",
+                "athlete": {
+                  "id": "4278402",
+                  "uid": "s:40~l:46~a:4278402",
+                  "guid": "0bd90eae-7fa2-1afb-904f-535595216bb3",
+                  "lastName": "Goodwin",
+                  "fullName": "Jordan Goodwin",
+                  "displayName": "Jordan Goodwin",
+                  "shortName": "J. Goodwin",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4278402/jordan-goodwin",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4278402.png",
+                    "alt": "Jordan Goodwin"
+                  },
+                  "jersey": "23",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4278402?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Calf",
+                  "location": "Leg",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-04-21T22:21Z",
+                "athlete": {
+                  "id": "3135045",
+                  "uid": "s:40~l:46~a:3135045",
+                  "guid": "fedd8adf-a9cc-d643-0130-ff502fc58389",
+                  "lastName": "Allen",
+                  "fullName": "Grayson Allen",
+                  "displayName": "Grayson Allen",
+                  "shortName": "G. Allen",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/3135045/grayson-allen",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/3135045.png",
+                    "alt": "Grayson Allen"
+                  },
+                  "jersey": "8",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/3135045?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Hamstring",
+                  "location": "Leg",
+                  "detail": "Strain",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              },
+              {
+                "status": "Day-To-Day",
+                "date": "2026-04-21T18:53Z",
+                "athlete": {
+                  "id": "4701232",
+                  "uid": "s:40~l:46~a:4701232",
+                  "guid": "93b211a2-3229-3b90-8529-f7f39ce5374d",
+                  "lastName": "Williams",
+                  "fullName": "Mark Williams",
+                  "displayName": "Mark Williams",
+                  "shortName": "M. Williams",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/nba/player/_/id/4701232/mark-williams",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/nba/players/full/4701232.png",
+                    "alt": "Mark Williams"
+                  },
+                  "jersey": "15",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/mens-college-basketball/athletes/4701232?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Foot",
+                  "location": "Leg",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2026-04-22"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "odds": [
+      {
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "commence_time": "2026-04-22T23:10:00Z",
+        "home_odds": 1.26,
+        "draw_odds": 0.0,
+        "away_odds": 4.18,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2336,
+            "home": 0.7664
+          },
+          "raw_probs": {
+            "away": 0.2439,
+            "home": 0.8
+          },
+          "hold": 0.0439,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.26,
+            "away": 4.18
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2336,
+              "home": 0.7664
+            },
+            "raw_probs": {
+              "away": 0.2439,
+              "home": 0.8
+            },
+            "hold": 0.0439,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7649,
+                "away": 0.2351
+              },
+              "hold": 0.0376
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7664,
+                "away": 0.2336
+              },
+              "hold": 0.0439
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7664,
+                "away": 0.2336
+              },
+              "hold": 0.0439
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 3.9
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2564
+              },
+              "fair_probs": {
+                "home": 0.7573,
+                "away": 0.2427
+              },
+              "hold": 0.0564
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 4.18
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2392
+              },
+              "fair_probs": {
+                "home": 0.7684,
+                "away": 0.2316
+              },
+              "hold": 0.0329
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.13
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2421
+              },
+              "fair_probs": {
+                "home": 0.7677,
+                "away": 0.2323
+              },
+              "hold": 0.0421
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 3.92
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2551
+              },
+              "fair_probs": {
+                "home": 0.7568,
+                "away": 0.2432
+              },
+              "hold": 0.0488
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 3.95
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2532
+              },
+              "fair_probs": {
+                "home": 0.7582,
+                "away": 0.2418
+              },
+              "hold": 0.0468
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.17
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2398
+              },
+              "fair_probs": {
+                "home": 0.7694,
+                "away": 0.2306
+              },
+              "hold": 0.0398
+            }
+          ]
+        },
+        "total_line": 218.5,
+        "over_odds": 1.94,
+        "under_odds": 1.93,
+        "totals_benchmark": {
+          "line": 218.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 218.5,
+          "execution_prices": {
+            "over": 1.94,
+            "under": 1.93
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.94,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5155,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.4921,
+                "under": 0.5079
+              },
+              "hold": 0.0474
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "commence_time": "2026-04-23T01:40:00Z",
+        "home_odds": 1.06,
+        "draw_odds": 0.0,
+        "away_odds": 12.0,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.0837,
+            "home": 0.9163
+          },
+          "raw_probs": {
+            "away": 0.087,
+            "home": 0.9524
+          },
+          "hold": 0.04,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.06,
+            "away": 12.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.0837,
+              "home": 0.9163
+            },
+            "raw_probs": {
+              "away": 0.087,
+              "home": 0.9524
+            },
+            "hold": 0.04,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 12.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0833
+              },
+              "fair_probs": {
+                "home": 0.9195,
+                "away": 0.0805
+              },
+              "hold": 0.0357
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.04,
+                "away": 11.5
+              },
+              "raw_probs": {
+                "home": 0.9615,
+                "away": 0.087
+              },
+              "fair_probs": {
+                "home": 0.9171,
+                "away": 0.0829
+              },
+              "hold": 0.0485
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 10.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.1
+              },
+              "fair_probs": {
+                "home": 0.905,
+                "away": 0.095
+              },
+              "hold": 0.0524
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.92
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0839
+              },
+              "fair_probs": {
+                "home": 0.919,
+                "away": 0.081
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.41
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0876
+              },
+              "fair_probs": {
+                "home": 0.9157,
+                "away": 0.0843
+              },
+              "hold": 0.04
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 12.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0833
+              },
+              "fair_probs": {
+                "home": 0.9195,
+                "away": 0.0805
+              },
+              "hold": 0.0357
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 10.72
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0933
+              },
+              "fair_probs": {
+                "home": 0.9108,
+                "away": 0.0892
+              },
+              "hold": 0.0457
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.06,
+                "away": 9.5
+              },
+              "raw_probs": {
+                "home": 0.9434,
+                "away": 0.1053
+              },
+              "fair_probs": {
+                "home": 0.8996,
+                "away": 0.1004
+              },
+              "hold": 0.0487
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.5
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.087
+              },
+              "fair_probs": {
+                "home": 0.9163,
+                "away": 0.0837
+              },
+              "hold": 0.0393
+            }
+          ]
+        },
+        "total_line": 215.5,
+        "over_odds": 1.93,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 215.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 215.5,
+          "execution_prices": {
+            "over": 1.93,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.89
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5291
+              },
+              "fair_probs": {
+                "over": 0.4948,
+                "under": 0.5052
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.496,
+                "under": 0.504
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.92,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5208,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5039,
+                "under": 0.4961
+              },
+              "hold": 0.0337
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Hawks",
+        "away_team": "Knicks",
+        "commence_time": "2026-04-23T23:10:00Z",
+        "home_odds": 1.94,
+        "draw_odds": 0.0,
+        "away_odds": 1.95,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4974,
+            "home": 0.5026
+          },
+          "raw_probs": {
+            "away": 0.5208,
+            "home": 0.5263
+          },
+          "hold": 0.0474,
+          "books_tracked": 6,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.94,
+            "away": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4974,
+              "home": 0.5026
+            },
+            "raw_probs": {
+              "away": 0.5208,
+              "home": 0.5263
+            },
+            "hold": 0.0474,
+            "books_tracked": 6,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.89,
+                "away": 1.93
+              },
+              "raw_probs": {
+                "home": 0.5291,
+                "away": 0.5181
+              },
+              "fair_probs": {
+                "home": 0.5052,
+                "away": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.94,
+                "away": 1.91
+              },
+              "raw_probs": {
+                "home": 0.5155,
+                "away": 0.5236
+              },
+              "fair_probs": {
+                "home": 0.4961,
+                "away": 0.5039
+              },
+              "hold": 0.039
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.93,
+                "away": 1.87
+              },
+              "raw_probs": {
+                "home": 0.5181,
+                "away": 0.5348
+              },
+              "fair_probs": {
+                "home": 0.4921,
+                "away": 0.5079
+              },
+              "hold": 0.0529
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.86,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5376,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5118,
+                "away": 0.4882
+              },
+              "hold": 0.0505
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.91,
+                "away": 1.91
+              },
+              "raw_probs": {
+                "home": 0.5236,
+                "away": 0.5236
+              },
+              "fair_probs": {
+                "home": 0.5,
+                "away": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        },
+        "total_line": 216.5,
+        "over_odds": 1.95,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 216.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 216.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.496,
+                "under": 0.504
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Raptors",
+        "away_team": "Cavaliers",
+        "commence_time": "2026-04-24T00:10:00Z",
+        "home_odds": 2.32,
+        "draw_odds": 0.0,
+        "away_odds": 1.67,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5793,
+            "home": 0.4207
+          },
+          "raw_probs": {
+            "away": 0.6042,
+            "home": 0.4348
+          },
+          "hold": 0.0408,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.32,
+            "away": 1.67
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5793,
+              "home": 0.4207
+            },
+            "raw_probs": {
+              "away": 0.6042,
+              "home": 0.4348
+            },
+            "hold": 0.0408,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.3,
+                "away": 1.65
+              },
+              "raw_probs": {
+                "home": 0.4348,
+                "away": 0.6061
+              },
+              "fair_probs": {
+                "home": 0.4177,
+                "away": 0.5823
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 2.32,
+                "away": 1.64
+              },
+              "raw_probs": {
+                "home": 0.431,
+                "away": 0.6098
+              },
+              "fair_probs": {
+                "home": 0.4141,
+                "away": 0.5859
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.25,
+                "away": 1.65
+              },
+              "raw_probs": {
+                "home": 0.4444,
+                "away": 0.6061
+              },
+              "fair_probs": {
+                "home": 0.4231,
+                "away": 0.5769
+              },
+              "hold": 0.0505
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.32,
+                "away": 1.67
+              },
+              "raw_probs": {
+                "home": 0.431,
+                "away": 0.5988
+              },
+              "fair_probs": {
+                "home": 0.4185,
+                "away": 0.5815
+              },
+              "hold": 0.0298
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.3,
+                "away": 1.67
+              },
+              "raw_probs": {
+                "home": 0.4348,
+                "away": 0.5988
+              },
+              "fair_probs": {
+                "home": 0.4207,
+                "away": 0.5793
+              },
+              "hold": 0.0336
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 2.23,
+                "away": 1.66
+              },
+              "raw_probs": {
+                "home": 0.4484,
+                "away": 0.6024
+              },
+              "fair_probs": {
+                "home": 0.4267,
+                "away": 0.5733
+              },
+              "hold": 0.0508
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 2.3,
+                "away": 1.67
+              },
+              "raw_probs": {
+                "home": 0.4348,
+                "away": 0.5988
+              },
+              "fair_probs": {
+                "home": 0.4207,
+                "away": 0.5793
+              },
+              "hold": 0.0336
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 2.25,
+                "away": 1.65
+              },
+              "raw_probs": {
+                "home": 0.4444,
+                "away": 0.6061
+              },
+              "fair_probs": {
+                "home": 0.4231,
+                "away": 0.5769
+              },
+              "hold": 0.0505
+            }
+          ]
+        },
+        "total_line": 219.5,
+        "over_odds": 1.91,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 219.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 219.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Timberwolves",
+        "away_team": "Nuggets",
+        "commence_time": "2026-04-24T01:30:00Z",
+        "home_odds": 2.12,
+        "draw_odds": 0.0,
+        "away_odds": 1.79,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5426,
+            "home": 0.4574
+          },
+          "raw_probs": {
+            "away": 0.565,
+            "home": 0.4762
+          },
+          "hold": 0.0412,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.12,
+            "away": 1.79
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5426,
+              "home": 0.4574
+            },
+            "raw_probs": {
+              "away": 0.565,
+              "home": 0.4762
+            },
+            "hold": 0.0412,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 2.04,
+                "away": 1.78
+              },
+              "raw_probs": {
+                "home": 0.4902,
+                "away": 0.5618
+              },
+              "fair_probs": {
+                "home": 0.466,
+                "away": 0.534
+              },
+              "hold": 0.052
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.74
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.5747
+              },
+              "fair_probs": {
+                "home": 0.4531,
+                "away": 0.5469
+              },
+              "hold": 0.0509
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.12,
+                "away": 1.78
+              },
+              "raw_probs": {
+                "home": 0.4717,
+                "away": 0.5618
+              },
+              "fair_probs": {
+                "home": 0.4564,
+                "away": 0.5436
+              },
+              "hold": 0.0335
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 2.03,
+                "away": 1.79
+              },
+              "raw_probs": {
+                "home": 0.4926,
+                "away": 0.5587
+              },
+              "fair_probs": {
+                "home": 0.4686,
+                "away": 0.5314
+              },
+              "hold": 0.0513
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            }
+          ]
+        },
+        "total_line": 234.0,
+        "over_odds": 1.93,
+        "under_odds": 1.93,
+        "totals_benchmark": {
+          "line": 234.0,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 234.0,
+          "execution_prices": {
+            "over": 1.93,
+            "under": 1.93
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "76ers",
+        "away_team": "Celtics",
+        "commence_time": "2026-04-24T23:10:00Z",
+        "home_odds": 3.5,
+        "draw_odds": 0.0,
+        "away_odds": 1.36,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.7149,
+            "home": 0.2851
+          },
+          "raw_probs": {
+            "away": 0.7463,
+            "home": 0.2976
+          },
+          "hold": 0.0411,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 3.5,
+            "away": 1.36
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.7149,
+              "home": 0.2851
+            },
+            "raw_probs": {
+              "away": 0.7463,
+              "home": 0.2976
+            },
+            "hold": 0.0411,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 3.45,
+                "away": 1.33
+              },
+              "raw_probs": {
+                "home": 0.2899,
+                "away": 0.7519
+              },
+              "fair_probs": {
+                "home": 0.2782,
+                "away": 0.7218
+              },
+              "hold": 0.0417
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 3.4,
+                "away": 1.34
+              },
+              "raw_probs": {
+                "home": 0.2941,
+                "away": 0.7463
+              },
+              "fair_probs": {
+                "home": 0.2827,
+                "away": 0.7173
+              },
+              "hold": 0.0404
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 3.2,
+                "away": 1.36
+              },
+              "raw_probs": {
+                "home": 0.3125,
+                "away": 0.7353
+              },
+              "fair_probs": {
+                "home": 0.2982,
+                "away": 0.7018
+              },
+              "hold": 0.0478
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 3.37,
+                "away": 1.35
+              },
+              "raw_probs": {
+                "home": 0.2967,
+                "away": 0.7407
+              },
+              "fair_probs": {
+                "home": 0.286,
+                "away": 0.714
+              },
+              "hold": 0.0375
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 3.34,
+                "away": 1.35
+              },
+              "raw_probs": {
+                "home": 0.2994,
+                "away": 0.7407
+              },
+              "fair_probs": {
+                "home": 0.2878,
+                "away": 0.7122
+              },
+              "hold": 0.0401
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 3.35,
+                "away": 1.33
+              },
+              "raw_probs": {
+                "home": 0.2985,
+                "away": 0.7519
+              },
+              "fair_probs": {
+                "home": 0.2842,
+                "away": 0.7158
+              },
+              "hold": 0.0504
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 3.27,
+                "away": 1.34
+              },
+              "raw_probs": {
+                "home": 0.3058,
+                "away": 0.7463
+              },
+              "fair_probs": {
+                "home": 0.2907,
+                "away": 0.7093
+              },
+              "hold": 0.0521
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 3.5,
+                "away": 1.33
+              },
+              "raw_probs": {
+                "home": 0.2857,
+                "away": 0.7519
+              },
+              "fair_probs": {
+                "home": 0.2754,
+                "away": 0.7246
+              },
+              "hold": 0.0376
+            }
+          ]
+        },
+        "total_line": 215.5,
+        "over_odds": 1.93,
+        "under_odds": 1.93,
+        "totals_benchmark": {
+          "line": 215.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 7,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 215.5,
+          "execution_prices": {
+            "over": 1.93,
+            "under": 1.93
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 7,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Rockets",
+        "away_team": "Lakers",
+        "commence_time": "2026-04-25T00:10:00Z",
+        "home_odds": 1.26,
+        "draw_odds": 0.0,
+        "away_odds": 4.5,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2221,
+            "home": 0.7779
+          },
+          "raw_probs": {
+            "away": 0.2331,
+            "home": 0.813
+          },
+          "hold": 0.0461,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.26,
+            "away": 4.5
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2221,
+              "home": 0.7779
+            },
+            "raw_probs": {
+              "away": 0.2331,
+              "home": 0.813
+            },
+            "hold": 0.0461,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7664,
+                "away": 0.2336
+              },
+              "hold": 0.0439
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7649,
+                "away": 0.2351
+              },
+              "hold": 0.0376
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.22,
+                "away": 4.33
+              },
+              "raw_probs": {
+                "home": 0.8197,
+                "away": 0.2309
+              },
+              "fair_probs": {
+                "home": 0.7802,
+                "away": 0.2198
+              },
+              "hold": 0.0506
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.23,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.813,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7692,
+                "away": 0.2308
+              },
+              "hold": 0.0569
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.23,
+                "away": 4.5
+              },
+              "raw_probs": {
+                "home": 0.813,
+                "away": 0.2222
+              },
+              "fair_probs": {
+                "home": 0.7853,
+                "away": 0.2147
+              },
+              "hold": 0.0352
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.23,
+                "away": 4.44
+              },
+              "raw_probs": {
+                "home": 0.813,
+                "away": 0.2252
+              },
+              "fair_probs": {
+                "home": 0.7831,
+                "away": 0.2169
+              },
+              "hold": 0.0382
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.21,
+                "away": 4.5
+              },
+              "raw_probs": {
+                "home": 0.8264,
+                "away": 0.2222
+              },
+              "fair_probs": {
+                "home": 0.7881,
+                "away": 0.2119
+              },
+              "hold": 0.0487
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.23,
+                "away": 4.25
+              },
+              "raw_probs": {
+                "home": 0.813,
+                "away": 0.2353
+              },
+              "fair_probs": {
+                "home": 0.7755,
+                "away": 0.2245
+              },
+              "hold": 0.0483
+            }
+          ]
+        },
+        "total_line": 205.5,
+        "over_odds": 1.98,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 205.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 7,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 205.5,
+          "execution_prices": {
+            "over": 1.98,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 7,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "over": 1.88,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5319,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.504,
+                "under": 0.496
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.98,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5051,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.487,
+                "under": 0.513
+              },
+              "hold": 0.037
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Trail Blazers",
+        "away_team": "Spurs",
+        "commence_time": "2026-04-25T02:40:00Z",
+        "home_odds": 2.02,
+        "draw_odds": 0.0,
+        "away_odds": 1.87,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5221,
+            "home": 0.4779
+          },
+          "raw_probs": {
+            "away": 0.5464,
+            "home": 0.5
+          },
+          "hold": 0.0464,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.02,
+            "away": 1.87
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5221,
+              "home": 0.4779
+            },
+            "raw_probs": {
+              "away": 0.5464,
+              "home": 0.5
+            },
+            "hold": 0.0464,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 2.02,
+                "away": 1.83
+              },
+              "raw_probs": {
+                "home": 0.495,
+                "away": 0.5464
+              },
+              "fair_probs": {
+                "home": 0.4753,
+                "away": 0.5247
+              },
+              "hold": 0.0415
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.02,
+                "away": 1.82
+              },
+              "raw_probs": {
+                "home": 0.495,
+                "away": 0.5495
+              },
+              "fair_probs": {
+                "home": 0.474,
+                "away": 0.526
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.02,
+                "away": 1.85
+              },
+              "raw_probs": {
+                "home": 0.495,
+                "away": 0.5405
+              },
+              "fair_probs": {
+                "home": 0.478,
+                "away": 0.522
+              },
+              "hold": 0.0356
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 2.0,
+                "away": 1.83
+              },
+              "raw_probs": {
+                "home": 0.5,
+                "away": 0.5464
+              },
+              "fair_probs": {
+                "home": 0.4778,
+                "away": 0.5222
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.97,
+                "away": 1.82
+              },
+              "raw_probs": {
+                "home": 0.5076,
+                "away": 0.5495
+              },
+              "fair_probs": {
+                "home": 0.4802,
+                "away": 0.5198
+              },
+              "hold": 0.0571
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 2.0,
+                "away": 1.83
+              },
+              "raw_probs": {
+                "home": 0.5,
+                "away": 0.5464
+              },
+              "fair_probs": {
+                "home": 0.4778,
+                "away": 0.5222
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.97,
+                "away": 1.84
+              },
+              "raw_probs": {
+                "home": 0.5076,
+                "away": 0.5435
+              },
+              "fair_probs": {
+                "home": 0.4829,
+                "away": 0.5171
+              },
+              "hold": 0.0511
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.95,
+                "away": 1.87
+              },
+              "raw_probs": {
+                "home": 0.5128,
+                "away": 0.5348
+              },
+              "fair_probs": {
+                "home": 0.4895,
+                "away": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        },
+        "total_line": 220.5,
+        "over_odds": 2.01,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 220.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 6,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 220.5,
+          "execution_prices": {
+            "over": 2.01,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 6,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 2.01,
+                "under": 1.86
+              },
+              "raw_probs": {
+                "over": 0.4975,
+                "under": 0.5376
+              },
+              "fair_probs": {
+                "over": 0.4806,
+                "under": 0.5194
+              },
+              "hold": 0.0351
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "over": 1.88,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5319,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.504,
+                "under": 0.496
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.98,
+                "under": 1.85
+              },
+              "raw_probs": {
+                "over": 0.5051,
+                "under": 0.5405
+              },
+              "fair_probs": {
+                "over": 0.483,
+                "under": 0.517
+              },
+              "hold": 0.0456
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.2573,
+      "results_features": 0.2549,
+      "recent_boxscore": 0.2548,
+      "nba_matchup": 0.2329
+    },
+    "models": [
+      "elo",
+      "results_features",
+      "recent_boxscore",
+      "nba_matchup"
+    ],
+    "model_health": {
+      "ensemble": {
+        "sample_size": 40,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.5072
+      },
+      "models": {
+        "elo": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5221,
+          "weight": 0.1764,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "efficiency": {
+          "sample_size": 40,
+          "accuracy": 0.75,
+          "avg_log_loss": 0.5342,
+          "weight": 0.1704,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "four_factors": {
+          "sample_size": 40,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6517,
+          "weight": 0.1441,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5416,
+          "weight": 0.1748,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "recent_boxscore": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5424,
+          "weight": 0.1747,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "nba_matchup": {
+          "sample_size": 40,
+          "accuracy": 0.7,
+          "avg_log_loss": 0.5498,
+          "weight": 0.1597,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [
+        "four_factors"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "recent_boxscore",
+        "nba_matchup"
+      ]
+    },
+    "calibration_sample_size": 206
+  },
+  "records": {
+    "matches": [
+      {
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "date": "2026-04-22",
+        "start_time": "2026-04-22T23:00Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 7,
+          "questionable_players": 5,
+          "doubtful_players": 0,
+          "injury_burden": 3.75,
+          "uncertainty_burden": 1.75,
+          "key_absence_score": 1.35,
+          "leader_absence_burden": 2.627,
+          "leader_uncertainty_burden": 0.227,
+          "available_core_players": 11,
+          "event_injury_burden": 0.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 17,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "home_goalie": null,
+        "away_goalie": null,
+        "home_goalie_status": null,
+        "away_goalie_status": null,
+        "home_injury_profile": null,
+        "away_injury_profile": null,
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "home",
+        "model_prob": 0.6663,
+        "edge": -0.076,
+        "expected_value": -0.1301,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 52.9,
+        "confidence_stars": 2,
+        "american_odds": -385,
+        "model_probs": {
+          "home": 0.6663,
+          "away": 0.3337
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.6851,
+            "away": 0.3149
+          },
+          "results_features": {
+            "home": 0.6194,
+            "away": 0.3806
+          },
+          "recent_boxscore": {
+            "home": 0.6711,
+            "away": 0.3289
+          },
+          "nba_matchup": {
+            "home": 0.6297,
+            "away": 0.3703
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.6904,
+            "raw_model_prob": 0.6663,
+            "implied_prob": 0.7664,
+            "market_implied_prob": 0.8,
+            "edge": -0.076,
+            "expected_value": -0.1301,
+            "decimal_odds": 1.26,
+            "american_odds": -385,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 52.9,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0439,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "away": {
+            "model_prob": 0.3096,
+            "raw_model_prob": 0.3337,
+            "implied_prob": 0.2336,
+            "market_implied_prob": 0.2439,
+            "edge": 0.076,
+            "expected_value": 0.2943,
+            "decimal_odds": 4.18,
+            "american_odds": 318,
+            "kelly_fraction": 0.0925,
+            "fractional_kelly": 0.0231,
+            "confidence_score": 44.5,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0439,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "best_odds": {
+          "home": -385,
+          "away": 318
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.26,
+            "away": 4.18
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2336,
+              "home": 0.7664
+            },
+            "raw_probs": {
+              "away": 0.2439,
+              "home": 0.8
+            },
+            "hold": 0.0439,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7649,
+                "away": 0.2351
+              },
+              "hold": 0.0376
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7664,
+                "away": 0.2336
+              },
+              "hold": 0.0439
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.1
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2439
+              },
+              "fair_probs": {
+                "home": 0.7664,
+                "away": 0.2336
+              },
+              "hold": 0.0439
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 3.9
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2564
+              },
+              "fair_probs": {
+                "home": 0.7573,
+                "away": 0.2427
+              },
+              "hold": 0.0564
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 4.18
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2392
+              },
+              "fair_probs": {
+                "home": 0.7684,
+                "away": 0.2316
+              },
+              "hold": 0.0329
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.13
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2421
+              },
+              "fair_probs": {
+                "home": 0.7677,
+                "away": 0.2323
+              },
+              "hold": 0.0421
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 3.92
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2551
+              },
+              "fair_probs": {
+                "home": 0.7568,
+                "away": 0.2432
+              },
+              "hold": 0.0488
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.26,
+                "away": 3.95
+              },
+              "raw_probs": {
+                "home": 0.7937,
+                "away": 0.2532
+              },
+              "fair_probs": {
+                "home": 0.7582,
+                "away": 0.2418
+              },
+              "hold": 0.0468
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.25,
+                "away": 4.17
+              },
+              "raw_probs": {
+                "home": 0.8,
+                "away": 0.2398
+              },
+              "fair_probs": {
+                "home": 0.7694,
+                "away": 0.2306
+              },
+              "hold": 0.0398
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "nba",
+          "home_team": "Pistons",
+          "away_team": "Magic",
+          "home_impact": 0.0,
+          "away_impact": -1.0,
+          "individual_factors": [
+            {
+              "team": "Magic",
+              "description": "Jonathan Isaac (rotational defensive player) is out, weakening defensive depth.",
+              "direction": "negative",
+              "magnitude": 1.0,
+              "confidence": 1.0
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Magic face a minor qualitative disadvantage due to the absence of rotational defensive player Jonathan Isaac."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:-1.0): agreed. Jonathan Isaac (rotational defensive player) is out, weakening defensive depth.",
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "date": "2026-04-22",
+        "start_time": "2026-04-23T01:30Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 18,
+          "injured_players": 2,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.35,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 16,
+          "event_injury_burden": 1.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 18,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 1.0,
+          "leader_absence_burden": 0.65,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 14,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.35,
+          "event_leader_absence_burden": 0.227,
+          "event_leader_uncertainty_burden": 0.227
+        },
+        "home_goalie": null,
+        "away_goalie": null,
+        "home_goalie_status": null,
+        "away_goalie_status": null,
+        "home_injury_profile": null,
+        "away_injury_profile": null,
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "home",
+        "model_prob": 0.8686,
+        "edge": -0.0785,
+        "expected_value": -0.112,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 51.6,
+        "confidence_stars": 3,
+        "american_odds": -1667,
+        "model_probs": {
+          "home": 0.8686,
+          "away": 0.1314
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.8533,
+            "away": 0.1467
+          },
+          "results_features": {
+            "home": 0.7827,
+            "away": 0.2173
+          },
+          "recent_boxscore": {
+            "home": 0.7805,
+            "away": 0.2195
+          },
+          "nba_matchup": {
+            "home": 0.7408,
+            "away": 0.2592
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.8378,
+            "raw_model_prob": 0.8686,
+            "implied_prob": 0.9163,
+            "market_implied_prob": 0.9524,
+            "edge": -0.0785,
+            "expected_value": -0.112,
+            "decimal_odds": 1.06,
+            "american_odds": -1667,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 51.6,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.04,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "away": {
+            "model_prob": 0.1622,
+            "raw_model_prob": 0.1314,
+            "implied_prob": 0.0837,
+            "market_implied_prob": 0.087,
+            "edge": 0.0785,
+            "expected_value": 0.9466,
+            "decimal_odds": 12.0,
+            "american_odds": 1100,
+            "kelly_fraction": 0.0861,
+            "fractional_kelly": 0.0215,
+            "confidence_score": 42.4,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.04,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "best_odds": {
+          "home": -1667,
+          "away": 1100
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.06,
+            "away": 12.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.0837,
+              "home": 0.9163
+            },
+            "raw_probs": {
+              "away": 0.087,
+              "home": 0.9524
+            },
+            "hold": 0.04,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 12.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0833
+              },
+              "fair_probs": {
+                "home": 0.9195,
+                "away": 0.0805
+              },
+              "hold": 0.0357
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "home": 1.04,
+                "away": 11.5
+              },
+              "raw_probs": {
+                "home": 0.9615,
+                "away": 0.087
+              },
+              "fair_probs": {
+                "home": 0.9171,
+                "away": 0.0829
+              },
+              "hold": 0.0485
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 10.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.1
+              },
+              "fair_probs": {
+                "home": 0.905,
+                "away": 0.095
+              },
+              "hold": 0.0524
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.92
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0839
+              },
+              "fair_probs": {
+                "home": 0.919,
+                "away": 0.081
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.41
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0876
+              },
+              "fair_probs": {
+                "home": 0.9157,
+                "away": 0.0843
+              },
+              "hold": 0.04
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 12.0
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0833
+              },
+              "fair_probs": {
+                "home": 0.9195,
+                "away": 0.0805
+              },
+              "hold": 0.0357
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 10.72
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.0933
+              },
+              "fair_probs": {
+                "home": 0.9108,
+                "away": 0.0892
+              },
+              "hold": 0.0457
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "home": 1.06,
+                "away": 9.5
+              },
+              "raw_probs": {
+                "home": 0.9434,
+                "away": 0.1053
+              },
+              "fair_probs": {
+                "home": 0.8996,
+                "away": 0.1004
+              },
+              "hold": 0.0487
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "home": 1.05,
+                "away": 11.5
+              },
+              "raw_probs": {
+                "home": 0.9524,
+                "away": 0.087
+              },
+              "fair_probs": {
+                "home": 0.9163,
+                "away": 0.0837
+              },
+              "hold": 0.0393
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "nba",
+          "home_team": "Thunder",
+          "away_team": "Suns",
+          "home_impact": 0.0,
+          "away_impact": -2.0,
+          "individual_factors": [
+            {
+              "team": "Thunder",
+              "description": "Thomas Sorber (Out) is a deep bench player, his absence has negligible impact.",
+              "direction": "negative",
+              "magnitude": 0.0,
+              "confidence": 0.9
+            },
+            {
+              "team": "Suns",
+              "description": "Grayson Allen (Out) is a starting guard and key shooter, his absence is a moderate negative impact.",
+              "direction": "negative",
+              "magnitude": 2.0,
+              "confidence": 0.9
+            },
+            {
+              "team": "Suns",
+              "description": "Jordan Goodwin (Day-To-Day) is a bench player, his potential absence would be a minor negative.",
+              "direction": "negative",
+              "magnitude": 0.5,
+              "confidence": 0.7
+            },
+            {
+              "team": "Suns",
+              "description": "Mark Williams (Day-To-Day) is a rotational big man, his potential absence would be a minor negative.",
+              "direction": "negative",
+              "magnitude": 0.5,
+              "confidence": 0.7
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Suns are moderately impacted by the confirmed absence of starter Grayson Allen, while the Thunder have no significant qualitative factors."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:-2.0): agreed. Thomas Sorber (Out) is a deep bench player, his absence has negligible impact.; Grayson Allen (Out) is a starting guard and key shooter, his absence is a moderate negative impact.",
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      }
+    ],
+    "totals_matches": [
+      {
+        "market_type": "total",
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "date": "2026-04-22",
+        "start_time": "2026-04-22T23:00Z",
+        "completed": false,
+        "home_pitcher": null,
+        "away_pitcher": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "total_line": 218.5,
+        "expected_total": 225.209,
+        "total_stddev": 24.487,
+        "pick": "over",
+        "model_prob": 0.6079,
+        "confidence_score": 73.5,
+        "american_odds": -106,
+        "model_probs": {
+          "over": 0.6079,
+          "under": 0.3921
+        },
+        "individual_models": {
+          "totals_model": {
+            "over": 0.6079,
+            "under": 0.3921
+          }
+        },
+        "edges": {
+          "over": {
+            "model_prob": 0.5639,
+            "raw_model_prob": 0.6079,
+            "implied_prob": 0.5,
+            "market_implied_prob": 0.5236,
+            "edge": 0.0639,
+            "expected_value": 0.094,
+            "decimal_odds": 1.94,
+            "american_odds": -106,
+            "kelly_fraction": 0.1,
+            "fractional_kelly": 0.025,
+            "confidence_score": 73.5,
+            "is_value": true,
+            "unrealistic_flag": false,
+            "hold": 0.0471,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          },
+          "under": {
+            "model_prob": 0.4361,
+            "raw_model_prob": 0.3921,
+            "implied_prob": 0.5,
+            "market_implied_prob": 0.5236,
+            "edge": -0.0639,
+            "expected_value": -0.1583,
+            "decimal_odds": 1.93,
+            "american_odds": -108,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 16.9,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0471,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          }
+        },
+        "market_snapshot": {
+          "line": 218.5,
+          "execution_prices": {
+            "over": 1.94,
+            "under": 1.93
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.94,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5155,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.4921,
+                "under": 0.5079
+              },
+              "hold": 0.0474
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        },
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      },
+      {
+        "market_type": "total",
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "date": "2026-04-22",
+        "start_time": "2026-04-23T01:30Z",
+        "completed": false,
+        "home_pitcher": null,
+        "away_pitcher": null,
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "total_line": 215.5,
+        "expected_total": 218.526,
+        "total_stddev": 24.487,
+        "pick": "over",
+        "model_prob": 0.5492,
+        "confidence_score": 44.1,
+        "american_odds": -108,
+        "model_probs": {
+          "over": 0.5492,
+          "under": 0.4508
+        },
+        "individual_models": {
+          "totals_model": {
+            "over": 0.5492,
+            "under": 0.4508
+          }
+        },
+        "edges": {
+          "over": {
+            "model_prob": 0.5295,
+            "raw_model_prob": 0.5492,
+            "implied_prob": 0.5,
+            "market_implied_prob": 0.5236,
+            "edge": 0.0295,
+            "expected_value": 0.022,
+            "decimal_odds": 1.93,
+            "american_odds": -108,
+            "kelly_fraction": 0.0236,
+            "fractional_kelly": 0.0059,
+            "confidence_score": 44.1,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0471,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "under": {
+            "model_prob": 0.4705,
+            "raw_model_prob": 0.4508,
+            "implied_prob": 0.5,
+            "market_implied_prob": 0.5236,
+            "edge": -0.0295,
+            "expected_value": -0.0825,
+            "decimal_odds": 1.95,
+            "american_odds": -105,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 21.6,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0471,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "market_snapshot": {
+          "line": 215.5,
+          "execution_prices": {
+            "over": 1.93,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.89
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5291
+              },
+              "fair_probs": {
+                "over": 0.4948,
+                "under": 0.5052
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-04-22T13:14:48Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-04-22T13:14:03Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.496,
+                "under": 0.504
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.92,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5208,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5039,
+                "under": 0.4961
+              },
+              "hold": 0.0337
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-04-22T13:14:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-04-22T13:12:52Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-04-22T13:13:24Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-04-22T13:14:02Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        },
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      }
+    ]
+  },
+  "outputs": {
+    "slop_locks": [
+      {
+        "home_team": "Thunder",
+        "away_team": "Suns",
+        "date": "2026-04-22",
+        "start_time": "2026-04-23T01:30Z",
+        "pick": "home",
+        "model_prob": 0.8378,
+        "implied_prob": 0.9163,
+        "market_implied_prob": 0.9524,
+        "edge": -0.0785,
+        "expected_value": -0.112,
+        "american_odds": -1667,
+        "decimal_odds": 1.06,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 51.6,
+        "qualitative_analysis": {
+          "sport": "nba",
+          "home_team": "Thunder",
+          "away_team": "Suns",
+          "home_impact": 0.0,
+          "away_impact": -2.0,
+          "individual_factors": [
+            {
+              "team": "Thunder",
+              "description": "Thomas Sorber (Out) is a deep bench player, his absence has negligible impact.",
+              "direction": "negative",
+              "magnitude": 0.0,
+              "confidence": 0.9
+            },
+            {
+              "team": "Suns",
+              "description": "Grayson Allen (Out) is a starting guard and key shooter, his absence is a moderate negative impact.",
+              "direction": "negative",
+              "magnitude": 2.0,
+              "confidence": 0.9
+            },
+            {
+              "team": "Suns",
+              "description": "Jordan Goodwin (Day-To-Day) is a bench player, his potential absence would be a minor negative.",
+              "direction": "negative",
+              "magnitude": 0.5,
+              "confidence": 0.7
+            },
+            {
+              "team": "Suns",
+              "description": "Mark Williams (Day-To-Day) is a rotational big man, his potential absence would be a minor negative.",
+              "direction": "negative",
+              "magnitude": 0.5,
+              "confidence": 0.7
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Suns are moderately impacted by the confirmed absence of starter Grayson Allen, while the Thunder have no significant qualitative factors."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:-2.0): agreed. Thomas Sorber (Out) is a deep bench player, his absence has negligible impact.; Grayson Allen (Out) is a starting guard and key shooter, his absence is a moderate negative impact.",
+        "blurb": "",
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      },
+      {
+        "home_team": "Pistons",
+        "away_team": "Magic",
+        "date": "2026-04-22",
+        "start_time": "2026-04-22T23:00Z",
+        "pick": "home",
+        "model_prob": 0.6904,
+        "implied_prob": 0.7664,
+        "market_implied_prob": 0.8,
+        "edge": -0.076,
+        "expected_value": -0.1301,
+        "american_odds": -385,
+        "decimal_odds": 1.26,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 52.9,
+        "qualitative_analysis": {
+          "sport": "nba",
+          "home_team": "Pistons",
+          "away_team": "Magic",
+          "home_impact": 0.0,
+          "away_impact": -1.0,
+          "individual_factors": [
+            {
+              "team": "Magic",
+              "description": "Jonathan Isaac (rotational defensive player) is out, weakening defensive depth.",
+              "direction": "negative",
+              "magnitude": 1.0,
+              "confidence": 1.0
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Magic face a minor qualitative disadvantage due to the absence of rotational defensive player Jonathan Isaac."
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:-1.0): agreed. Jonathan Isaac (rotational defensive player) is out, weakening defensive depth.",
+        "blurb": "",
+        "run_id": "daily-20260422T131445225298Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-04-22T13:14:45Z",
+        "snapshot_path": "tracking/snapshots/2026-04-22/nba/daily-20260422T131445225298Z.json"
+      }
+    ],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 1323,
+    "fixtures_fetched": 2,
+    "fixtures_in_window": 2,
+    "fixtures_completed": 0,
+    "fixtures_pending": 2,
+    "odds_events_fetched": 8,
+    "fixtures_with_odds": 2,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 2,
+    "matches_with_market": 2,
+    "matches_with_positive_ev": 2,
+    "matches_with_qualitative": 2,
+    "lock_eligible_matches": 0,
+    "lock_eligible_outcomes": 0,
+    "slop_locks_posted": 2,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": false,
+      "allow_totals": false,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "evaluated_picks": 28,
+      "evaluated_totals_picks": 6,
+      "min_evaluated_picks": 20,
+      "min_evaluated_totals_picks": 10,
+      "status": "suppressed",
+      "reason": "recent moneylines CLV -0.0039 is below 0.0000; totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000",
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 53,
+            "evaluated": 28,
+            "pending": 25,
+            "hit_rate": 0.7857,
+            "roi": 0.1081,
+            "push_rate": 0.0,
+            "wins": 22,
+            "losses": 6,
+            "pushes": 0,
+            "avg_confidence": 55.534,
+            "avg_expected_value": 0.0081,
+            "clv": {
+              "tracked": 26,
+              "avg_clv": 0.0749,
+              "positive_rate": 0.3846,
+              "non_negative_rate": 0.3846,
+              "moneyline_tracked": 26,
+              "moneyline_avg_clv": 0.0749,
+              "moneyline_positive_rate": 0.3846,
+              "moneyline_non_negative_rate": 0.3846,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.875,
+            "roi": 0.1825,
+            "push_rate": 0.0,
+            "wins": 7,
+            "losses": 1,
+            "pushes": 0,
+            "avg_confidence": 42.85,
+            "avg_expected_value": -0.0757,
+            "clv": {
+              "tracked": 8,
+              "avg_clv": -0.0039,
+              "positive_rate": 0.125,
+              "non_negative_rate": 0.125,
+              "moneyline_tracked": 8,
+              "moneyline_avg_clv": -0.0039,
+              "moneyline_positive_rate": 0.125,
+              "moneyline_non_negative_rate": 0.125,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.6782,
+            "actual_win_rate": 0.875,
+            "calibration_gap": -0.1968,
+            "overconfidence_gap": 0.0
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneylines CLV -0.0039 is below 0.0000"
+          ],
+          "health_score": 0.8571
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 14,
+            "evaluated": 6,
+            "pending": 8,
+            "hit_rate": 0.3333,
+            "roi": -0.36,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 75.3786,
+            "avg_expected_value": 0.1204,
+            "clv": {
+              "tracked": 6,
+              "avg_clv": -6.1667,
+              "positive_rate": 0.5,
+              "non_negative_rate": 0.6667,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 6,
+              "totals_avg_clv": -6.1667,
+              "totals_positive_rate": 0.5,
+              "totals_non_negative_rate": 0.6667
+            }
+          },
+          "recent": {
+            "total_picks": 6,
+            "evaluated": 6,
+            "pending": 0,
+            "hit_rate": 0.3333,
+            "roi": -0.36,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 77.15,
+            "avg_expected_value": 0.1254,
+            "clv": {
+              "tracked": 6,
+              "avg_clv": -6.1667,
+              "positive_rate": 0.5,
+              "non_negative_rate": 0.6667,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 6,
+              "totals_avg_clv": -6.1667,
+              "totals_positive_rate": 0.5,
+              "totals_non_negative_rate": 0.6667
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5821,
+            "actual_win_rate": 0.3333,
+            "calibration_gap": 0.2488,
+            "overconfidence_gap": 0.2488
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "totals disabled by config",
+            "need more settled totals picks (6/10)",
+            "recent totals CLV -6.1667 is below 0.0000",
+            "recent totals ROI -0.3600 is below 0.0000",
+            "recent totals overconfidence gap 0.2488 exceeds 0.1000"
+          ],
+          "health_score": 0.2857
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": false
+      }
+    },
+    "summary": "modeled=2 | odds=2/2 | +ev=2 | sense=2 | eligible=0 | locks=2 | recent moneylines CLV -0.0039 is below 0.0000; totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000"
+  }
+}
