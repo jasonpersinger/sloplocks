@@ -461,6 +461,13 @@
       outline: none;
     }
 
+    .draft-note {
+      color: var(--fg-faint);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
     .status-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1241,8 +1248,8 @@
     var grid = document.createElement('div');
     grid.className = 'status-grid';
     grid.appendChild(createStatusCell('EVENT', data.event || 'ROUND 1'));
-    grid.appendChild(createStatusCell('PICKS', String(((data.stats || {}).pick_count) || 0)));
-    grid.appendChild(createStatusCell('GEMINI', ((data.gemini || {}).enabled ? 'LIVE' : 'OFFLINE')));
+    grid.appendChild(createStatusCell('LONGSHOTS', String(((data.stats || {}).longshot_count) || ((data.stats || {}).pick_count) || 0)));
+    grid.appendChild(createStatusCell('TOTALS', data.excluded_from_site_totals ? 'EXCLUDED' : 'LIVE'));
     el.appendChild(grid);
 
     var diag = document.createElement('div');
@@ -1260,7 +1267,8 @@
       'market: ' + (data.market_context || '--'),
       'consensus: ' + (data.consensus || '--'),
       'slop: ' + (data.rumors || '--'),
-      'gemini: ' + (((data.gemini || {}).summary) || 'No commentary.')
+      'gemini: ' + (((data.gemini || {}).summary) || 'No commentary.'),
+      'site totals: ' + (data.excluded_from_site_totals ? 'excluded from record / roi / hit rate' : 'included')
     ].forEach(function (line) {
       if (!line) return;
       var item = document.createElement('div');
@@ -1323,6 +1331,17 @@
     humanTag.textContent = 'CONF ' + String(pick.confidence || '--') + '/10';
     titleRow.appendChild(humanTag);
 
+    if ((pick.pick_class || '') === 'longshot') {
+      var longshotTag = document.createElement('div');
+      longshotTag.className = 'card-market';
+      longshotTag.style.marginLeft = '6px';
+      longshotTag.style.borderColor = '#ffd166';
+      longshotTag.style.color = '#ffe7a3';
+      longshotTag.style.background = 'rgba(255, 209, 102, 0.10)';
+      longshotTag.textContent = 'LONGSHOT';
+      titleRow.appendChild(longshotTag);
+    }
+
     if (pick.gemini && pick.gemini.verdict) {
       var geminiTag = document.createElement('div');
       geminiTag.className = 'card-market';
@@ -1382,9 +1401,10 @@
 
     feed.appendChild(createDashboardBlock('Board', [
       'EVENT       ' + (draftBoardData.event || '--'),
-      'PICKS       ' + String(((draftBoardData.stats || {}).pick_count) || 0),
+      'LONGSHOTS   ' + String(((draftBoardData.stats || {}).longshot_count) || ((draftBoardData.stats || {}).pick_count) || 0),
       'AVG CONF    ' + String(((draftBoardData.stats || {}).average_confidence) || 0) + '/10',
       'GEMINI      ' + (((draftBoardData.gemini || {}).enabled) ? 'LIVE' : 'OFFLINE'),
+      'TOTALS      ' + (draftBoardData.excluded_from_site_totals ? 'EXCLUDED' : 'LIVE'),
       'SUMMARY     ' + (draftBoardData.summary || '--')
     ], 'R1'));
 
@@ -1392,7 +1412,8 @@
       'MARKET      ' + (draftBoardData.market_context || '--'),
       'CONSENSUS   ' + (draftBoardData.consensus || '--'),
       'SLOP        ' + (draftBoardData.rumors || '--'),
-      'MODEL NOTE  ' + (((draftBoardData.gemini || {}).summary) || '--')
+      'MODEL NOTE  ' + (((draftBoardData.gemini || {}).summary) || '--'),
+      'SITE TOTALS ' + (draftBoardData.excluded_from_site_totals ? 'EXCLUDED FROM RECORD / ROI / HIT RATE' : 'INCLUDED')
     ], 'INTEL'));
 
     if ((draftBoardData.sources || []).length) {
@@ -1458,9 +1479,9 @@
     if (mode === 'draft') {
       var stats = (draftBoardData || {}).stats || {};
       setStatsFooter([
-        { label: 'PICKS', value: String(stats.pick_count || 0) },
+        { label: 'LONGSHOTS', value: String(stats.longshot_count || stats.pick_count || 0) },
         { label: 'AVG_CONF', value: String(stats.average_confidence || 0) + '/10' },
-        { label: 'GEMINI', value: ((draftBoardData || {}).gemini || {}).enabled ? 'LIVE' : 'OFFLINE' }
+        { label: 'TOTALS', value: (draftBoardData || {}).excluded_from_site_totals ? 'EXCLUDED' : 'LIVE' }
       ]);
       return;
     }

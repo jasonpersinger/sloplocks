@@ -66,6 +66,8 @@ def _merge_output(source: dict, commentary: dict) -> dict:
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "title": source.get("title", "NFL DRAFT"),
         "event": source.get("event", "NFL Draft Round 1"),
+        "board_type": source.get("board_type", "special"),
+        "excluded_from_site_totals": bool(source.get("excluded_from_site_totals", True)),
         "summary": source.get("summary", ""),
         "market_context": source.get("market_context", ""),
         "consensus": source.get("consensus", ""),
@@ -77,6 +79,7 @@ def _merge_output(source: dict, commentary: dict) -> dict:
         },
         "stats": {
             "pick_count": len(merged_picks),
+            "longshot_count": sum(1 for p in merged_picks if str(p.get("pick_class") or "") == "longshot"),
             "buy_count": buy_count,
             "average_confidence": round(
                 sum(float(p.get("confidence") or 0.0) for p in merged_picks) / len(merged_picks),
