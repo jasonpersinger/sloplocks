@@ -433,6 +433,34 @@
       font-size: 11px;
     }
 
+    .draft-section-label {
+      display: block;
+      color: var(--fg-dim);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 4px;
+    }
+
+    .draft-source-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .draft-source-link {
+      color: var(--fg-soft);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    .draft-source-link:hover,
+    .draft-source-link:focus-visible {
+      color: var(--accent);
+      text-decoration: underline;
+      outline: none;
+    }
+
     .status-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -618,6 +646,7 @@
     <nav class="pill-nav">
       <button class="pill" data-sport="dashboard">BOARD</button>
       <button class="pill active" data-sport="all">ALL</button>
+      <button class="pill" data-sport="draft">NFL DRAFT</button>
       <button class="pill" data-sport="nba">NBA</button>
       <button class="pill" data-sport="nhl">NHL</button>
       <button class="pill" data-sport="mlb">MLB</button>
@@ -666,7 +695,7 @@
     return formatDate(fallbackDate);
   }
 
-  var SPORT_LABELS = { nba: 'NBA', nhl: 'NHL', mlb: 'MLB' };
+  var SPORT_LABELS = { draft: 'NFL DRAFT', nba: 'NBA', nhl: 'NHL', mlb: 'MLB' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }
@@ -978,6 +1007,7 @@
   var currentSport = 'all';
   var loadedSportsData = {};
   var dashboardData = null;
+  var draftBoardData = null;
 
   function clearFeed() {
     while (feed.firstChild) {
@@ -1189,6 +1219,229 @@
     }
   }
 
+  function createDraftStatusRail(data) {
+    var el = document.createElement('section');
+    el.className = 'status-rail';
+
+    var heading = document.createElement('div');
+    heading.className = 'status-heading';
+
+    var headingCopy = document.createElement('div');
+    headingCopy.innerHTML =
+      '<div class="status-kicker">SPECIAL</div>' +
+      '<div class="status-title">NFL DRAFT</div>';
+    heading.appendChild(headingCopy);
+
+    var updated = document.createElement('div');
+    updated.className = 'status-kicker';
+    updated.textContent = 'UPDATED ' + formatStamp(data.generated_at || data.updated_at || '');
+    heading.appendChild(updated);
+    el.appendChild(heading);
+
+    var grid = document.createElement('div');
+    grid.className = 'status-grid';
+    grid.appendChild(createStatusCell('EVENT', data.event || 'ROUND 1'));
+    grid.appendChild(createStatusCell('PICKS', String(((data.stats || {}).pick_count) || 0)));
+    grid.appendChild(createStatusCell('GEMINI', ((data.gemini || {}).enabled ? 'LIVE' : 'OFFLINE')));
+    el.appendChild(grid);
+
+    var diag = document.createElement('div');
+    diag.className = 'status-diagnostics';
+
+    var diagLabel = document.createElement('div');
+    diagLabel.className = 'status-kicker';
+    diagLabel.textContent = 'LOG';
+    diag.appendChild(diagLabel);
+
+    var list = document.createElement('div');
+    list.className = 'status-list';
+    [
+      data.summary,
+      'market: ' + (data.market_context || '--'),
+      'consensus: ' + (data.consensus || '--'),
+      'slop: ' + (data.rumors || '--'),
+      'gemini: ' + (((data.gemini || {}).summary) || 'No commentary.')
+    ].forEach(function (line) {
+      if (!line) return;
+      var item = document.createElement('div');
+      item.className = 'status-list-item';
+      item.textContent = line;
+      list.appendChild(item);
+    });
+    diag.appendChild(list);
+    el.appendChild(diag);
+    return el;
+  }
+
+  function createDraftPickCard(pick) {
+    var card = document.createElement('article');
+    card.className = 'pick-card';
+
+    var shell = document.createElement('div');
+    shell.className = 'card-shell';
+
+    var head = document.createElement('div');
+    head.className = 'card-head';
+    head.innerHTML = '<span class="card-kicker">NFL DRAFT // ROUND 1</span>';
+
+    var oddsWrap = document.createElement('div');
+    oddsWrap.className = 'card-odds-wrap';
+
+    var oddsLabel = document.createElement('div');
+    oddsLabel.className = 'card-odds-label';
+    oddsLabel.textContent = 'PRICE';
+    oddsWrap.appendChild(oddsLabel);
+
+    var oddsValue = document.createElement('div');
+    oddsValue.className = 'card-odds';
+    oddsValue.textContent = pick.odds || '--';
+    oddsWrap.appendChild(oddsValue);
+
+    head.appendChild(oddsWrap);
+    shell.appendChild(head);
+
+    var titleRow = document.createElement('div');
+    titleRow.className = 'card-title-row';
+
+    var titleBlock = document.createElement('div');
+    titleBlock.className = 'card-title-block';
+
+    var title = document.createElement('div');
+    title.className = 'card-title';
+    title.textContent = (pick.prop || '').toUpperCase();
+    titleBlock.appendChild(title);
+
+    var sub = document.createElement('div');
+    sub.className = 'card-line';
+    sub.textContent = (pick.market || 'PROP').toUpperCase();
+    titleBlock.appendChild(sub);
+
+    titleRow.appendChild(titleBlock);
+
+    var humanTag = document.createElement('div');
+    humanTag.className = 'card-market';
+    humanTag.textContent = 'CONF ' + String(pick.confidence || '--') + '/10';
+    titleRow.appendChild(humanTag);
+
+    if (pick.gemini && pick.gemini.verdict) {
+      var geminiTag = document.createElement('div');
+      geminiTag.className = 'card-market';
+      geminiTag.style.marginLeft = '6px';
+      geminiTag.style.borderColor = pick.gemini.verdict === 'buy' ? '#86ff72' : (pick.gemini.verdict === 'fade' ? '#ff6464' : '#ff72f9');
+      geminiTag.style.color = pick.gemini.verdict === 'buy' ? '#b9ffaf' : (pick.gemini.verdict === 'fade' ? '#ffb0b0' : '#ffbafc');
+      geminiTag.style.background = pick.gemini.verdict === 'buy' ? 'rgba(134, 255, 114, 0.10)' : (pick.gemini.verdict === 'fade' ? 'rgba(255, 100, 100, 0.10)' : 'rgba(255, 114, 249, 0.10)');
+      geminiTag.textContent = 'GEMINI ' + String(pick.gemini.verdict).toUpperCase();
+      titleRow.appendChild(geminiTag);
+    }
+
+    shell.appendChild(titleRow);
+
+    var details = document.createElement('div');
+    details.className = 'detail-grid';
+    details.appendChild(createMetric('MARKET', pick.market || '--', null));
+    details.appendChild(createMetric('PRICE', pick.odds || '--', null));
+    details.appendChild(createMetric('HUMAN', String(pick.confidence || '--') + '/10', null));
+    details.appendChild(createMetric('GEMINI', pick.gemini ? String((pick.gemini.confidence || 0).toFixed(1)) + '/10' : '--', null));
+    details.appendChild(createMetric('VIEW', pick.gemini ? String(pick.gemini.verdict || 'pass').toUpperCase() : 'OFFLINE', null));
+    details.appendChild(createMetric('RISK', pick.risk ? 'LIVE' : '--', null));
+    shell.appendChild(details);
+
+    card.appendChild(shell);
+
+    var logic = document.createElement('div');
+    logic.className = 'card-blurb';
+    logic.innerHTML = '<span class="draft-section-label">LOGIC</span>' + (pick.logic || '--');
+    card.appendChild(logic);
+
+    var slop = document.createElement('div');
+    slop.className = 'card-blurb';
+    slop.innerHTML = '<span class="draft-section-label">SLOP FACTOR</span>' + (pick.slop_factor || '--');
+    card.appendChild(slop);
+
+    var gemini = document.createElement('div');
+    gemini.className = 'card-blurb';
+    gemini.innerHTML = '<span class="draft-section-label">GEMINI</span>' + ((pick.gemini && pick.gemini.logic) ? pick.gemini.logic : (((draftBoardData || {}).gemini || {}).enabled ? 'No Gemini commentary.' : 'Gemini is configured in the repo, but no API key is loaded in this environment right now.'));
+    card.appendChild(gemini);
+
+    var risk = document.createElement('div');
+    risk.className = 'card-blurb';
+    risk.innerHTML = '<span class="draft-section-label">FAIL CASE</span>' + ((pick.gemini && pick.gemini.risk) || pick.risk || '--');
+    card.appendChild(risk);
+
+    return card;
+  }
+
+  function renderDraftBoard() {
+    clearFeed();
+    if (!draftBoardData) {
+      showMessage('[ NFL DRAFT ERROR ]\n\nDraft board data unavailable.', false);
+      return;
+    }
+
+    feed.appendChild(createDraftStatusRail(draftBoardData));
+
+    feed.appendChild(createDashboardBlock('Board', [
+      'EVENT       ' + (draftBoardData.event || '--'),
+      'PICKS       ' + String(((draftBoardData.stats || {}).pick_count) || 0),
+      'AVG CONF    ' + String(((draftBoardData.stats || {}).average_confidence) || 0) + '/10',
+      'GEMINI      ' + (((draftBoardData.gemini || {}).enabled) ? 'LIVE' : 'OFFLINE'),
+      'SUMMARY     ' + (draftBoardData.summary || '--')
+    ], 'R1'));
+
+    feed.appendChild(createDashboardBlock('Inputs', [
+      'MARKET      ' + (draftBoardData.market_context || '--'),
+      'CONSENSUS   ' + (draftBoardData.consensus || '--'),
+      'SLOP        ' + (draftBoardData.rumors || '--'),
+      'MODEL NOTE  ' + (((draftBoardData.gemini || {}).summary) || '--')
+    ], 'INTEL'));
+
+    if ((draftBoardData.sources || []).length) {
+      var sourceCard = document.createElement('article');
+      sourceCard.className = 'pick-card dashboard-card';
+
+      var shell = document.createElement('div');
+      shell.className = 'card-shell';
+
+      var head = document.createElement('div');
+      head.className = 'card-head';
+      head.innerHTML = '<span class="card-kicker">REPORT</span>';
+      shell.appendChild(head);
+
+      var title = document.createElement('div');
+      title.className = 'card-title';
+      title.textContent = 'SOURCES';
+      shell.appendChild(title);
+
+      var tag = document.createElement('div');
+      tag.className = 'card-market';
+      tag.textContent = 'LINKS';
+      shell.appendChild(tag);
+
+      var body = document.createElement('div');
+      body.className = 'dashboard-lines';
+
+      var list = document.createElement('div');
+      list.className = 'draft-source-list';
+      draftBoardData.sources.forEach(function (source) {
+        var link = document.createElement('a');
+        link.className = 'draft-source-link';
+        link.href = source;
+        link.target = '_blank';
+        link.rel = 'noreferrer noopener';
+        link.textContent = source;
+        list.appendChild(link);
+      });
+      body.appendChild(list);
+      shell.appendChild(body);
+      sourceCard.appendChild(shell);
+      feed.appendChild(sourceCard);
+    }
+
+    (draftBoardData.picks || []).forEach(function (pick) {
+      feed.appendChild(createDraftPickCard(pick));
+    });
+  }
+
   function renderFeed(picks) {
     if (!picks || picks.length === 0) {
       showMessage('[ NO PICKS ]\n\nTry another tab later.', false);
@@ -1202,6 +1455,15 @@
   }
 
   function renderStats(mode) {
+    if (mode === 'draft') {
+      var stats = (draftBoardData || {}).stats || {};
+      setStatsFooter([
+        { label: 'PICKS', value: String(stats.pick_count || 0) },
+        { label: 'AVG_CONF', value: String(stats.average_confidence || 0) + '/10' },
+        { label: 'GEMINI', value: ((draftBoardData || {}).gemini || {}).enabled ? 'LIVE' : 'OFFLINE' }
+      ]);
+      return;
+    }
     if (mode === 'dashboard') {
       var record = ((dashboardData || {}).aggregate || {}).record || {};
       if (record.hit_rate == null) {
@@ -1260,6 +1522,25 @@
   }
 
   var ALL_SPORTS = ['nba', 'nhl', 'mlb'];
+
+  function loadDraftData() {
+    currentSport = 'draft';
+    showMessage('[ LOADING NFL DRAFT ]', true);
+    fetch('data/nfl-draft.json?t=' + Date.now())
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        draftBoardData = data;
+        renderDraftBoard();
+        renderStats('draft');
+      })
+      .catch(function () {
+        showMessage('[ NFL DRAFT ERROR ]\n\nMissing or invalid draft JSON.', false);
+        setStatsPlaceholder();
+      });
+  }
 
   function loadDashboard() {
     currentSport = 'dashboard';
@@ -1360,6 +1641,8 @@
 
       if (sport === 'dashboard') {
         loadDashboard();
+      } else if (sport === 'draft') {
+        loadDraftData();
       } else if (sport === 'all') {
         loadAllSports();
       } else {
