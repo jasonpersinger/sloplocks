@@ -222,6 +222,215 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     assert "SLATE DIAGNOSTICS" in full_text
 
 
+def test_build_payload_suppresses_radar_for_curated_matchup(monkeypatch, tmp_path):
+    """An official side should block the opposite side from appearing as radar."""
+    _write_predictions(
+        tmp_path,
+        "nba",
+        {
+            "slop_locks": [
+                {
+                    "home_team": "Pistons",
+                    "away_team": "Magic",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-01T23:00:00Z",
+                    "pick": "home",
+                    "model_prob": 0.56,
+                    "edge": 0.042,
+                    "expected_value": 0.08,
+                    "confidence_score": 68,
+                    "american_odds": 120,
+                }
+            ],
+            "longslop": None,
+            "matches": [
+                _base_match(
+                    home_team="Pistons",
+                    away_team="Magic",
+                    date="2026-05-01",
+                    start_time="2026-05-01T23:00:00Z",
+                    pick="away",
+                    model_prob=0.57,
+                    confidence_score=77,
+                    american_odds=-130,
+                    model_probs={"home": 0.43, "away": 0.57},
+                    best_odds={"home": 120, "away": -130},
+                    edges={
+                        "away": {
+                            "model_prob": 0.57,
+                            "implied_prob": 0.565,
+                            "edge": 0.005,
+                            "expected_value": 0.01,
+                            "american_odds": -130,
+                            "fractional_kelly": 0.002,
+                        }
+                    },
+                ),
+                _base_match(
+                    home_team="Knicks",
+                    away_team="Heat",
+                    date="2026-05-01",
+                    start_time="2026-05-02T00:30:00Z",
+                    pick="home",
+                    model_prob=0.64,
+                    confidence_score=72,
+                    american_odds=-110,
+                ),
+            ],
+            "diagnostics": {"summary": "modeled=2 | odds=2/2 | +ev=1 | eligible=1 | locks=1"},
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    radar_embed = next(embed for embed in payload["embeds"] if "MODEL RADAR" in embed["title"])
+    radar_text = json.dumps(radar_embed)
+
+    assert "Pistons" not in radar_text
+    assert "Magic" not in radar_text
+    assert "Knicks" in radar_text
+    assert "Heat" in radar_text
+
+
+def test_build_payload_suppresses_slimegrinder_for_curated_matchup(monkeypatch, tmp_path):
+    _write_predictions(
+        tmp_path,
+        "nba",
+        {
+            "slop_locks": [
+                {
+                    "home_team": "Pistons",
+                    "away_team": "Magic",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-01T23:00:00Z",
+                    "pick": "home",
+                    "model_prob": 0.56,
+                    "edge": 0.042,
+                    "expected_value": 0.08,
+                    "confidence_score": 68,
+                    "american_odds": 120,
+                }
+            ],
+            "longslop": None,
+            "slimegrinder": [
+                {
+                    "home_team": "Pistons",
+                    "away_team": "Magic",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-01T23:00:00Z",
+                    "pick": "away",
+                    "model_prob": 0.57,
+                    "edge": 0.02,
+                    "expected_value": 0.03,
+                    "confidence_score": 66,
+                    "american_odds": -130,
+                },
+                {
+                    "home_team": "Knicks",
+                    "away_team": "Heat",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-02T00:30:00Z",
+                    "pick": "home",
+                    "model_prob": 0.58,
+                    "edge": 0.02,
+                    "expected_value": 0.03,
+                    "confidence_score": 66,
+                    "american_odds": -110,
+                },
+            ],
+            "matches": [],
+            "diagnostics": {"summary": "modeled=2 | odds=2/2 | +ev=2 | eligible=1 | locks=1"},
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    full_text = json.dumps(payload)
+
+    assert "SLIMEGRINDER" in full_text
+    assert "Pistons vs Magic" in full_text
+    assert "Knicks vs Heat" in full_text
+    slime_embed = next(embed for embed in payload["embeds"] if "SLIMEGRINDER" in embed["title"])
+    slime_text = json.dumps(slime_embed)
+    assert "Pistons" not in slime_text
+    assert "Magic" not in slime_text
+    assert "Knicks" in slime_text
+    assert "Heat" in slime_text
+
+
+def test_build_payload_respects_publication_guard(monkeypatch, tmp_path):
+    _write_predictions(
+        tmp_path,
+        "nba",
+        {
+            "publication_guard": {
+                "enforced": True,
+                "allow_moneyline": False,
+                "allow_totals": False,
+                "status": "suppressed",
+                "reason": "recent moneylines CLV is below threshold",
+            },
+            "slop_locks": [
+                {
+                    "home_team": "Pistons",
+                    "away_team": "Magic",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-01T23:00:00Z",
+                    "pick": "home",
+                    "model_prob": 0.56,
+                    "edge": 0.042,
+                    "expected_value": 0.08,
+                    "confidence_score": 68,
+                    "american_odds": 120,
+                }
+            ],
+            "totals_locks": [
+                {
+                    "market_type": "total",
+                    "home_team": "Pistons",
+                    "away_team": "Magic",
+                    "date": "2026-05-01",
+                    "start_time": "2026-05-01T23:00:00Z",
+                    "pick": "over",
+                    "total_line": 209.5,
+                    "model_prob": 0.57,
+                    "confidence_score": 70,
+                    "american_odds": -110,
+                }
+            ],
+            "longslop": None,
+            "slimegrinder": [],
+            "matches": [
+                _base_match(
+                    home_team="Pistons",
+                    away_team="Magic",
+                    date="2026-05-01",
+                    start_time="2026-05-01T23:00:00Z",
+                    pick="home",
+                    model_prob=0.56,
+                    confidence_score=68,
+                    american_odds=120,
+                )
+            ],
+            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=1 | locks=1"},
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    full_text = json.dumps(payload)
+
+    assert "official pick" not in payload["content"]
+    assert "**SLOP LOCK**" not in full_text
+    assert "TOTAL LOCK" not in full_text
+    assert "MODEL RADAR" in full_text
+    assert "Pistons" in full_text
+    assert "Magic" in full_text
+
+
 def test_build_payload_handles_empty_day(monkeypatch, tmp_path):
     _write_predictions(
         tmp_path,

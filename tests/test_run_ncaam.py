@@ -9,6 +9,8 @@ import pytest
 
 from pipeline.run import run_sport_pipeline
 
+pytestmark = pytest.mark.skip(reason="NCAAM pipeline is season-disabled in live runtime.")
+
 
 @pytest.fixture
 def ncaam_pipeline_mocks(ncaam_games, ncaam_box_scores, tmp_path):

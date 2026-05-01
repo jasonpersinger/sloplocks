@@ -7,7 +7,7 @@ seconds — no historical data fetch, no model fitting.
 
 Usage:
     python -m pipeline.refresh_picks            # all sports
-    python -m pipeline.refresh_picks nba ncaam  # specific sports
+    python -m pipeline.refresh_picks nba nhl    # specific sports
 """
 
 import json
@@ -23,6 +23,7 @@ from pipeline.config import (
     SLOP_LOCK_MIN_ODDS,
     SLOP_LOCK_MAX_ODDS,
     SPORTS,
+    SEASON_DISABLED_SPORTS,
     DATA_DIR,
     ENABLE_QUALITATIVE,
 )
@@ -67,10 +68,12 @@ from pipeline.run import (
     _load_json,
     _load_latest_odds_snapshots,
     _lookup_match_odds,
+    _normalize_odds_list,
     _save_json,
     _selection_snapshot_config,
     _snapshot_relative_path,
     _write_run_snapshot,
+    validate_publishable_picks,
 )
 
 _NORMALIZERS = {
@@ -139,6 +142,10 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
     Returns None if predictions.json doesn't exist for this sport.
     """
     run_context = dict(run_context or _build_run_context(run_type="refresh"))
+    if sport_key in SEASON_DISABLED_SPORTS:
+        reason = SEASON_DISABLED_SPORTS[sport_key].get("reason", "sport is season-disabled")
+        print(f"  {sport_key}: season-disabled, skipping ({reason})")
+        return None
     sport = SPORTS[sport_key]
     data_path = Path(f"data/{sport_key}/predictions.json")
     if not data_path.exists():
@@ -170,9 +177,9 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
             sport_key=sport["odds_sport"],
             include_totals=(sport_key in {"nba", "mlb"}),
         )
-        for o in odds_list:
-            o["home_team"] = normalizer(o["home_team"])
-            o["away_team"] = normalizer(o["away_team"])
+        normalization_error = _normalize_odds_list(odds_list, normalizer)
+        if normalization_error:
+            print(f"  {sport_key}: odds team normalization skipped ({normalization_error})")
         odds_lookup = {(o["home_team"], o["away_team"]): o for o in odds_list}
         print(f"  {sport_key}: fetched odds for {len(odds_list)} games")
     except Exception as exc:
@@ -409,6 +416,16 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         totals_locks = []
     snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
     selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
+    slop_locks, totals_locks, longslop, slimegrinder, validation_issues = validate_publishable_picks(
+        sport_key=sport_key,
+        slop_locks=slop_locks,
+        totals_locks=totals_locks,
+        longslop=data.get("longslop"),
+        slimegrinder=slimegrinder,
+        publication_guard=publication_guard,
+        selection_config=selection_config,
+    )
+    data["longslop"] = longslop
     _attach_run_metadata_list(matches, run_context, snapshot_relpath)
     _attach_run_metadata_list(totals_matches, run_context, snapshot_relpath)
     _attach_run_metadata_list(slop_locks, run_context, snapshot_relpath)
@@ -434,6 +451,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
     data["snapshot_path"] = snapshot_relpath
     data["selection_config"] = selection_config
     data["publication_guard"] = publication_guard
+    data["validation_issues"] = validation_issues
 
     diagnostics = _build_pipeline_diagnostics(
         matches=pd.DataFrame(),
@@ -449,6 +467,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         longslop=data.get("longslop"),
         slimegrinder=slimegrinder,
         publication_guard=publication_guard,
+        validation_issues=validation_issues,
     )
     previous_diagnostics = data.get("diagnostics") or {}
     if previous_diagnostics.get("historical_matches") is not None:
@@ -483,6 +502,8 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
             "run_type": run_context.get("run_type"),
             "snapshot_timestamp": run_context.get("run_timestamp"),
             "selection_config": selection_config,
+            "publication_guard": publication_guard,
+            "validation_issues": validation_issues,
             "outcomes": outcomes,
             "inputs": {
                 "fixtures_fetched": live_fixtures,

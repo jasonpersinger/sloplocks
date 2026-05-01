@@ -292,7 +292,7 @@ class TestRunNBAPipeline:
         assert "draw_pct" not in stats
 
         assert "elo" in data["model_weights"]
-        assert "efficiency" in data["model_weights"]
+        assert "results_features" in data["model_weights"]
         assert "four_factors" not in data["model_weights"]
         assert "results_features" in data["model_weights"]
         assert "recent_boxscore" in data["model_weights"]
@@ -806,37 +806,25 @@ class TestRunPipeline:
     @patch("pipeline.run.fetch_mlb_games")
     @patch("pipeline.run.fetch_nhl_schedule")
     @patch("pipeline.run.fetch_nhl_games")
-    @patch("pipeline.run.fetch_ncaam_schedule")
-    @patch("pipeline.run.fetch_ncaam_games")
     @patch("pipeline.run.fetch_nba_espn_schedule")
     @patch("pipeline.run.fetch_nba_espn_games")
     def test_produces_per_sport_files_and_manifest(
         self,
         mock_nba_games,
         mock_nba_schedule,
-        mock_ncaam_games,
-        mock_ncaam_schedule,
         mock_nhl_games,
         mock_nhl_schedule,
         mock_mlb_games,
         mock_mlb_schedule,
         mock_odds,
         sample_nba_matches, sample_nba_box_scores, sample_nhl_matches,
-        ncaam_games, ncaam_box_scores, tmp_path
+        tmp_path
     ):
         mock_nba_games.return_value = (sample_nba_matches, sample_nba_box_scores)
         mock_nba_schedule.return_value = [
             {
                 "home_team": "Lakers",
                 "away_team": "Warriors",
-                "date": "2026-02-19",
-            }
-        ]
-        mock_ncaam_games.return_value = (ncaam_games, ncaam_box_scores)
-        mock_ncaam_schedule.return_value = [
-            {
-                "home_team": "Duke",
-                "away_team": "Kansas",
                 "date": "2026-02-19",
             }
         ]
@@ -866,7 +854,8 @@ class TestRunPipeline:
         assert "mma" not in manifest["sports"]
         assert manifest["sports"]["nba"]["status"] == "ok"
         assert manifest["sports"]["nhl"]["status"] == "ok"
-        assert manifest["sports"]["ncaam"]["status"] == "ok"
+        assert manifest["sports"]["ncaam"]["status"] == "season_disabled"
+        assert manifest["sports"]["ncaam"]["active"] is False
         assert "diagnostics" in manifest["sports"]["nba"]
         assert "diagnostics" in manifest["sports"]["nhl"]
         assert "diagnostics" in manifest["sports"]["ncaam"]
@@ -880,7 +869,7 @@ class TestRunPipeline:
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
         assert os.path.exists(os.path.join(output_dir, "nhl", "predictions.json"))
-        assert os.path.exists(os.path.join(output_dir, "ncaam", "predictions.json"))
+        assert not os.path.exists(os.path.join(output_dir, "ncaam", "predictions.json"))
 
 
 class TestRunCli:
@@ -890,6 +879,16 @@ class TestRunCli:
 
         assert exit_code == 0
         mock_run_sport_pipeline.assert_called_once_with("mlb", output_dir=str(tmp_path / "mlb"))
+
+    @patch("pipeline.run._update_global_metadata")
+    @patch("pipeline.run.run_sport_pipeline")
+    def test_main_skips_season_disabled_sport(self, mock_run_sport_pipeline, mock_update_metadata, tmp_path, capsys):
+        exit_code = _main(["--sport", "ncaam", "--output-dir", str(tmp_path / "ncaam")])
+
+        assert exit_code == 0
+        mock_run_sport_pipeline.assert_not_called()
+        mock_update_metadata.assert_called_once_with(str(tmp_path))
+        assert "season-disabled" in capsys.readouterr().out
 
 
 # ---------------------------------------------------------------------------
@@ -1176,6 +1175,107 @@ class TestComputeSlopLocks:
             ("C", 43),
             ("E", 41),
             ("G", 54),
+        ]
+
+
+class TestPublishablePickValidation:
+    def _pick(self, home="A", away="B", pick="home", **overrides):
+        item = {
+            "home_team": home,
+            "away_team": away,
+            "date": "2026-05-01",
+            "pick": pick,
+            "model_prob": 0.58,
+            "implied_prob": 0.52,
+            "edge": 0.04,
+            "expected_value": 0.08,
+            "american_odds": 115,
+            "decimal_odds": 2.15,
+            "confidence_score": 70,
+        }
+        item.update(overrides)
+        return item
+
+    def test_strips_invalid_and_duplicate_official_moneylines(self):
+        from pipeline.run import validate_publishable_picks
+
+        selection_config = {
+            "slop_locks": {
+                "min_expected_value": 0.0,
+                "edge_floor": 0.03,
+                "probability_floor": 0.5,
+            },
+            "totals_locks": {
+                "min_expected_value": 0.0,
+                "edge_floor": 0.02,
+                "probability_floor": 0.53,
+                "confidence_floor": 54,
+            },
+            "slimegrinder": {"min_expected_value": 0.0, "confidence_floor": 55},
+        }
+        slop_locks = [
+            self._pick(home="Pistons", away="Magic", pick="home"),
+            self._pick(home="Pistons", away="Magic", pick="away", model_prob=0.57, edge=0.035),
+            self._pick(home="Knicks", away="Heat", pick="home", expected_value=-0.01),
+        ]
+        slimegrinder = [
+            self._pick(home="Pistons", away="Magic", pick="away", edge=0.02),
+            self._pick(home="Bulls", away="Hawks", pick="home", edge=0.02),
+        ]
+
+        cleaned_slop, cleaned_totals, longslop, cleaned_slime, issues = validate_publishable_picks(
+            sport_key="nba",
+            slop_locks=slop_locks,
+            totals_locks=[],
+            longslop=None,
+            slimegrinder=slimegrinder,
+            publication_guard={"allow_moneyline": True, "allow_totals": True, "allow_slimegrinder": True},
+            selection_config=selection_config,
+        )
+
+        assert [(p["home_team"], p["away_team"], p["pick"]) for p in cleaned_slop] == [
+            ("Pistons", "Magic", "home")
+        ]
+        assert cleaned_totals == []
+        assert longslop is None
+        assert [(p["home_team"], p["away_team"], p["pick"]) for p in cleaned_slime] == [
+            ("Bulls", "Hawks", "home")
+        ]
+        assert {issue["reason"] for issue in issues} == {
+            "duplicate_official_matchup",
+            "below_min_expected_value",
+            "duplicate_secondary_matchup",
+        }
+
+    def test_publication_guard_suppression_strips_official_lanes(self):
+        from pipeline.run import validate_publishable_picks
+
+        cleaned_slop, cleaned_totals, longslop, cleaned_slime, issues = validate_publishable_picks(
+            sport_key="nba",
+            slop_locks=[self._pick()],
+            totals_locks=[self._pick(market_type="total", pick="over", total_line=210.5)],
+            longslop=None,
+            slimegrinder=[self._pick(home="C", away="D")],
+            publication_guard={
+                "allow_moneyline": False,
+                "allow_totals": False,
+                "allow_slimegrinder": False,
+            },
+            selection_config={
+                "slop_locks": {"edge_floor": 0.03, "probability_floor": 0.5},
+                "totals_locks": {"edge_floor": 0.02, "probability_floor": 0.53, "confidence_floor": 54},
+                "slimegrinder": {"confidence_floor": 55},
+            },
+        )
+
+        assert cleaned_slop == []
+        assert cleaned_totals == []
+        assert longslop is None
+        assert cleaned_slime == []
+        assert [issue["reason"] for issue in issues] == [
+            "publication_guard_suppressed",
+            "publication_guard_suppressed",
+            "publication_guard_suppressed",
         ]
 
 

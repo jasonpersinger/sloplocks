@@ -139,14 +139,26 @@ RTM_WINDOW = 20              # Games required before reducing shrinkage
 ENABLE_QUALITATIVE = os.environ.get("ENABLE_QUALITATIVE", "false").lower() == "true"
 QUALITATIVE_DEFAULT_WEIGHT = 0.005 # Default probability delta per impact point
 
-# Per-sport configuration
+# Sports that retain historical data/code but are intentionally not active in
+# live pipeline runs or public notification surfaces.
+SEASON_DISABLED_SPORTS = {
+    "ncaam": {
+        "name": "NCAAM",
+        "display_name": "NCAAM",
+        "status": "season_disabled",
+        "reason": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
+        "data_dir": os.path.join(DATA_DIR, "ncaam"),
+    },
+}
+
+# Per-sport active live configuration
 SPORTS = {
     "nba": {
         "name": "NBA",
         "display_name": "NBA",
         "odds_sport": "basketball_nba",
         "outcomes": ["home", "away"],
-        "models": ["elo", "efficiency", "four_factors", "results_features", "recent_boxscore", "nba_matchup"],
+        "models": ["elo", "four_factors", "results_features", "recent_boxscore", "nba_matchup"],
         "disabled_models": ["four_factors"],
         "accuracy_softmax_temperature": 3.0,
         "probability_calibration_min_samples": 30,

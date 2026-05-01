@@ -182,8 +182,8 @@ def test_refresh_skips_invalid_live_odds_without_crashing(monkeypatch, tmp_path)
         "model_weights": {"elo": 1.0},
         "matches": [
             {
-                "home_team": "Duke",
-                "away_team": "UConn",
+                "home_team": "Bruins",
+                "away_team": "Rangers",
                 "date": "2026-03-29",
                 "model_probs": {"home": 0.52, "away": 0.48},
                 "individual_models": {"elo": {"home": 0.52, "away": 0.48}},
@@ -197,14 +197,25 @@ def test_refresh_skips_invalid_live_odds_without_crashing(monkeypatch, tmp_path)
         "slimegrinder": [],
         "diagnostics": {"historical_matches": 20},
     }
-    _write_predictions(tmp_path, "ncaam", payload)
+    _write_predictions(tmp_path, "nhl", payload)
+    monkeypatch.setattr(
+        refresh_picks,
+        "fetch_nhl_schedule",
+        lambda cache_path=None: [{
+            "home_team": "Bruins",
+            "away_team": "Rangers",
+            "date": "2026-03-29",
+            "start_time": "2026-03-29T23:00:00Z",
+        }],
+    )
+    monkeypatch.setattr(refresh_picks, "normalize_nhl_team_name", lambda name: name)
 
     monkeypatch.setattr(
         refresh_picks,
         "fetch_odds",
         lambda sport_key, include_totals=False: [{
-            "home_team": "Duke",
-            "away_team": "UConn",
+            "home_team": "Bruins",
+            "away_team": "Rangers",
             "commence_time": "2026-03-29T23:00:00Z",
             "home_odds": 1.0,
             "away_odds": 1.92,
@@ -215,12 +226,19 @@ def test_refresh_skips_invalid_live_odds_without_crashing(monkeypatch, tmp_path)
     monkeypatch.setattr(refresh_picks, "_apply_latest_market_snapshots", lambda *args, **kwargs: None)
     monkeypatch.setattr(refresh_picks, "_save_json", lambda path, data: None)
 
-    refresh_picks.refresh_sport("ncaam")
+    refresh_picks.refresh_sport("nhl")
 
-    with open(tmp_path / "data" / "ncaam" / "predictions.json") as f:
+    with open(tmp_path / "data" / "nhl" / "predictions.json") as f:
         data = json.load(f)
 
     assert data["matches"][0]["edges"]["away"]["american_odds"] < 0
+
+
+def test_refresh_skips_season_disabled_sport(capsys):
+    result = refresh_picks.refresh_sport("ncaam")
+
+    assert result is None
+    assert "season-disabled" in capsys.readouterr().out
 
 
 def test_main_continues_when_one_sport_refresh_fails(monkeypatch, tmp_path, capsys):

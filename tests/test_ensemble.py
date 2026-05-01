@@ -100,17 +100,17 @@ class TestComputeEdges:
     def test_positive_edge_flagged_as_value(self):
         model_probs = {"home": 0.70, "draw": 0.15, "away": 0.15}
         odds = {"home_odds": 1.67, "draw_odds": 3.80, "away_odds": 4.50}
-        # The current code removes vig first, then calibrates toward the
-        # fair market probability before computing edge.
+        # Without a consensus benchmark, the model keeps raw probabilities and
+        # uses the single execution line only as the no-vig edge baseline.
         edges = compute_edges(model_probs, odds)
 
         assert edges["home"]["raw_model_prob"] == pytest.approx(0.70)
         assert edges["home"]["market_implied_prob"] == pytest.approx(0.5988, abs=1e-4)
         assert edges["home"]["implied_prob"] == pytest.approx(0.5523, abs=1e-4)
         assert edges["home"]["hold"] == pytest.approx(0.0842, abs=1e-4)
-        assert edges["home"]["model_prob"] == pytest.approx(0.6409, abs=1e-4)
-        assert edges["home"]["edge"] == pytest.approx(0.0886, abs=1e-2)
-        assert edges["home"]["expected_value"] == pytest.approx(0.0704, abs=1e-3)
+        assert edges["home"]["model_prob"] == pytest.approx(0.70, abs=1e-4)
+        assert edges["home"]["edge"] == pytest.approx(0.1477, abs=1e-2)
+        assert edges["home"]["expected_value"] == pytest.approx(0.169, abs=1e-3)
         assert edges["home"]["kelly_fraction"] > 0
         assert edges["home"]["fractional_kelly"] == pytest.approx(
             edges["home"]["kelly_fraction"] * 0.25, abs=1e-4
@@ -138,12 +138,12 @@ class TestComputeEdges:
         assert "home" in edges
         assert "away" in edges
         # For 2-way markets, the implied probabilities are normalized to no-vig
-        # fair probabilities before calibration and edge computation.
+        # fair probabilities. Single-book odds do not trigger market shrinkage.
         assert edges["home"]["raw_model_prob"] == pytest.approx(0.60)
         assert edges["home"]["market_implied_prob"] == pytest.approx(0.4762, abs=1e-4)
         assert edges["home"]["implied_prob"] == pytest.approx(0.4545, abs=1e-4)
         assert edges["home"]["hold"] == pytest.approx(0.0476, abs=1e-4)
-        assert edges["home"]["edge"] == pytest.approx(0.0873, abs=1e-2)
+        assert edges["home"]["edge"] == pytest.approx(0.1455, abs=1e-2)
 
 
 class TestComputeTotalsEdges:

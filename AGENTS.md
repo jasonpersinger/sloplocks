@@ -15,8 +15,10 @@ There is no backend app server. The Python pipeline writes JSON into `data/`, an
 Current active sports:
 - `nba`
 - `nhl`
-- `ncaam`
 - `mlb`
+
+Season-disabled sports with historical code/data retained:
+- `ncaam`
 
 MMA was intentionally removed from the live product and pipeline.
 

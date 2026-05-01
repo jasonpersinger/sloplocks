@@ -33,6 +33,7 @@ from pipeline.config import (
     SLOP_LOCK_FALLBACK_MIN_ODDS,
     SLIMEGRINDER_MIN_ODDS,
     SLIMEGRINDER_MAX_ODDS,
+    SEASON_DISABLED_SPORTS,
     SPORTS,
 )
 try:
@@ -1974,48 +1975,21 @@ def _compute_slop_locks(
     confidence_dropoff: float = 0.0,
     max_picks: int = 3,
 ):
-    """Extract SLOP LOCKS with a guaranteed 3-pick minimum fallback."""
+    """Extract threshold-qualified SLOP LOCKS."""
     if max_picks <= 0:
         return []
 
     candidates = []
-    all_eligible = []
 
     for rec in prediction_records:
-        # MANDATE: We need to fill at least 3 picks. 
-        # If we skip all 'completed' games, late-night runs will have empty cards.
         if rec.get("completed"):
-            # Only skip if we have enough uncompleted games to fill the mandate
-            uncompleted_count = sum(1 for r in prediction_records if not r.get("completed"))
-            if uncompleted_count >= 3:
-                continue
+            continue
         
         edges = rec.get("edges", {})
-        
-        # Determine the model's preferred side regardless of odds for the fallback list
-        model_probs = rec.get("model_probs", {})
-        best_side = max(model_probs.keys(), key=lambda k: model_probs[k]) if model_probs else None
 
         for outcome in outcomes:
             e = edges.get(outcome)
-            
-            # If we don't have edge data but this is the model's best guess,
-            # build a skeleton record for the all_eligible fallback.
             if not e:
-                if outcome == best_side:
-                    all_eligible.append({
-                        "home_team": rec["home_team"],
-                        "away_team": rec["away_team"],
-                        "date": rec["date"],
-                        "start_time": rec.get("start_time"),
-                        "pick": outcome,
-                        "model_prob": round(model_probs.get(outcome, 0), 4),
-                        "american_odds": None,
-                        "confidence_score": rec.get("confidence_score", 0),
-                        "qualitative_analysis": rec.get("qualitative_analysis"),
-                        "qualitative_summary": rec.get("qualitative_summary"),
-                        "blurb": "[UNPRICED LEAN] Model projections only; market odds unavailable."
-                    })
                 continue
             
             conf = e.get("confidence_score", 0)
@@ -2043,10 +2017,7 @@ def _compute_slop_locks(
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
             }
-            
-            all_eligible.append(formatted_pick)
 
-            # Strict Lock Criteria
             if (
                 edge >= edge_floor
                 and prob >= probability_floor
@@ -2057,39 +2028,7 @@ def _compute_slop_locks(
 
     # Sort strict candidates by edge and EV
     candidates.sort(key=lambda x: (x["edge"], x["expected_value"], x["model_prob"]), reverse=True)
-    
-    # Selection using strict criteria (limited by max_picks)
-    selected = _exclude_opponent_conflicts(candidates[:max_picks])
-
-    # MANDATE: If we have < 3 picks, fill with "Best Leans" from all_eligible
-    if len(selected) < 3:
-        already_selected_teams = set()
-        for s in selected:
-            already_selected_teams.add(s["home_team"])
-            already_selected_teams.add(s["away_team"])
-            
-        remaining = [p for p in all_eligible if id(p) not in [id(s) for s in selected]]
-        # Sort by: Has Odds (True first), then Model Prob
-        remaining.sort(key=lambda x: (x["american_odds"] is not None, x["model_prob"]), reverse=True)
-        
-        for r in remaining:
-            if len(selected) >= 3:
-                break
-            # Avoid duplicate team pairings
-            if r["home_team"] in already_selected_teams or r["away_team"] in already_selected_teams:
-                continue
-                
-            # Tag as a Lean
-            if r["american_odds"] is None:
-                r["blurb"] = "[UNPRICED LEAN] Model projections only; market odds unavailable."
-            else:
-                r["blurb"] = "[SYSTEM LEAN] High-value model projection."
-            
-            selected.append(r)
-            already_selected_teams.add(r["home_team"])
-            already_selected_teams.add(r["away_team"])
-    
-    return selected
+    return _exclude_opponent_conflicts(candidates[:max_picks])
 
 
 
@@ -2310,6 +2249,201 @@ def _match_key(record: dict) -> tuple[str, str, str]:
     )
 
 
+def _pick_matchup_market_key(record: dict) -> tuple[str, str, str, str]:
+    """Return a stable market-level key for one pick record."""
+    return (
+        record.get("home_team"),
+        record.get("away_team"),
+        str(record.get("date") or record.get("match_date") or "")[:10],
+        record.get("market_type") or "moneyline",
+    )
+
+
+def _normalize_odds_list(odds_list: list[dict], normalizer) -> Optional[Exception]:
+    """Normalize odds team names, falling back to raw names if normalization fails."""
+    normalization_error = None
+    for odds in odds_list:
+        if normalization_error is not None:
+            continue
+        try:
+            odds["home_team"] = normalizer(odds["home_team"])
+            odds["away_team"] = normalizer(odds["away_team"])
+        except Exception as exc:
+            normalization_error = exc
+    return normalization_error
+
+
+def _validation_issue(reason: str, pick_type: str, record: dict, detail: Optional[str] = None) -> dict:
+    """Build one structured publish-validation issue."""
+    issue = {
+        "reason": reason,
+        "pick_type": pick_type,
+        "market_type": record.get("market_type") or "moneyline",
+        "home_team": record.get("home_team"),
+        "away_team": record.get("away_team"),
+        "match_date": str(record.get("date") or record.get("match_date") or "")[:10],
+        "pick": record.get("pick"),
+    }
+    if detail:
+        issue["detail"] = detail
+    return issue
+
+
+def _safe_gate_float(value, default=None):
+    try:
+        if value in (None, "", "None"):
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[dict]) -> bool:
+    """Return whether one pick still satisfies its publication gates."""
+    min_ev = _safe_gate_float(config.get("min_expected_value"), 0.0)
+    ev = _safe_gate_float(record.get("expected_value"))
+    edge = _safe_gate_float(record.get("edge"))
+    prob = _safe_gate_float(record.get("model_prob"))
+    confidence = _safe_gate_float(record.get("confidence_score"))
+    american = _safe_gate_float(record.get("american_odds"))
+
+    if american is None:
+        issues.append(_validation_issue("missing_american_odds", pick_type, record))
+        return False
+    if ev is None:
+        issues.append(_validation_issue("missing_expected_value", pick_type, record))
+        return False
+    if ev < min_ev:
+        issues.append(_validation_issue("below_min_expected_value", pick_type, record, f"{ev:.4f} < {min_ev:.4f}"))
+        return False
+
+    if pick_type == "slop_lock":
+        edge_floor = _safe_gate_float(config.get("edge_floor"), 0.03)
+        probability_floor = _safe_gate_float(config.get("probability_floor"), 0.45)
+        if edge is None or edge < edge_floor:
+            detail = "missing edge" if edge is None else f"{edge:.4f} < {edge_floor:.4f}"
+            issues.append(_validation_issue("below_edge_floor", pick_type, record, detail))
+            return False
+        if prob is None or prob < probability_floor:
+            detail = "missing model_prob" if prob is None else f"{prob:.4f} < {probability_floor:.4f}"
+            issues.append(_validation_issue("below_probability_floor", pick_type, record, detail))
+            return False
+
+    elif pick_type == "total_lock":
+        edge_floor = _safe_gate_float(config.get("edge_floor"), 0.02)
+        probability_floor = _safe_gate_float(config.get("probability_floor"), 0.53)
+        confidence_floor = _safe_gate_float(config.get("confidence_floor"), 54.0)
+        if edge is None or edge < edge_floor:
+            detail = "missing edge" if edge is None else f"{edge:.4f} < {edge_floor:.4f}"
+            issues.append(_validation_issue("below_edge_floor", pick_type, record, detail))
+            return False
+        if prob is None or prob < probability_floor:
+            detail = "missing model_prob" if prob is None else f"{prob:.4f} < {probability_floor:.4f}"
+            issues.append(_validation_issue("below_probability_floor", pick_type, record, detail))
+            return False
+        if confidence is None or confidence < confidence_floor:
+            detail = "missing confidence" if confidence is None else f"{confidence:.4f} < {confidence_floor:.4f}"
+            issues.append(_validation_issue("below_confidence_floor", pick_type, record, detail))
+            return False
+
+    elif pick_type == "longslop":
+        confidence_floor = _safe_gate_float(config.get("confidence_floor"), 65.0)
+        if american < 500:
+            issues.append(_validation_issue("below_longshot_odds_floor", pick_type, record, f"{american:.0f} < 500"))
+            return False
+        if edge is None or edge < 0:
+            detail = "missing edge" if edge is None else f"{edge:.4f} < 0.0000"
+            issues.append(_validation_issue("below_edge_floor", pick_type, record, detail))
+            return False
+        if confidence is not None and confidence < confidence_floor:
+            issues.append(_validation_issue("below_confidence_floor", pick_type, record, f"{confidence:.4f} < {confidence_floor:.4f}"))
+            return False
+
+    elif pick_type == "slimegrinder":
+        confidence_floor = _safe_gate_float(config.get("confidence_floor"), 65.0)
+        if confidence is None or confidence < confidence_floor:
+            detail = "missing confidence" if confidence is None else f"{confidence:.4f} < {confidence_floor:.4f}"
+            issues.append(_validation_issue("below_confidence_floor", pick_type, record, detail))
+            return False
+
+    return True
+
+
+def validate_publishable_picks(
+    *,
+    sport_key: str,
+    slop_locks: list[dict],
+    totals_locks: list[dict],
+    longslop: Optional[dict],
+    slimegrinder: list[dict],
+    publication_guard: dict,
+    selection_config: dict,
+) -> tuple[list[dict], list[dict], Optional[dict], list[dict], list[dict]]:
+    """Strip invalid publishable picks and return structured validation issues."""
+    issues: list[dict] = []
+    seen_official_moneylines: set[tuple[str, str, str, str]] = set()
+    seen_totals: set[tuple[str, str, str, str]] = set()
+
+    allow_moneyline = publication_guard.get("allow_moneyline", True)
+    allow_totals = publication_guard.get("allow_totals", True)
+
+    cleaned_slop: list[dict] = []
+    for item in slop_locks or []:
+        item = {**item, "market_type": item.get("market_type") or "moneyline"}
+        if not allow_moneyline:
+            issues.append(_validation_issue("publication_guard_suppressed", "slop_lock", item))
+            continue
+        key = _pick_matchup_market_key(item)
+        if key in seen_official_moneylines:
+            issues.append(_validation_issue("duplicate_official_matchup", "slop_lock", item))
+            continue
+        if not _passes_pick_gate(item, "slop_lock", (selection_config.get("slop_locks") or {}), issues):
+            continue
+        seen_official_moneylines.add(key)
+        cleaned_slop.append(item)
+
+    cleaned_longslop = None
+    if isinstance(longslop, dict):
+        item = {**longslop, "market_type": longslop.get("market_type") or "moneyline"}
+        if not allow_moneyline or not publication_guard.get("allow_longslop", False):
+            issues.append(_validation_issue("publication_guard_suppressed", "longslop", item))
+        elif _pick_matchup_market_key(item) in seen_official_moneylines:
+            issues.append(_validation_issue("duplicate_official_matchup", "longslop", item))
+        elif _passes_pick_gate(item, "longslop", (selection_config.get("longslop") or {}), issues):
+            seen_official_moneylines.add(_pick_matchup_market_key(item))
+            cleaned_longslop = item
+
+    cleaned_totals: list[dict] = []
+    for item in totals_locks or []:
+        item = {**item, "market_type": "total"}
+        if not allow_totals:
+            issues.append(_validation_issue("publication_guard_suppressed", "total_lock", item))
+            continue
+        key = _pick_matchup_market_key(item)
+        if key in seen_totals:
+            issues.append(_validation_issue("duplicate_official_matchup", "total_lock", item))
+            continue
+        if not _passes_pick_gate(item, "total_lock", (selection_config.get("totals_locks") or {}), issues):
+            continue
+        seen_totals.add(key)
+        cleaned_totals.append(item)
+
+    cleaned_slime: list[dict] = []
+    for item in slimegrinder or []:
+        item = {**item, "market_type": item.get("market_type") or "moneyline"}
+        if not allow_moneyline or not publication_guard.get("allow_slimegrinder", False):
+            issues.append(_validation_issue("publication_guard_suppressed", "slimegrinder", item))
+            continue
+        if _pick_matchup_market_key(item) in seen_official_moneylines:
+            issues.append(_validation_issue("duplicate_secondary_matchup", "slimegrinder", item))
+            continue
+        if not _passes_pick_gate(item, "slimegrinder", (selection_config.get("slimegrinder") or {}), issues):
+            continue
+        cleaned_slime.append(item)
+
+    return cleaned_slop, cleaned_totals, cleaned_longslop, cleaned_slime, issues
+
+
 def _build_pipeline_diagnostics(
     matches: pd.DataFrame,
     fixtures_fetched: list[dict],
@@ -2324,6 +2458,7 @@ def _build_pipeline_diagnostics(
     longslop: Optional[dict],
     slimegrinder: list[dict],
     publication_guard: Optional[dict] = None,
+    validation_issues: Optional[list[dict]] = None,
 ) -> dict:
     """Summarize why a slate did or did not produce picks."""
     min_expected_value = sport.get("min_expected_value", 0.0)
@@ -2399,6 +2534,8 @@ def _build_pipeline_diagnostics(
         "longslop_posted": 1 if longslop else 0,
         "slimegrinders_posted": len(slimegrinder),
         "publication_guard": publication_guard or {},
+        "validation_issues": validation_issues or [],
+        "validation_issues_count": len(validation_issues or []),
     }
     diagnostics["summary"] = (
         f"modeled={diagnostics['matches_modeled']} | "
@@ -2410,6 +2547,8 @@ def _build_pipeline_diagnostics(
     )
     if publication_guard and publication_guard.get("reason"):
         diagnostics["summary"] += f" | {publication_guard['reason']}"
+    if validation_issues:
+        diagnostics["summary"] += f" | validation stripped={len(validation_issues)}"
     return diagnostics
 
 
@@ -2460,7 +2599,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     Parameters
     ----------
     sport_key : str
-        Key into ``SPORTS`` config dict (e.g. "nba", "ncaam").
+        Key into ``SPORTS`` config dict (e.g. "nba", "nhl").
     output_dir : str or None
         Override the sport's data directory.
     """
@@ -2718,9 +2857,9 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         normalizer = normalize_nhl_team_name
     else:
         normalizer = lambda x: x
-    for o in odds_list:
-        o["home_team"] = normalizer(o["home_team"])
-        o["away_team"] = normalizer(o["away_team"])
+    normalization_error = _normalize_odds_list(odds_list, normalizer)
+    if normalization_error:
+        print(f"  {sport_key}: odds team normalization skipped ({normalization_error})")
 
     odds_lookup = {}
     for o in odds_list:
@@ -3186,6 +3325,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         confidence_floor=sport.get("totals_confidence_threshold", 54.0),
         max_picks=sport.get("totals_max_picks", 3),
     ) if totals_prediction_records else []
+    selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
 
     pick_history_path = os.path.join(sport_dir, "pick_history.json")
     pick_history = _load_json(pick_history_path)
@@ -3198,17 +3338,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         enforce_live_guard=_is_live_public_output(base_dir),
     )
     if not publication_guard.get("allow_moneyline", True):
-        # Fallback: keep match projections and diagnostics visible even when the
-        # sport is not yet allowed to publish official moneyline lanes live.
-        # MANDATE: Always keep the top 3 fallback picks if they exist.
-        if len(slop_locks) > 3:
-            slop_locks = slop_locks[:3]
-        
-        # Tag as research leans
-        for lock in slop_locks:
-            if "blurb" not in lock:
-                lock["blurb"] = "[RESEARCH LEAN] This sport is in a model-warming phase; these are non-official leans."
-        
+        slop_locks = []
         longslop = None
         slimegrinder = []
     elif not publication_guard.get("allow_longslop", False):
@@ -3218,12 +3348,21 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if not publication_guard.get("allow_totals", True):
         totals_locks = []
 
+    slop_locks, totals_locks, longslop, slimegrinder, validation_issues = validate_publishable_picks(
+        sport_key=sport_key,
+        slop_locks=slop_locks,
+        totals_locks=totals_locks,
+        longslop=longslop,
+        slimegrinder=slimegrinder,
+        publication_guard=publication_guard,
+        selection_config=selection_config,
+    )
+
     # Generate analysis blurbs via Claude
     slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
     longslop = _generate_blurbs(longslop, pick_type="longslop")
 
     snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
-    selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
     _attach_run_metadata_list(prediction_records, run_context, snapshot_relpath)
     _attach_run_metadata_list(totals_prediction_records, run_context, snapshot_relpath)
     _attach_run_metadata_list(slop_locks, run_context, snapshot_relpath)
@@ -3546,6 +3685,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         longslop=longslop,
         slimegrinder=slimegrinder,
         publication_guard=publication_guard,
+        validation_issues=validation_issues,
     )
     runtime_model_health = {
         **model_health,
@@ -3576,6 +3716,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         "model_health": runtime_model_health,
         "calibration_sample_size": len(calibration_predictions),
         "selection_config": selection_config,
+        "validation_issues": validation_issues,
         "diagnostics": diagnostics,
     }
     _save_json(predictions_path, predictions_output)
@@ -3618,6 +3759,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             "snapshot_timestamp": run_context.get("run_timestamp"),
             "selection_config": selection_config,
             "publication_guard": publication_guard,
+            "validation_issues": validation_issues,
             "outcomes": outcomes,
             "inputs": {
                 "fixtures_fetched": fixtures_fetched,
@@ -3673,6 +3815,18 @@ def _update_global_metadata(base_dir):
                     "updated_at": data.get("generated_at", manifest["updated_at"]),
                     "diagnostics": data.get("diagnostics", {}),
                 }
+    for sk, disabled in SEASON_DISABLED_SPORTS.items():
+        manifest["sports"][sk] = {
+            "name": disabled["display_name"],
+            "status": disabled.get("status", "season_disabled"),
+            "active": False,
+            "reason": disabled.get("reason"),
+            "updated_at": manifest["updated_at"],
+            "diagnostics": {
+                "summary": disabled.get("reason"),
+                "season_disabled": True,
+            },
+        }
 
     _backfill_pick_decision_log_from_snapshots(base_dir)
     _hydrate_pick_decision_log_market_snapshots(base_dir)
@@ -3716,6 +3870,18 @@ def run_pipeline(output_dir=None):
                 "error": str(exc),
                 "updated_at": now,
             }
+    for sport_key, disabled in SEASON_DISABLED_SPORTS.items():
+        manifest["sports"][sport_key] = {
+            "name": disabled["display_name"],
+            "status": disabled.get("status", "season_disabled"),
+            "active": False,
+            "reason": disabled.get("reason"),
+            "updated_at": now,
+            "diagnostics": {
+                "summary": disabled.get("reason"),
+                "season_disabled": True,
+            },
+        }
 
     # Post-run cleanup and dashboard refresh
     _update_global_metadata(base_dir)
@@ -3729,7 +3895,7 @@ def _main(argv=None):
     import sys
 
     parser = argparse.ArgumentParser(description="Run the SLOP LOCKS pipeline.")
-    parser.add_argument("--sport", choices=sorted(SPORTS.keys()))
+    parser.add_argument("--sport", choices=sorted(set(SPORTS) | set(SEASON_DISABLED_SPORTS)))
     parser.add_argument("--output-dir")
     parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args(argv)
@@ -3740,6 +3906,12 @@ def _main(argv=None):
             handler.setLevel(logging.DEBUG)
 
     if args.sport:
+        if args.sport in SEASON_DISABLED_SPORTS:
+            reason = SEASON_DISABLED_SPORTS[args.sport].get("reason", "sport is season-disabled")
+            print(f"{args.sport}: season-disabled, skipping ({reason})")
+            base_dir = os.path.dirname(args.output_dir) if args.output_dir else DATA_DIR
+            _update_global_metadata(base_dir)
+            return 0
         run_sport_pipeline(args.sport, output_dir=args.output_dir)
         # Update manifest and dashboard even for single sport runs
         base_dir = os.path.dirname(args.output_dir) if args.output_dir else DATA_DIR

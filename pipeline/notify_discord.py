@@ -103,8 +103,19 @@ def _pick_key(item: dict) -> tuple[str, str, str, str]:
     return (
         item["home_team"],
         item["away_team"],
-        str(item.get("date", ""))[:10],
+        str(item.get("date") or item.get("match_date") or "")[:10],
         item["pick"],
+    )
+
+
+def _matchup_market_key(item: dict) -> tuple[str, str, str, str, str]:
+    """Return the notification-level de-dupe key for one matchup/market lane."""
+    return (
+        item.get("sport", ""),
+        item["home_team"],
+        item["away_team"],
+        str(item.get("date") or item.get("match_date") or "")[:10],
+        item.get("market_type") or "moneyline",
     )
 
 
@@ -192,19 +203,24 @@ def _build_curated_candidates() -> list[dict]:
     curated = []
     for sport_key, data in _iter_sport_data():
         lookup = _match_lookup(data.get("matches") or [])
+        publication_guard = data.get("publication_guard") or {}
+        allow_moneyline = publication_guard.get("allow_moneyline", True)
+        allow_totals = publication_guard.get("allow_totals", True)
 
-        for lock in data.get("slop_locks") or []:
-            curated.append(
-                _enrich_item(lock, sport_key, "slop_lock", lookup.get(_pick_key(lock)))
-            )
+        if allow_moneyline:
+            for lock in data.get("slop_locks") or []:
+                curated.append(
+                    _enrich_item(lock, sport_key, "slop_lock", lookup.get(_pick_key(lock)))
+                )
 
-        for total_lock in data.get("totals_locks") or []:
-            curated.append(
-                _enrich_item(total_lock, sport_key, "total_lock")
-            )
+        if allow_totals:
+            for total_lock in data.get("totals_locks") or []:
+                curated.append(
+                    _enrich_item(total_lock, sport_key, "total_lock")
+                )
 
         longslop = data.get("longslop")
-        if longslop:
+        if allow_moneyline and longslop:
             curated.append(
                 _enrich_item(longslop, sport_key, "longslop", lookup.get(_pick_key(longslop)))
             )
@@ -220,15 +236,17 @@ def _build_curated_candidates() -> list[dict]:
     return curated
 
 
-def _build_slimegrinder_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> list[dict]:
+def _build_slimegrinder_candidates(excluded_matchups: set[tuple[str, str, str, str, str]]) -> list[dict]:
     """Return secondary qualified picks from the slimegrinder lane."""
     slime = []
     for sport_key, data in _iter_sport_data():
+        publication_guard = data.get("publication_guard") or {}
+        if not publication_guard.get("allow_moneyline", True):
+            continue
         lookup = _match_lookup(data.get("matches") or [])
         for item in data.get("slimegrinder") or []:
             enriched = _enrich_item(item, sport_key, "slimegrinder", lookup.get(_pick_key(item)))
-            key = _pick_key(enriched)
-            if key in excluded_keys:
+            if _matchup_market_key(enriched) in excluded_matchups:
                 continue
             slime.append(enriched)
 
@@ -243,15 +261,14 @@ def _build_slimegrinder_candidates(excluded_keys: set[tuple[str, str, str, str]]
     return slime
 
 
-def _build_radar_candidates(excluded_keys: set[tuple[str, str, str, str]]) -> list[dict]:
+def _build_radar_candidates(excluded_matchups: set[tuple[str, str, str, str, str]]) -> list[dict]:
     radar = []
     for sport_key, data in _iter_sport_data():
         for match in data.get("matches") or []:
             if match.get("completed"):
                 continue
             candidate = _enrich_item(match, sport_key, "radar", match)
-            key = _pick_key(candidate)
-            if key in excluded_keys:
+            if _matchup_market_key(candidate) in excluded_matchups:
                 continue
             radar.append(candidate)
 
@@ -415,9 +432,9 @@ def build_payload() -> dict:
             "footer": {"text": "operating guidance from settled results, clv, and live coverage"},
         })
 
-    curated_keys = {_pick_key(item) for item in curated}
-    slimegrinder = _build_slimegrinder_candidates(curated_keys)
-    secondary_keys = curated_keys | {_pick_key(item) for item in slimegrinder}
+    curated_matchups = {_matchup_market_key(item) for item in curated}
+    slimegrinder = _build_slimegrinder_candidates(curated_matchups)
+    secondary_matchups = curated_matchups | {_matchup_market_key(item) for item in slimegrinder}
     if slimegrinder:
         embeds.append({
             "title": "🟢  SLIMEGRINDER",
@@ -426,7 +443,7 @@ def build_payload() -> dict:
             "footer": {"text": "secondary qualified picks; stronger than radar, below official locks"},
         })
 
-    radar = _build_radar_candidates(secondary_keys)
+    radar = _build_radar_candidates(secondary_matchups)
     if radar:
         embeds.append({
             "title": "📡  MODEL RADAR",

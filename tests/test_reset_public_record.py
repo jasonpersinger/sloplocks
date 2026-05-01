@@ -3,12 +3,14 @@ import json
 
 from pipeline.reset_public_record import reset_public_record
 
+ACTIVE_SPORTS = ("nba", "mlb", "nhl")
+
 
 def _seed_public_record(data_dir):
     tracking_dir = data_dir / "tracking"
     tracking_dir.mkdir(parents=True)
 
-    for sport in ("nba", "ncaam", "mlb", "nhl"):
+    for sport in (*ACTIVE_SPORTS, "ncaam"):
         sport_dir = data_dir / sport
         sport_dir.mkdir(parents=True)
         with open(sport_dir / "pick_history.json", "w") as f:
@@ -54,7 +56,7 @@ def test_reset_public_record_archives_without_rewriting_live_files(tmp_path):
 
     archive_dir = reset_public_record(data_dir, since="2026-03-28")
 
-    for sport in ("nba", "ncaam", "mlb", "nhl"):
+    for sport in ACTIVE_SPORTS:
         with open(data_dir / sport / "pick_history.json") as f:
             pick_history = json.load(f)
         assert len(pick_history["picks"]) == 2
@@ -69,6 +71,10 @@ def test_reset_public_record_archives_without_rewriting_live_files(tmp_path):
         assert predictions["pick_stats"]["all"]["total"] == 1
         assert predictions["pick_stats"]["all"]["wins"] == 0
         assert predictions["pick_stats"]["all"]["losses"] == 1
+    with open(data_dir / "ncaam" / "pick_history.json") as f:
+        ncaam_history = json.load(f)
+    assert len(ncaam_history["picks"]) == 2
+    assert not (archive_dir / "ncaam" / "pick_history.json").exists()
 
     with open(data_dir / "tracking" / "results_log.csv", newline="") as f:
         rows = list(csv.DictReader(f))
@@ -91,11 +97,14 @@ def test_reset_public_record_can_explicitly_rewrite_live_files(tmp_path):
 
     reset_public_record(data_dir, since="2026-03-28", rewrite_live_files=True)
 
-    for sport in ("nba", "ncaam", "mlb", "nhl"):
+    for sport in ACTIVE_SPORTS:
         with open(data_dir / sport / "pick_history.json") as f:
             pick_history = json.load(f)
         assert len(pick_history["picks"]) == 1
         assert pick_history["picks"][0]["pick_date"] == "2026-03-28"
+    with open(data_dir / "ncaam" / "pick_history.json") as f:
+        ncaam_history = json.load(f)
+    assert len(ncaam_history["picks"]) == 2
 
     with open(data_dir / "tracking" / "results_log.csv", newline="") as f:
         rows = list(csv.DictReader(f))
