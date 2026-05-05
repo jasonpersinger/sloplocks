@@ -204,7 +204,7 @@ SPORTS = {
         "moneyline_health_min_recent_roi": 0.0,
         "moneyline_health_max_overconfidence_gap": 0.12,
         "moneyline_clv_guard_window": 5,
-        "moneyline_clv_guard_min_tracked": 10,
+        "moneyline_clv_guard_min_tracked": 5,
         "moneyline_clv_guard_min_avg": -0.005,
         "totals_health_recent_window": 8,
         "totals_health_min_recent_evaluated": 5,
