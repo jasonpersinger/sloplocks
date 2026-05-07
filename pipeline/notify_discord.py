@@ -315,7 +315,7 @@ def _status_label(item: dict) -> str:
 
     conf_score = item.get("confidence_score", 0) or 0
     if conf_score >= 85:
-        return " 👀 **RADAR LEAN**"
+        return " 🔥 **HIGH CONFIDENCE LEAN**"
     if conf_score >= 65:
         return " 👀 **RADAR LEAN**"
     return " 👀 **RADAR ONLY**"
