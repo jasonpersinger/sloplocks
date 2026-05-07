@@ -218,3 +218,58 @@ class TestProbabilityCalibration:
         assert calibrated["home"] < 0.90
         assert calibrated["away"] > 0.10
         assert sum(calibrated.values()) == pytest.approx(1.0)
+
+
+class TestCalibrateProbaility:
+    """calibrate_probability parameter tuning — prediction-first rebalance."""
+
+    def test_base_market_weight_is_30_pct(self):
+        """At moderate probabilities, calibrated value uses 30% market weight."""
+        from pipeline.ensemble import calibrate_probability
+        # model=0.60, implied=0.50, no tail excess (|0.60-0.5|=0.10, trigger=0.15)
+        # calibrated = 0.70 * 0.60 + 0.30 * 0.50 = 0.570
+        result = calibrate_probability(0.60, 0.50)
+        assert result == pytest.approx(0.570, abs=0.005)
+
+    def test_tail_excess_fires_at_0_15_not_0_10(self):
+        """Tail excess weight boost should not fire until |prob - 0.5| > 0.15."""
+        from pipeline.ensemble import calibrate_probability
+        # At 0.64: |0.64 - 0.5| = 0.14 < 0.15 → no tail excess → pure 30% market weight
+        # calibrated = 0.70 * 0.64 + 0.30 * 0.55 = 0.448 + 0.165 = 0.613
+        result_no_excess = calibrate_probability(0.64, 0.55)
+        assert result_no_excess == pytest.approx(0.613, abs=0.005)
+
+        # At 0.67: |0.67 - 0.5| = 0.17 > 0.15 → tail excess = 0.02 → w_market = 0.32
+        # calibrated = 0.68 * 0.67 + 0.32 * 0.55 = 0.4556 + 0.176 = 0.6316
+        result_with_excess = calibrate_probability(0.67, 0.55)
+        # tail excess adds a small market pull; verify it's within expected range
+        assert result_with_excess == pytest.approx(0.6316, abs=0.005)
+
+    def test_compression_fires_above_0_65(self):
+        """Hard compression should engage above 0.65, not 0.60."""
+        from pipeline.ensemble import calibrate_probability
+        # model=0.75, implied=0.60 → divergence=0.15 (within MAX_ALLOWED_DIVERGENCE)
+        # tail_excess = 0.75-0.5-0.15 = 0.10 → w_market = min(0.40, 0.30+0.10) = 0.40
+        # pre-compression: 0.60*0.75 + 0.40*0.60 = 0.45 + 0.24 = 0.69
+        # post-compression: 0.65 + (0.04 * 0.85) = 0.684
+        result = calibrate_probability(0.75, 0.60)
+        # Should still be above 0.65 after compression (was being crushed to ~0.62 before)
+        assert result > 0.65
+
+    def test_high_model_prob_survives_calibration(self):
+        """A 70% model estimate should calibrate above 0.63, not get crushed to 0.62."""
+        from pipeline.ensemble import calibrate_probability
+        # model=0.70, implied=0.55
+        # OLD result: ~0.62 (40% market weight + tail excess + compression)
+        # NEW result: should be >= 0.63
+        result = calibrate_probability(0.70, 0.55)
+        assert result >= 0.63
+
+    def test_extreme_divergence_still_shrinks_to_market(self):
+        """If model is > MAX_ALLOWED_DIVERGENCE from market, heavy shrinkage applies."""
+        from pipeline.ensemble import calibrate_probability
+        from pipeline.config import MAX_ALLOWED_DIVERGENCE
+        # model=0.80, implied=0.50 → divergence=0.30 > MAX_ALLOWED_DIVERGENCE(0.20)
+        result = calibrate_probability(0.80, 0.50)
+        # With hard shrink: 0.3 * 0.80 + 0.7 * 0.50 = 0.24 + 0.35 = 0.59
+        assert result == pytest.approx(0.59, abs=0.01)

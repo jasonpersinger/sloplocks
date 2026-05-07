@@ -131,7 +131,7 @@ HISTORY_PATH = os.path.join(DATA_DIR, "history.json")
 ACCURACY_PATH = os.path.join(DATA_DIR, "model_accuracy.json")
 
 # Phase 4: Calibration & Market Respect
-MARKET_RESPECT_FACTOR = 0.4  # 0.4 means 40% weight to market, 60% to model
+MARKET_RESPECT_FACTOR = 0.3  # 0.3 means 30% weight to market, 70% to model
 MAX_ALLOWED_DIVERGENCE = 0.20 # If model is >20% from books, it's flagged as unrealistic
 RTM_WINDOW = 20              # Games required before reducing shrinkage
 

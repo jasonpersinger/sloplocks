@@ -250,25 +250,24 @@ def calibrate_probability(model_prob: float, implied_prob: float) -> float:
         return (0.3 * model_prob) + (0.7 * implied_prob)
     
     # 2. Standard Shrinkage: Respect the market's efficiency
-    w_market = MARKET_RESPECT_FACTOR
+    w_market = MARKET_RESPECT_FACTOR  # 0.30
 
-    # Above 60%, the current stack has been too confident in live picks.
-    # We add progressively more market weight as probabilities move deeper into
-    # the tails instead of letting high-confidence lanes stay fully model-led.
-    tail_excess = max(0.0, abs(model_prob - 0.5) - 0.10)
+    # Add extra market weight for tail probabilities (> 0.15 from midline).
+    # Threshold raised from 0.10 to 0.15 so moderate favourites (60-65%) are
+    # not penalised; cap halved to 0.10 to limit total market pull to 40%.
+    tail_excess = max(0.0, abs(model_prob - 0.5) - 0.15)
     if tail_excess > 0.0:
-        w_market = min(0.7, w_market + min(0.2, tail_excess))
+        w_market = min(0.40, w_market + min(0.10, tail_excess))
     w_model = 1.0 - w_market
 
     calibrated = (w_model * model_prob) + (w_market * implied_prob)
 
-    # Final compression of extreme confidence bands. This is symmetric around
-    # 50% and intentionally mild; it trims tail certainty without flattening
-    # ordinary 52-58% edges that can still be useful.
-    if calibrated > 0.60:
-        calibrated = 0.60 + ((calibrated - 0.60) * 0.8)
-    elif calibrated < 0.40:
-        calibrated = 0.40 - ((0.40 - calibrated) * 0.8)
+    # Mild compression of extreme confidence bands. Threshold raised from 0.60
+    # to 0.65; multiplier eased from 0.80 to 0.85 so strong favourites survive.
+    if calibrated > 0.65:
+        calibrated = 0.65 + ((calibrated - 0.65) * 0.85)
+    elif calibrated < 0.35:
+        calibrated = 0.35 - ((0.35 - calibrated) * 0.85)
 
     return calibrated
 
