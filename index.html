@@ -1319,7 +1319,11 @@
         return;
       }
 
-      allPicks.sort(function (a, b) { return b.model_prob - a.model_prob; });
+      allPicks.sort(function (a, b) {
+        var ta = a.start_time ? new Date(a.start_time).getTime() : Infinity;
+        var tb = b.start_time ? new Date(b.start_time).getTime() : Infinity;
+        return ta - tb;
+      });
       renderFeed(allPicks);
       renderStats('all');
     });
@@ -1338,7 +1342,11 @@
         loadedSportsData[sport] = data;
         var locks = (data.slop_locks || []).concat(data.totals_locks || []);
         locks.forEach(function (pick) { pick.sport = sport; });
-        locks.sort(function (a, b) { return b.model_prob - a.model_prob; });
+        locks.sort(function (a, b) {
+          var ta = a.start_time ? new Date(a.start_time).getTime() : Infinity;
+          var tb = b.start_time ? new Date(b.start_time).getTime() : Infinity;
+          return ta - tb;
+        });
         renderFeed(locks);
         renderStats(sport);
       })
