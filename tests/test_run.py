@@ -1055,7 +1055,7 @@ class TestComputeSlopLocks:
         }
 
     def test_pick_of_day_and_slate_aware_additional_locks(self):
-        """Candidates are ranked by edge and EV once they clear the base gates."""
+        """Candidates are ranked by confidence, then probability, then edge."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.70, -200, edge=0.04, confidence_score=58, expected_value=0.03),
