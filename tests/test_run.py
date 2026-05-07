@@ -1072,13 +1072,13 @@ class TestComputeSlopLocks:
         )
 
         assert len(locks) == 4
-        assert locks[0]["home_team"] == "C"
-        assert locks[1]["away_team"] == "F"
-        assert locks[2]["away_team"] == "H"
-        assert locks[3]["home_team"] == "A"
+        assert locks[0]["home_team"] == "C"   # conf=61
+        assert locks[1]["home_team"] == "A"   # conf=58
+        assert locks[2]["away_team"] == "F"   # conf=53
+        assert locks[3]["away_team"] == "H"   # conf=49
 
     def test_ranked_by_confidence_then_edge(self):
-        """Confidence no longer suppresses stronger edge candidates."""
+        """When confidence ties, higher probability wins; edge is final tiebreaker."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.80, 100, edge=0.03, confidence_score=70, expected_value=0.02),
@@ -1088,9 +1088,9 @@ class TestComputeSlopLocks:
         locks = _compute_slop_locks(records, ["home", "away"], max_picks=5, additional_confidence_floor=52, confidence_dropoff=8)
         picked = [(l["home_team"], l["away_team"], l["confidence_score"], l["edge"]) for l in locks]
         assert picked == [
-            ("C", "D", 70, 0.08),
             ("E", "F", 90, 0.06),
             ("A", "B", 70, 0.03),
+            ("C", "D", 70, 0.08),
         ]
 
     def test_below_threshold_picks_excluded(self):
@@ -1172,10 +1172,32 @@ class TestComputeSlopLocks:
 
         assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [
             ("A", 90),
+            ("G", 54),
             ("C", 43),
             ("E", 41),
-            ("G", 54),
         ]
+
+    def test_picks_have_tier_field(self):
+        """Each returned pick must include a 'tier' field."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.65, -130, edge=0.04, confidence_score=65, expected_value=0.04),
+            self._make_record("C", "D", "home", 0.54, -110, edge=0.012, confidence_score=55, expected_value=0.01),
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"], max_picks=5)
+        for lock in locks:
+            assert "tier" in lock
+            assert lock["tier"] in ("STRONG", "LEAN", "WATCHLIST", "NO_PLAY")
+
+    def test_strong_pick_tier_assigned(self):
+        """A pick meeting STRONG criteria should receive 'STRONG' tier."""
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.62, -130, edge=0.03, confidence_score=64, expected_value=0.03),
+        ]
+        locks = _compute_slop_locks(records, ["home", "away"], max_picks=5)
+        assert len(locks) == 1
+        assert locks[0]["tier"] == "STRONG"
 
 
 class TestPublishablePickValidation:

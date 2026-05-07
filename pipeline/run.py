@@ -77,6 +77,7 @@ from pipeline.ensemble import (
     blend_predictions,
     compute_edges,
     compute_totals_edges,
+    compute_pick_tier,           # ← add this line
     decimal_to_american,
     compute_confidence_stars,
     no_vig_probabilities,
@@ -2017,6 +2018,7 @@ def _compute_slop_locks(
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
             }
+            formatted_pick["tier"] = compute_pick_tier(conf, prob, edge)
 
             if (
                 edge >= edge_floor
@@ -2026,8 +2028,8 @@ def _compute_slop_locks(
             ):
                 candidates.append(formatted_pick)
 
-    # Sort strict candidates by edge and EV
-    candidates.sort(key=lambda x: (x["edge"], x["expected_value"], x["model_prob"]), reverse=True)
+    # Sort strict candidates by confidence, then prob, then edge
+    candidates.sort(key=lambda x: (x["confidence_score"], x["model_prob"], x["edge"]), reverse=True)
     return _exclude_opponent_conflicts(candidates[:max_picks])
 
 
@@ -2139,10 +2141,10 @@ def _compute_totals_locks(
 
     candidates.sort(
         key=lambda item: (
+            item.get("confidence_score", 0.0),
+            item.get("model_prob", 0.0),
             item.get("edge", 0.0),
             item.get("expected_value", 0.0),
-            item.get("model_prob", 0.0),
-            item.get("confidence_score", 0.0),
         ),
         reverse=True,
     )
