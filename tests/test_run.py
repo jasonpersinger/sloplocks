@@ -1673,6 +1673,18 @@ class TestSlimegrinderSelection:
 
         assert picks == []
 
+
+class TestConfigConstants:
+    """Smoke tests for config constants that gate pick selection."""
+
+    def test_slop_lock_min_odds_allows_heavy_favorites(self):
+        from pipeline.config import SLOP_LOCK_MIN_ODDS
+        assert SLOP_LOCK_MIN_ODDS == -220
+
+    def test_nba_clv_guard_min_tracked_is_relaxed(self):
+        from pipeline.config import SPORTS
+        assert SPORTS["nba"]["moneyline_clv_guard_min_tracked"] == 3
+
     def test_apply_latest_market_snapshots_sets_moneyline_and_total_clv(self):
         from pipeline.run import _apply_latest_market_snapshots
 

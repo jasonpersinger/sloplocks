@@ -113,7 +113,7 @@ ELO_HOME_ADVANTAGE = 65
 NBA_B2B_PENALTY = 30  # Elo points subtracted for back-to-back game
 NBA_3IN4_PENALTY = 15  # Elo points subtracted for 3 games in 4 nights
 VALUE_EDGE_THRESHOLD = 0.05
-SLOP_LOCK_MIN_ODDS = -150          # American odds lower bound for Slop Locks
+SLOP_LOCK_MIN_ODDS = -220          # American odds lower bound for Slop Locks
 SLOP_LOCK_MAX_ODDS = 195           # American odds upper bound for Slop Locks
 SLOP_LOCK_FALLBACK_MIN_ODDS = -350 # Hard floor for fallback picks outside the preferred window
 
@@ -204,7 +204,7 @@ SPORTS = {
         "moneyline_health_min_recent_roi": 0.0,
         "moneyline_health_max_overconfidence_gap": 0.12,
         "moneyline_clv_guard_window": 5,
-        "moneyline_clv_guard_min_tracked": 5,
+        "moneyline_clv_guard_min_tracked": 3,
         "moneyline_clv_guard_min_avg": -0.005,
         "totals_health_recent_window": 8,
         "totals_health_min_recent_evaluated": 5,
