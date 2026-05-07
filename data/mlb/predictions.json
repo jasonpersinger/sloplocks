@@ -59,7 +59,14 @@
         "switch_hitters": 0,
         "lefty_share": 0.3846,
         "righty_share": 0.6154,
-        "switch_share": 0.0
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.4444,
+        "confirmed_righty_share": 0.5556,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
       },
       "home_bullpen_tax": 0.65,
       "away_bullpen_tax": 0.0,
@@ -455,7 +462,619 @@
           "confidence_score": 42.3,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0401,
+          "hold": 0.0633,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 6
+        },
+        "away": {
+          "model_prob": 0.4482,
+          "raw_model_prob": 0.4822,
+          "implied_prob": 0.3972,
+          "market_implied_prob": 0.4211,
+          "edge": 0.051,
+          "expected_value": 0.098,
+          "decimal_odds": 2.45,
+          "american_odds": 145,
+          "kelly_fraction": 0.0676,
+          "fractional_kelly": 0.0135,
+          "confidence_score": 47.3,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0633,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 6
+        }
+      },
+      "best_odds": {
+        "home": -164,
+        "away": 145
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.61,
+          "away": 2.45
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.3972,
+            "home": 0.6028
+          },
+          "raw_probs": {
+            "away": 0.4211,
+            "home": 0.639
+          },
+          "hold": 0.0633,
+          "books_tracked": 6,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "FanDuel",
+            "last_update": "2026-05-07T17:45:14Z",
+            "outcomes": {
+              "home": 1.57,
+              "away": 2.36
+            },
+            "raw_probs": {
+              "home": 0.6369,
+              "away": 0.4237
+            },
+            "fair_probs": {
+              "home": 0.6005,
+              "away": 0.3995
+            },
+            "hold": 0.0607
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-05-07T17:44:57Z",
+            "outcomes": {
+              "home": 1.56,
+              "away": 2.39
+            },
+            "raw_probs": {
+              "home": 0.641,
+              "away": 0.4184
+            },
+            "fair_probs": {
+              "home": 0.6051,
+              "away": 0.3949
+            },
+            "hold": 0.0594
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-05-07T17:45:14Z",
+            "outcomes": {
+              "home": 1.54,
+              "away": 2.45
+            },
+            "raw_probs": {
+              "home": 0.6494,
+              "away": 0.4082
+            },
+            "fair_probs": {
+              "home": 0.614,
+              "away": 0.386
+            },
+            "hold": 0.0575
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-05-07T17:45:13Z",
+            "outcomes": {
+              "home": 1.54,
+              "away": 2.4
+            },
+            "raw_probs": {
+              "home": 0.6494,
+              "away": 0.4167
+            },
+            "fair_probs": {
+              "home": 0.6091,
+              "away": 0.3909
+            },
+            "hold": 0.066
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-05-07T17:44:57Z",
+            "outcomes": {
+              "home": 1.61,
+              "away": 2.23
+            },
+            "raw_probs": {
+              "home": 0.6211,
+              "away": 0.4484
+            },
+            "fair_probs": {
+              "home": 0.5807,
+              "away": 0.4193
+            },
+            "hold": 0.0695
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-05-07T17:43:46Z",
+            "outcomes": {
+              "home": 1.6,
+              "away": 2.25
+            },
+            "raw_probs": {
+              "home": 0.625,
+              "away": 0.4444
+            },
+            "fair_probs": {
+              "home": 0.5844,
+              "away": 0.4156
+            },
+            "hold": 0.0694
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "mlb",
+        "home_team": "Yankees",
+        "away_team": "Rangers",
+        "home_impact": -1.0,
+        "away_impact": -2.5,
+        "individual_factors": [
+          {
+            "team": "Yankees",
+            "description": "Carlos Rodon's absence on the IL weakens the Yankees' pitching rotation depth.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.8
+          },
+          {
+            "team": "Rangers",
+            "description": "Chris Martin's absence on the IL negatively impacts the Rangers' bullpen depth.",
+            "direction": "negative",
+            "magnitude": 1.5,
+            "confidence": 0.9
+          },
+          {
+            "team": "Rangers",
+            "description": "Robert Garcia's absence on the IL further impacts the Rangers' bullpen depth.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.9
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Rangers face a moderate negative impact due to multiple key relievers being on the IL, while the Yankees have a minor negative impact from a starting pitcher's IL stint affecting rotation depth."
+      },
+      "qualitative_summary": "Qualitative (H:-1.0 A:-2.5): agreed. Carlos Rodon's absence on the IL weakens the Yankees' pitching rotation depth.; Chris Martin's absence on the IL negatively impacts the Rangers' bullpen depth.",
+      "run_id": "daily-20260507T174219504139Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-05-07T17:42:19Z",
+      "snapshot_path": "tracking/snapshots/2026-05-07/mlb/daily-20260507T174219504139Z.json"
+    },
+    {
+      "home_team": "Nationals",
+      "away_team": "Twins",
+      "date": "2026-05-07",
+      "start_time": "2026-05-07T17:05Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": null,
+      "away_goalie": null,
+      "home_goalie_status": null,
+      "away_goalie_status": null,
+      "home_injury_profile": null,
+      "away_injury_profile": null,
+      "home_pitcher": "Jake Irvin",
+      "home_pitcher_hand": "R",
+      "away_pitcher": "Simeon Woods Richardson",
+      "away_pitcher_hand": "R",
+      "home_lineup_profile": {
+        "active_hitters": 13,
+        "available_hitters": 13,
+        "injured_hitters": 0,
+        "key_bat_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "left_handed_batters": 6,
+        "right_handed_batters": 7,
+        "switch_hitters": 0,
+        "lefty_share": 0.4615,
+        "righty_share": 0.5385,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.4444,
+        "confirmed_righty_share": 0.3333,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
+      },
+      "away_lineup_profile": {
+        "active_hitters": 13,
+        "available_hitters": 13,
+        "injured_hitters": 0,
+        "key_bat_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "left_handed_batters": 5,
+        "right_handed_batters": 8,
+        "switch_hitters": 0,
+        "lefty_share": 0.3846,
+        "righty_share": 0.6154,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.4444,
+        "confirmed_righty_share": 0.4444,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
+      },
+      "home_bullpen_tax": 0.273,
+      "away_bullpen_tax": 0.225,
+      "weather": {
+        "weather_exposed": true,
+        "temperature_f": 60.1,
+        "wind_mph": 4.7,
+        "precipitation_probability": 3
+      },
+      "pick": "home",
+      "model_prob": 0.54,
+      "edge": 0.0638,
+      "expected_value": 0.2129,
+      "kelly_fraction": 0.1014,
+      "fractional_kelly": 0.0203,
+      "confidence_score": 44.8,
+      "confidence_stars": 2,
+      "american_odds": 210,
+      "model_probs": {
+        "home": 0.54,
+        "away": 0.46
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.5403,
+          "away": 0.4597
+        },
+        "results_features": {
+          "home": 0.5101,
+          "away": 0.4899
+        },
+        "bullpen_features": {
+          "home": 0.5808,
+          "away": 0.4192
+        },
+        "run_environment": {
+          "home": 0.5151,
+          "away": 0.4849
+        },
+        "handedness_features": {
+          "home": 0.5307,
+          "away": 0.4693
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3913,
+          "raw_model_prob": 0.54,
+          "implied_prob": 0.3275,
+          "market_implied_prob": 0.3479,
+          "edge": 0.0638,
+          "expected_value": 0.2129,
+          "decimal_odds": 3.1,
+          "american_odds": 210,
+          "kelly_fraction": 0.1014,
+          "fractional_kelly": 0.0203,
+          "confidence_score": 44.8,
+          "is_value": false,
+          "unrealistic_flag": true,
+          "hold": 0.0642,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 6
+        },
+        "away": {
+          "model_prob": 0.6087,
+          "raw_model_prob": 0.46,
+          "implied_prob": 0.6725,
+          "market_implied_prob": 0.7143,
+          "edge": -0.0638,
+          "expected_value": -0.1173,
+          "decimal_odds": 1.45,
+          "american_odds": -222,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 42.0,
+          "is_value": false,
+          "unrealistic_flag": true,
+          "hold": 0.0642,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 6
+        }
+      },
+      "best_odds": {
+        "home": 210,
+        "away": -222
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 3.1,
+          "away": 1.45
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.6725,
+            "home": 0.3275
+          },
+          "raw_probs": {
+            "away": 0.7143,
+            "home": 0.3479
+          },
+          "hold": 0.0642,
+          "books_tracked": 6,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "FanDuel",
+            "last_update": "2026-05-07T17:45:14Z",
+            "outcomes": {
+              "home": 2.9,
+              "away": 1.4
+            },
+            "raw_probs": {
+              "home": 0.3448,
+              "away": 0.7143
+            },
+            "fair_probs": {
+              "home": 0.3256,
+              "away": 0.6744
+            },
+            "hold": 0.0591
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-05-07T17:44:57Z",
+            "outcomes": {
+              "home": 2.65,
+              "away": 1.45
+            },
+            "raw_probs": {
+              "home": 0.3774,
+              "away": 0.6897
+            },
+            "fair_probs": {
+              "home": 0.3537,
+              "away": 0.6463
+            },
+            "hold": 0.067
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-05-07T17:45:14Z",
+            "outcomes": {
+              "home": 2.85,
+              "away": 1.43
+            },
+            "raw_probs": {
+              "home": 0.3509,
+              "away": 0.6993
+            },
+            "fair_probs": {
+              "home": 0.3341,
+              "away": 0.6659
+            },
+            "hold": 0.0502
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-05-07T17:45:13Z",
+            "outcomes": {
+              "home": 2.85,
+              "away": 1.4
+            },
+            "raw_probs": {
+              "home": 0.3509,
+              "away": 0.7143
+            },
+            "fair_probs": {
+              "home": 0.3294,
+              "away": 0.6706
+            },
+            "hold": 0.0652
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-05-07T17:44:57Z",
+            "outcomes": {
+              "home": 2.95,
+              "away": 1.36
+            },
+            "raw_probs": {
+              "home": 0.339,
+              "away": 0.7353
+            },
+            "fair_probs": {
+              "home": 0.3155,
+              "away": 0.6845
+            },
+            "hold": 0.0743
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-05-07T17:43:46Z",
+            "outcomes": {
+              "home": 3.1,
+              "away": 1.35
+            },
+            "raw_probs": {
+              "home": 0.3226,
+              "away": 0.7407
+            },
+            "fair_probs": {
+              "home": 0.3034,
+              "away": 0.6966
+            },
+            "hold": 0.0633
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "mlb",
+        "home_team": "Nationals",
+        "away_team": "Twins",
+        "home_impact": -4.0,
+        "away_impact": -1.0,
+        "individual_factors": [
+          {
+            "team": "Nationals",
+            "description": "Key starting pitcher Josiah Gray is on the 60-Day IL, significantly weakening the rotation.",
+            "direction": "negative",
+            "magnitude": 3.0,
+            "confidence": 0.9
+          },
+          {
+            "team": "Nationals",
+            "description": "Luis Garcia Jr. is day-to-day, creating uncertainty for a regular position player.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.7
+          },
+          {
+            "team": "Twins",
+            "description": "Reliever Julian Merryweather is day-to-day, potentially impacting bullpen depth.",
+            "direction": "negative",
+            "magnitude": 1.0,
+            "confidence": 0.7
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Nationals face a significant negative impact due to the long-term absence of starting pitcher Josiah Gray and the day-to-day status of Luis Garcia Jr., while the Twins have a minor concern with Julian Merryweather being day-to-day."
+      },
+      "qualitative_summary": "Qualitative (H:-4.0 A:-1.0): disagreed. Key starting pitcher Josiah Gray is on the 60-Day IL, significantly weakening the rotation.; Luis Garcia Jr. is day-to-day, creating uncertainty for a regular position player.",
+      "run_id": "daily-20260507T174219504139Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-05-07T17:42:19Z",
+      "snapshot_path": "tracking/snapshots/2026-05-07/mlb/daily-20260507T174219504139Z.json"
+    },
+    {
+      "home_team": "Royals",
+      "away_team": "Guardians",
+      "date": "2026-05-07",
+      "start_time": "2026-05-07T18:10Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": null,
+      "away_goalie": null,
+      "home_goalie_status": null,
+      "away_goalie_status": null,
+      "home_injury_profile": null,
+      "away_injury_profile": null,
+      "home_pitcher": "Seth Lugo",
+      "home_pitcher_hand": "R",
+      "away_pitcher": "Slade Cecconi",
+      "away_pitcher_hand": "R",
+      "home_lineup_profile": {
+        "active_hitters": 13,
+        "available_hitters": 13,
+        "injured_hitters": 0,
+        "key_bat_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "left_handed_batters": 4,
+        "right_handed_batters": 9,
+        "switch_hitters": 0,
+        "lefty_share": 0.3077,
+        "righty_share": 0.6923,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.5556,
+        "confirmed_righty_share": 0.3333,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
+      },
+      "away_lineup_profile": {
+        "active_hitters": 13,
+        "available_hitters": 12,
+        "injured_hitters": 1,
+        "key_bat_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "left_handed_batters": 6,
+        "right_handed_batters": 6,
+        "switch_hitters": 0,
+        "lefty_share": 0.5,
+        "righty_share": 0.5,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.7778,
+        "confirmed_righty_share": 0.0,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
+      },
+      "home_bullpen_tax": 0.62,
+      "away_bullpen_tax": 0.339,
+      "weather": {
+        "weather_exposed": true,
+        "temperature_f": 63.1,
+        "wind_mph": 16.2,
+        "precipitation_probability": 0
+      },
+      "pick": "home",
+      "model_prob": 0.5521,
+      "edge": -0.0073,
+      "expected_value": -0.0365,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 36.9,
+      "confidence_stars": 1,
+      "american_odds": -137,
+      "model_probs": {
+        "home": 0.5521,
+        "away": 0.4479
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.5266,
+          "away": 0.4734
+        },
+        "results_features": {
+          "home": 0.5447,
+          "away": 0.4553
+        },
+        "bullpen_features": {
+          "home": 0.5623,
+          "away": 0.4377
+        },
+        "run_environment": {
+          "home": 0.5563,
+          "away": 0.4437
+        },
+        "handedness_features": {
+          "home": 0.5276,
+          "away": 0.4724
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.5569,
+          "raw_model_prob": 0.5521,
+          "implied_prob": 0.5642,
+          "market_implied_prob": 0.5882,
+          "edge": -0.0073,
+          "expected_value": -0.0365,
+          "decimal_odds": 1.73,
+          "american_odds": -137,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 36.9,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0422,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
@@ -473,7 +1092,7 @@
           "confidence_score": 22.2,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0401,
+          "hold": 0.0422,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
@@ -496,7 +1115,7 @@
             "away": 0.5051,
             "home": 0.5319
           },
-          "hold": 0.0401,
+          "hold": 0.0422,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
@@ -2504,19 +3123,6 @@
         "injured_hitters": 0,
         "key_bat_absence_score": 0.0,
         "leader_absence_burden": 0.0,
-        "left_handed_batters": 5,
-        "right_handed_batters": 8,
-        "switch_hitters": 0,
-        "lefty_share": 0.3846,
-        "righty_share": 0.6154,
-        "switch_share": 0.0
-      },
-      "away_lineup_profile": {
-        "active_hitters": 13,
-        "available_hitters": 13,
-        "injured_hitters": 0,
-        "key_bat_absence_score": 0.0,
-        "leader_absence_burden": 0.0,
         "left_handed_batters": 4,
         "right_handed_batters": 9,
         "switch_hitters": 0,
@@ -2843,9 +3449,16 @@
         "left_handed_batters": 5,
         "right_handed_batters": 8,
         "switch_hitters": 0,
-        "lefty_share": 0.3846,
-        "righty_share": 0.6154,
-        "switch_share": 0.0
+        "lefty_share": 0.2308,
+        "righty_share": 0.7692,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.1111,
+        "confirmed_righty_share": 0.7778,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
       },
       "away_lineup_profile": {
         "active_hitters": 13,
@@ -3334,18 +3947,18 @@
             "book": "BetUS",
             "last_update": "2026-05-07T13:53:52Z",
             "outcomes": {
-              "home": 1.6,
-              "away": 2.48
+              "home": 1.53,
+              "away": 2.66
             },
             "raw_probs": {
-              "home": 0.625,
-              "away": 0.4032
+              "home": 0.6536,
+              "away": 0.3759
             },
             "fair_probs": {
-              "home": 0.6078,
-              "away": 0.3922
+              "home": 0.6348,
+              "away": 0.3652
             },
-            "hold": 0.0282
+            "hold": 0.0295
           },
           {
             "book": "BetMGM",
@@ -3419,18 +4032,18 @@
             "book": "Bovada",
             "last_update": "2026-05-07T13:53:51Z",
             "outcomes": {
-              "home": 1.59,
-              "away": 2.41
+              "home": 1.51,
+              "away": 2.63
             },
             "raw_probs": {
-              "home": 0.6289,
-              "away": 0.4149
+              "home": 0.6623,
+              "away": 0.3802
             },
             "fair_probs": {
-              "home": 0.6025,
-              "away": 0.3975
+              "home": 0.6353,
+              "away": 0.3647
             },
-            "hold": 0.0439
+            "hold": 0.0425
           }
         ]
       },
@@ -3510,12 +4123,19 @@
         "injured_hitters": 0,
         "key_bat_absence_score": 0.0,
         "leader_absence_burden": 0.0,
-        "left_handed_batters": 7,
-        "right_handed_batters": 6,
+        "left_handed_batters": 3,
+        "right_handed_batters": 10,
         "switch_hitters": 0,
-        "lefty_share": 0.5385,
-        "righty_share": 0.4615,
-        "switch_share": 0.0
+        "lefty_share": 0.2308,
+        "righty_share": 0.7692,
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.3333,
+        "confirmed_righty_share": 0.2222,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
       },
       "away_lineup_profile": {
         "active_hitters": 13,
@@ -3523,8 +4143,8 @@
         "injured_hitters": 0,
         "key_bat_absence_score": 0.0,
         "leader_absence_burden": 0.0,
-        "left_handed_batters": 5,
-        "right_handed_batters": 8,
+        "left_handed_batters": 4,
+        "right_handed_batters": 9,
         "switch_hitters": 0,
         "lefty_share": 0.3846,
         "righty_share": 0.6154,
@@ -3538,6 +4158,9 @@
         "wind_mph": 9.9,
         "precipitation_probability": 0
       },
+      "home_bullpen_tax": 0.0,
+      "away_bullpen_tax": 0.125,
+      "weather": {},
       "total_line": 8.5,
       "expected_total": 9.27,
       "total_stddev": 4.987,
@@ -3590,7 +4213,25 @@
           "unrealistic_flag": false,
           "hold": 0.0474,
           "market_source": "median_complete_book_no_vig",
-          "market_books": 9
+          "market_books": 8
+        },
+        "under": {
+          "model_prob": 0.4664,
+          "raw_model_prob": 0.4588,
+          "implied_prob": 0.4778,
+          "market_implied_prob": 0.5,
+          "edge": -0.0114,
+          "expected_value": -0.0532,
+          "decimal_odds": 2.03,
+          "american_odds": 103,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 21.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0464,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 8
         }
       },
       "market_snapshot": {
@@ -3879,12 +4520,12 @@
         },
         "benchmark": {
           "fair_probs": {
-            "over": 0.5105,
-            "under": 0.4895
+            "over": 0.513,
+            "under": 0.487
           },
           "raw_probs": {
             "over": 0.5348,
-            "under": 0.5128
+            "under": 0.5051
           },
           "hold": 0.0476,
           "books_tracked": 9,
@@ -4896,11 +5537,11 @@
         "injured_hitters": 0,
         "key_bat_absence_score": 0.0,
         "leader_absence_burden": 0.0,
-        "left_handed_batters": 4,
-        "right_handed_batters": 9,
+        "left_handed_batters": 5,
+        "right_handed_batters": 8,
         "switch_hitters": 0,
-        "lefty_share": 0.3077,
-        "righty_share": 0.6923,
+        "lefty_share": 0.3846,
+        "righty_share": 0.6154,
         "switch_share": 0.0
       },
       "home_bullpen_tax": 0.0,
@@ -4938,7 +5579,7 @@
           "confidence_score": 25.8,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0476,
+          "hold": 0.0471,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
@@ -4956,7 +5597,7 @@
           "confidence_score": 28.7,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0476,
+          "hold": 0.0471,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
