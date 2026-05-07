@@ -448,7 +448,7 @@ def build_payload() -> dict:
         embeds.append({
             "title": "📡  MODEL RADAR",
             "color": COLOR_RADAR,
-            "fields": [_lock_field(item, item["sport"], show_ai=False) for item in radar[:MAX_RADAR_FIELDS]],
+            "fields": [_lock_field(item, item["sport"]) for item in radar[:MAX_RADAR_FIELDS]],
             "footer": {"text": "leftover model leans only; not official picks or qualified slimegrinders"},
         })
 
