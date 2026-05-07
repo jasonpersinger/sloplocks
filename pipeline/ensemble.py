@@ -228,6 +228,23 @@ def compute_confidence_score(
     return round(float(score), 1)
 
 
+def compute_pick_tier(confidence: float, prob: float, edge: float) -> str:
+    """Classify a pick into STRONG / LEAN / WATCHLIST / NO_PLAY.
+
+    Probability is the primary gate — edge alone cannot upgrade a weak pick.
+    Tiers are evaluated top-down; the first matching tier is returned.
+    """
+    if prob < 0.52:
+        return "NO_PLAY"
+    if confidence >= 62 and prob >= 0.57 and edge >= 0.02:
+        return "STRONG"
+    if confidence >= 54 and prob >= 0.53 and edge >= 0.01:
+        return "LEAN"
+    if confidence >= 48 and prob >= 0.52:
+        return "WATCHLIST"
+    return "NO_PLAY"
+
+
 from pipeline.config import VALUE_EDGE_THRESHOLD, MARKET_RESPECT_FACTOR, MAX_ALLOWED_DIVERGENCE
 
 

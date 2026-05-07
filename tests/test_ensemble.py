@@ -361,3 +361,51 @@ class TestComputeConfidenceScore:
             expected_value=0.05,
         )
         assert score_divergent < score_normal
+
+
+class TestComputePickTier:
+    """compute_pick_tier — tiered classification system."""
+
+    def test_strong_pick(self):
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=65, prob=0.60, edge=0.03) == "STRONG"
+
+    def test_lean_pick(self):
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=56, prob=0.54, edge=0.015) == "LEAN"
+
+    def test_watchlist_pick(self):
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=50, prob=0.52, edge=0.005) == "WATCHLIST"
+
+    def test_no_play_low_prob(self):
+        """Probability floor is the primary gate — edge cannot override it."""
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=80, prob=0.51, edge=0.15) == "NO_PLAY"
+
+    def test_no_play_low_confidence_and_prob(self):
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=40, prob=0.53, edge=0.02) == "NO_PLAY"
+
+    def test_strong_requires_all_three_conditions(self):
+        """STRONG requires confidence ≥ 62 AND prob ≥ 0.57 AND edge ≥ 0.02."""
+        from pipeline.ensemble import compute_pick_tier
+        # Missing edge
+        assert compute_pick_tier(confidence=65, prob=0.60, edge=0.005) != "STRONG"
+        # Missing prob
+        assert compute_pick_tier(confidence=65, prob=0.55, edge=0.03) != "STRONG"
+        # Missing confidence
+        assert compute_pick_tier(confidence=58, prob=0.60, edge=0.03) != "STRONG"
+
+    def test_lean_requires_all_three_conditions(self):
+        """LEAN requires confidence ≥ 54 AND prob ≥ 0.53 AND edge ≥ 0.01."""
+        from pipeline.ensemble import compute_pick_tier
+        # All conditions met
+        assert compute_pick_tier(confidence=54, prob=0.53, edge=0.01) == "LEAN"
+        # Edge just below LEAN floor
+        assert compute_pick_tier(confidence=54, prob=0.53, edge=0.005) == "WATCHLIST"
+
+    def test_watchlist_requires_prob_and_confidence(self):
+        from pipeline.ensemble import compute_pick_tier
+        assert compute_pick_tier(confidence=48, prob=0.52, edge=0.0) == "WATCHLIST"
+        assert compute_pick_tier(confidence=47, prob=0.52, edge=0.0) == "NO_PLAY"
