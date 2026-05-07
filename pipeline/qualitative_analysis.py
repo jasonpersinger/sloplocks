@@ -1,15 +1,11 @@
-from typing import List, Literal, Union, Optional
+from typing import List, Literal, Optional
 import os
 import json
 import logging
-import time
-import warnings
 from datetime import datetime
-from google import genai
-from google.genai import types
+from openai import OpenAI
 from pydantic import BaseModel, Field
 
-# Configure logging
 logger = logging.getLogger(__name__)
 
 
@@ -31,15 +27,16 @@ class QualitativeAnalysis(BaseModel):
     net_qualitative_edge: Literal["home", "away", "none"]
     summary: str
 
-# Log file path consistent with other pipeline logs
-# We'll put it in data/tracking for permanence
-QUALITATIVE_LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tracking", "qualitative_log.jsonl")
+
+QUALITATIVE_LOG_FILE = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "data", "tracking", "qualitative_log.jsonl",
+)
 
 SYSTEM_PROMPT = """You are an expert sports betting analyst specializing in qualitative factors.
 Your task is to evaluate non-statistical context (injuries, news, scheduling, weather) and provide impact scores for each team.
 
 ### Scoring Rules:
-- Output ONLY valid JSON, no markdown or backticks.
 - Score conservatively. Most games should score near 0 unless there is a significant event.
 - Never hallucinate facts. If context is missing or ambiguous, default to 0.
 - Scale: -5 to +5.
@@ -52,82 +49,55 @@ Your task is to evaluate non-statistical context (injuries, news, scheduling, we
 
 ### Sport Specific Guidance:
 - **NBA/NCAAM**: Superstar availability is paramount. Check for "Load Management" or late scratches.
-- **MLB**: Evaluate the "Bullpen Tax" or fatigue. If a team's top 3 closers worked 2+ days in a row, they face a moderate (-2) negative impact. Weather (wind blowing out) impacts Totals more than ML.
-- **NHL**: Starting Goalie is 50% of the qualitative score. A backup goalie starting against an elite offense is a significant (-3) negative impact.
-
-### Schema:
-{
-  "sport": "string",
-  "home_team": "string",
-  "away_team": "string",
-  "home_impact": float (-5.0 to 5.0),
-  "away_impact": float (-5.0 to 5.0),
-  "individual_factors": [
-    {
-      "team": "string",
-      "description": "string",
-      "direction": "positive|negative",
-      "magnitude": float (0.0 to 5.0),
-      "confidence": float (0.0 to 1.0)
-    }
-  ],
-  "net_qualitative_edge": "home|away|none",
-  "summary": "one-sentence summary of qualitative impact"
-}
+- **MLB**: Evaluate bullpen fatigue. If a team's top closers worked 2+ days in a row, that is a moderate (-2) negative. Weather (wind blowing out) impacts Totals more than ML.
+- **NHL**: Starting goalie is 50% of the qualitative score. A backup starting against an elite offense is a significant (-3) negative.
 """
 
-def analyze_game_qualitative(game_dict, context_text):
-    """
-    Calls Gemini API to score qualitative factors using the modern google-genai package.
-    """
-    api_key = os.environ.get("GEMINI_API_KEY")
+
+def analyze_game_qualitative(game_dict: dict, context_text: str) -> dict:
+    """Call OpenAI to score qualitative factors for a game. Returns a dict matching QualitativeAnalysis."""
+    api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        logger.warning("GEMINI_API_KEY not found. Returning default qualitative scores.")
-        return _get_default_response(game_dict)
+        logger.warning("OPENAI_API_KEY not set — returning default qualitative scores.")
+        return _default_response(game_dict)
 
-    if not context_text or context_text.strip() == "":
-        return _get_default_response(game_dict)
+    if not context_text or not context_text.strip():
+        return _default_response(game_dict)
 
-    client = genai.Client(api_key=api_key, http_options={'api_version': 'v1beta'})
-    model_id = "gemini-2.5-flash" 
+    client = OpenAI(api_key=api_key)
 
-    user_prompt = f"""Evaluate the qualitative impact for the following game:
-Sport: {game_dict.get('sport')}
-Home Team: {game_dict.get('home_team')}
-Away Team: {game_dict.get('away_team')}
-Game Time: {game_dict.get('start_time', game_dict.get('date'))}
-Current Line: {game_dict.get('american_odds', 'N/A')}
-
-### Context:
-{context_text}
-"""
+    user_prompt = (
+        f"Evaluate the qualitative impact for this game:\n"
+        f"Sport: {game_dict.get('sport')}\n"
+        f"Home Team: {game_dict.get('home_team')}\n"
+        f"Away Team: {game_dict.get('away_team')}\n"
+        f"Game Time: {game_dict.get('start_time', game_dict.get('date'))}\n"
+        f"Current Line: {game_dict.get('american_odds', 'N/A')}\n\n"
+        f"### Context:\n{context_text}"
+    )
 
     try:
-        response = client.models.generate_content(
-            model=model_id,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.1,
-                response_mime_type="application/json",
-                response_schema=QualitativeAnalysis,
-            )
+        response = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_prompt},
+            ],
+            response_format=QualitativeAnalysis,
+            temperature=0.1,
         )
-
-        raw_text = response.text
-        result = json.loads(raw_text)
-        
-        # Log raw response and parsed result
-        _log_api_call(game_dict, context_text, raw_text, parsed_result=result)
-        
-        return result
+        result = response.choices[0].message.parsed
+        result_dict = result.model_dump()
+        _log_api_call(game_dict, context_text, result_dict)
+        return result_dict
 
     except Exception as e:
-        logger.error(f"Error calling Gemini API: {e}")
-        _log_api_call(game_dict, context_text, f"ERROR: {str(e)}")
-        return _get_default_response(game_dict)
+        logger.error(f"OpenAI qualitative analysis error: {e}")
+        _log_api_call(game_dict, context_text, None, error=str(e))
+        return _default_response(game_dict)
 
-def _get_default_response(game_dict):
+
+def _default_response(game_dict: dict) -> dict:
     return {
         "sport": game_dict.get("sport"),
         "home_team": game_dict.get("home_team"),
@@ -136,25 +106,25 @@ def _get_default_response(game_dict):
         "away_impact": 0.0,
         "individual_factors": [],
         "net_qualitative_edge": "none",
-        "summary": "No significant qualitative factors identified or API error."
+        "summary": "No significant qualitative factors identified.",
     }
 
-def _log_api_call(game_dict, context_sent, raw_response, parsed_result=None):
-    log_entry = {
+
+def _log_api_call(game_dict: dict, context_sent: str, result: Optional[dict], error: str = None):
+    entry = {
         "timestamp": datetime.now().isoformat(),
         "game_id": f"{game_dict.get('home_team')}_vs_{game_dict.get('away_team')}_{game_dict.get('date')}",
         "sport": game_dict.get("sport"),
         "home_team": game_dict.get("home_team"),
         "away_team": game_dict.get("away_team"),
         "context_sent": context_sent,
-        "raw_response": raw_response,
-        "home_impact": parsed_result.get("home_impact") if parsed_result else None,
-        "away_impact": parsed_result.get("away_impact") if parsed_result else None,
+        "home_impact": result.get("home_impact") if result else None,
+        "away_impact": result.get("away_impact") if result else None,
+        "error": error,
     }
-    
     try:
         os.makedirs(os.path.dirname(QUALITATIVE_LOG_FILE), exist_ok=True)
         with open(QUALITATIVE_LOG_FILE, "a") as f:
-            f.write(json.dumps(log_entry) + "\n")
+            f.write(json.dumps(entry) + "\n")
     except Exception as e:
-        logger.error(f"Failed to write to qualitative log: {e}")
+        logger.error(f"Failed to write qualitative log: {e}")

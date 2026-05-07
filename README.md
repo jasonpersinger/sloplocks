@@ -109,8 +109,7 @@ pytest tests/ -v
 |-----|--------|----------|
 | `ODDS_API_KEY` | [the-odds-api.com](https://the-odds-api.com/) | Yes |
 | `BALLDONTLIE_API_KEY` | [balldontlie.io](https://www.balldontlie.io/) | Yes (NBA) |
-| `ANTHROPIC_API_KEY` | [console.anthropic.com](https://console.anthropic.com/) | Optional (qualitative analysis) |
-| `GEMINI_API_KEY` | Google AI Studio | Optional (qualitative analysis) |
+| `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com/) | Optional (qualitative analysis, gpt-4o-mini) |
 
 Set these as GitHub Secrets for the daily Action. ESPN schedule/results data requires no key.
 
