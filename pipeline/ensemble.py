@@ -183,17 +183,16 @@ def compute_confidence_score(
 ) -> float:
     """
     Calculate a 0-100 confidence score based on:
-    1. Model Agreement (30%): Low variance between Elo, Efficiency, etc.
-    2. Raw Win Probability (40%): Higher probability = higher score.
-    3. Edge Quality (30%): Measured edge over market.
-    4. Market Divergence Penalty: Severe penalty if model is >15% from books.
+    1. Model Agreement (30%): Low variance between models.
+    2. Raw Win Probability (45%): Higher probability = higher score.
+    3. Edge Quality (15%): Measured edge over market.
+    4. EV Quality (10%): Expected value of the bet.
+    5. Market Divergence Penalty: Penalty if model is >18% from books.
     """
     if not model_probs_list:
         return 0.0
 
     # 1. Agreement Score (0-1.0)
-    # Single-model sports should not be treated as "perfect agreement", but they
-    # also should not get zeroed out just because only one signal is available.
     if len(model_probs_list) == 1:
         agreement = 0.75
     else:
@@ -201,29 +200,26 @@ def compute_confidence_score(
         agreement = max(0, 1.0 - (std_dev / 0.12))
 
     # 2. Probability Score (0-1.0)
-    # Scale the useful range more tightly around realistic pick probabilities.
-    prob_score = max(0.0, min(1.0, (blended_prob - 0.45) / 0.25))
+    # Useful range 0.48–0.68; faster growth than previous (0.45–0.70).
+    prob_score = max(0.0, min(1.0, (blended_prob - 0.48) / 0.20))
 
     # 3. Edge Score (0-1.0)
-    # A 6% edge is already meaningful in efficient markets.
-    edge_score = max(0.0, min(1.0, edge / 0.06))
+    # A 8% edge is the new full-score benchmark (was 6%); reduces edge's weight.
+    edge_score = max(0.0, min(1.0, edge / 0.08))
 
     # 4. EV Score (0-1.0)
-    # Reward asymmetric payout spots directly instead of only via probability gap.
     ev_score = max(0.0, min(1.0, expected_value / 0.10))
 
-    score = (agreement * 25) + (prob_score * 35) + (edge_score * 20) + (ev_score * 20)
+    score = (agreement * 30) + (prob_score * 45) + (edge_score * 15) + (ev_score * 10)
 
-    # 4. Market Divergence Penalty
-    # If the model is too far from the market, it's likely missing info (injuries, etc.)
+    # 5. Market Divergence Penalty
     divergence = abs(blended_prob - implied_prob)
     if divergence > 0.18:
         score *= 0.75
     elif divergence > 0.12:
         score *= 0.88
 
-    # 5. Underdog Penalty for "Locks"
-    # Softer than before: underdogs can still be sharp if the EV is there.
+    # 6. Underdog Penalty — softer, only for true longshots.
     if blended_prob < 0.40:
         score *= 0.75
     elif blended_prob < 0.45:

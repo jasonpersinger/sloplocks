@@ -273,3 +273,91 @@ class TestCalibrateProbaility:
         result = calibrate_probability(0.80, 0.50)
         # With hard shrink: 0.3 * 0.80 + 0.7 * 0.50 = 0.24 + 0.35 = 0.59
         assert result == pytest.approx(0.59, abs=0.01)
+
+
+class TestComputeConfidenceScore:
+    """compute_confidence_score rebalanced weights — prediction-first."""
+
+    def test_high_prob_low_edge_reaches_threshold(self):
+        """A 60% model prob with thin edge should score ≈52 (was ~44 before)."""
+        from pipeline.ensemble import compute_confidence_score
+        # agreement=0.75 (single-model default), prob=0.60, edge=0.015, implied=0.50, ev=0.03
+        score = compute_confidence_score(
+            model_probs_list=[0.60],
+            blended_prob=0.60,
+            edge=0.015,
+            implied_prob=0.50,
+            expected_value=0.03,
+        )
+        assert score >= 50.0
+
+    def test_strong_pick_scores_above_62(self):
+        """prob=0.65, edge=0.04, ev=0.05, 3 models in agreement should score > 62."""
+        from pipeline.ensemble import compute_confidence_score
+        score = compute_confidence_score(
+            model_probs_list=[0.63, 0.65, 0.67],
+            blended_prob=0.65,
+            edge=0.04,
+            implied_prob=0.55,
+            expected_value=0.05,
+        )
+        assert score >= 62.0
+
+    def test_probability_weight_dominates_edge(self):
+        """High-prob low-edge pick should outscore low-prob high-edge pick."""
+        from pipeline.ensemble import compute_confidence_score
+        # High prob, low edge
+        score_high_prob = compute_confidence_score(
+            model_probs_list=[0.65],
+            blended_prob=0.65,
+            edge=0.015,
+            implied_prob=0.55,
+            expected_value=0.02,
+        )
+        # Low prob, high edge
+        score_high_edge = compute_confidence_score(
+            model_probs_list=[0.53],
+            blended_prob=0.53,
+            edge=0.08,
+            implied_prob=0.45,
+            expected_value=0.07,
+        )
+        assert score_high_prob > score_high_edge
+
+    def test_multi_model_agreement_boosts_score(self):
+        """Three tightly-agreeing models should score higher than one model."""
+        from pipeline.ensemble import compute_confidence_score
+        score_single = compute_confidence_score(
+            model_probs_list=[0.62],
+            blended_prob=0.62,
+            edge=0.03,
+            implied_prob=0.54,
+            expected_value=0.03,
+        )
+        score_multi = compute_confidence_score(
+            model_probs_list=[0.61, 0.62, 0.63],
+            blended_prob=0.62,
+            edge=0.03,
+            implied_prob=0.54,
+            expected_value=0.03,
+        )
+        assert score_multi > score_single
+
+    def test_divergence_penalty_applies_above_0_18(self):
+        """Score should be reduced when model diverges more than 18% from market."""
+        from pipeline.ensemble import compute_confidence_score
+        score_normal = compute_confidence_score(
+            model_probs_list=[0.62],
+            blended_prob=0.62,
+            edge=0.08,
+            implied_prob=0.54,
+            expected_value=0.05,
+        )
+        score_divergent = compute_confidence_score(
+            model_probs_list=[0.62],
+            blended_prob=0.62,
+            edge=0.08,
+            implied_prob=0.42,  # divergence = 0.20 > 0.18
+            expected_value=0.05,
+        )
+        assert score_divergent < score_normal
