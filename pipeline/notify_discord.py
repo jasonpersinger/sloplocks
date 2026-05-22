@@ -26,18 +26,19 @@ COLOR_RADAR = 0x1F8B4C
 
 SPORT_EMOJIS = {
     "nba": "🏀",
+    "wnba": "🏀",
     "nhl": "🏒",
     "mlb": "⚾",
 }
 PICK_LABELS = {"draw": "DRAW"}
 DATA_DIR = Path("data")
-SPORT_ORDER = ("nba", "nhl", "mlb")
+SPORT_ORDER = ("nba", "wnba", "nhl", "mlb")
 MAX_CURATED_FIELDS = 6
 MAX_SLIME_FIELDS = 4
 MAX_RADAR_FIELDS = 3
 MAX_DIAGNOSTIC_FIELDS = 4
 
-_ET_OFFSET_SPORTS = {"nba", "ncaam"}
+_ET_OFFSET_SPORTS = {"nba", "wnba", "ncaam"}
 
 
 def _display_when(start_time: Optional[str], date_str: str, sport_key: str) -> str:

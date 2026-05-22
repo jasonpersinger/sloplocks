@@ -222,6 +222,40 @@ def test_build_payload_falls_back_to_radar_matches(monkeypatch, tmp_path):
     assert "SLATE DIAGNOSTICS" in full_text
 
 
+def test_build_payload_includes_wnba_from_sport_order(monkeypatch, tmp_path):
+    _write_predictions(
+        tmp_path,
+        "wnba",
+        {
+            "slop_locks": [],
+            "longslop": None,
+            "matches": [
+                _base_match(
+                    home_team="Liberty",
+                    away_team="Fever",
+                    date="2026-05-08",
+                    start_time="2026-05-08T23:30:00Z",
+                    confidence_score=67,
+                    model_prob=0.59,
+                    american_odds=-120,
+                    edges={},
+                    best_odds={},
+                )
+            ],
+            "diagnostics": {"summary": "modeled=1 | odds=1/1 | +ev=1 | eligible=0 | locks=0"},
+        },
+    )
+
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+    payload = notify_discord.build_payload()
+    full_text = json.dumps(payload)
+
+    assert "WNBA" in full_text
+    assert "Liberty" in full_text
+    assert "May 08 07:30 PM ET" in full_text
+
+
 def test_build_payload_suppresses_radar_for_curated_matchup(monkeypatch, tmp_path):
     """An official side should block the opposite side from appearing as radar."""
     _write_predictions(

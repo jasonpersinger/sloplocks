@@ -109,6 +109,85 @@ def test_refresh_nba_updates_live_metadata_and_preserves_baseline(monkeypatch, t
     assert (tmp_path / "data" / data["snapshot_path"]).exists()
 
 
+def test_refresh_wnba_normalizes_odds_and_updates_availability(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
+    payload = {
+        "outcomes": ["home", "away"],
+        "model_weights": {"elo": 1.0},
+        "matches": [
+            {
+                "home_team": "Liberty",
+                "away_team": "Fever",
+                "date": "2026-05-08",
+                "start_time": "2026-05-08T23:30:00Z",
+                "model_probs": {"home": 0.5, "away": 0.5},
+                "individual_models": {"elo": {"home": 0.5, "away": 0.5}},
+                "pick": "home",
+                "edges": {},
+            }
+        ],
+        "totals_matches": [],
+        "slop_locks": [],
+        "totals_locks": [],
+        "slimegrinder": [],
+        "pick_stats": {"all": {"total": 0}},
+        "diagnostics": {"historical_matches": 40},
+    }
+    _write_predictions(tmp_path, "wnba", payload)
+
+    monkeypatch.setattr(
+        refresh_picks,
+        "fetch_wnba_espn_schedule",
+        lambda cache_path=None: [{
+            "home_team": "Liberty",
+            "away_team": "Fever",
+            "date": "2026-05-08",
+            "start_time": "2026-05-08T23:30:00Z",
+            "home_availability_profile": {
+                "active_players": 12,
+                "available_core_players": 10,
+                "injury_burden": 0.0,
+                "key_absence_score": 0.0,
+                "leader_absence_burden": 0.0,
+            },
+            "away_availability_profile": {
+                "active_players": 11,
+                "available_core_players": 7,
+                "injury_burden": 1.0,
+                "key_absence_score": 1.0,
+                "leader_absence_burden": 1.0,
+            },
+        }],
+    )
+    monkeypatch.setattr(
+        refresh_picks,
+        "fetch_odds",
+        lambda sport_key, include_totals=False: [{
+            "home_team": "New York Liberty",
+            "away_team": "Indiana Fever",
+            "commence_time": "2026-05-08T23:30:00Z",
+            "home_odds": 1.9,
+            "away_odds": 2.0,
+            "draw_odds": 0.0,
+        }],
+    )
+    monkeypatch.setattr(refresh_picks, "_append_odds_snapshot_log", lambda *args, **kwargs: None)
+    monkeypatch.setattr(refresh_picks, "_load_latest_odds_snapshots", lambda *args, **kwargs: {})
+    monkeypatch.setattr(refresh_picks, "_apply_latest_market_snapshots", lambda *args, **kwargs: None)
+    monkeypatch.setattr(refresh_picks, "_save_json", lambda path, data: None)
+
+    refresh_picks.refresh_sport("wnba")
+
+    with open(tmp_path / "data" / "wnba" / "predictions.json") as f:
+        data = json.load(f)
+
+    match = data["matches"][0]
+    assert match["base_model_probs"] == {"home": 0.5, "away": 0.5}
+    assert match["model_probs"]["home"] > 0.5
+    assert match["edges"]["home"]["american_odds"] < 0
+    assert data["diagnostics"]["historical_matches"] == 40
+
+
 def test_refresh_nhl_updates_goalie_metadata(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     payload = {

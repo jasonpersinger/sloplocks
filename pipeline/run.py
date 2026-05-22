@@ -47,6 +47,7 @@ except ImportError:
         return ""
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nba_team_name, fetch_nba_espn_games, fetch_nba_espn_schedule
+from pipeline.fetch_wnba import fetch_wnba_espn_games, fetch_wnba_espn_schedule, normalize_wnba_team_name
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
 from pipeline.models import (
@@ -2635,7 +2636,14 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
-    # ...
+    elif sport_key == "wnba":
+        games_df, box_scores_df = fetch_wnba_espn_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        fixtures = fetch_wnba_espn_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        matches = games_df
     elif sport_key == "nhl":
         games_df, box_scores_df = fetch_nhl_games(
             cache_path=os.path.join(sport_dir, "espn_cache.json")
@@ -2851,6 +2859,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     # ------------------------------------------------------------------
     if sport_key == "nba":
         normalizer = normalize_nba_team_name
+    elif sport_key == "wnba":
+        normalizer = normalize_wnba_team_name
     elif sport_key == "ncaam":
         normalizer = normalize_ncaam_team_name
     elif sport_key == "mlb":
@@ -3063,7 +3073,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 away_tax=away_bullpen_tax,
                 max_delta=sport.get("bullpen_availability_adjustment_max_delta", 0.012),
             )
-        if sport_key == "nba":
+        if sport_key in {"nba", "wnba"}:
             blended = _apply_nba_availability_adjustment(
                 blended,
                 fix.get("home_availability_profile"),

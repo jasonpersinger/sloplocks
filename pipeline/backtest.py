@@ -23,6 +23,7 @@ from pipeline.config import (
 from pipeline.ensemble import blend_predictions
 from pipeline.fetch_mlb import fetch_mlb_games
 from pipeline.fetch_nba import fetch_nba_espn_games
+from pipeline.fetch_wnba import fetch_wnba_espn_games
 from pipeline.fetch_ncaam import fetch_ncaam_games
 from pipeline.fetch_nhl import fetch_nhl_games
 from pipeline.models import (
@@ -959,6 +960,8 @@ def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tupl
     cache_path = os.path.join(data_dir, sport_key, "espn_cache.json")
     if sport_key == "nba":
         return fetch_nba_espn_games(cache_path=cache_path)
+    if sport_key == "wnba":
+        return fetch_wnba_espn_games(cache_path=cache_path)
     if sport_key == "ncaam":
         return fetch_ncaam_games(cache_path=cache_path)
     if sport_key == "mlb":
@@ -997,7 +1000,7 @@ def _build_walkforward_models(
             min_games=sport.get("results_feature_min_games", 30),
         )
 
-    if sport_key in {"nba", "ncaam"} and train_box_scores is not None and not train_box_scores.empty:
+    if sport_key in {"nba", "wnba", "ncaam"} and train_box_scores is not None and not train_box_scores.empty:
         if "efficiency" in model_names:
             models["efficiency"] = AdjustedEfficiency(train_box_scores, train_matches)
         if "four_factors" in model_names:

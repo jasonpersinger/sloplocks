@@ -38,6 +38,7 @@ from pipeline.ensemble import (
 )
 from pipeline.fetch_data import fetch_odds
 from pipeline.fetch_nba import normalize_nba_team_name, fetch_nba_espn_schedule
+from pipeline.fetch_wnba import normalize_wnba_team_name, fetch_wnba_espn_schedule
 from pipeline.fetch_nhl import normalize_nhl_team_name, fetch_nhl_schedule
 from pipeline.fetch_mlb import normalize_mlb_team_name, fetch_mlb_schedule
 from pipeline.run import (
@@ -78,6 +79,7 @@ from pipeline.run import (
 
 _NORMALIZERS = {
     "nba": normalize_nba_team_name,
+    "wnba": normalize_wnba_team_name,
     "nhl": normalize_nhl_team_name,
     "mlb": normalize_mlb_team_name,
 }
@@ -97,6 +99,8 @@ def _load_live_fixtures(sport_key: str, data_path: Path) -> list[dict]:
     cache_path = str(data_path.parent / "espn_cache.json")
     if sport_key == "nba":
         return fetch_nba_espn_schedule(cache_path=cache_path)
+    if sport_key == "wnba":
+        return fetch_wnba_espn_schedule(cache_path=cache_path)
     if sport_key == "nhl":
         return fetch_nhl_schedule(cache_path=cache_path)
     if sport_key == "mlb":
@@ -198,7 +202,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         base_probs = match.get("base_model_probs") or dict(match.get("model_probs") or {})
         match["base_model_probs"] = {k: round(v, 4) for k, v in base_probs.items()}
         refreshed_probs = dict(base_probs)
-        if sport_key == "nba":
+        if sport_key in {"nba", "wnba"}:
             refreshed_probs = _apply_nba_availability_adjustment(
                 refreshed_probs,
                 match.get("home_availability_profile"),
@@ -315,7 +319,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         if not match_odds or match_odds.get("total_line") is None:
             continue
         expected_total = base_expected_total or float(match_odds["total_line"])
-        if sport_key == "nba":
+        if sport_key in {"nba", "wnba"}:
             expected_total = _apply_nba_availability_total_adjustment(
                 expected_total,
                 total_match.get("home_availability_profile"),

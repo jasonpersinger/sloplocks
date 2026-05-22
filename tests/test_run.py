@@ -806,12 +806,16 @@ class TestRunPipeline:
     @patch("pipeline.run.fetch_mlb_games")
     @patch("pipeline.run.fetch_nhl_schedule")
     @patch("pipeline.run.fetch_nhl_games")
+    @patch("pipeline.run.fetch_wnba_espn_schedule")
+    @patch("pipeline.run.fetch_wnba_espn_games")
     @patch("pipeline.run.fetch_nba_espn_schedule")
     @patch("pipeline.run.fetch_nba_espn_games")
     def test_produces_per_sport_files_and_manifest(
         self,
         mock_nba_games,
         mock_nba_schedule,
+        mock_wnba_games,
+        mock_wnba_schedule,
         mock_nhl_games,
         mock_nhl_schedule,
         mock_mlb_games,
@@ -825,6 +829,14 @@ class TestRunPipeline:
             {
                 "home_team": "Lakers",
                 "away_team": "Warriors",
+                "date": "2026-02-19",
+            }
+        ]
+        mock_wnba_games.return_value = (sample_nba_matches, sample_nba_box_scores)
+        mock_wnba_schedule.return_value = [
+            {
+                "home_team": "Liberty",
+                "away_team": "Fever",
                 "date": "2026-02-19",
             }
         ]
@@ -849,14 +861,17 @@ class TestRunPipeline:
         assert os.path.exists(manifest_path)
         assert os.path.exists(dashboard_path)
         assert "nba" in manifest["sports"]
+        assert "wnba" in manifest["sports"]
         assert "nhl" in manifest["sports"]
         assert "ncaam" in manifest["sports"]
         assert "mma" not in manifest["sports"]
         assert manifest["sports"]["nba"]["status"] == "ok"
+        assert manifest["sports"]["wnba"]["status"] == "ok"
         assert manifest["sports"]["nhl"]["status"] == "ok"
         assert manifest["sports"]["ncaam"]["status"] == "season_disabled"
         assert manifest["sports"]["ncaam"]["active"] is False
         assert "diagnostics" in manifest["sports"]["nba"]
+        assert "diagnostics" in manifest["sports"]["wnba"]
         assert "diagnostics" in manifest["sports"]["nhl"]
         assert "diagnostics" in manifest["sports"]["ncaam"]
 
@@ -868,6 +883,7 @@ class TestRunPipeline:
 
         # Per-sport prediction files
         assert os.path.exists(os.path.join(output_dir, "nba", "predictions.json"))
+        assert os.path.exists(os.path.join(output_dir, "wnba", "predictions.json"))
         assert os.path.exists(os.path.join(output_dir, "nhl", "predictions.json"))
         assert not os.path.exists(os.path.join(output_dir, "ncaam", "predictions.json"))
 
