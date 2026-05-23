@@ -1,44 +1,102 @@
 {
-  "generated_at": "2026-05-22T14:46:14Z",
-  "run_id": "daily-20260522T144547906357Z",
+  "generated_at": "2026-05-23T13:11:35Z",
+  "run_id": "daily-20260523T131111563792Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-05-22T14:45:47Z",
-  "snapshot_path": "tracking/snapshots/2026-05-22/nhl/daily-20260522T144547906357Z.json",
+  "snapshot_timestamp": "2026-05-23T13:11:11Z",
+  "snapshot_path": "tracking/snapshots/2026-05-23/nhl/daily-20260523T131111563792Z.json",
   "sport": "nhl",
   "sport_name": "NHL",
   "outcomes": [
     "home",
     "away"
   ],
-  "slop_locks": [],
+  "slop_locks": [
+    {
+      "home_team": "Hurricanes",
+      "away_team": "Canadiens",
+      "date": "2026-05-23",
+      "start_time": "2026-05-23T23:00Z",
+      "pick": "home",
+      "model_prob": 0.6609,
+      "implied_prob": 0.6429,
+      "market_implied_prob": 0.6711,
+      "edge": 0.018,
+      "expected_value": 0.0045,
+      "american_odds": -192,
+      "decimal_odds": 1.52,
+      "kelly_fraction": 0.0087,
+      "fractional_kelly": 0.0017,
+      "confidence_score": 57.1,
+      "qualitative_analysis": {
+        "sport": "NHL",
+        "home_team": "Hurricanes",
+        "away_team": "Canadiens",
+        "home_impact": 3.0,
+        "away_impact": -3.0,
+        "individual_factors": [
+          {
+            "team": "Canadiens",
+            "description": "Patrik Laine is on Injured Reserve, impacting offensive capabilities.",
+            "direction": "negative",
+            "magnitude": 3.0,
+            "confidence": 0.9
+          },
+          {
+            "team": "Hurricanes",
+            "description": "Frederik Andersen expected to start, providing stability in goal.",
+            "direction": "positive",
+            "magnitude": 2.0,
+            "confidence": 0.8
+          },
+          {
+            "team": "Canadiens",
+            "description": "Jakub Dobes expected to start against a strong offense, significant disadvantage.",
+            "direction": "negative",
+            "magnitude": 3.0,
+            "confidence": 0.8
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Hurricanes have a significant edge with their starting goalie expected to play, while the Canadiens are missing a key player in Patrik Laine and are starting a backup goalie against a strong offense."
+      },
+      "qualitative_summary": "Qualitative (H:3.0 A:-3.0): agreed. Patrik Laine is on Injured Reserve, impacting offensive capabilities.; Frederik Andersen expected to start, providing stability in goal.",
+      "tier": "LEAN",
+      "market_type": "moneyline",
+      "blurb": "",
+      "run_id": "daily-20260523T131111563792Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-05-23T13:11:11Z",
+      "snapshot_path": "tracking/snapshots/2026-05-23/nhl/daily-20260523T131111563792Z.json"
+    }
+  ],
   "totals_locks": [],
   "slimegrinder": [],
   "longslop": null,
   "matches": [
     {
-      "home_team": "Avalanche",
-      "away_team": "Golden Knights",
-      "date": "2026-05-22",
-      "start_time": "2026-05-23T00:00Z",
+      "home_team": "Hurricanes",
+      "away_team": "Canadiens",
+      "date": "2026-05-23",
+      "start_time": "2026-05-23T23:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Scott Wedgewood",
-      "away_goalie": "Carter Hart",
+      "home_goalie": "Frederik Andersen",
+      "away_goalie": "Jakub Dobes",
       "home_goalie_status": "expected",
       "away_goalie_status": "expected",
       "home_injury_profile": {
-        "injury_burden": 0.35,
-        "uncertainty_burden": 0.35,
+        "injury_burden": 0.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 0.35,
-        "uncertainty_burden": 0.35,
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -53,45 +111,45 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.6012,
-      "edge": -0.0292,
-      "expected_value": -0.0733,
-      "kelly_fraction": 0.0,
-      "fractional_kelly": 0.0,
-      "confidence_score": 53.4,
+      "model_prob": 0.6722,
+      "edge": 0.018,
+      "expected_value": 0.0045,
+      "kelly_fraction": 0.0087,
+      "fractional_kelly": 0.0017,
+      "confidence_score": 57.1,
       "confidence_stars": 2,
-      "american_odds": -196,
+      "american_odds": -192,
       "model_probs": {
-        "home": 0.6012,
-        "away": 0.3988
+        "home": 0.6722,
+        "away": 0.3278
       },
       "individual_models": {
         "elo": {
-          "home": 0.6176,
-          "away": 0.3824
+          "home": 0.5966,
+          "away": 0.4034
         },
         "results_features": {
-          "home": 0.5522,
-          "away": 0.4478
+          "home": 0.5584,
+          "away": 0.4416
         },
         "nhl_matchup": {
-          "home": 0.5836,
-          "away": 0.4164
+          "home": 0.7212,
+          "away": 0.2788
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.6137,
-          "raw_model_prob": 0.6012,
+          "model_prob": 0.6609,
+          "raw_model_prob": 0.6722,
           "implied_prob": 0.6429,
           "market_implied_prob": 0.6711,
-          "edge": -0.0292,
-          "expected_value": -0.0733,
-          "decimal_odds": 1.51,
-          "american_odds": -196,
-          "kelly_fraction": 0.0,
-          "fractional_kelly": 0.0,
-          "confidence_score": 53.4,
+          "edge": 0.018,
+          "expected_value": 0.0045,
+          "decimal_odds": 1.52,
+          "american_odds": -192,
+          "kelly_fraction": 0.0087,
+          "fractional_kelly": 0.0017,
+          "confidence_score": 57.1,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": 0.0415,
@@ -99,17 +157,17 @@
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.3863,
-          "raw_model_prob": 0.3988,
+          "model_prob": 0.3391,
+          "raw_model_prob": 0.3278,
           "implied_prob": 0.3571,
           "market_implied_prob": 0.3704,
-          "edge": 0.0292,
-          "expected_value": 0.0816,
-          "decimal_odds": 2.8,
-          "american_odds": 180,
-          "kelly_fraction": 0.0453,
-          "fractional_kelly": 0.0091,
-          "confidence_score": 27.7,
+          "edge": -0.018,
+          "expected_value": -0.0674,
+          "decimal_odds": 2.75,
+          "american_odds": 175,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 9.5,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": 0.0415,
@@ -118,13 +176,13 @@
         }
       },
       "best_odds": {
-        "home": -196,
-        "away": 180
+        "home": -192,
+        "away": 175
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 1.51,
-          "away": 2.8
+          "home": 1.52,
+          "away": 2.75
         },
         "benchmark": {
           "fair_probs": {
@@ -141,8 +199,25 @@
         },
         "books": [
           {
+            "book": "FanDuel",
+            "last_update": "2026-05-23T13:10:45Z",
+            "outcomes": {
+              "home": 1.48,
+              "away": 2.72
+            },
+            "raw_probs": {
+              "home": 0.6757,
+              "away": 0.3676
+            },
+            "fair_probs": {
+              "home": 0.6476,
+              "away": 0.3524
+            },
+            "hold": 0.0433
+          },
+          {
             "book": "DraftKings",
-            "last_update": "2026-05-22T14:45:10Z",
+            "last_update": "2026-05-23T13:10:05Z",
             "outcomes": {
               "home": 1.49,
               "away": 2.7
@@ -158,8 +233,59 @@
             "hold": 0.0415
           },
           {
+            "book": "BetUS",
+            "last_update": "2026-05-23T13:10:45Z",
+            "outcomes": {
+              "home": 1.5,
+              "away": 2.7
+            },
+            "raw_probs": {
+              "home": 0.6667,
+              "away": 0.3704
+            },
+            "fair_probs": {
+              "home": 0.6429,
+              "away": 0.3571
+            },
+            "hold": 0.037
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-05-23T13:10:45Z",
+            "outcomes": {
+              "home": 1.52,
+              "away": 2.67
+            },
+            "raw_probs": {
+              "home": 0.6579,
+              "away": 0.3745
+            },
+            "fair_probs": {
+              "home": 0.6372,
+              "away": 0.3628
+            },
+            "hold": 0.0324
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-05-23T13:10:05Z",
+            "outcomes": {
+              "home": 1.52,
+              "away": 2.67
+            },
+            "raw_probs": {
+              "home": 0.6579,
+              "away": 0.3745
+            },
+            "fair_probs": {
+              "home": 0.6372,
+              "away": 0.3628
+            },
+            "hold": 0.0324
+          },
+          {
             "book": "BetMGM",
-            "last_update": "2026-05-22T14:45:52Z",
+            "last_update": "2026-05-23T13:10:05Z",
             "outcomes": {
               "home": 1.48,
               "away": 2.7
@@ -175,76 +301,8 @@
             "hold": 0.046
           },
           {
-            "book": "LowVig.ag",
-            "last_update": "2026-05-22T14:45:12Z",
-            "outcomes": {
-              "home": 1.51,
-              "away": 2.71
-            },
-            "raw_probs": {
-              "home": 0.6623,
-              "away": 0.369
-            },
-            "fair_probs": {
-              "home": 0.6422,
-              "away": 0.3578
-            },
-            "hold": 0.0313
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-05-22T14:45:10Z",
-            "outcomes": {
-              "home": 1.51,
-              "away": 2.71
-            },
-            "raw_probs": {
-              "home": 0.6623,
-              "away": 0.369
-            },
-            "fair_probs": {
-              "home": 0.6422,
-              "away": 0.3578
-            },
-            "hold": 0.0313
-          },
-          {
-            "book": "BetRivers",
-            "last_update": "2026-05-22T14:45:52Z",
-            "outcomes": {
-              "home": 1.44,
-              "away": 2.8
-            },
-            "raw_probs": {
-              "home": 0.6944,
-              "away": 0.3571
-            },
-            "fair_probs": {
-              "home": 0.6604,
-              "away": 0.3396
-            },
-            "hold": 0.0516
-          },
-          {
-            "book": "FanDuel",
-            "last_update": "2026-05-22T14:45:52Z",
-            "outcomes": {
-              "home": 1.5,
-              "away": 2.64
-            },
-            "raw_probs": {
-              "home": 0.6667,
-              "away": 0.3788
-            },
-            "fair_probs": {
-              "home": 0.6377,
-              "away": 0.3623
-            },
-            "hold": 0.0455
-          },
-          {
             "book": "MyBookie.ag",
-            "last_update": "2026-05-22T14:44:49Z",
+            "last_update": "2026-05-23T13:09:09Z",
             "outcomes": {
               "home": 1.49,
               "away": 2.64
@@ -261,7 +319,7 @@
           },
           {
             "book": "Bovada",
-            "last_update": "2026-05-22T14:44:52Z",
+            "last_update": "2026-05-23T13:09:11Z",
             "outcomes": {
               "home": 1.5,
               "away": 2.7
@@ -277,91 +335,84 @@
             "hold": 0.037
           },
           {
-            "book": "BetUS",
-            "last_update": "2026-05-22T14:45:32Z",
+            "book": "BetRivers",
+            "last_update": "2026-05-23T13:10:45Z",
             "outcomes": {
-              "home": 1.49,
+              "home": 1.45,
               "away": 2.75
             },
             "raw_probs": {
-              "home": 0.6711,
+              "home": 0.6897,
               "away": 0.3636
             },
             "fair_probs": {
-              "home": 0.6486,
-              "away": 0.3514
+              "home": 0.6548,
+              "away": 0.3452
             },
-            "hold": 0.0348
+            "hold": 0.0533
           }
         ]
       },
       "qualitative_analysis": {
         "sport": "NHL",
-        "home_team": "Avalanche",
-        "away_team": "Golden Knights",
-        "home_impact": 1.0,
-        "away_impact": 1.0,
+        "home_team": "Hurricanes",
+        "away_team": "Canadiens",
+        "home_impact": 3.0,
+        "away_impact": -3.0,
         "individual_factors": [
           {
-            "team": "Avalanche",
-            "description": "Cale Makar is Day-To-Day, which could impact the team's defensive capabilities.",
+            "team": "Canadiens",
+            "description": "Patrik Laine is on Injured Reserve, impacting offensive capabilities.",
             "direction": "negative",
-            "magnitude": 1.0,
+            "magnitude": 3.0,
+            "confidence": 0.9
+          },
+          {
+            "team": "Hurricanes",
+            "description": "Frederik Andersen expected to start, providing stability in goal.",
+            "direction": "positive",
+            "magnitude": 2.0,
             "confidence": 0.8
           },
           {
-            "team": "Golden Knights",
-            "description": "Mark Stone is Day-To-Day, which could affect the team's offensive production.",
+            "team": "Canadiens",
+            "description": "Jakub Dobes expected to start against a strong offense, significant disadvantage.",
             "direction": "negative",
-            "magnitude": 1.0,
+            "magnitude": 3.0,
             "confidence": 0.8
-          },
-          {
-            "team": "Avalanche",
-            "description": "Scott Wedgewood is expected to start, which is a moderate positive as he is a reliable backup.",
-            "direction": "positive",
-            "magnitude": 1.0,
-            "confidence": 0.7
-          },
-          {
-            "team": "Golden Knights",
-            "description": "Carter Hart is expected to start, which is a neutral factor as he is a solid goaltender.",
-            "direction": "positive",
-            "magnitude": 0.0,
-            "confidence": 0.7
           }
         ],
-        "net_qualitative_edge": "none",
-        "summary": "Both teams have key players listed as Day-To-Day, which could impact their performance. The Avalanche's Cale Makar and the Golden Knights' Mark Stone are both significant players for their respective teams. The goaltending situation is stable for both teams, with Wedgewood being a reliable option for the Avalanche. Overall, the impacts balance out, leading to no clear qualitative edge."
+        "net_qualitative_edge": "home",
+        "summary": "The Hurricanes have a significant edge with their starting goalie expected to play, while the Canadiens are missing a key player in Patrik Laine and are starting a backup goalie against a strong offense."
       },
-      "qualitative_summary": "Qualitative (H:1.0 A:1.0): no effect. Cale Makar is Day-To-Day, which could impact the team's defensive capabilities.; Mark Stone is Day-To-Day, which could affect the team's offensive production.",
-      "run_id": "daily-20260522T144547906357Z",
+      "qualitative_summary": "Qualitative (H:3.0 A:-3.0): agreed. Patrik Laine is on Injured Reserve, impacting offensive capabilities.; Frederik Andersen expected to start, providing stability in goal.",
+      "run_id": "daily-20260523T131111563792Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-05-22T14:45:47Z",
-      "snapshot_path": "tracking/snapshots/2026-05-22/nhl/daily-20260522T144547906357Z.json"
+      "snapshot_timestamp": "2026-05-23T13:11:11Z",
+      "snapshot_path": "tracking/snapshots/2026-05-23/nhl/daily-20260523T131111563792Z.json"
     }
   ],
   "totals_matches": [],
   "season_stats": {
-    "total_matches": 1409,
+    "total_matches": 1410,
     "home_wins": 733,
-    "away_wins": 676,
+    "away_wins": 677,
     "home_win_pct": 0.52,
     "away_win_pct": 0.48
   },
   "model_weights": {
-    "elo": 0.338,
-    "results_features": 0.3105,
-    "nhl_matchup": 0.3516
+    "elo": 0.341,
+    "results_features": 0.3132,
+    "nhl_matchup": 0.3457
   },
   "pick_stats": {
     "slop_lock": {
-      "total": 81,
+      "total": 82,
       "evaluated": 46,
       "wins": 27,
       "losses": 19,
       "pushes": 0,
-      "pending": 35,
+      "pending": 36,
       "hit_rate": 0.587,
       "roi": 0.018
     },
@@ -386,12 +437,12 @@
       "roi": null
     },
     "all": {
-      "total": 81,
+      "total": 82,
       "evaluated": 46,
       "wins": 27,
       "losses": 19,
       "pushes": 0,
-      "pending": 35,
+      "pending": 36,
       "hit_rate": 0.587,
       "roi": 0.018
     }
@@ -967,14 +1018,14 @@
     "ensemble": {
       "sample_size": 40,
       "accuracy": 0.6,
-      "avg_log_loss": 0.6462
+      "avg_log_loss": 0.6504
     },
     "models": {
       "elo": {
         "sample_size": 40,
         "accuracy": 0.6,
-        "avg_log_loss": 0.6433,
-        "weight": 0.338,
+        "avg_log_loss": 0.6441,
+        "weight": 0.341,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -982,17 +1033,17 @@
       "results_features": {
         "sample_size": 40,
         "accuracy": 0.525,
-        "avg_log_loss": 0.68,
-        "weight": 0.3105,
+        "avg_log_loss": 0.6813,
+        "weight": 0.3132,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
       },
       "nhl_matchup": {
         "sample_size": 40,
-        "accuracy": 0.65,
-        "avg_log_loss": 0.6679,
-        "weight": 0.3516,
+        "accuracy": 0.625,
+        "avg_log_loss": 0.6741,
+        "weight": 0.3457,
         "status": "active",
         "disable_candidate": false,
         "reasons": []
@@ -1041,7 +1092,7 @@
   },
   "validation_issues": [],
   "diagnostics": {
-    "historical_matches": 1409,
+    "historical_matches": 1410,
     "fixtures_fetched": 1,
     "fixtures_in_window": 1,
     "fixtures_completed": 0,
@@ -1054,9 +1105,9 @@
     "matches_with_market": 1,
     "matches_with_positive_ev": 1,
     "matches_with_qualitative": 1,
-    "lock_eligible_matches": 0,
-    "lock_eligible_outcomes": 0,
-    "slop_locks_posted": 0,
+    "lock_eligible_matches": 1,
+    "lock_eligible_outcomes": 1,
+    "slop_locks_posted": 1,
     "longslop_posted": 0,
     "slimegrinders_posted": 0,
     "publication_guard": {
@@ -1351,6 +1402,6 @@
     },
     "validation_issues": [],
     "validation_issues_count": 0,
-    "summary": "modeled=1 | odds=1/1 | +ev=1 | sense=1 | eligible=0 | locks=0 | totals disabled by config"
+    "summary": "modeled=1 | odds=1/1 | +ev=1 | sense=1 | eligible=1 | locks=1 | totals disabled by config"
   }
 }
