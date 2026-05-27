@@ -429,6 +429,55 @@ class TestBacktestSummary:
         assert "calibration" in dashboard["walkforward"]
         assert dashboard["snapshot_replay"]["aggregate"]["snapshots"] == 0
 
+    def test_build_dashboard_data_prefers_fresh_prediction_diagnostics(self, tmp_path):
+        data_dir = tmp_path / "data"
+        nba_dir = data_dir / "nba"
+        nba_dir.mkdir(parents=True)
+
+        with open(data_dir / "manifest.json", "w") as f:
+            json.dump({
+                "updated_at": "2026-03-28T12:00:00Z",
+                "sports": {
+                    "nba": {
+                        "status": "ok",
+                        "diagnostics": {
+                            "matches_modeled": 1,
+                            "fixtures_in_window": 1,
+                            "fixtures_with_odds": 1,
+                            "matches_with_positive_ev": 0,
+                            "lock_eligible_matches": 0,
+                            "slop_locks_posted": 0,
+                            "summary": "stale",
+                        },
+                    },
+                },
+            }, f)
+
+        with open(nba_dir / "predictions.json", "w") as f:
+            json.dump({
+                "generated_at": "2026-03-29T12:00:00Z",
+                "diagnostics": {
+                    "matches_modeled": 4,
+                    "fixtures_in_window": 4,
+                    "fixtures_with_odds": 4,
+                    "matches_with_positive_ev": 3,
+                    "lock_eligible_matches": 2,
+                    "slop_locks_posted": 1,
+                    "summary": "fresh",
+                },
+                "totals_locks": [],
+            }, f)
+        with open(nba_dir / "history.json", "w") as f:
+            json.dump({"predictions": []}, f)
+        with open(nba_dir / "pick_history.json", "w") as f:
+            json.dump({"picks": []}, f)
+
+        dashboard = build_dashboard_data(str(data_dir), sports=["nba"], as_of="2026-03-29")
+
+        assert dashboard["aggregate"]["slate"]["modeled"] == 4
+        assert dashboard["aggregate"]["slate"]["positive_ev"] == 3
+        assert dashboard["sports"][0]["current"]["summary"] == "fresh"
+
     def test_build_snapshot_replay_report(self, tmp_path):
         data_dir = tmp_path / "data"
         snapshot_dir = data_dir / "tracking" / "snapshots" / "2026-03-29" / "nba"
@@ -525,6 +574,66 @@ class TestBacktestSummary:
         assert report["aggregate"]["exact_matches"] == 1
         assert report["aggregate"]["exact_match_rate"] == pytest.approx(1.0)
         assert report["sports"]["nba"]["snapshots"] == 1
+
+    def test_build_snapshot_replay_report_summarizes_research_lanes(self, tmp_path):
+        data_dir = tmp_path / "data"
+        snapshot_dir = data_dir / "tracking" / "snapshots" / "2026-05-22" / "mlb"
+        snapshot_dir.mkdir(parents=True)
+
+        payload = {
+            "sport": "mlb",
+            "run_id": "daily-20260522T120000000000Z",
+            "run_type": "daily",
+            "snapshot_timestamp": "2026-05-22T12:00:00Z",
+            "outcomes": ["home", "away"],
+            "selection_config": {
+                "outcomes": ["home", "away"],
+                "slop_locks": {
+                    "min_expected_value": 0.0,
+                    "edge_floor": 0.025,
+                    "probability_floor": 0.55,
+                    "max_picks": 5,
+                    "lanes": {
+                        "value_dog": {
+                            "enabled": True,
+                            "edge_floor": 0.04,
+                            "probability_floor": 0.35,
+                            "min_expected_value": 0.05,
+                            "american_odds_min": 120,
+                            "american_odds_max": 500,
+                            "max_picks": 2,
+                        }
+                    },
+                },
+            },
+            "records": {
+                "matches": [
+                    {
+                        "home_team": "Yankees",
+                        "away_team": "Rays",
+                        "date": "2026-05-22",
+                        "edges": {
+                            "away": {
+                                "edge": 0.061,
+                                "model_prob": 0.44,
+                                "expected_value": 0.13,
+                                "confidence_score": 43.0,
+                                "american_odds": 155,
+                            }
+                        },
+                    }
+                ],
+            },
+            "outputs": {"slop_locks": [], "totals_locks": [], "longslop": None},
+        }
+
+        with open(snapshot_dir / "daily-20260522T120000000000Z.json", "w") as f:
+            json.dump(payload, f)
+
+        report = build_snapshot_replay_report(str(data_dir), sports=["mlb"])
+
+        assert report["aggregate"]["research_lanes"]["value_dog"]["candidate_picks"] == 1
+        assert report["sports"]["mlb"]["research_lanes"]["value_dog"]["candidate_picks"] == 1
 
     def test_build_pick_decision_replay_report(self, tmp_path):
         data_dir = tmp_path / "data"

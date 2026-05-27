@@ -671,6 +671,10 @@
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }
+  var LANE_LABELS = { value_dog: 'DOG', near_favorite: 'NEAR FAV' };
+  function formatLaneLabel(lane) {
+    return LANE_LABELS[lane] || String(lane || '').replace(/_/g, ' ').toUpperCase();
+  }
 
   function pct(p) { return (p * 100).toFixed(1) + '%'; }
   function units(v) {
@@ -897,6 +901,17 @@
     marketTag.className = 'card-market';
     marketTag.textContent = isTotal ? 'TOTAL' : 'ML';
     titleRow.appendChild(marketTag);
+
+    if (pick.selection_lane && pick.selection_lane !== 'core') {
+      var laneTag = document.createElement('div');
+      laneTag.className = 'card-market';
+      laneTag.style.marginLeft = '6px';
+      laneTag.style.borderColor = '#72d6ff';
+      laneTag.style.color = '#b9edff';
+      laneTag.style.background = 'rgba(114, 214, 255, 0.1)';
+      laneTag.textContent = formatLaneLabel(pick.selection_lane);
+      titleRow.appendChild(laneTag);
+    }
 
     if (pick.qualitative_summary && pick.qualitative_summary !== 'No qualitative impact.') {
       var senseTag = document.createElement('div');

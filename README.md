@@ -1,82 +1,73 @@
 # SLOP LOCKS
 
-Multi-sport prediction engine with ensemble models and automated edge detection.
+Static PWA for model-driven sports betting picks, dashboard reporting, and pick-history tracking.
 
 **Live:** [sloplocks.lol](https://sloplocks.lol)
 
----
+SLOP LOCKS has no backend app server. A Python pipeline writes committed JSON/CSV data under `data/`, and the single-file frontend (`index.html`) reads those static files directly.
 
 ## Supported Sports
 
-| Sport | Status | Models |
-|-------|--------|--------|
+| Sport | Status | Active moneyline models |
+| --- | --- | --- |
 | NBA | Active | Elo, Results Features, Recent Boxscore, NBA Matchup |
+| WNBA | Active | Elo, Results Features, Recent Boxscore |
 | NHL | Active | Elo, Results Features, NHL Matchup |
-| MLB | Active | Elo, Results Features, Pitcher Features, Bullpen Features, Run Environment, Handedness |
-| NCAAM | Off-season | Historical data retained; live picks disabled |
+| MLB | Active | Elo, Results Features, Bullpen Features, Run Environment, Handedness |
+| NCAAM | Season-disabled | Historical code/data retained; live picks disabled |
 
----
+Current config disables NBA `four_factors` and MLB `pitcher_features` at runtime. MLB totals are enabled; NBA totals are modeled but publication depends on config and lane-health gates.
 
 ## How It Works
 
-A GitHub Action runs daily at 12pm UTC. The pipeline fetches fresh schedules, results, and bookmaker odds, fits ensemble models, and writes `predictions.json` for each sport. Netlify auto-deploys the static frontend on every push to `master`.
+1. GitHub Actions runs the pipeline on a schedule or by manual dispatch.
+2. `pipeline.run` fetches ESPN schedules/results/context, fetches odds from The Odds API, fits sport-specific models, blends probabilities, computes edge/EV/Kelly values, validates publishable picks, grades settled picks, and writes JSON/CSV output.
+3. `index.html` reads static data from `data/manifest.json`, `data/dashboard.json`, and each sport's `predictions.json` / `pick_history.json`.
+4. Netlify deploys the static site from `master`.
 
-### Ensemble Architecture
+The pipeline also writes immutable run snapshots and append-oriented ledgers so reporting can replay what was actually available at decision time.
 
-Each sport runs 3–6 sport-specific models. Model weights are determined by rolling accuracy over a configurable window (softmax-scaled), so recent performance shifts the blend automatically.
+## Data Products
 
-**NBA models:**
-- **Elo** — Dynamic power ratings with 65-point home advantage, K=20, back-to-back rest penalty
-- **Results Features** — Logistic regression on recent game outcomes and margin features
-- **Recent Boxscore** — Efficiency metrics from the last N box scores
-- **NBA Matchup** — Head-to-head style matchup features
+Shared:
 
-**NHL models:**
-- **Elo** — Dynamic ratings with 28-point home advantage, K=18
-- **Results Features** — Recent outcome and goal-differential features
-- **NHL Matchup** — Goalie status and line matchup features
+- `data/manifest.json` - frontend sport status manifest
+- `data/dashboard.json` - BOARD tab payload with aggregate record, replay, lane health, and recommendations
+- `data/tracking/results_log.csv` - mutable live settled-results log
+- `data/tracking/results_audit_log.csv` - append-only settled-results audit ledger
+- `data/tracking/odds_history.csv` - market snapshots for CLV
+- `data/tracking/pick_decisions.csv` - decision-time pick ledger
+- `data/tracking/snapshots/YYYY-MM-DD/{sport}/*.json` - immutable run snapshots
 
-**MLB models:**
-- **Elo** — Low-K ratings for 162-game season, 24-point home advantage
-- **Results Features** — Recent W/L, run differential trends
-- **Pitcher Features** — Starting pitcher ERA, K/9, recent workload
-- **Bullpen Features** — Bullpen ERA, recent usage, fatigue
-- **Run Environment** — Park factors, weather adjustments, handedness splits
-- **Handedness Features** — Batter vs. pitcher handedness matchup
+Per sport:
 
-### Probability Calibration
+- `data/{sport}/predictions.json` - current slate, picks, diagnostics, guards, model weights
+- `data/{sport}/history.json` - saved modeled match history
+- `data/{sport}/pick_history.json` - published picks plus settled outcomes and CLV fields
+- `data/{sport}/model_accuracy.json` - rolling model scoring history
+- `data/{sport}/espn_cache.json` - ESPN cache, expected to change during live runs
 
-Raw model probabilities are passed through two calibration layers before edge calculation:
+There is also a display-only NFL Draft special path (`pipeline/build_draft_tab.py`, `data/nfl-draft*.json`). It is separate from the live sport pipeline and excluded from site totals.
 
-1. **Isotonic regression** — Fitted on resolved historical predictions to correct systematic over/under-confidence
-2. **Market-respect blend** — Weighted average with the bookmaker's no-vig implied probability (30% market weight). Extreme model divergence (>20% from the market) triggers heavy shrinkage.
+## Pick Controls
 
-### Pick Tiers
+Publication is gated by settled evidence, not just current model output. A sport or lane can be suppressed when sample size, recent ROI, CLV, or calibration health is too weak.
 
-Every candidate pick is classified into one of four tiers based on confidence, win probability, and edge — in that order. Probability is the primary gate; a large edge cannot promote a low-probability pick.
+Important current rules:
 
-| Tier | Confidence | Win Prob | Edge | Description |
-|------|-----------|---------|------|-------------|
-| **STRONG** | ≥ 62 | ≥ 57% | ≥ 2% | High confidence + clear value |
-| **LEAN** | ≥ 54 | ≥ 53% | ≥ 1% | Solid prediction, modest edge |
-| **WATCHLIST** | ≥ 48 | ≥ 52% | any | Interesting angle, thin confirmation |
-| **NO PLAY** | — | < 52% | — | Insufficient evidence |
+- Moneyline SLOP LOCKS support explicit selection lanes:
+  - `core` - standard edge/probability/EV gate
+  - `value_dog` - positive-EV underdogs with lower win-probability floor
+  - `near_favorite` - modestly priced favorites and short dogs with smaller edge floor
+- A sport on a live-publication hold can publish a capped pick count when recent health clears the configured hold threshold.
+- Current-slate diagnostics include gate-failure counts and lane-candidate counts so low-volume days can be explained from `predictions.json`.
+- `pick_decisions.csv` is the authoritative decision-time ledger.
+- Backtests and dashboard reporting prefer immutable/audit ledgers where available.
+- CLV is separated by market family. Moneyline CLV and totals-line CLV are not merged into a single unit.
+- Low-confidence fallback picks should not be forced into official surfaces.
+- MMA is intentionally removed from the live product and pipeline.
 
-### Confidence Score
-
-Each pick's 0–100 confidence score is weighted:
-
-- **45%** — Win probability (model's predicted likelihood of the pick hitting)
-- **30%** — Model agreement (low variance across ensemble models)
-- **15%** — Edge (model probability vs. bookmaker implied probability)
-- **10%** — Expected value
-
-### Pick Types
-
-- **Slop Locks** — Main moneyline picks, sorted by start time
-- **Totals Locks** — Over/under picks for supported sports
-
----
+Free/keyless data currently used includes ESPN schedule/team/context endpoints, Open-Meteo for MLB weather, and MLB Stats API as a probable-pitcher fallback when ESPN leaves starters as `TBD`.
 
 ## Setup
 
@@ -88,79 +79,108 @@ source venv/bin/activate
 pip install -r pipeline/requirements.txt
 ```
 
-Copy `.env.example` to `.env` and fill in your keys (see API Keys below), then:
+Copy `.env.template` to `.env` and fill in the keys you need.
+
+## Commands
+
+Run the full active-sport pipeline:
 
 ```bash
-# Run full pipeline (all active sports)
 python -m pipeline.run
+```
 
-# Run a single sport
-python -c "from pipeline.run import run_sport_pipeline; run_sport_pipeline('nba')"
+Run one sport:
 
-# Run tests
+```bash
+python -m pipeline.run --sport nba
+```
+
+Refresh odds and recompute picks without full retraining:
+
+```bash
+python -m pipeline.refresh_picks
+python -m pipeline.refresh_picks nba nhl
+```
+
+Run reporting:
+
+```bash
+python -m pipeline.backtest
+python -m pipeline.backtest --walkforward
+python -m pipeline.backtest --raw-walkforward
+python -m pipeline.backtest --snapshot-replay
+python -m pipeline.backtest --decision-replay
+```
+
+Run tests:
+
+```bash
 pytest tests/ -v
 ```
 
----
+Fast verification after pipeline/report changes:
 
-## API Keys
+```bash
+python -m compileall pipeline tests
+pytest -q tests/test_run.py tests/test_backtest.py tests/test_reset_public_record.py tests/test_notify_discord.py
+```
 
-| Key | Source | Required |
-|-----|--------|----------|
-| `ODDS_API_KEY` | [the-odds-api.com](https://the-odds-api.com/) | Yes |
-| `BALLDONTLIE_API_KEY` | [balldontlie.io](https://www.balldontlie.io/) | Yes (NBA) |
-| `OPENAI_API_KEY` | [platform.openai.com](https://platform.openai.com/) | Optional (qualitative analysis, gpt-4o-mini) |
+## Environment Variables
 
-Set these as GitHub Secrets for the daily Action. ESPN schedule/results data requires no key.
+Loaded from `.env` when present.
 
----
+| Key | Used for | Required |
+| --- | --- | --- |
+| `ODDS_API_KEY` | The Odds API odds ingestion | Yes for live odds |
+| `BALLDONTLIE_API_KEY` | Optional deeper NBA data path | Optional |
+| `OPENAI_API_KEY` | Game-level qualitative context (`gpt-4o-mini`) | Optional |
+| `GEMINI_API_KEY` | Draft-special qualitative commentary | Optional |
+| `ENABLE_QUALITATIVE` | Enables qualitative adjustment paths | Optional |
+| `DISCORD_WEBHOOK_URL` | Discord notifications from workflows | Optional |
+| `NETLIFY_AUTH_TOKEN` / `NETLIFY_SITE_ID` | Netlify deployment workflow | Required for deploy workflow |
+| `ANTHROPIC_API_KEY` | Legacy/configured key | Usually unused |
 
 ## Project Structure
 
-```
+```text
 sloplocks/
-├── index.html                  ← Frontend (single file, no build step)
-├── data/                       ← Generated daily by pipeline
-│   ├── manifest.json
-│   ├── nba/
-│   │   ├── predictions.json
-│   │   ├── history.json
-│   │   └── model_accuracy.json
-│   ├── nhl/
-│   └── mlb/
-├── pipeline/
-│   ├── config.py               ← Central config, sport definitions, thresholds
-│   ├── run.py                  ← Pipeline orchestrator
-│   ├── ensemble.py             ← Blending, calibration, edge detection, pick tiers
-│   ├── models.py               ← All model implementations
-│   ├── backtest.py             ← Accuracy tracking, ROI, lane health guards
-│   ├── fetch_nba.py            ← ESPN NBA client
-│   ├── fetch_nhl.py            ← ESPN NHL client
-│   ├── fetch_mlb.py            ← ESPN MLB client
-│   ├── fetch_data.py           ← The Odds API client
-│   ├── notify_discord.py       ← Discord webhook notifications
-│   └── qualitative_analysis.py ← LLM-based context layer (optional)
-├── tests/
-└── .github/workflows/
-    └── daily.yml               ← Runs at 12pm UTC, commits data/, deploys via Netlify
+|-- index.html                  # Static frontend, embedded CSS/JS
+|-- manifest.json               # PWA manifest
+|-- sw.js                       # Service worker
+|-- netlify.toml                # Static Netlify config
+|-- data/                       # Committed generated output and tracking ledgers
+|-- pipeline/
+|   |-- config.py               # Sport registry, thresholds, paths, keys
+|   |-- run.py                  # Main pipeline orchestrator
+|   |-- refresh_picks.py        # Fast odds refresh without retraining
+|   |-- fetch_data.py           # The Odds API client
+|   |-- fetch_nba.py            # ESPN NBA client
+|   |-- fetch_wnba.py           # ESPN WNBA client
+|   |-- fetch_nhl.py            # ESPN NHL client
+|   |-- fetch_mlb.py            # ESPN MLB client plus MLB Stats API pitcher fallback
+|   |-- fetch_ncaam.py          # Retained historical/off-season NCAAM client
+|   |-- models.py               # Model implementations
+|   |-- ensemble.py             # Blending, calibration, edge math, confidence
+|   |-- backtest.py             # Reports, replay, dashboard payload
+|   |-- reset_public_record.py  # Archive-first public-record maintenance
+|   |-- notify_discord.py       # Discord webhook formatting/sending
+|   `-- qualitative_analysis.py # Optional game-level OpenAI context layer
+|-- tests/                      # Pytest suite
+`-- .github/workflows/
+    |-- daily.yml               # Full pipeline, commit data, Discord notify
+    |-- refresh-picks.yml       # Manual fast refresh, commit data, Discord notify
+    `-- deploy-site.yml         # Netlify deploy on master
 ```
 
----
+## Frontend
+
+The frontend is intentionally old-terminal / CRT styled: green-on-black, monospace, scanlines, and dense cards. It has no build step. The sport tabs and BOARD tab are rendered by client-side JavaScript in `index.html`.
+
+When changing output JSON shape, update both the pipeline writer and the frontend reader. Search `index.html` for a field before renaming or removing it.
 
 ## Deployment
 
-Push to `master` → Netlify auto-deploys the frontend. The daily GitHub Action runs at 12pm UTC (~8am ET), commits updated `data/` JSON, and triggers a fresh deploy. No server required — the frontend reads static JSON files directly.
-
-To add a new sport:
-
-1. Add a sport config entry to `SPORTS` in `pipeline/config.py`
-2. Create `pipeline/fetch_{sport}.py` with schedule and results fetchers
-3. Add sport-specific models to `pipeline/models.py`
-4. Wire up the sport branch in `pipeline/run.py`
-5. Add the sport pill to the frontend toggle in `index.html`
-6. Add any new API keys to GitHub Secrets and `daily.yml`
-
----
+Push to `master` triggers the Netlify deploy workflow. The daily workflow runs at 12:00 UTC, commits updated `data/`, and posts Discord output when `DISCORD_WEBHOOK_URL` is configured. The refresh workflow is manual and intended for quick odds updates.
 
 ## License
 

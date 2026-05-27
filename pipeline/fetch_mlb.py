@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 import requests
 
-from pipeline.config import MLB_BALLPARKS, MLB_CORE_API_BASE, MLB_ESPN_BASE, OPEN_METEO_BASE, SPORTS
+from pipeline.config import MLB_BALLPARKS, MLB_CORE_API_BASE, MLB_ESPN_BASE, MLB_STATS_API_BASE, OPEN_METEO_BASE, SPORTS
 
 _REQUEST_DELAY = 0.5
 
@@ -103,16 +103,17 @@ def _season_date_range(season: int) -> list[str]:
 def _load_espn_cache(cache_path: Optional[str]) -> dict:
     """Load ESPN cache from disk, returning empty cache if missing."""
     if cache_path is None or not os.path.exists(cache_path):
-        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}}
+        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}, "statsapi_probables": {}}
     with open(cache_path) as f:
         cache = _json.load(f)
     if not isinstance(cache, dict):
-        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}}
+        return {"games": {}, "pitchers": {}, "players": {}, "weather": {}, "rosters": {}, "statsapi_probables": {}}
     cache.setdefault("games", {})
     cache.setdefault("pitchers", {})
     cache.setdefault("players", {})
     cache.setdefault("weather", {})
     cache.setdefault("rosters", {})
+    cache.setdefault("statsapi_probables", {})
     return cache
 
 
@@ -161,6 +162,45 @@ def _fetch_pitcher_profile(player_id: Union[str, int, None], cache: Optional[dic
     if cache is not None and player_id:
         cache.setdefault("pitchers", {})[str(player_id)] = profile
     return profile
+
+
+def _fetch_statsapi_probable_pitchers(game_date: str, cache: Optional[dict] = None) -> dict[str, dict]:
+    """Fetch probable pitchers from MLB Stats API keyed by normalized team name."""
+    cache_store = None
+    if cache is not None:
+        cache_store = cache.setdefault("statsapi_probables", {})
+        cached = cache_store.get(game_date)
+        if isinstance(cached, dict):
+            return cached
+
+    url = f"{MLB_STATS_API_BASE}/schedule?sportId=1&date={game_date}&hydrate=probablePitcher"
+    try:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        data = resp.json()
+    except requests.RequestException:
+        return {}
+
+    probables: dict[str, dict] = {}
+    for date_entry in data.get("dates", []):
+        for game in date_entry.get("games", []):
+            for side in ("home", "away"):
+                team_info = game.get("teams", {}).get(side, {})
+                team_name = team_info.get("team", {}).get("name")
+                pitcher = team_info.get("probablePitcher") or {}
+                pitcher_name = pitcher.get("fullName") or pitcher.get("displayName")
+                if not team_name or not pitcher_name:
+                    continue
+                probables[normalize_mlb_team_name(team_name)] = {
+                    "id": str(pitcher.get("id")) if pitcher.get("id") is not None else None,
+                    "name": pitcher_name,
+                    "throws": pitcher.get("pitchHand", {}).get("code") or pitcher.get("pitchHand", {}).get("abbreviation"),
+                    "source": "mlb_stats_api",
+                }
+
+    if cache_store is not None:
+        cache_store[game_date] = probables
+    return probables
 
 
 def _fetch_team_lineup_profile(
@@ -754,6 +794,7 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()
+    statsapi_probables = _fetch_statsapi_probable_pitchers(game_date_str, cache)
 
     fixtures = []
     for event in data.get("events", []):
@@ -772,6 +813,9 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
 
         if home is None or away is None:
             continue
+
+        home_team_name = normalize_mlb_team_name(home["team"]["displayName"])
+        away_team_name = normalize_mlb_team_name(away["team"]["displayName"])
 
         home_leader_weights = {}
         away_leader_weights = {}
@@ -799,6 +843,8 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
         away_pitcher = "TBD"
         home_pitcher_hand = None
         away_pitcher_hand = None
+        home_pitcher_source = None
+        away_pitcher_source = None
         for competitor in comp.get("competitors", []):
             prob = competitor.get("probables")
             if prob:
@@ -808,9 +854,24 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
                 if competitor.get("homeAway") == "home":
                     home_pitcher = p_name
                     home_pitcher_hand = profile.get("throws")
+                    home_pitcher_source = "espn"
                 elif competitor.get("homeAway") == "away":
                     away_pitcher = p_name
                     away_pitcher_hand = profile.get("throws")
+                    away_pitcher_source = "espn"
+
+        if home_pitcher == "TBD":
+            fallback = statsapi_probables.get(home_team_name)
+            if fallback:
+                home_pitcher = fallback.get("name", "TBD")
+                home_pitcher_hand = home_pitcher_hand or fallback.get("throws")
+                home_pitcher_source = fallback.get("source")
+        if away_pitcher == "TBD":
+            fallback = statsapi_probables.get(away_team_name)
+            if fallback:
+                away_pitcher = fallback.get("name", "TBD")
+                away_pitcher_hand = away_pitcher_hand or fallback.get("throws")
+                away_pitcher_source = fallback.get("source")
 
         start_time = comp.get("date", event.get("date"))
         home_team_id = home["team"].get("id")
@@ -830,7 +891,7 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
 
         weather = _fetch_ballpark_weather(
 
-            normalize_mlb_team_name(home["team"]["displayName"]),
+            home_team_name,
             start_time,
             cache,
         )
@@ -838,26 +899,28 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
             home_team_id,
             cache,
             leader_weights=home_leader_weights,
-            confirmed_lineup=confirmed_lineups.get(normalize_mlb_team_name(home["team"]["displayName"])),
+            confirmed_lineup=confirmed_lineups.get(home_team_name),
         )
         away_lineup_profile = _fetch_team_lineup_profile(
             away_team_id,
             cache,
             leader_weights=away_leader_weights,
-            confirmed_lineup=confirmed_lineups.get(normalize_mlb_team_name(away["team"]["displayName"])),
+            confirmed_lineup=confirmed_lineups.get(away_team_name),
         )
 
         fixtures.append({
-            "home_team": normalize_mlb_team_name(home["team"]["displayName"]),
-            "away_team": normalize_mlb_team_name(away["team"]["displayName"]),
+            "home_team": home_team_name,
+            "away_team": away_team_name,
             "date": game_date_str,
             "start_time": start_time,
             "completed": is_completed,
             "neutral": comp.get("neutralSite", False),
             "home_pitcher": home_pitcher,
             "home_pitcher_hand": home_pitcher_hand,
+            "home_pitcher_source": home_pitcher_source,
             "away_pitcher": away_pitcher,
             "away_pitcher_hand": away_pitcher_hand,
+            "away_pitcher_source": away_pitcher_source,
             "home_lineup_profile": home_lineup_profile,
             "away_lineup_profile": away_lineup_profile,
             "weather": weather,

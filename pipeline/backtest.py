@@ -595,6 +595,7 @@ def _snapshot_exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
 def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], config: dict) -> list[dict]:
     """Recompute SLOP LOCKS from one saved snapshot."""
     candidates = []
+    lane_configs = config.get("lanes") or {}
     for rec in records:
         if rec.get("completed"):
             continue
@@ -606,12 +607,32 @@ def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], confi
             edge = float(edge_data.get("edge", 0.0) or 0.0)
             prob = float(edge_data.get("model_prob", 0.0) or 0.0)
             ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+            american = edge_data.get("american_odds")
+            selection_lane = None
             if (
                 edge >= float(config.get("edge_floor", 0.03))
                 and prob >= float(config.get("probability_floor", 0.45))
                 and ev >= float(config.get("min_expected_value", 0.0))
-                and confidence >= float(config.get("additional_confidence_floor", 65.0))
             ):
+                selection_lane = "core"
+            else:
+                for lane_name, lane_config in lane_configs.items():
+                    if not lane_config.get("enabled", True):
+                        continue
+                    if american is None:
+                        continue
+                    if lane_config.get("american_odds_min") is not None and float(american) < float(lane_config["american_odds_min"]):
+                        continue
+                    if lane_config.get("american_odds_max") is not None and float(american) > float(lane_config["american_odds_max"]):
+                        continue
+                    if (
+                        edge >= float(lane_config.get("edge_floor", 0.0))
+                        and prob >= float(lane_config.get("probability_floor", 0.0))
+                        and ev >= float(lane_config.get("min_expected_value", config.get("min_expected_value", 0.0)))
+                    ):
+                        selection_lane = lane_name
+                        break
+            if selection_lane is not None:
                 candidates.append({
                     "market_type": "moneyline",
                     "home_team": rec["home_team"],
@@ -620,23 +641,45 @@ def _snapshot_compute_slop_locks(records: list[dict], outcomes: list[str], confi
                     "pick": outcome,
                     "edge": edge,
                     "confidence_score": confidence,
+                    "selection_lane": selection_lane,
                 })
 
     candidates.sort(key=lambda item: (item["confidence_score"], item["edge"]), reverse=True)
     if not candidates:
         return []
 
-    selected = [candidates[0]]
-    top_confidence = candidates[0]["confidence_score"]
-    for candidate in candidates[1:]:
+    selected = []
+    lane_counts = defaultdict(int)
+    for candidate in candidates:
         if len(selected) >= int(config.get("max_picks", 3)):
             break
-        if (
-            candidate["confidence_score"] >= float(config.get("additional_confidence_floor", 65.0))
-            and candidate["confidence_score"] >= (top_confidence - float(config.get("confidence_dropoff", 0.0)))
-        ):
-            selected.append(candidate)
+        lane_name = candidate.get("selection_lane") or "core"
+        lane_cap = None
+        if lane_name != "core":
+            lane_cap = (lane_configs.get(lane_name) or {}).get("max_picks")
+        if lane_cap is not None and lane_counts[lane_name] >= int(lane_cap):
+            continue
+        selected.append(candidate)
+        lane_counts[lane_name] += 1
     return _snapshot_exclude_opponent_conflicts(selected)
+
+
+def _summarize_research_lane_candidates(rows: list[dict]) -> dict:
+    """Summarize candidate rows produced by snapshot lane replay."""
+    summary = defaultdict(lambda: {"candidate_picks": 0, "sports": defaultdict(int)})
+    for row in rows:
+        lane = row.get("selection_lane") or "core"
+        if lane == "core":
+            continue
+        summary[lane]["candidate_picks"] += 1
+        summary[lane]["sports"][row.get("sport")] += 1
+    return {
+        lane: {
+            "candidate_picks": data["candidate_picks"],
+            "sports": dict(data["sports"]),
+        }
+        for lane, data in summary.items()
+    }
 
 
 def _snapshot_compute_longslop(records: list[dict], outcomes: list[str], config: dict) -> Optional[dict]:
@@ -792,12 +835,19 @@ def build_snapshot_replay_report(data_dir: str = "data", sports:Optional[ list[s
         "recent_mismatches": [],
         "expected_picks": _summarize_pick_rows([]),
         "replayed_picks": _summarize_pick_rows([]),
+        "research_lanes": {},
     })
     entries = []
     aggregate_expected_rows = []
     aggregate_replayed_rows = []
+    aggregate_research_rows = []
     for snapshot in snapshots:
         replay = _replay_snapshot_payload(snapshot)
+        research_rows = [
+            {**item, "sport": replay["sport"]}
+            for item in replay.get("replayed_picks", [])
+            if item.get("selection_lane") and item.get("selection_lane") != "core"
+        ]
         expected_rows = [
             row
             for row in (
@@ -829,6 +879,7 @@ def build_snapshot_replay_report(data_dir: str = "data", sports:Optional[ list[s
         sport_report["snapshots"] += 1
         aggregate_expected_rows.extend(expected_rows)
         aggregate_replayed_rows.extend(replayed_rows)
+        aggregate_research_rows.extend(research_rows)
         if replay["exact_match"]:
             sport_report["exact_matches"] += 1
         else:
@@ -841,12 +892,16 @@ def build_snapshot_replay_report(data_dir: str = "data", sports:Optional[ list[s
         sport_replayed_rows = sport_report.get("_replayed_rows", [])
         sport_replayed_rows.extend(replayed_rows)
         sport_report["_replayed_rows"] = sport_replayed_rows
+        sport_research_rows = sport_report.get("_research_rows", [])
+        sport_research_rows.extend(research_rows)
+        sport_report["_research_rows"] = sport_research_rows
 
     for sport_report in sport_reports.values():
         if sport_report["snapshots"] > 0:
             sport_report["exact_match_rate"] = round(sport_report["exact_matches"] / sport_report["snapshots"], 4)
         sport_report["expected_picks"] = _summarize_pick_rows(sport_report.pop("_expected_rows", []))
         sport_report["replayed_picks"] = _summarize_pick_rows(sport_report.pop("_replayed_rows", []))
+        sport_report["research_lanes"] = _summarize_research_lane_candidates(sport_report.pop("_research_rows", []))
 
     aggregate = {
         "snapshots": len(entries),
@@ -855,6 +910,7 @@ def build_snapshot_replay_report(data_dir: str = "data", sports:Optional[ list[s
         "mismatches": sum(1 for entry in entries if not entry["exact_match"]),
         "expected_picks": _summarize_pick_rows(aggregate_expected_rows),
         "replayed_picks": _summarize_pick_rows(aggregate_replayed_rows),
+        "research_lanes": _summarize_research_lane_candidates(aggregate_research_rows),
     }
     recent_mismatches = [entry for entry in reversed(entries) if not entry["exact_match"]][:5]
     return {
@@ -2081,7 +2137,7 @@ def _sport_dashboard_summary(
     """Condense one sport into dashboard-friendly fields."""
     picks = sport_report.get("picks", {})
     clv = picks.get("clv", {})
-    diagnostics = (manifest_sport or {}).get("diagnostics", {})
+    diagnostics = (current_output or {}).get("diagnostics") or (manifest_sport or {}).get("diagnostics", {})
     locks = int(diagnostics.get("slop_locks_posted") or 0)
     totals = len((current_output or {}).get("totals_locks", []) or [])
 
@@ -2318,19 +2374,30 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
     }
     leaders = _lane_leaders(report)
 
-    sports_summary = []
+    current_outputs = {}
     for sport_key in selected_sports:
         current_output = {}
         predictions_path = os.path.join(data_dir, sport_key, "predictions.json")
         if os.path.exists(predictions_path):
             with open(predictions_path) as f:
                 current_output = json.load(f) or {}
+        current_outputs[sport_key] = current_output
+
+    def _current_diagnostics(sport_key: str) -> dict:
+        manifest_diagnostics = ((manifest.get("sports") or {}).get(sport_key, {}).get("diagnostics", {}) or {})
+        return current_outputs.get(sport_key, {}).get("diagnostics") or manifest_diagnostics
+
+    def _sum_diagnostic(field: str) -> int:
+        return sum(int((_current_diagnostics(s).get(field)) or 0) for s in selected_sports)
+
+    sports_summary = []
+    for sport_key in selected_sports:
         sports_summary.append(
             _sport_dashboard_summary(
                 sport_key,
                 report.get("sports", {}).get(sport_key, {}),
                 (manifest.get("sports") or {}).get(sport_key, {}),
-                current_output,
+                current_outputs.get(sport_key, {}),
             )
         )
 
@@ -2347,13 +2414,13 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
     }
 
     slate = {
-        "modeled": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("matches_modeled") or 0) for s in selected_sports),
-        "with_odds": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("fixtures_with_odds") or 0) for s in selected_sports),
-        "fixtures": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("fixtures_in_window") or 0) for s in selected_sports),
-        "positive_ev": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("matches_with_positive_ev") or 0) for s in selected_sports),
-        "sense": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("matches_with_qualitative") or 0) for s in selected_sports),
-        "eligible": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("lock_eligible_matches") or 0) for s in selected_sports),
-        "locks": sum(int(((manifest.get("sports") or {}).get(s, {}).get("diagnostics", {}) or {}).get("slop_locks_posted") or 0) for s in selected_sports),
+        "modeled": _sum_diagnostic("matches_modeled"),
+        "with_odds": _sum_diagnostic("fixtures_with_odds"),
+        "fixtures": _sum_diagnostic("fixtures_in_window"),
+        "positive_ev": _sum_diagnostic("matches_with_positive_ev"),
+        "sense": _sum_diagnostic("matches_with_qualitative"),
+        "eligible": _sum_diagnostic("lock_eligible_matches"),
+        "locks": _sum_diagnostic("slop_locks_posted"),
     }
 
     return {

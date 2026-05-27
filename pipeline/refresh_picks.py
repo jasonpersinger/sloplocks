@@ -389,6 +389,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         additional_confidence_floor=sport.get("slop_lock_confidence_threshold", 65.0),
         confidence_dropoff=sport.get("slop_lock_confidence_dropoff", 0.0),
         max_picks=sport.get("slop_lock_max_picks", 3),
+        lane_configs=sport.get("slop_lock_lanes", {}),
     )
     slimegrinder = _run_compute_slimegrinder(
         matches,
@@ -418,6 +419,12 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         slimegrinder = []
     if not publication_guard.get("allow_totals", True):
         totals_locks = []
+    moneyline_cap = publication_guard.get("moneyline_publish_cap")
+    if moneyline_cap is not None:
+        slop_locks = slop_locks[: int(moneyline_cap)]
+    totals_cap = publication_guard.get("totals_publish_cap")
+    if totals_cap is not None:
+        totals_locks = totals_locks[: int(totals_cap)]
     snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
     selection_config = _selection_snapshot_config(sport, outcomes, min_expected_value)
     slop_locks, totals_locks, longslop, slimegrinder, validation_issues = validate_publishable_picks(

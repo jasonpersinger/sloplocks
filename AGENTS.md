@@ -4,7 +4,7 @@ This file is the machine-facing overview for this repository.
 
 Read this first if you are asked to work in this folder.
 
-`README.md` and `CLAUDE.md` are partly stale. They describe an older EPL-focused version of the project. Use this file plus the live code as the current source of truth.
+`README.md` is the current human-facing overview. `CLAUDE.md` is partly stale and still describes older project states. Use this file plus the live code as the current source of truth for agent work.
 
 ## Purpose
 
@@ -16,6 +16,7 @@ Current active sports:
 - `nba`
 - `nhl`
 - `mlb`
+- `wnba`
 
 Season-disabled sports with historical code/data retained:
 - `ncaam`
@@ -65,6 +66,7 @@ Important consequence:
 - [pipeline/fetch_nhl.py](/home/jason/sloplocks/pipeline/fetch_nhl.py)
 - [pipeline/fetch_ncaam.py](/home/jason/sloplocks/pipeline/fetch_ncaam.py)
 - [pipeline/fetch_mlb.py](/home/jason/sloplocks/pipeline/fetch_mlb.py)
+- [pipeline/fetch_wnba.py](/home/jason/sloplocks/pipeline/fetch_wnba.py)
   - Sport-specific ESPN and context ingestion.
 - [pipeline/models.py](/home/jason/sloplocks/pipeline/models.py)
   - Model implementations.
@@ -76,6 +78,10 @@ Important consequence:
   - Archive-first public-record maintenance tool.
 - [pipeline/notify_discord.py](/home/jason/sloplocks/pipeline/notify_discord.py)
   - Discord post formatting and sending.
+- [pipeline/qualitative_analysis.py](/home/jason/sloplocks/pipeline/qualitative_analysis.py)
+  - Optional OpenAI qualitative context layer for game picks.
+- [pipeline/build_draft_tab.py](/home/jason/sloplocks/pipeline/build_draft_tab.py)
+  - One-off/static NFL Draft special payload builder. It is display-only and excluded from site totals.
 - [data/](/home/jason/sloplocks/data)
   - Generated live output and tracking ledgers. This is committed.
 - [tests/](/home/jason/sloplocks/tests)
@@ -94,6 +100,10 @@ Per sport:
   - rolling model scoring history
 
 Shared tracking:
+- `data/manifest.json`
+  - sport status manifest consumed by the frontend
+- `data/dashboard.json`
+  - dashboard/reporting payload consumed by the BOARD tab
 - `data/tracking/results_log.csv`
   - mutable live results log
 - `data/tracking/results_audit_log.csv`
@@ -113,6 +123,12 @@ The project has had a recent integrity pass. Relevant current rules:
 
 - Publication is gated by settled evidence.
   - Some sports can be suppressed from posting official picks live if the sample is too thin.
+  - Sports on hold can publish a small capped count when configured health thresholds are met.
+- SLOP LOCK moneyline picks have selection lanes:
+  - `core` for the main threshold gate.
+  - `value_dog` for positive-EV underdogs that intentionally sit below the core probability floor.
+  - `near_favorite` for modest favorites/short dogs with smaller edge requirements.
+- Current-slate diagnostics include gate-failure counts and lane-candidate counts.
 - MMA is removed.
 - Backtests and reporting now prefer immutable ledgers where available.
 - Decision replay exists.
@@ -121,6 +137,7 @@ The project has had a recent integrity pass. Relevant current rules:
   - Moneyline and totals CLV should not be merged into one naive unit.
 - Older historical data is mixed quality.
   - The repo now backfills some missing market/CLV context, but legacy rows are still less complete than fresh rows.
+- MLB uses ESPN first, Open-Meteo for weather, and the keyless MLB Stats API as a probable-pitcher fallback when ESPN has `TBD` starters.
 
 ## Current Frontend State
 
@@ -137,7 +154,7 @@ Preserve the current visual direction unless the task explicitly asks for a rede
 This is not a toy site anymore. The repo has already fixed several serious problems:
 - synthetic cross-book no-vig benchmarking
 - leaking four-factors training logic
-- forced low-confidence “slop lock” picks
+- forced low-confidence "slop lock" picks
 - mixed-unit CLV reporting
 - mutable public record defaults
 - MMA product surface
@@ -219,6 +236,7 @@ Loaded from `.env` if present via `dotenv`.
 Main keys:
 - `ODDS_API_KEY`
 - `BALLDONTLIE_API_KEY`
+- `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `ENABLE_QUALITATIVE`
 
@@ -227,6 +245,11 @@ Some workflows also use:
 - `DISCORD_WEBHOOK_URL`
 - `NETLIFY_AUTH_TOKEN`
 - `NETLIFY_SITE_ID`
+
+Notes:
+- `OPENAI_API_KEY` powers the game-level qualitative layer in `pipeline/qualitative_analysis.py`.
+- `GEMINI_API_KEY` powers the draft-special commentary path.
+- `ANTHROPIC_API_KEY` is still loaded in config/workflows but is legacy unless live code is changed to use it again.
 
 ## Practical Editing Guidance
 
@@ -249,7 +272,6 @@ When changing tracking logic:
 
 ## Known Truths / Gotchas
 
-- `README.md` still references EPL and older models. It is not current.
 - `CLAUDE.md` is also partially stale.
 - `master` is the live deployment branch.
 - `data/` is committed and expected to change as part of normal pipeline work.

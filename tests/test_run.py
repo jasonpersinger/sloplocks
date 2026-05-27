@@ -15,16 +15,163 @@ from pipeline.run import (
     _apply_nhl_injury_adjustment,
     _apply_nba_availability_adjustment,
     _apply_nba_availability_total_adjustment,
+    _build_pipeline_diagnostics,
+    _compute_slop_locks,
     _compute_mlb_bullpen_tax,
     _apply_mlb_lineup_adjustment,
     _apply_mlb_lineup_total_adjustment,
     _apply_mlb_weather_adjustment,
+    _passes_pick_gate,
     _main,
     run_pipeline,
     run_sport_pipeline,
 )
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+
+def test_compute_slop_locks_includes_configured_value_dog_lane():
+    records = [
+        {
+            "home_team": "Yankees",
+            "away_team": "Rays",
+            "date": "2026-05-22",
+            "edges": {
+                "away": {
+                    "edge": 0.061,
+                    "model_prob": 0.44,
+                    "expected_value": 0.13,
+                    "american_odds": 155,
+                    "decimal_odds": 2.55,
+                    "confidence_score": 43.0,
+                    "implied_prob": 0.38,
+                    "market_implied_prob": 0.39,
+                },
+                "home": {
+                    "edge": -0.061,
+                    "model_prob": 0.56,
+                    "expected_value": -0.08,
+                    "american_odds": -170,
+                    "decimal_odds": 1.59,
+                    "confidence_score": 48.0,
+                },
+            },
+        }
+    ]
+    lanes = {
+        "value_dog": {
+            "enabled": True,
+            "edge_floor": 0.04,
+            "probability_floor": 0.35,
+            "min_expected_value": 0.05,
+            "american_odds_min": 120,
+            "american_odds_max": 500,
+        }
+    }
+
+    picks = _compute_slop_locks(
+        records,
+        ["home", "away"],
+        edge_floor=0.025,
+        probability_floor=0.55,
+        max_picks=3,
+        lane_configs=lanes,
+    )
+
+    assert len(picks) == 1
+    assert picks[0]["pick"] == "away"
+    assert picks[0]["selection_lane"] == "value_dog"
+
+
+def test_slop_lock_validation_uses_selection_lane_thresholds():
+    issues = []
+    pick = {
+        "home_team": "Yankees",
+        "away_team": "Rays",
+        "date": "2026-05-22",
+        "pick": "away",
+        "selection_lane": "value_dog",
+        "model_prob": 0.44,
+        "edge": 0.061,
+        "expected_value": 0.13,
+        "american_odds": 155,
+    }
+    config = {
+        "edge_floor": 0.025,
+        "probability_floor": 0.55,
+        "min_expected_value": 0.0,
+        "lanes": {
+            "value_dog": {
+                "enabled": True,
+                "edge_floor": 0.04,
+                "probability_floor": 0.35,
+                "min_expected_value": 0.05,
+                "american_odds_min": 120,
+                "american_odds_max": 500,
+            }
+        },
+    }
+
+    assert _passes_pick_gate(pick, "slop_lock", config, issues) is True
+    assert issues == []
+
+
+def test_pipeline_diagnostics_reports_gate_failures_and_lane_candidates():
+    sport = {
+        "min_expected_value": 0.0,
+        "slop_lock_edge_threshold": 0.025,
+        "slop_lock_probability_floor": 0.55,
+        "slop_lock_lanes": {
+            "value_dog": {
+                "enabled": True,
+                "edge_floor": 0.04,
+                "probability_floor": 0.35,
+                "min_expected_value": 0.05,
+                "american_odds_min": 120,
+                "american_odds_max": 500,
+            }
+        },
+    }
+    records = [
+        {
+            "home_team": "Yankees",
+            "away_team": "Rays",
+            "date": "2026-05-22",
+            "edges": {
+                "away": {
+                    "edge": 0.061,
+                    "model_prob": 0.44,
+                    "expected_value": 0.13,
+                    "american_odds": 155,
+                },
+                "home": {
+                    "edge": -0.061,
+                    "model_prob": 0.56,
+                    "expected_value": -0.08,
+                    "american_odds": -170,
+                },
+            },
+        }
+    ]
+
+    diagnostics = _build_pipeline_diagnostics(
+        matches=pd.DataFrame(),
+        fixtures_fetched=[{"home_team": "Yankees", "away_team": "Rays"}],
+        fixtures_in_window=[{"home_team": "Yankees", "away_team": "Rays"}],
+        odds_list=[{"home_team": "Yankees", "away_team": "Rays"}],
+        odds_lookup={("Yankees", "Rays"): {"home_team": "Yankees", "away_team": "Rays"}},
+        prediction_records=records,
+        outcomes=["home", "away"],
+        sport_key="mlb",
+        sport=sport,
+        slop_locks=[],
+        longslop=None,
+        slimegrinder=[],
+    )
+
+    assert diagnostics["candidate_lanes"]["value_dog"]["eligible_outcomes"] == 1
+    assert diagnostics["gate_failures"]["negative_expected_value"] == 1
+    assert diagnostics["gate_failures"]["below_probability_floor"] == 1
 
 
 # ---------------------------------------------------------------------------
