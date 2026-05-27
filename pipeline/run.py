@@ -289,6 +289,28 @@ def _build_publication_guard(
 
     allow_moneyline = moneyline_guard.get("allow", True)
     allow_totals = totals_guard.get("allow", totals_enabled)
+    moneyline_publish_cap = None
+    totals_publish_cap = None
+
+    if (
+        enforce_live_guard
+        and not allow_moneyline
+        and moneyline_guard.get("status") == "hold"
+        and (moneyline_guard.get("health_score") or 0.0) >= float(sport.get("moneyline_hold_min_health_score", 0.7) or 0.7)
+    ):
+        allow_moneyline = True
+        moneyline_publish_cap = int(sport.get("moneyline_hold_max_picks", 1) or 1)
+
+    if (
+        enforce_live_guard
+        and not allow_totals
+        and totals_enabled
+        and totals_guard.get("status") == "hold"
+        and (totals_guard.get("health_score") or 0.0) >= float(sport.get("totals_hold_min_health_score", 0.75) or 0.75)
+    ):
+        allow_totals = True
+        totals_publish_cap = int(sport.get("totals_hold_max_picks", 1) or 1)
+
     allow_longslop = allow_moneyline and longslop_guard.get("allow", False)
     allow_slimegrinder = allow_moneyline and slimegrinder_guard.get("allow", False)
     reasons = []
@@ -310,6 +332,8 @@ def _build_publication_guard(
         "allow_totals": allow_totals,
         "allow_longslop": allow_longslop,
         "allow_slimegrinder": allow_slimegrinder,
+        "moneyline_publish_cap": moneyline_publish_cap,
+        "totals_publish_cap": totals_publish_cap,
         "evaluated_picks": len(evaluated_moneylines),
         "evaluated_totals_picks": len(evaluated_totals),
         "min_evaluated_picks": min_picks,
@@ -522,6 +546,7 @@ def _selection_snapshot_config(sport: dict, outcomes: list[str], min_expected_va
             "additional_confidence_floor": sport.get("slop_lock_confidence_threshold", 65.0),
             "confidence_dropoff": sport.get("slop_lock_confidence_dropoff", 0.0),
             "max_picks": sport.get("slop_lock_max_picks", 3),
+            "lanes": sport.get("slop_lock_lanes", {}),
         },
         "longslop": {
             "enabled": bool(sport.get("enable_longslop", False)),
@@ -789,6 +814,18 @@ def _selection_config_for_pick(selection_config: dict, pick_type: str) -> dict:
     return (selection_config or {}).get(key_map.get(pick_type, ""), {}) or {}
 
 
+def _selection_config_for_record(selection_config: dict, pick_type: str, pick_record: Optional[dict] = None) -> dict:
+    """Return the gate config, preserving slop-lock sub-lane details."""
+    lane_config = dict(_selection_config_for_pick(selection_config, pick_type))
+    if pick_type == "slop_lock" and pick_record:
+        lane_name = pick_record.get("selection_lane")
+        if lane_name and lane_name != "core":
+            sublane = (lane_config.get("lanes") or {}).get(lane_name)
+            if sublane:
+                lane_config = {**lane_config, **sublane, "selection_lane": lane_name}
+    return lane_config
+
+
 def _build_pick_decision_row(
     sport_key: str,
     pick_type: str,
@@ -803,7 +840,7 @@ def _build_pick_decision_row(
     source_record = source_record or {}
     model_probs = source_record.get("model_probs") or {}
     edge_data = ((source_record.get("edges") or {}).get(pick_record.get("pick")) or {})
-    lane_config = _selection_config_for_pick(selection_config, pick_type)
+    lane_config = _selection_config_for_record(selection_config, pick_type, pick_record)
 
     # Fallback: if the source record is missing, persist the published pick row
     # itself so the decision ledger still captures what users actually saw.
@@ -1967,6 +2004,76 @@ def _exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
     return [l for l in locks if id(l) not in to_remove]
 
 
+def _lane_threshold_float(config: dict, key: str, default: float) -> float:
+    """Read one numeric lane threshold."""
+    try:
+        value = config.get(key, default)
+        if value in (None, "", "None"):
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _odds_inside_lane(american_odds, lane_config: dict) -> bool:
+    """Return whether American odds fit an optional lane odds band."""
+    if american_odds is None:
+        return False
+    try:
+        american = float(american_odds)
+    except (TypeError, ValueError):
+        return False
+    min_odds = lane_config.get("american_odds_min")
+    max_odds = lane_config.get("american_odds_max")
+    if min_odds is not None and american < float(min_odds):
+        return False
+    if max_odds is not None and american > float(max_odds):
+        return False
+    return True
+
+
+def _edge_passes_lane(edge_data: dict, lane_config: dict, default_min_ev: float = 0.0) -> bool:
+    """Return whether one edge row qualifies for a configured moneyline lane."""
+    if not lane_config.get("enabled", True):
+        return False
+    edge = float(edge_data.get("edge", 0.0) or 0.0)
+    prob = float(edge_data.get("model_prob", 0.0) or 0.0)
+    ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+    if not _odds_inside_lane(edge_data.get("american_odds"), lane_config):
+        return False
+    return (
+        edge >= _lane_threshold_float(lane_config, "edge_floor", 0.0)
+        and prob >= _lane_threshold_float(lane_config, "probability_floor", 0.0)
+        and ev >= _lane_threshold_float(lane_config, "min_expected_value", default_min_ev)
+    )
+
+
+def _selection_lane_for_edge(
+    edge_data: dict,
+    *,
+    min_expected_value: float,
+    edge_floor: float,
+    probability_floor: float,
+    lane_configs: Optional[dict] = None,
+) -> Optional[str]:
+    """Return the first selection lane that accepts one moneyline edge."""
+    edge = float(edge_data.get("edge", 0.0) or 0.0)
+    prob = float(edge_data.get("model_prob", 0.0) or 0.0)
+    ev = float(edge_data.get("expected_value", 0.0) or 0.0)
+    if (
+        edge >= edge_floor
+        and prob >= probability_floor
+        and ev >= min_expected_value
+        and edge_data.get("american_odds") is not None
+    ):
+        return "core"
+
+    for lane_name, lane_config in (lane_configs or {}).items():
+        if _edge_passes_lane(edge_data, lane_config, default_min_ev=min_expected_value):
+            return lane_name
+    return None
+
+
 def _compute_slop_locks(
     prediction_records,
     outcomes,
@@ -1976,12 +2083,14 @@ def _compute_slop_locks(
     additional_confidence_floor: float = 65.0,
     confidence_dropoff: float = 0.0,
     max_picks: int = 3,
+    lane_configs: Optional[dict] = None,
 ):
     """Extract threshold-qualified SLOP LOCKS."""
     if max_picks <= 0:
         return []
 
     candidates = []
+    lane_configs = lane_configs or {}
 
     for rec in prediction_records:
         if rec.get("completed"):
@@ -1998,6 +2107,13 @@ def _compute_slop_locks(
             edge = e.get("edge", 0)
             prob = e.get("model_prob", 0)
             ev = e.get("expected_value", 0.0)
+            selection_lane = _selection_lane_for_edge(
+                e,
+                min_expected_value=min_expected_value,
+                edge_floor=edge_floor,
+                probability_floor=probability_floor,
+                lane_configs=lane_configs,
+            )
             
             formatted_pick = {
                 "home_team": rec["home_team"],
@@ -2018,20 +2134,29 @@ def _compute_slop_locks(
                 "individual_models": rec.get("individual_models", {}),
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
+                "selection_lane": selection_lane,
             }
             formatted_pick["tier"] = compute_pick_tier(conf, prob, edge)
 
-            if (
-                edge >= edge_floor
-                and prob >= probability_floor
-                and ev >= min_expected_value
-                and formatted_pick["american_odds"] is not None
-            ):
+            if selection_lane is not None:
                 candidates.append(formatted_pick)
 
     # Sort strict candidates by confidence, then prob, then edge
     candidates.sort(key=lambda x: (x["confidence_score"], x["model_prob"], x["edge"]), reverse=True)
-    return _exclude_opponent_conflicts(candidates[:max_picks])
+    selected = []
+    lane_counts: dict[str, int] = {}
+    for candidate in candidates:
+        lane_name = candidate.get("selection_lane") or "core"
+        lane_cap = None
+        if lane_name != "core":
+            lane_cap = (lane_configs.get(lane_name) or {}).get("max_picks")
+        if lane_cap is not None and lane_counts.get(lane_name, 0) >= int(lane_cap):
+            continue
+        selected.append(candidate)
+        lane_counts[lane_name] = lane_counts.get(lane_name, 0) + 1
+        if len(selected) >= max_picks:
+            break
+    return _exclude_opponent_conflicts(selected)
 
 
 
@@ -2316,13 +2441,32 @@ def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[d
     if ev is None:
         issues.append(_validation_issue("missing_expected_value", pick_type, record))
         return False
-    if ev < min_ev:
+    if pick_type != "slop_lock" and ev < min_ev:
         issues.append(_validation_issue("below_min_expected_value", pick_type, record, f"{ev:.4f} < {min_ev:.4f}"))
         return False
 
     if pick_type == "slop_lock":
-        edge_floor = _safe_gate_float(config.get("edge_floor"), 0.03)
-        probability_floor = _safe_gate_float(config.get("probability_floor"), 0.45)
+        lane_name = record.get("selection_lane")
+        lane_config = None
+        if lane_name and lane_name != "core":
+            lane_config = (config.get("lanes") or {}).get(lane_name) or {}
+            if not lane_config.get("enabled", True):
+                issues.append(_validation_issue("disabled_selection_lane", pick_type, record, str(lane_name)))
+                return False
+            if not _odds_inside_lane(record.get("american_odds"), lane_config):
+                issues.append(_validation_issue("outside_lane_odds_band", pick_type, record, str(lane_name)))
+                return False
+            min_ev = _safe_gate_float(lane_config.get("min_expected_value"), min_ev)
+            if ev is None or ev < min_ev:
+                detail = "missing expected_value" if ev is None else f"{ev:.4f} < {min_ev:.4f}"
+                issues.append(_validation_issue("below_min_expected_value", pick_type, record, detail))
+                return False
+        elif ev < min_ev:
+            issues.append(_validation_issue("below_min_expected_value", pick_type, record, f"{ev:.4f} < {min_ev:.4f}"))
+            return False
+        gate_config = lane_config or config
+        edge_floor = _safe_gate_float(gate_config.get("edge_floor"), 0.03)
+        probability_floor = _safe_gate_float(gate_config.get("probability_floor"), 0.45)
         if edge is None or edge < edge_floor:
             detail = "missing edge" if edge is None else f"{edge:.4f} < {edge_floor:.4f}"
             issues.append(_validation_issue("below_edge_floor", pick_type, record, detail))
@@ -2467,6 +2611,7 @@ def _build_pipeline_diagnostics(
     min_expected_value = sport.get("min_expected_value", 0.0)
     edge_floor = sport.get("slop_lock_edge_threshold", 0.03)
     probability_floor = sport.get("slop_lock_probability_floor", 0.45)
+    lane_configs = sport.get("slop_lock_lanes", {}) or {}
 
     fixtures_with_odds = 0
     coverage_gap_examples = []
@@ -2481,6 +2626,21 @@ def _build_pipeline_diagnostics(
     lock_eligible_matches = set()
     lock_eligible_outcomes = 0
     matches_with_qualitative = 0
+    gate_failures = {
+        "missing_odds": 0,
+        "negative_expected_value": 0,
+        "below_edge_floor": 0,
+        "below_probability_floor": 0,
+    }
+    candidate_lanes = {
+        lane_name: {
+            "eligible_outcomes": 0,
+            "eligible_matches": 0,
+            "_matches": set(),
+        }
+        for lane_name, lane_config in lane_configs.items()
+        if lane_config.get("enabled", True)
+    }
 
     for record in prediction_records:
         edges = record.get("edges") or {}
@@ -2499,14 +2659,38 @@ def _build_pipeline_diagnostics(
             edge_value = edge_data.get("edge", 0.0)
             expected_value = edge_data.get("expected_value", 0.0)
             model_prob = edge_data.get("model_prob", 0.0)
+            american_odds = edge_data.get("american_odds")
 
             if edge_value > 0 and expected_value >= min_expected_value:
                 has_positive_ev = True
+            if american_odds is None:
+                gate_failures["missing_odds"] += 1
+            elif expected_value < min_expected_value:
+                gate_failures["negative_expected_value"] += 1
+            elif edge_value < edge_floor:
+                gate_failures["below_edge_floor"] += 1
+            elif model_prob < probability_floor:
+                gate_failures["below_probability_floor"] += 1
+
+            selection_lane = _selection_lane_for_edge(
+                edge_data,
+                min_expected_value=min_expected_value,
+                edge_floor=edge_floor,
+                probability_floor=probability_floor,
+                lane_configs=lane_configs,
+            )
+            if selection_lane and selection_lane != "core":
+                lane_summary = candidate_lanes.setdefault(
+                    selection_lane,
+                    {"eligible_outcomes": 0, "eligible_matches": 0, "_matches": set()},
+                )
+                lane_summary["eligible_outcomes"] += 1
+                lane_summary["_matches"].add(_match_key(record))
             if (
                 edge_value >= edge_floor
                 and model_prob >= probability_floor
                 and expected_value >= min_expected_value
-            ):
+            ) or selection_lane is not None:
                 has_lock_eligible_outcome = True
                 lock_eligible_outcomes += 1
 
@@ -2515,6 +2699,9 @@ def _build_pipeline_diagnostics(
             matches_with_positive_ev.add(key)
         if has_lock_eligible_outcome:
             lock_eligible_matches.add(key)
+
+    for lane_summary in candidate_lanes.values():
+        lane_summary["eligible_matches"] = len(lane_summary.pop("_matches", set()))
 
     completed_fixtures = sum(1 for fixture in fixtures_in_window if fixture.get("completed"))
     diagnostics = {
@@ -2533,6 +2720,8 @@ def _build_pipeline_diagnostics(
         "matches_with_qualitative": matches_with_qualitative,
         "lock_eligible_matches": len(lock_eligible_matches),
         "lock_eligible_outcomes": lock_eligible_outcomes,
+        "gate_failures": gate_failures,
+        "candidate_lanes": candidate_lanes,
         "slop_locks_posted": len(slop_locks),
         "longslop_posted": 1 if longslop else 0,
         "slimegrinders_posted": len(slimegrinder),
@@ -3312,6 +3501,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         additional_confidence_floor=sport.get("slop_lock_confidence_threshold", 65.0),
         confidence_dropoff=sport.get("slop_lock_confidence_dropoff", 0.0),
         max_picks=sport.get("slop_lock_max_picks", 3),
+        lane_configs=sport.get("slop_lock_lanes", {}),
     )
     longslop = None
     if sport.get("enable_longslop", False):
@@ -3359,6 +3549,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         slimegrinder = []
     if not publication_guard.get("allow_totals", True):
         totals_locks = []
+    moneyline_cap = publication_guard.get("moneyline_publish_cap")
+    if moneyline_cap is not None:
+        slop_locks = slop_locks[: int(moneyline_cap)]
+    totals_cap = publication_guard.get("totals_publish_cap")
+    if totals_cap is not None:
+        totals_locks = totals_locks[: int(totals_cap)]
 
     slop_locks, totals_locks, longslop, slimegrinder, validation_issues = validate_publishable_picks(
         sport_key=sport_key,
@@ -3510,6 +3706,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "american_odds": lock["american_odds"],
                 "decimal_odds": lock["decimal_odds"],
                 "confidence_score": lock.get("confidence_score"),
+                "selection_lane": lock.get("selection_lane"),
                 "kelly_fraction": lock.get("kelly_fraction"),
                 "fractional_kelly": lock.get("fractional_kelly"),
                 "run_id": run_context.get("run_id"),

@@ -6,6 +6,7 @@ from pipeline.fetch_mlb import (
     _extract_mlb_starting_pitchers,
     _extract_mlb_team_pitching,
     _fetch_ballpark_weather,
+    _fetch_statsapi_probable_pitchers,
     _fetch_team_lineup_profile,
     _fetch_pitcher_profile,
     _innings_to_float,
@@ -167,6 +168,65 @@ class TestPitcherProfile:
 
         assert first["throws"] == "R"
         assert first["bats"] == "L"
+        assert second == first
+        assert len(calls) == 1
+
+
+class TestStatsApiProbables:
+    def test_fetches_and_caches_probable_pitchers_by_team(self, monkeypatch):
+        calls = []
+        fetch_mlb._team_map = {
+            "New York Yankees": "Yankees",
+            "Boston Red Sox": "Red Sox",
+        }
+
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "dates": [
+                        {
+                            "games": [
+                                {
+                                    "teams": {
+                                        "home": {
+                                            "team": {"name": "New York Yankees"},
+                                            "probablePitcher": {
+                                                "id": 123,
+                                                "fullName": "Gerrit Cole",
+                                                "pitchHand": {"code": "R"},
+                                            },
+                                        },
+                                        "away": {
+                                            "team": {"name": "Boston Red Sox"},
+                                            "probablePitcher": {
+                                                "id": 456,
+                                                "fullName": "Garrett Crochet",
+                                                "pitchHand": {"code": "L"},
+                                            },
+                                        },
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+        def fake_get(url, timeout=30):
+            calls.append(url)
+            return FakeResponse()
+
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+        cache = {"statsapi_probables": {}}
+
+        first = _fetch_statsapi_probable_pitchers("2026-05-27", cache)
+        second = _fetch_statsapi_probable_pitchers("2026-05-27", cache)
+
+        assert first["Yankees"]["name"] == "Gerrit Cole"
+        assert first["Yankees"]["throws"] == "R"
+        assert first["Red Sox"]["name"] == "Garrett Crochet"
         assert second == first
         assert len(calls) == 1
 
