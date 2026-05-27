@@ -723,6 +723,39 @@
   function fmtRatio(a, b) {
     return String(a || 0) + '/' + String(b || 0);
   }
+  function fmtNumber(value, digits) {
+    if (value == null || value === '') return '--';
+    return Number(value).toFixed(digits == null ? 1 : digits);
+  }
+  function fmtOddsNumber(value) {
+    if (value == null || value === '') return '--';
+    var num = Number(value);
+    if (isNaN(num)) return '--';
+    return (num > 0 ? '+' : '') + Math.round(num);
+  }
+  function buildLanePerformanceLines(lanePerformance) {
+    var aggregate = (lanePerformance || {}).aggregate || {};
+    var laneOrder = ['core', 'value_dog', 'near_favorite', 'total'];
+    Object.keys(aggregate).forEach(function (lane) {
+      if (laneOrder.indexOf(lane) === -1) laneOrder.push(lane);
+    });
+
+    var lines = ['LANE       REC        ROI      HIT      CLV      P/DAY  ODDS'];
+    laneOrder.forEach(function (lane) {
+      var summary = aggregate[lane];
+      if (!summary) return;
+      lines.push(
+        formatLaneLabel(lane).padEnd(10, ' ').slice(0, 10) + ' ' +
+        fmtRecord(summary).padEnd(10, ' ').slice(0, 10) + ' ' +
+        fmtSignedPct(summary.roi).padEnd(8, ' ').slice(0, 8) + ' ' +
+        fmtPct(summary.hit_rate).padEnd(8, ' ').slice(0, 8) + ' ' +
+        fmtSignedPct((summary.clv || {}).avg_clv, 2).padEnd(8, ' ').slice(0, 8) + ' ' +
+        fmtNumber(summary.picks_per_active_day, 2).padEnd(6, ' ').slice(0, 6) + ' ' +
+        fmtOddsNumber(summary.avg_american_odds)
+      );
+    });
+    return lines;
+  }
   function clamp01(value) {
     var num = Number(value);
     if (isNaN(num)) return 0;
@@ -1181,6 +1214,11 @@
       );
     });
     feed.appendChild(createDashboardBlock('Sports', sportLines, 'SPLITS', { preformatted: true }));
+
+    var laneLines = buildLanePerformanceLines(dashboardData.lane_performance || {});
+    if (laneLines.length > 1) {
+      feed.appendChild(createDashboardBlock('Lane Performance', laneLines, 'LANES', { preformatted: true }));
+    }
 
     var leaderLines = [];
     if (leaders.best_roi_sport) {

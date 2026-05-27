@@ -24,6 +24,7 @@ from pipeline.backtest import (
     evaluate_prediction,
     get_rolling_accuracy,
     summarize_lane_health,
+    summarize_lane_performance,
     summarize_closing_line_value,
     summarize_pick_breakdowns,
     summarize_pick_history,
@@ -250,6 +251,62 @@ class TestBacktestSummary:
         assert breakdowns["market_type"]["total"]["evaluated"] == 1
         assert breakdowns["market_type"]["moneyline"]["hit_rate"] == 1.0
 
+    def test_summarize_lane_performance_defaults_missing_selection_lane_to_core(self):
+        picks = [
+            {
+                "sport": "mlb",
+                "pick_date": "2026-05-01",
+                "type": "slop_lock",
+                "market_type": "moneyline",
+                "evaluated": True,
+                "won": True,
+                "decimal_odds": 2.2,
+                "american_odds": 120,
+                "model_prob": 0.54,
+                "edge": 0.04,
+                "expected_value": 0.08,
+                "closing_line_value": 0.02,
+            },
+            {
+                "sport": "mlb",
+                "pick_date": "2026-05-02",
+                "type": "slop_lock",
+                "market_type": "moneyline",
+                "selection_lane": "value_dog",
+                "evaluated": True,
+                "won": False,
+                "decimal_odds": 2.8,
+                "american_odds": 180,
+                "model_prob": 0.42,
+                "edge": 0.06,
+                "expected_value": 0.12,
+                "closing_line_value": -0.01,
+            },
+            {
+                "sport": "mlb",
+                "pick_date": "2026-05-02",
+                "type": "total_lock",
+                "market_type": "total",
+                "evaluated": False,
+                "decimal_odds": 1.91,
+                "american_odds": -110,
+                "model_prob": 0.56,
+                "edge": 0.03,
+                "expected_value": 0.04,
+            },
+        ]
+
+        summary = summarize_lane_performance(picks)
+
+        assert summary["aggregate"]["core"]["evaluated"] == 1
+        assert summary["aggregate"]["core"]["roi"] == pytest.approx(1.2)
+        assert summary["aggregate"]["core"]["avg_american_odds"] == 120
+        assert summary["aggregate"]["value_dog"]["evaluated"] == 1
+        assert summary["aggregate"]["value_dog"]["roi"] == pytest.approx(-1.0)
+        assert summary["aggregate"]["total"]["pending"] == 1
+        assert summary["aggregate"]["total"]["picks_per_active_day"] == pytest.approx(1.0)
+        assert summary["sports"]["mlb"]["core"]["total_picks"] == 1
+
     def test_build_threshold_guidance_handles_small_sample(self):
         guidance = build_threshold_guidance({
             "evaluated": 6,
@@ -425,6 +482,9 @@ class TestBacktestSummary:
         assert "walkforward" in dashboard
         assert "decision_replay" in dashboard
         assert "lane_health" in dashboard
+        assert dashboard["lane_performance"]["aggregate"]["core"]["evaluated"] == 2
+        assert dashboard["lane_performance"]["aggregate"]["total"]["evaluated"] == 1
+        assert dashboard["lane_performance"]["sports"]["nba"]["total"]["evaluated"] == 1
         assert "model_health" in dashboard
         assert "calibration" in dashboard["walkforward"]
         assert dashboard["snapshot_replay"]["aggregate"]["snapshots"] == 0

@@ -459,7 +459,7 @@ SPORTS = {
         "slop_lock_max_picks": 5,
         "moneyline_hold_max_picks": 1,
         "moneyline_hold_min_health_score": 0.7,
-        "totals_hold_max_picks": 1,
+        "totals_hold_max_picks": 2,
         "totals_hold_min_health_score": 0.75,
         "slop_lock_lanes": {
             "value_dog": {

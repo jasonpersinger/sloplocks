@@ -1911,6 +1911,82 @@ def _pick_lane_key(pick: dict, lane: str) -> str:
     raise ValueError(f"Unsupported lane: {lane}")
 
 
+def _selection_lane_key(pick: dict) -> str:
+    """Return the operating lane used for pick-volume tuning."""
+    market_type = str(pick.get("market_type") or "moneyline")
+    if market_type == "total":
+        return "total"
+    lane = str(pick.get("selection_lane") or "").strip()
+    if lane:
+        return lane
+    pick_type = str(pick.get("type") or "slop_lock")
+    if pick_type not in {"slop_lock", "moneyline"}:
+        return pick_type
+    return "core"
+
+
+def _average_numeric(picks: list[dict], field: str) -> Optional[float]:
+    values = []
+    for pick in picks:
+        value = pick.get(field)
+        if value in (None, "", "None"):
+            continue
+        try:
+            values.append(float(value))
+        except (TypeError, ValueError):
+            continue
+    return round(sum(values) / len(values), 4) if values else None
+
+
+def _lane_performance_summary(picks: list[dict]) -> dict:
+    """Summarize one lane for tuning pick volume."""
+    summary = {
+        **summarize_pick_history(picks),
+        "clv": summarize_closing_line_value(picks),
+        "active_days": 0,
+        "picks_per_active_day": None,
+        "avg_american_odds": _average_numeric(picks, "american_odds"),
+        "avg_decimal_odds": _average_numeric(picks, "decimal_odds"),
+        "avg_model_prob": _average_numeric(picks, "model_prob"),
+        "avg_edge": _average_numeric(picks, "edge"),
+    }
+    active_days = {
+        pick_day
+        for pick_day in (_parse_pick_date(pick) for pick in picks)
+        if pick_day is not None
+    }
+    summary["active_days"] = len(active_days)
+    if active_days:
+        summary["picks_per_active_day"] = round(len(picks) / len(active_days), 4)
+    return summary
+
+
+def summarize_lane_performance(picks: list[dict]) -> dict:
+    """Group picks by operating lane across aggregate and sport views."""
+    aggregate_groups = defaultdict(list)
+    sport_groups = defaultdict(lambda: defaultdict(list))
+
+    for pick in picks:
+        lane = _selection_lane_key(pick)
+        aggregate_groups[lane].append(pick)
+        sport = str(pick.get("sport") or "unknown")
+        sport_groups[sport][lane].append(pick)
+
+    return {
+        "aggregate": {
+            lane: _lane_performance_summary(group)
+            for lane, group in sorted(aggregate_groups.items())
+        },
+        "sports": {
+            sport: {
+                lane: _lane_performance_summary(group)
+                for lane, group in sorted(groups.items())
+            }
+            for sport, groups in sorted(sport_groups.items())
+        },
+    }
+
+
 def summarize_pick_breakdowns(picks):
     """Return per-type and per-market summaries."""
     breakdowns = {}
@@ -2366,7 +2442,8 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
         pick_history_path = os.path.join(data_dir, sport_key, "pick_history.json")
         if os.path.exists(pick_history_path):
             with open(pick_history_path) as f:
-                all_picks.extend((json.load(f) or {}).get("picks", []))
+                for pick in (json.load(f) or {}).get("picks", []):
+                    all_picks.append({**pick, "sport": pick.get("sport") or sport_key})
 
     windows = {
         "7d": summarize_pick_window(all_picks, 7, as_of=as_of),
@@ -2435,6 +2512,7 @@ def build_dashboard_data(data_dir: str = "data", sports:Optional[ list[str] ] = 
         },
         "windows": windows,
         "sports": sports_summary,
+        "lane_performance": summarize_lane_performance(all_picks),
         "leaders": leaders,
         "walkforward": {
             "predictions": walkforward.get("aggregate", {}).get("predictions", {}),
