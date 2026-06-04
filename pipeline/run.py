@@ -37,10 +37,11 @@ from pipeline.config import (
     SPORTS,
 )
 try:
-    from pipeline.qualitative_analysis import analyze_game_qualitative
+    from pipeline.qualitative_analysis import analyze_game_qualitative, analyze_total_qualitative
     from pipeline.context_scraper import get_game_context
 except ImportError:
     analyze_game_qualitative = None
+    analyze_total_qualitative = None
 
     def get_game_context(*_args, **_kwargs):
         """Fallback when optional qualitative dependencies are unavailable."""
@@ -1408,6 +1409,24 @@ def _apply_qualitative_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
+def _apply_total_qualitative_adjustment(
+    expected_total: float,
+    qualitative_data: dict,
+    max_points_delta: float,
+) -> float:
+    """Shift a projected total by a bounded qualitative Over/Under lean.
+
+    ``total_impact`` (-5..+5) maps proportionally onto ``max_points_delta``: a
+    maximum-conviction signal (±5) reaches the full cap, in runs (MLB) or points
+    (NBA). Positive leans Over (raise total); negative leans Under. The cap is the
+    sole control for the totals path. The caller clamps the result to the sport's
+    total bounds.
+    """
+    impact = max(-5.0, min(5.0, float(qualitative_data.get("total_impact", 0.0))))
+    delta = (impact / 5.0) * max_points_delta
+    return expected_total + delta
+
+
 def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
     """Renormalize two-way probabilities after a heuristic adjustment."""
     total = max(1e-9, probs.get("home", 0.0) + probs.get("away", 0.0))
@@ -2263,6 +2282,8 @@ def _compute_totals_locks(
                     "kelly_fraction": round(edge_data.get("kelly_fraction") or 0.0, 4),
                     "fractional_kelly": round(edge_data.get("fractional_kelly") or 0.0, 4),
                     "confidence_score": edge_data.get("confidence_score", 0.0),
+                    "qualitative_analysis": rec.get("qualitative_analysis"),
+                    "qualitative_summary": rec.get("qualitative_summary"),
                 })
 
     candidates.sort(
@@ -2783,6 +2804,25 @@ def _format_qualitative_summary(blended_pre_qual, qualitative_data):
     factors_str = "; ".join(factors[:2]) # Top 2 factors
     
     return f"Qualitative ({scores}): {agreement}. {factors_str}"
+
+
+def _format_total_qualitative_summary(total_probs, qualitative_data) -> str:
+    """Human-readable Over/Under qualitative summary, mirroring the moneyline format."""
+    if not qualitative_data or qualitative_data.get("net_total_edge", "none") == "none":
+        return "No qualitative impact."
+
+    edge = qualitative_data.get("net_total_edge", "none")
+    impact = qualitative_data.get("total_impact", 0.0)
+
+    pre_pick = max(total_probs.keys(), key=lambda k: total_probs[k]) if total_probs else None
+    agreement = "no effect"
+    if pre_pick is not None:
+        agreement = "agreed" if edge == pre_pick else "disagreed"
+
+    direction = "Over" if edge == "over" else "Under"
+    factors = [f["description"] for f in qualitative_data.get("individual_factors", [])]
+    factors_str = "; ".join(factors[:2])
+    return f"Qualitative (Total {impact:+.1f}): leans {direction}, {agreement}. {factors_str}".strip()
 
 
 def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
@@ -3444,6 +3484,30 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                     tipoff_partial_hours=sport.get("availability_tipoff_partial_hours", 12.0),
                     tipoff_full_hours=sport.get("availability_tipoff_full_hours", 2.0),
                 )
+            total_for_ai = {
+                "sport": sport_key,
+                "home_team": home,
+                "away_team": away,
+                "date": fix["date"],
+                "start_time": fix.get("start_time"),
+                "total_line": float(match_odds["total_line"]),
+            }
+            total_qualitative = None
+            total_qualitative_summary = ""
+            if (
+                ENABLE_QUALITATIVE
+                and sport.get("enable_qualitative", False)
+                and analyze_total_qualitative is not None
+            ):
+                total_context = get_game_context(sport_key, fix)
+                total_qualitative = analyze_total_qualitative(total_for_ai, total_context)
+                total_projection["expected_total"] = _apply_total_qualitative_adjustment(
+                    total_projection["expected_total"],
+                    total_qualitative,
+                    max_points_delta=sport.get("qualitative_total_adjustment_max_points", 0.5),
+                )
+                lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)
+                total_projection["expected_total"] = max(lo, min(hi, total_projection["expected_total"]))
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(
                 1.0 - norm.cdf(
@@ -3454,6 +3518,9 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             )
             over_prob = max(0.01, min(0.99, over_prob))
             total_model_probs = {"over": over_prob, "under": 1.0 - over_prob}
+            if total_qualitative is not None:
+                total_qualitative_summary = _format_total_qualitative_summary(
+                    total_model_probs, total_qualitative)
             total_edges = compute_totals_edges(
                 total_model_probs,
                 match_odds,
@@ -3486,6 +3553,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "individual_models": {"totals_model": {k: round(v, 4) for k, v in total_model_probs.items()}},
                 "edges": total_edges,
                 "market_snapshot": match_odds.get("totals_market_snapshot"),
+                "qualitative_analysis": total_qualitative,
+                "qualitative_summary": total_qualitative_summary,
             })
 
     # ------------------------------------------------------------------

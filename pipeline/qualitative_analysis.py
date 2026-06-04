@@ -54,6 +54,25 @@ Your task is to evaluate non-statistical context (injuries, news, scheduling, we
 """
 
 
+def _call_structured(system_prompt: str, user_prompt: str, response_model, api_key: str):
+    """Shared OpenAI structured-output call. Returns a dict or None on error."""
+    client = OpenAI(api_key=api_key)
+    try:
+        response = client.beta.chat.completions.parse(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            response_format=response_model,
+            temperature=0.1,
+        )
+        return response.choices[0].message.parsed.model_dump()
+    except Exception as e:
+        logger.error(f"OpenAI structured call error: {e}")
+        return None
+
+
 def analyze_game_qualitative(game_dict: dict, context_text: str) -> dict:
     """Call OpenAI to score qualitative factors for a game. Returns a dict matching QualitativeAnalysis."""
     api_key = os.environ.get("OPENAI_API_KEY")
@@ -63,8 +82,6 @@ def analyze_game_qualitative(game_dict: dict, context_text: str) -> dict:
 
     if not context_text or not context_text.strip():
         return _default_response(game_dict)
-
-    client = OpenAI(api_key=api_key)
 
     user_prompt = (
         f"Evaluate the qualitative impact for this game:\n"
@@ -76,25 +93,12 @@ def analyze_game_qualitative(game_dict: dict, context_text: str) -> dict:
         f"### Context:\n{context_text}"
     )
 
-    try:
-        response = client.beta.chat.completions.parse(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_prompt},
-            ],
-            response_format=QualitativeAnalysis,
-            temperature=0.1,
-        )
-        result = response.choices[0].message.parsed
-        result_dict = result.model_dump()
-        _log_api_call(game_dict, context_text, result_dict)
-        return result_dict
-
-    except Exception as e:
-        logger.error(f"OpenAI qualitative analysis error: {e}")
-        _log_api_call(game_dict, context_text, None, error=str(e))
+    result_dict = _call_structured(SYSTEM_PROMPT, user_prompt, QualitativeAnalysis, api_key)
+    if result_dict is None:
+        _log_api_call(game_dict, context_text, None, error="structured call failed")
         return _default_response(game_dict)
+    _log_api_call(game_dict, context_text, result_dict)
+    return result_dict
 
 
 def _default_response(game_dict: dict) -> dict:
@@ -110,6 +114,83 @@ def _default_response(game_dict: dict) -> dict:
     }
 
 
+class TotalsQualitativeFactor(BaseModel):
+    description: str
+    direction: Literal["over", "under"]
+    magnitude: float = Field(ge=0.0, le=5.0)
+    confidence: float = Field(ge=0.0, le=1.0)
+
+
+class TotalsQualitativeAnalysis(BaseModel):
+    sport: str
+    home_team: str
+    away_team: str
+    total_line: Optional[float] = None
+    total_impact: float = Field(ge=-5.0, le=5.0)  # +over / -under
+    individual_factors: List[TotalsQualitativeFactor]
+    net_total_edge: Literal["over", "under", "none"]
+    summary: str
+
+
+TOTALS_SYSTEM_PROMPT = """You are an expert sports betting analyst specializing in OVER/UNDER (totals) markets.
+Evaluate non-statistical context (weather, bullpen fatigue, lineup/park, pace, injuries to high-usage scorers) and score a single lean toward the OVER or the UNDER.
+
+### Scoring Rules (total_impact, -5 to +5):
+- POSITIVE = leans OVER (more scoring). NEGATIVE = leans UNDER (less scoring).
+- Score conservatively. Most games should be near 0 unless there is a significant signal.
+- Never hallucinate facts. If context is missing or ambiguous, default to 0.
+    - 0: No impact
+    - ±1: Minor   ±2: Moderate   ±3: Significant   ±4: Major   ±5: Extreme
+
+### Sport Specific Guidance:
+- **MLB**: Wind blowing OUT and warm temps push OVER; cold, rain, wind blowing IN push UNDER. A fatigued bullpen (top relievers worked 2+ straight days) pushes OVER. A hitter-friendly park or stacked lineup vs. a weak arm pushes OVER.
+- **NBA**: A fast pace matchup pushes OVER. A key high-usage scorer ruled out pushes UNDER. Back-to-back fatigue and elite defenses push UNDER.
+"""
+
+
+def analyze_total_qualitative(total_match: dict, context_text: str) -> dict:
+    """Call OpenAI to score Over/Under qualitative lean. Returns a dict matching TotalsQualitativeAnalysis."""
+    api_key = os.environ.get("OPENAI_API_KEY")
+    if not api_key:
+        logger.warning("OPENAI_API_KEY not set — returning default totals qualitative scores.")
+        return _default_totals_response(total_match)
+
+    if not context_text or not context_text.strip():
+        return _default_totals_response(total_match)
+
+    user_prompt = (
+        f"Evaluate the OVER/UNDER qualitative lean for this game:\n"
+        f"Sport: {total_match.get('sport')}\n"
+        f"Home Team: {total_match.get('home_team')}\n"
+        f"Away Team: {total_match.get('away_team')}\n"
+        f"Game Time: {total_match.get('start_time', total_match.get('date'))}\n"
+        f"Total Line: {total_match.get('total_line', 'N/A')}\n\n"
+        f"### Context:\n{context_text}"
+    )
+
+    result_dict = _call_structured(
+        TOTALS_SYSTEM_PROMPT, user_prompt, TotalsQualitativeAnalysis, api_key,
+    )
+    if result_dict is None:
+        _log_api_call(total_match, context_text, None, error="structured call failed")
+        return _default_totals_response(total_match)
+    _log_api_call(total_match, context_text, result_dict)
+    return result_dict
+
+
+def _default_totals_response(total_match: dict) -> dict:
+    return {
+        "sport": total_match.get("sport"),
+        "home_team": total_match.get("home_team"),
+        "away_team": total_match.get("away_team"),
+        "total_line": total_match.get("total_line"),
+        "total_impact": 0.0,
+        "individual_factors": [],
+        "net_total_edge": "none",
+        "summary": "No significant qualitative factors identified.",
+    }
+
+
 def _log_api_call(game_dict: dict, context_sent: str, result: Optional[dict], error: str = None):
     entry = {
         "timestamp": datetime.now().isoformat(),
@@ -120,6 +201,8 @@ def _log_api_call(game_dict: dict, context_sent: str, result: Optional[dict], er
         "context_sent": context_sent,
         "home_impact": result.get("home_impact") if result else None,
         "away_impact": result.get("away_impact") if result else None,
+        "total_impact": result.get("total_impact") if result else None,
+        "net_total_edge": result.get("net_total_edge") if result else None,
         "error": error,
     }
     try:

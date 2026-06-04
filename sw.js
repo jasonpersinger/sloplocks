@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sloplocks-v7';
+const CACHE_NAME = 'sloplocks-v8';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
