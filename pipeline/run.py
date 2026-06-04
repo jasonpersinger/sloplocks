@@ -1408,6 +1408,23 @@ def _apply_qualitative_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
+def _apply_total_qualitative_adjustment(
+    expected_total: float,
+    qualitative_data: dict,
+    weight: float,
+    max_points_delta: float,
+) -> float:
+    """Shift a projected total by a bounded qualitative Over/Under lean.
+
+    Positive total_impact leans Over (raise total); negative leans Under.
+    The caller clamps the result to the sport's total bounds.
+    """
+    impact = float(qualitative_data.get("total_impact", 0.0))
+    delta = impact * QUALITATIVE_DEFAULT_WEIGHT * weight
+    delta = max(-max_points_delta, min(max_points_delta, delta))
+    return expected_total + delta
+
+
 def _normalize_two_way_probs(probs: dict[str, float]) -> dict[str, float]:
     """Renormalize two-way probabilities after a heuristic adjustment."""
     total = max(1e-9, probs.get("home", 0.0) + probs.get("away", 0.0))
@@ -2783,6 +2800,25 @@ def _format_qualitative_summary(blended_pre_qual, qualitative_data):
     factors_str = "; ".join(factors[:2]) # Top 2 factors
     
     return f"Qualitative ({scores}): {agreement}. {factors_str}"
+
+
+def _format_total_qualitative_summary(total_probs, qualitative_data) -> str:
+    """Human-readable Over/Under qualitative summary, mirroring the moneyline format."""
+    if not qualitative_data or qualitative_data.get("net_total_edge", "none") == "none":
+        return "No qualitative impact."
+
+    edge = qualitative_data.get("net_total_edge", "none")
+    impact = qualitative_data.get("total_impact", 0.0)
+
+    pre_pick = max(total_probs.keys(), key=lambda k: total_probs[k]) if total_probs else None
+    agreement = "no effect"
+    if pre_pick is not None:
+        agreement = "agreed" if edge == pre_pick else "disagreed"
+
+    direction = "Over" if edge == "over" else "Under"
+    factors = [f["description"] for f in qualitative_data.get("individual_factors", [])]
+    factors_str = "; ".join(factors[:2])
+    return f"Qualitative (Total {impact:+.1f}): leans {direction}, {agreement}. {factors_str}".strip()
 
 
 def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
