@@ -1008,7 +1008,13 @@
       senseEl.style.borderLeft = '2px solid #ff72f9';
       senseEl.style.paddingLeft = '8px';
       senseEl.style.marginTop = '8px';
-      senseEl.innerHTML = '<span style="font-weight:bold; color:#ff72f9; font-size:9px; letter-spacing:1px;">GEMINI_SENSE</span><br>' + pick.qualitative_summary;
+      var senseLabel = document.createElement('span');
+      senseLabel.style.cssText = 'font-weight:bold; color:#ff72f9; font-size:9px; letter-spacing:1px;';
+      senseLabel.textContent = 'SLOP_SENSE';
+      senseEl.textContent = '';
+      senseEl.appendChild(senseLabel);
+      senseEl.appendChild(document.createElement('br'));
+      senseEl.appendChild(document.createTextNode(pick.qualitative_summary));
       card.appendChild(senseEl);
     }
 
