@@ -28,7 +28,7 @@ from pipeline.config import (
     ENABLE_QUALITATIVE,
 )
 
-from pipeline.qualitative_analysis import analyze_game_qualitative
+from pipeline.qualitative_analysis import analyze_game_qualitative, analyze_total_qualitative
 from pipeline.context_scraper import get_game_context
 from pipeline.ensemble import (
     compute_edges,
@@ -56,12 +56,14 @@ from pipeline.run import (
     _apply_nhl_injury_adjustment,
     _apply_nhl_goalie_status_adjustment,
     _apply_qualitative_adjustment,
+    _apply_total_qualitative_adjustment,
     _apply_latest_market_snapshots,
     _build_publication_guard,
     _build_pipeline_diagnostics,
     _build_run_context,
     _build_odds_snapshot_rows,
     _format_qualitative_summary,
+    _format_total_qualitative_summary,
     _is_live_public_output,
     _compute_slimegrinder as _run_compute_slimegrinder,
     _compute_slop_locks as _run_compute_slop_locks,
@@ -349,6 +351,26 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
                 away_tax=total_match.get("away_bullpen_tax"),
                 max_runs_delta=sport.get("bullpen_total_adjustment_max_delta", 0.3),
             )
+        total_qualitative = None
+        if ENABLE_QUALITATIVE and sport.get("enable_qualitative", False):
+            total_context = get_game_context(sport_key, total_match)
+            total_for_ai = {
+                "sport": sport_key,
+                "home_team": total_match["home_team"],
+                "away_team": total_match["away_team"],
+                "date": total_match["date"],
+                "start_time": total_match.get("start_time"),
+                "total_line": float(match_odds["total_line"]),
+            }
+            total_qualitative = analyze_total_qualitative(total_for_ai, total_context)
+            expected_total = _apply_total_qualitative_adjustment(
+                expected_total,
+                total_qualitative,
+                weight=sport.get("qualitative_weight", 0.4),
+                max_points_delta=sport.get("qualitative_total_adjustment_max_points", 0.5),
+            )
+            lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)
+            expected_total = max(lo, min(hi, expected_total))
         sigma = max(1.5, float(total_match.get("total_stddev", sport.get("totals_default_stddev", 3.1))))
         try:
             current_line = float(match_odds["total_line"])
@@ -357,6 +379,10 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         over_prob = float(1.0 - norm.cdf(current_line, loc=expected_total, scale=sigma))
         over_prob = max(0.01, min(0.99, over_prob))
         total_probs = {"over": over_prob, "under": 1.0 - over_prob}
+        if total_qualitative is not None:
+            total_match["qualitative_analysis"] = total_qualitative
+            total_match["qualitative_summary"] = _format_total_qualitative_summary(
+                total_probs, total_qualitative)
         try:
             total_edges = compute_totals_edges(
                 total_probs,
