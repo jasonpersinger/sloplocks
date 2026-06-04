@@ -1412,17 +1412,18 @@ def _apply_qualitative_adjustment(
 def _apply_total_qualitative_adjustment(
     expected_total: float,
     qualitative_data: dict,
-    weight: float,
     max_points_delta: float,
 ) -> float:
     """Shift a projected total by a bounded qualitative Over/Under lean.
 
-    Positive total_impact leans Over (raise total); negative leans Under.
-    The caller clamps the result to the sport's total bounds.
+    ``total_impact`` (-5..+5) maps proportionally onto ``max_points_delta``: a
+    maximum-conviction signal (±5) reaches the full cap, in runs (MLB) or points
+    (NBA). Positive leans Over (raise total); negative leans Under. The cap is the
+    sole control for the totals path. The caller clamps the result to the sport's
+    total bounds.
     """
-    impact = float(qualitative_data.get("total_impact", 0.0))
-    delta = impact * QUALITATIVE_DEFAULT_WEIGHT * weight
-    delta = max(-max_points_delta, min(max_points_delta, delta))
+    impact = max(-5.0, min(5.0, float(qualitative_data.get("total_impact", 0.0))))
+    delta = (impact / 5.0) * max_points_delta
     return expected_total + delta
 
 
@@ -3503,7 +3504,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 total_projection["expected_total"] = _apply_total_qualitative_adjustment(
                     total_projection["expected_total"],
                     total_qualitative,
-                    weight=sport.get("qualitative_weight", 0.4),
                     max_points_delta=sport.get("qualitative_total_adjustment_max_points", 0.5),
                 )
                 lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)

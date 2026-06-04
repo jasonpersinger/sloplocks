@@ -366,7 +366,6 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
             expected_total = _apply_total_qualitative_adjustment(
                 expected_total,
                 total_qualitative,
-                weight=sport.get("qualitative_weight", 0.4),
                 max_points_delta=sport.get("qualitative_total_adjustment_max_points", 0.5),
             )
             lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)

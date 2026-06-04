@@ -44,26 +44,35 @@ from pipeline.run import (
 
 
 def test_total_nudge_positive_raises_total():
+    # impact 2.5 of 5 -> half the cap: +0.25 runs
     out = _apply_total_qualitative_adjustment(
-        9.0, {"total_impact": 3.0}, weight=0.4, max_points_delta=0.5)
-    assert out > 9.0
+        9.0, {"total_impact": 2.5}, max_points_delta=0.5)
+    assert out == 9.25
 
 
 def test_total_nudge_negative_lowers_total():
     out = _apply_total_qualitative_adjustment(
-        9.0, {"total_impact": -3.0}, weight=0.4, max_points_delta=0.5)
-    assert out < 9.0
+        9.0, {"total_impact": -2.5}, max_points_delta=0.5)
+    assert out == 8.75
 
 
-def test_total_nudge_respects_cap():
+def test_total_nudge_full_conviction_reaches_cap():
+    # impact +/-5 reaches the full configured cap
     out = _apply_total_qualitative_adjustment(
-        9.0, {"total_impact": 5.0}, weight=999.0, max_points_delta=0.5)
-    assert out == 9.5  # clamped to +max_points_delta
+        9.0, {"total_impact": 5.0}, max_points_delta=0.5)
+    assert out == 9.5
+
+
+def test_total_nudge_out_of_range_impact_is_capped():
+    # an out-of-range score cannot exceed the cap
+    out = _apply_total_qualitative_adjustment(
+        9.0, {"total_impact": 99.0}, max_points_delta=0.5)
+    assert out == 9.5
 
 
 def test_total_nudge_zero_impact_is_noop():
     out = _apply_total_qualitative_adjustment(
-        9.0, {"total_impact": 0.0}, weight=0.4, max_points_delta=0.5)
+        9.0, {"total_impact": 0.0}, max_points_delta=0.5)
     assert out == 9.0
 
 
