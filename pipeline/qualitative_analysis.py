@@ -172,6 +172,7 @@ def analyze_total_qualitative(total_match: dict, context_text: str) -> dict:
         TOTALS_SYSTEM_PROMPT, user_prompt, TotalsQualitativeAnalysis, api_key,
     )
     if result_dict is None:
+        _log_api_call(total_match, context_text, None, error="structured call failed")
         return _default_totals_response(total_match)
     _log_api_call(total_match, context_text, result_dict)
     return result_dict
@@ -200,6 +201,8 @@ def _log_api_call(game_dict: dict, context_sent: str, result: Optional[dict], er
         "context_sent": context_sent,
         "home_impact": result.get("home_impact") if result else None,
         "away_impact": result.get("away_impact") if result else None,
+        "total_impact": result.get("total_impact") if result else None,
+        "net_total_edge": result.get("net_total_edge") if result else None,
         "error": error,
     }
     try:
