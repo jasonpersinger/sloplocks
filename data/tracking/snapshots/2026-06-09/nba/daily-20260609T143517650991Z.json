@@ -1,74 +1,61 @@
 {
+  "snapshot_version": 1,
   "generated_at": "2026-06-09T14:35:23Z",
+  "sport": "nba",
+  "sport_name": "NBA",
   "run_id": "daily-20260609T143517650991Z",
   "run_type": "daily",
   "snapshot_timestamp": "2026-06-09T14:35:17Z",
-  "snapshot_path": "tracking/snapshots/2026-06-09/nba/daily-20260609T143517650991Z.json",
-  "sport": "nba",
-  "sport_name": "NBA",
-  "outcomes": [
-    "home",
-    "away"
-  ],
-  "slop_locks": [],
-  "totals_locks": [],
-  "slimegrinder": [],
-  "longslop": null,
-  "matches": [],
-  "totals_matches": [],
-  "season_stats": {
-    "total_matches": 1323,
-    "home_wins": 736,
-    "away_wins": 587,
-    "home_win_pct": 0.556,
-    "away_win_pct": 0.444
-  },
-  "model_weights": {
-    "elo": 0.2576,
-    "results_features": 0.255,
-    "recent_boxscore": 0.2548,
-    "nba_matchup": 0.2325
-  },
-  "pick_stats": {
-    "slop_lock": {
-      "total": 91,
-      "evaluated": 29,
-      "wins": 23,
-      "losses": 6,
-      "pushes": 0,
-      "pending": 62,
-      "hit_rate": 0.793,
-      "roi": 0.11
-    },
-    "total_lock": {
-      "total": 14,
-      "evaluated": 6,
-      "wins": 2,
-      "losses": 4,
-      "pushes": 0,
-      "pending": 8,
-      "hit_rate": 0.333,
-      "roi": -0.36
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 52,
+      "confidence_dropoff": 8,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
     },
     "longslop": {
-      "total": 0,
-      "evaluated": 0,
-      "wins": 0,
-      "losses": 0,
-      "pushes": 0,
-      "pending": 0,
-      "hit_rate": null,
-      "roi": null
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
     },
-    "all": {
-      "total": 105,
-      "evaluated": 35,
-      "wins": 25,
-      "losses": 10,
-      "pushes": 0,
-      "pending": 70,
-      "hit_rate": 0.714,
-      "roi": 0.025
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 0
     }
   },
   "publication_guard": {
@@ -369,407 +356,440 @@
       "totals_enabled": false
     }
   },
-  "lane_health": {
-    "moneyline": {
-      "market_type": "moneyline",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 91,
-        "evaluated": 29,
-        "pending": 62,
-        "hit_rate": 0.7931,
-        "roi": 0.11,
-        "push_rate": 0.0,
-        "wins": 23,
-        "losses": 6,
-        "pushes": 0,
-        "avg_confidence": 54.9271,
-        "avg_expected_value": -0.0054,
-        "clv": {
-          "tracked": 44,
-          "avg_clv": 0.0338,
-          "positive_rate": 0.2273,
-          "non_negative_rate": 0.2273,
-          "moneyline_tracked": 44,
-          "moneyline_avg_clv": 0.0338,
-          "moneyline_positive_rate": 0.2273,
-          "moneyline_non_negative_rate": 0.2273,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 8,
-        "evaluated": 8,
-        "pending": 0,
-        "hit_rate": 0.875,
-        "roi": 0.1013,
-        "push_rate": 0.0,
-        "wins": 7,
-        "losses": 1,
-        "pushes": 0,
-        "avg_confidence": 44.6625,
-        "avg_expected_value": -0.0809,
-        "clv": {
-          "tracked": 7,
-          "avg_clv": -0.0008,
-          "positive_rate": 0.1429,
-          "non_negative_rate": 0.1429,
-          "moneyline_tracked": 7,
-          "moneyline_avg_clv": -0.0008,
-          "moneyline_positive_rate": 0.1429,
-          "moneyline_non_negative_rate": 0.1429,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [],
+    "fixtures_in_window": [],
+    "odds": [
+      {
+        "home_team": "Knicks",
+        "away_team": "Spurs",
+        "commence_time": "2026-06-11T00:40:00Z",
+        "home_odds": 1.81,
+        "draw_odds": 0.0,
+        "away_odds": 2.1,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.467,
+            "home": 0.533
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.5556
+          },
+          "hold": 0.0434,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
         },
-        "recent_count": 8,
-        "avg_model_prob": 0.711,
-        "actual_win_rate": 0.875,
-        "calibration_gap": -0.164,
-        "overconfidence_gap": 0.0
-      },
-      "allow": true,
-      "status": "live",
-      "reasons": [],
-      "health_score": 1.0
-    },
-    "totals": {
-      "market_type": "total",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 14,
-        "evaluated": 6,
-        "pending": 8,
-        "hit_rate": 0.3333,
-        "roi": -0.36,
-        "push_rate": 0.0,
-        "wins": 2,
-        "losses": 4,
-        "pushes": 0,
-        "avg_confidence": 75.3786,
-        "avg_expected_value": 0.1204,
-        "clv": {
-          "tracked": 6,
-          "avg_clv": -6.1667,
-          "positive_rate": 0.5,
-          "non_negative_rate": 0.6667,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 6,
-          "totals_avg_clv": -6.1667,
-          "totals_positive_rate": 0.5,
-          "totals_non_negative_rate": 0.6667
-        }
-      },
-      "recent": {
-        "total_picks": 6,
-        "evaluated": 6,
-        "pending": 0,
-        "hit_rate": 0.3333,
-        "roi": -0.36,
-        "push_rate": 0.0,
-        "wins": 2,
-        "losses": 4,
-        "pushes": 0,
-        "avg_confidence": 77.15,
-        "avg_expected_value": 0.1254,
-        "clv": {
-          "tracked": 6,
-          "avg_clv": -6.1667,
-          "positive_rate": 0.5,
-          "non_negative_rate": 0.6667,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 6,
-          "totals_avg_clv": -6.1667,
-          "totals_positive_rate": 0.5,
-          "totals_non_negative_rate": 0.6667
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.81,
+            "away": 2.1
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.467,
+              "home": 0.533
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.5556
+            },
+            "hold": 0.0434,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-06-09T14:35:12Z",
+              "outcomes": {
+                "home": 1.77,
+                "away": 2.1
+              },
+              "raw_probs": {
+                "home": 0.565,
+                "away": 0.4762
+              },
+              "fair_probs": {
+                "home": 0.5426,
+                "away": 0.4574
+              },
+              "hold": 0.0412
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-06-09T14:34:34Z",
+              "outcomes": {
+                "home": 1.78,
+                "away": 2.04
+              },
+              "raw_probs": {
+                "home": 0.5618,
+                "away": 0.4902
+              },
+              "fair_probs": {
+                "home": 0.534,
+                "away": 0.466
+              },
+              "hold": 0.052
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-06-09T14:34:14Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-06-09T14:34:15Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-06-09T14:34:35Z",
+              "outcomes": {
+                "home": 1.81,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.5525,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5335,
+                "away": 0.4665
+              },
+              "hold": 0.0356
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-06-09T14:35:14Z",
+              "outcomes": {
+                "home": 1.76,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.5682,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5405,
+                "away": 0.4595
+              },
+              "hold": 0.0513
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-06-09T14:33:54Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-06-09T14:34:18Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            }
+          ]
         },
-        "recent_count": 8,
-        "avg_model_prob": 0.5821,
-        "actual_win_rate": 0.3333,
-        "calibration_gap": 0.2488,
-        "overconfidence_gap": 0.2488
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "totals disabled by config",
-        "need more settled totals picks (6/10)",
-        "recent totals CLV -6.1667 is below 0.0000",
-        "recent totals ROI -0.3600 is below 0.0000",
-        "recent totals overconfidence gap 0.2488 exceeds 0.1000"
-      ],
-      "health_score": 0.2857
-    },
-    "longslop": {
-      "market_type": null,
-      "pick_type": "longslop",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
+        "total_line": 216.5,
+        "over_odds": 1.93,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 216.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5181
+          },
+          "hold": 0.0472,
+          "books_tracked": 7,
+          "source": "median_complete_book_no_vig"
         },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "longslop disabled by config",
-        "need more settled longslop picks (0/5)",
-        "need more recent settled longslop picks (0/3)",
-        "need more tracked longslop CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "slimegrinder": {
-      "market_type": null,
-      "pick_type": "slimegrinder",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
+        "totals_market_snapshot": {
+          "line": 216.5,
+          "execution_prices": {
+            "over": 1.93,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5181
+            },
+            "hold": 0.0472,
+            "books_tracked": 7,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-06-09T14:35:12Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-06-09T14:34:34Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.496,
+                "under": 0.504
+              },
+              "hold": 0.0555
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-06-09T14:34:14Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-06-09T14:34:15Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-06-09T14:34:35Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-06-09T14:33:54Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-06-09T14:34:18Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
         }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "slimegrinder disabled by config",
-        "need more settled slimegrinder picks (0/5)",
-        "need more recent settled slimegrinder picks (0/3)",
-        "need more tracked slimegrinder CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "totals_enabled": false
-  },
-  "model_health": {
-    "ensemble": {
-      "sample_size": 40,
-      "accuracy": 0.8,
-      "avg_log_loss": 0.5015
-    },
-    "models": {
-      "elo": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5156,
-        "weight": 0.213,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "four_factors": {
-        "sample_size": 40,
-        "accuracy": 0.65,
-        "avg_log_loss": 0.6517,
-        "weight": 0.1734,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "results_features": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5371,
-        "weight": 0.2108,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "recent_boxscore": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5384,
-        "weight": 0.2107,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "nba_matchup": {
-        "sample_size": 40,
-        "accuracy": 0.7,
-        "avg_log_loss": 0.5493,
-        "weight": 0.1922,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
       }
-    },
-    "disable_candidates": [],
-    "disabled_by_config": [
-      "four_factors"
     ],
-    "active_models": [
+    "model_weights": {
+      "elo": 0.2576,
+      "results_features": 0.255,
+      "recent_boxscore": 0.2548,
+      "nba_matchup": 0.2325
+    },
+    "models": [
       "elo",
       "results_features",
       "recent_boxscore",
       "nba_matchup"
-    ]
-  },
-  "calibration_sample_size": 215,
-  "selection_config": {
-    "outcomes": [
-      "home",
-      "away"
     ],
-    "slop_locks": {
-      "min_expected_value": 0.0,
-      "edge_floor": 0.02,
-      "probability_floor": 0.5,
-      "additional_confidence_floor": 52,
-      "confidence_dropoff": 8,
-      "max_picks": 5,
-      "lanes": {
-        "value_dog": {
-          "enabled": true,
-          "edge_floor": 0.04,
-          "probability_floor": 0.35,
-          "min_expected_value": 0.05,
-          "american_odds_min": 120,
-          "american_odds_max": 500,
-          "max_picks": 2
+    "model_health": {
+      "ensemble": {
+        "sample_size": 40,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.5015
+      },
+      "models": {
+        "elo": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5156,
+          "weight": 0.213,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         },
-        "near_favorite": {
-          "enabled": true,
-          "edge_floor": 0.01,
-          "probability_floor": 0.52,
-          "min_expected_value": 0.0,
-          "american_odds_min": -180,
-          "american_odds_max": 120,
-          "max_picks": 3
+        "four_factors": {
+          "sample_size": 40,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6517,
+          "weight": 0.1734,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5371,
+          "weight": 0.2108,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "recent_boxscore": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5384,
+          "weight": 0.2107,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "nba_matchup": {
+          "sample_size": 40,
+          "accuracy": 0.7,
+          "avg_log_loss": 0.5493,
+          "weight": 0.1922,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         }
-      }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [
+        "four_factors"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "recent_boxscore",
+        "nba_matchup"
+      ]
     },
-    "longslop": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 55
-    },
-    "slimegrinder": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 55
-    },
-    "totals_locks": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "edge_floor": 0.02,
-      "probability_floor": 0.53,
-      "confidence_floor": 54,
-      "max_picks": 0
-    }
+    "calibration_sample_size": 215
   },
-  "validation_issues": [],
+  "records": {
+    "matches": [],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
   "diagnostics": {
     "historical_matches": 1323,
     "fixtures_fetched": 0,
