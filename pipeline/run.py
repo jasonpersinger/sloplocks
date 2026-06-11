@@ -2093,6 +2093,22 @@ def _selection_lane_for_edge(
     return None
 
 
+def _confidence_floor_for_selection_lane(
+    lane_name: Optional[str],
+    lane_configs: Optional[dict],
+    default_floor: float,
+) -> float:
+    """Return the confidence floor for a selected moneyline lane."""
+    lane_config = {}
+    if lane_name and lane_name != "core":
+        lane_config = (lane_configs or {}).get(lane_name) or {}
+    return _lane_threshold_float(
+        lane_config,
+        "additional_confidence_floor",
+        _lane_threshold_float(lane_config, "confidence_floor", default_floor),
+    )
+
+
 def _compute_slop_locks(
     prediction_records,
     outcomes,
@@ -2122,10 +2138,10 @@ def _compute_slop_locks(
             if not e:
                 continue
             
-            conf = e.get("confidence_score", 0)
-            edge = e.get("edge", 0)
-            prob = e.get("model_prob", 0)
-            ev = e.get("expected_value", 0.0)
+            conf = _lane_threshold_float(e, "confidence_score", 0.0)
+            edge = _lane_threshold_float(e, "edge", 0.0)
+            prob = _lane_threshold_float(e, "model_prob", 0.0)
+            ev = _lane_threshold_float(e, "expected_value", 0.0)
             selection_lane = _selection_lane_for_edge(
                 e,
                 min_expected_value=min_expected_value,
@@ -2133,12 +2149,32 @@ def _compute_slop_locks(
                 probability_floor=probability_floor,
                 lane_configs=lane_configs,
             )
+            tier = compute_pick_tier(conf, prob, edge)
+            confidence_floor = _confidence_floor_for_selection_lane(
+                selection_lane,
+                lane_configs,
+                additional_confidence_floor,
+            )
+
+            if selection_lane is None:
+                continue
+            if conf < confidence_floor:
+                continue
+            if tier == "NO_PLAY":
+                continue
             
             formatted_pick = {
                 "home_team": rec["home_team"],
                 "away_team": rec["away_team"],
                 "date": rec["date"],
                 "start_time": rec.get("start_time"),
+                "home_pitcher": rec.get("home_pitcher"),
+                "home_pitcher_source": rec.get("home_pitcher_source"),
+                "home_pitcher_last_checked": rec.get("home_pitcher_last_checked"),
+                "away_pitcher": rec.get("away_pitcher"),
+                "away_pitcher_source": rec.get("away_pitcher_source"),
+                "away_pitcher_last_checked": rec.get("away_pitcher_last_checked"),
+                "pitcher_warnings": rec.get("pitcher_warnings", []),
                 "pick": outcome,
                 "model_prob": round(prob, 4),
                 "implied_prob": round(e.get("implied_prob") or 0.0, 4),
@@ -2155,10 +2191,8 @@ def _compute_slop_locks(
                 "qualitative_summary": rec.get("qualitative_summary"),
                 "selection_lane": selection_lane,
             }
-            formatted_pick["tier"] = compute_pick_tier(conf, prob, edge)
-
-            if selection_lane is not None:
-                candidates.append(formatted_pick)
+            formatted_pick["tier"] = tier
+            candidates.append(formatted_pick)
 
     # Sort strict candidates by confidence, then prob, then edge
     candidates.sort(key=lambda x: (x["confidence_score"], x["model_prob"], x["edge"]), reverse=True)
@@ -2268,6 +2302,13 @@ def _compute_totals_locks(
                     "away_team": rec["away_team"],
                     "date": rec["date"],
                     "start_time": rec.get("start_time"),
+                    "home_pitcher": rec.get("home_pitcher"),
+                    "home_pitcher_source": rec.get("home_pitcher_source"),
+                    "home_pitcher_last_checked": rec.get("home_pitcher_last_checked"),
+                    "away_pitcher": rec.get("away_pitcher"),
+                    "away_pitcher_source": rec.get("away_pitcher_source"),
+                    "away_pitcher_last_checked": rec.get("away_pitcher_last_checked"),
+                    "pitcher_warnings": rec.get("pitcher_warnings", []),
                     "pick": outcome,
                     "total_line": rec.get("total_line"),
                     "expected_total": rec.get("expected_total"),
@@ -2447,6 +2488,43 @@ def _safe_gate_float(value, default=None):
         return default
 
 
+def _coerce_utc_datetime(value) -> Optional[datetime]:
+    """Parse an ISO timestamp into UTC, returning None for missing/invalid input."""
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _is_stale_publish_pick(record: dict, now: datetime) -> bool:
+    """Return whether a pick is too old to publish as actionable."""
+    start_time = _coerce_utc_datetime(record.get("start_time"))
+    if start_time is not None:
+        return start_time <= now
+
+    match_date = str(record.get("date") or record.get("match_date") or "")[:10]
+    if not match_date:
+        return False
+    try:
+        return datetime.strptime(match_date, "%Y-%m-%d").date() < now.date()
+    except ValueError:
+        return False
+
+
+def _reject_stale_publish_pick(record: dict, pick_type: str, issues: list[dict], now: datetime) -> bool:
+    """Append a validation issue and return True when a pick has already started."""
+    if not _is_stale_publish_pick(record, now):
+        return False
+    detail = record.get("start_time") or record.get("date") or record.get("match_date")
+    issues.append(_validation_issue("stale_pick", pick_type, record, str(detail) if detail else None))
+    return True
+
+
 def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[dict]) -> bool:
     """Return whether one pick still satisfies its publication gates."""
     min_ev = _safe_gate_float(config.get("min_expected_value"), 0.0)
@@ -2488,6 +2566,14 @@ def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[d
         gate_config = lane_config or config
         edge_floor = _safe_gate_float(gate_config.get("edge_floor"), 0.03)
         probability_floor = _safe_gate_float(gate_config.get("probability_floor"), 0.45)
+        default_confidence_floor = _safe_gate_float(
+            config.get("additional_confidence_floor", config.get("confidence_floor")),
+            None,
+        )
+        confidence_floor = _safe_gate_float(
+            gate_config.get("additional_confidence_floor", gate_config.get("confidence_floor")),
+            default_confidence_floor,
+        )
         if edge is None or edge < edge_floor:
             detail = "missing edge" if edge is None else f"{edge:.4f} < {edge_floor:.4f}"
             issues.append(_validation_issue("below_edge_floor", pick_type, record, detail))
@@ -2495,6 +2581,14 @@ def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[d
         if prob is None or prob < probability_floor:
             detail = "missing model_prob" if prob is None else f"{prob:.4f} < {probability_floor:.4f}"
             issues.append(_validation_issue("below_probability_floor", pick_type, record, detail))
+            return False
+        if confidence_floor is not None and (confidence is None or confidence < confidence_floor):
+            detail = "missing confidence" if confidence is None else f"{confidence:.4f} < {confidence_floor:.4f}"
+            issues.append(_validation_issue("below_confidence_floor", pick_type, record, detail))
+            return False
+        tier = str(record.get("tier") or compute_pick_tier(confidence or 0.0, prob or 0.0, edge or 0.0)).upper()
+        if tier == "NO_PLAY":
+            issues.append(_validation_issue("no_play_tier", pick_type, record))
             return False
 
     elif pick_type == "total_lock":
@@ -2546,20 +2640,28 @@ def validate_publishable_picks(
     slimegrinder: list[dict],
     publication_guard: dict,
     selection_config: dict,
+    now: Optional[datetime] = None,
 ) -> tuple[list[dict], list[dict], Optional[dict], list[dict], list[dict]]:
     """Strip invalid publishable picks and return structured validation issues."""
     issues: list[dict] = []
     seen_official_moneylines: set[tuple[str, str, str, str]] = set()
     seen_totals: set[tuple[str, str, str, str]] = set()
+    current_time = now or datetime.now(timezone.utc)
+    if current_time.tzinfo is None:
+        current_time = current_time.replace(tzinfo=timezone.utc)
+    current_time = current_time.astimezone(timezone.utc)
 
     allow_moneyline = publication_guard.get("allow_moneyline", True)
     allow_totals = publication_guard.get("allow_totals", True)
+    enforce_stale_guard = bool(publication_guard.get("enforced", False))
 
     cleaned_slop: list[dict] = []
     for item in slop_locks or []:
         item = {**item, "market_type": item.get("market_type") or "moneyline"}
         if not allow_moneyline:
             issues.append(_validation_issue("publication_guard_suppressed", "slop_lock", item))
+            continue
+        if enforce_stale_guard and _reject_stale_publish_pick(item, "slop_lock", issues, current_time):
             continue
         key = _pick_matchup_market_key(item)
         if key in seen_official_moneylines:
@@ -2575,6 +2677,8 @@ def validate_publishable_picks(
         item = {**longslop, "market_type": longslop.get("market_type") or "moneyline"}
         if not allow_moneyline or not publication_guard.get("allow_longslop", False):
             issues.append(_validation_issue("publication_guard_suppressed", "longslop", item))
+        elif enforce_stale_guard and _reject_stale_publish_pick(item, "longslop", issues, current_time):
+            pass
         elif _pick_matchup_market_key(item) in seen_official_moneylines:
             issues.append(_validation_issue("duplicate_official_matchup", "longslop", item))
         elif _passes_pick_gate(item, "longslop", (selection_config.get("longslop") or {}), issues):
@@ -2586,6 +2690,8 @@ def validate_publishable_picks(
         item = {**item, "market_type": "total"}
         if not allow_totals:
             issues.append(_validation_issue("publication_guard_suppressed", "total_lock", item))
+            continue
+        if enforce_stale_guard and _reject_stale_publish_pick(item, "total_lock", issues, current_time):
             continue
         key = _pick_matchup_market_key(item)
         if key in seen_totals:
@@ -2601,6 +2707,8 @@ def validate_publishable_picks(
         item = {**item, "market_type": item.get("market_type") or "moneyline"}
         if not allow_moneyline or not publication_guard.get("allow_slimegrinder", False):
             issues.append(_validation_issue("publication_guard_suppressed", "slimegrinder", item))
+            continue
+        if enforce_stale_guard and _reject_stale_publish_pick(item, "slimegrinder", issues, current_time):
             continue
         if _pick_matchup_market_key(item) in seen_official_moneylines:
             issues.append(_validation_issue("duplicate_secondary_matchup", "slimegrinder", item))
@@ -3415,8 +3523,13 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             "away_injury_profile": fix.get("away_injury_profile"),
             "home_pitcher": fix.get("home_pitcher"),
             "home_pitcher_hand": fix.get("home_pitcher_hand"),
+            "home_pitcher_source": fix.get("home_pitcher_source"),
+            "home_pitcher_last_checked": fix.get("home_pitcher_last_checked"),
             "away_pitcher": fix.get("away_pitcher"),
             "away_pitcher_hand": fix.get("away_pitcher_hand"),
+            "away_pitcher_source": fix.get("away_pitcher_source"),
+            "away_pitcher_last_checked": fix.get("away_pitcher_last_checked"),
+            "pitcher_warnings": fix.get("pitcher_warnings", []),
             "home_lineup_profile": fix.get("home_lineup_profile"),
             "away_lineup_profile": fix.get("away_lineup_profile"),
             "home_bullpen_tax": round(home_bullpen_tax, 3) if sport_key == "mlb" else None,
@@ -3536,7 +3649,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "start_time": _resolve_start_time(fix, match_odds),
                 "completed": fix.get("completed", False),
                 "home_pitcher": fix.get("home_pitcher"),
+                "home_pitcher_source": fix.get("home_pitcher_source"),
+                "home_pitcher_last_checked": fix.get("home_pitcher_last_checked"),
                 "away_pitcher": fix.get("away_pitcher"),
+                "away_pitcher_source": fix.get("away_pitcher_source"),
+                "away_pitcher_last_checked": fix.get("away_pitcher_last_checked"),
+                "pitcher_warnings": fix.get("pitcher_warnings", []),
                 "home_lineup_profile": fix.get("home_lineup_profile"),
                 "away_lineup_profile": fix.get("away_lineup_profile"),
                 "home_bullpen_tax": round(home_bullpen_tax, 3) if sport_key == "mlb" else None,
