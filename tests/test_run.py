@@ -25,6 +25,7 @@ from pipeline.run import (
     _main,
     run_pipeline,
     run_sport_pipeline,
+    validate_publishable_picks,
 )
 
 _TODAY = datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -39,11 +40,11 @@ def test_compute_slop_locks_includes_configured_value_dog_lane():
             "edges": {
                 "away": {
                     "edge": 0.061,
-                    "model_prob": 0.44,
+                    "model_prob": 0.53,
                     "expected_value": 0.13,
                     "american_odds": 155,
                     "decimal_odds": 2.55,
-                    "confidence_score": 43.0,
+                    "confidence_score": 56.0,
                     "implied_prob": 0.38,
                     "market_implied_prob": 0.39,
                 },
@@ -74,6 +75,7 @@ def test_compute_slop_locks_includes_configured_value_dog_lane():
         ["home", "away"],
         edge_floor=0.025,
         probability_floor=0.55,
+        additional_confidence_floor=52,
         max_picks=3,
         lane_configs=lanes,
     )
@@ -91,10 +93,11 @@ def test_slop_lock_validation_uses_selection_lane_thresholds():
         "date": "2026-05-22",
         "pick": "away",
         "selection_lane": "value_dog",
-        "model_prob": 0.44,
+        "model_prob": 0.53,
         "edge": 0.061,
         "expected_value": 0.13,
         "american_odds": 155,
+        "confidence_score": 56,
     }
     config = {
         "edge_floor": 0.025,
@@ -114,6 +117,69 @@ def test_slop_lock_validation_uses_selection_lane_thresholds():
 
     assert _passes_pick_gate(pick, "slop_lock", config, issues) is True
     assert issues == []
+
+
+def test_publish_validation_removes_stale_moneyline_and_total_picks():
+    now = datetime(2026, 6, 10, 16, 0, tzinfo=timezone.utc)
+    selection_config = {
+        "slop_locks": {
+            "edge_floor": 0.02,
+            "probability_floor": 0.52,
+            "min_expected_value": 0.0,
+            "lanes": {},
+        },
+        "totals_locks": {
+            "edge_floor": 0.02,
+            "probability_floor": 0.53,
+            "confidence_floor": 54.0,
+            "min_expected_value": 0.0,
+        },
+    }
+    publication_guard = {
+        "enforced": True,
+        "allow_moneyline": True,
+        "allow_totals": True,
+        "allow_longslop": False,
+        "allow_slimegrinder": False,
+    }
+    stale_moneyline = {
+        "home_team": "Astros",
+        "away_team": "Pirates",
+        "date": "2026-06-04",
+        "start_time": "2026-06-05T00:10Z",
+        "pick": "home",
+        "model_prob": 0.56,
+        "edge": 0.03,
+        "expected_value": 0.04,
+        "american_odds": -105,
+    }
+    stale_total = {
+        "home_team": "Twins",
+        "away_team": "Royals",
+        "date": "2026-06-04",
+        "start_time": "2026-06-04T23:40Z",
+        "pick": "over",
+        "model_prob": 0.59,
+        "edge": 0.08,
+        "expected_value": 0.13,
+        "american_odds": -109,
+        "confidence_score": 72.6,
+    }
+
+    slop, totals, _, _, issues = validate_publishable_picks(
+        sport_key="mlb",
+        slop_locks=[stale_moneyline],
+        totals_locks=[stale_total],
+        longslop=None,
+        slimegrinder=[],
+        publication_guard=publication_guard,
+        selection_config=selection_config,
+        now=now,
+    )
+
+    assert slop == []
+    assert totals == []
+    assert [issue["reason"] for issue in issues] == ["stale_pick", "stale_pick"]
 
 
 def test_pipeline_diagnostics_reports_gate_failures_and_lane_candidates():
@@ -528,8 +594,13 @@ class TestRunMLBPipeline:
                 "start_time": f"{_TODAY}T20:10:00Z",
                 "home_pitcher": "Aces Starter",
                 "home_pitcher_hand": "R",
+                "home_pitcher_source": "espn",
+                "home_pitcher_last_checked": f"{_TODAY}T12:00:00+00:00",
                 "away_pitcher": "Bruins Starter",
                 "away_pitcher_hand": "L",
+                "away_pitcher_source": "mlb_stats_api",
+                "away_pitcher_last_checked": f"{_TODAY}T12:00:00+00:00",
+                "pitcher_warnings": [],
                 "home_lineup_profile": {
                     "active_hitters": 13,
                     "available_hitters": 13,
@@ -596,9 +667,15 @@ class TestRunMLBPipeline:
         assert "handedness_features" in match["individual_models"]
         assert match["home_lineup_profile"]["active_hitters"] == 13
         assert match["weather"]["temperature_f"] == 82.0
+        assert match["home_pitcher_source"] == "espn"
+        assert match["away_pitcher_source"] == "mlb_stats_api"
+        assert match["home_pitcher_last_checked"] == f"{_TODAY}T12:00:00+00:00"
+        assert match["pitcher_warnings"] == []
         total_market = data["totals_matches"][0]
         assert total_market["total_line"] == 8.5
         assert total_market["home_lineup_profile"]["available_hitters"] == 13
+        assert total_market["home_pitcher_source"] == "espn"
+        assert total_market["away_pitcher_source"] == "mlb_stats_api"
         assert total_market["pick"] in {"over", "under"}
         assert "over" in total_market["edges"]
 
@@ -1234,11 +1311,10 @@ class TestComputeSlopLocks:
             max_picks=5,
         )
 
-        assert len(locks) == 4
+        assert len(locks) == 3
         assert locks[0]["home_team"] == "C"   # conf=61
         assert locks[1]["home_team"] == "A"   # conf=58
         assert locks[2]["away_team"] == "F"   # conf=53
-        assert locks[3]["away_team"] == "H"   # conf=49
 
     def test_ranked_by_confidence_then_edge(self):
         """When confidence ties, higher probability wins; edge is final tiebreaker."""
@@ -1274,6 +1350,78 @@ class TestComputeSlopLocks:
         ]
         locks = _compute_slop_locks(records, ["home", "away"])
         assert locks == []
+
+    def test_confidence_below_threshold_is_excluded(self):
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.61, -110, edge=0.05, confidence_score=51.9, expected_value=0.06),
+        ]
+
+        locks = _compute_slop_locks(
+            records,
+            ["home", "away"],
+            additional_confidence_floor=52,
+            max_picks=5,
+        )
+
+        assert locks == []
+
+    def test_confidence_exactly_at_threshold_is_allowed(self):
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.61, -110, edge=0.05, confidence_score=52.0, expected_value=0.06),
+        ]
+
+        locks = _compute_slop_locks(
+            records,
+            ["home", "away"],
+            additional_confidence_floor=52,
+            max_picks=5,
+        )
+
+        assert len(locks) == 1
+        assert locks[0]["confidence_score"] == 52.0
+
+    def test_no_play_tier_is_excluded_from_slop_locks(self):
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "away", 0.44, 180, edge=0.08, confidence_score=70, expected_value=0.23),
+        ]
+
+        locks = _compute_slop_locks(
+            records,
+            ["home", "away"],
+            additional_confidence_floor=52,
+            max_picks=5,
+            lane_configs={
+                "value_dog": {
+                    "enabled": True,
+                    "edge_floor": 0.04,
+                    "probability_floor": 0.35,
+                    "min_expected_value": 0.05,
+                    "american_odds_min": 120,
+                    "american_odds_max": 500,
+                }
+            },
+        )
+
+        assert locks == []
+
+    def test_valid_slop_lock_candidate_is_selected(self):
+        from pipeline.run import _compute_slop_locks
+        records = [
+            self._make_record("A", "B", "home", 0.58, -110, edge=0.04, confidence_score=56, expected_value=0.05),
+        ]
+
+        locks = _compute_slop_locks(
+            records,
+            ["home", "away"],
+            additional_confidence_floor=52,
+            max_picks=5,
+        )
+
+        assert len(locks) == 1
+        assert locks[0]["tier"] != "NO_PLAY"
 
     def test_opponent_conflict_excluded(self):
         """If Team A is picked over Team B, Team B must not also appear as a pick."""
@@ -1316,7 +1464,7 @@ class TestComputeSlopLocks:
         assert len(locks) <= 5
 
     def test_later_candidate_is_considered_if_earlier_ones_miss_threshold(self):
-        """Lower-confidence candidates still publish if their edge and EV qualify."""
+        """Candidates below the confidence floor are skipped while later valid candidates publish."""
         from pipeline.run import _compute_slop_locks
         records = [
             self._make_record("A", "B", "home", 0.70, -120, edge=0.05, confidence_score=90, expected_value=0.06),
@@ -1334,10 +1482,8 @@ class TestComputeSlopLocks:
         )
 
         assert [(lock["home_team"], lock["confidence_score"]) for lock in locks] == [
-            ("A", 90),
-            ("G", 54),
-            ("C", 43),
-            ("E", 41),
+            ("A", 90.0),
+            ("G", 54.0),
         ]
 
     def test_picks_have_tier_field(self):
@@ -1348,15 +1494,16 @@ class TestComputeSlopLocks:
             self._make_record("C", "D", "home", 0.54, -110, edge=0.012, confidence_score=55, expected_value=0.01),
         ]
         locks = _compute_slop_locks(records, ["home", "away"], max_picks=5)
+        assert locks
         for lock in locks:
             assert "tier" in lock
-            assert lock["tier"] in ("STRONG", "LEAN", "WATCHLIST", "NO_PLAY")
+            assert lock["tier"] in ("STRONG", "LEAN", "WATCHLIST")
 
     def test_strong_pick_tier_assigned(self):
         """A pick meeting STRONG criteria should receive 'STRONG' tier."""
         from pipeline.run import _compute_slop_locks
         records = [
-            self._make_record("A", "B", "home", 0.62, -130, edge=0.03, confidence_score=64, expected_value=0.03),
+            self._make_record("A", "B", "home", 0.62, -130, edge=0.03, confidence_score=65, expected_value=0.03),
         ]
         locks = _compute_slop_locks(records, ["home", "away"], max_picks=5)
         assert len(locks) == 1
@@ -1431,6 +1578,34 @@ class TestPublishablePickValidation:
             "below_min_expected_value",
             "duplicate_secondary_matchup",
         }
+
+    def test_slop_lock_publish_validation_enforces_confidence_and_tier(self):
+        from pipeline.run import validate_publishable_picks
+
+        selection_config = {
+            "slop_locks": {
+                "min_expected_value": 0.0,
+                "edge_floor": 0.03,
+                "probability_floor": 0.5,
+                "additional_confidence_floor": 52,
+            },
+        }
+        low_confidence = self._pick(home="A", away="B", confidence_score=51.9)
+        no_play = self._pick(home="C", away="D", model_prob=0.51, confidence_score=70, tier="NO_PLAY")
+        valid = self._pick(home="E", away="F", model_prob=0.56, confidence_score=56, tier="LEAN")
+
+        cleaned_slop, _, _, _, issues = validate_publishable_picks(
+            sport_key="nba",
+            slop_locks=[low_confidence, no_play, valid],
+            totals_locks=[],
+            longslop=None,
+            slimegrinder=[],
+            publication_guard={"allow_moneyline": True, "allow_totals": True},
+            selection_config=selection_config,
+        )
+
+        assert [(p["home_team"], p["away_team"]) for p in cleaned_slop] == [("E", "F")]
+        assert [issue["reason"] for issue in issues] == ["below_confidence_floor", "no_play_tier"]
 
     def test_publication_guard_suppression_strips_official_lanes(self):
         from pipeline.run import validate_publishable_picks

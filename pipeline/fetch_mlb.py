@@ -117,6 +117,45 @@ def _load_espn_cache(cache_path: Optional[str]) -> dict:
     return cache
 
 
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _isoformat_utc(value: datetime) -> str:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc).isoformat()
+
+
+def _parse_utc_datetime(value) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _statsapi_probables_payload(cache_entry) -> dict:
+    if isinstance(cache_entry, dict) and isinstance(cache_entry.get("probables"), dict):
+        return cache_entry["probables"]
+    if isinstance(cache_entry, dict):
+        return cache_entry
+    return {}
+
+
+def _statsapi_cache_is_fresh(cache_entry, now: datetime, ttl_minutes: float) -> bool:
+    if not isinstance(cache_entry, dict) or "checked_at" not in cache_entry:
+        return False
+    checked_at = _parse_utc_datetime(cache_entry.get("checked_at"))
+    if checked_at is None:
+        return False
+    return now - checked_at <= timedelta(minutes=max(float(ttl_minutes), 0.0))
+
+
 def _save_espn_cache(cache_path: Optional[str], cache: dict) -> None:
     """Write ESPN cache to disk."""
     if cache_path is None:
@@ -164,14 +203,31 @@ def _fetch_pitcher_profile(player_id: Union[str, int, None], cache: Optional[dic
     return profile
 
 
-def _fetch_statsapi_probable_pitchers(game_date: str, cache: Optional[dict] = None) -> dict[str, dict]:
+def _fetch_statsapi_probable_pitchers(
+    game_date: str,
+    cache: Optional[dict] = None,
+    *,
+    now: Optional[datetime] = None,
+    ttl_minutes: Optional[float] = None,
+    force_refresh: bool = False,
+) -> dict[str, dict]:
     """Fetch probable pitchers from MLB Stats API keyed by normalized team name."""
+    checked_at_dt = now or _utcnow()
+    checked_at = _isoformat_utc(checked_at_dt)
+    ttl = ttl_minutes
+    if ttl is None:
+        ttl = SPORTS.get("mlb", {}).get("pitcher_cache_ttl_minutes", 120)
     cache_store = None
+    cached = None
     if cache is not None:
         cache_store = cache.setdefault("statsapi_probables", {})
         cached = cache_store.get(game_date)
-        if isinstance(cached, dict):
-            return cached
+        if (
+            isinstance(cached, dict)
+            and not force_refresh
+            and _statsapi_cache_is_fresh(cached, checked_at_dt, ttl)
+        ):
+            return _statsapi_probables_payload(cached)
 
     url = f"{MLB_STATS_API_BASE}/schedule?sportId=1&date={game_date}&hydrate=probablePitcher"
     try:
@@ -179,7 +235,11 @@ def _fetch_statsapi_probable_pitchers(game_date: str, cache: Optional[dict] = No
         resp.raise_for_status()
         data = resp.json()
     except requests.RequestException:
-        return {}
+        stale_probables = _statsapi_probables_payload(cached)
+        for probable in stale_probables.values():
+            if isinstance(probable, dict):
+                probable["cache_stale"] = True
+        return stale_probables
 
     probables: dict[str, dict] = {}
     for date_entry in data.get("dates", []):
@@ -196,10 +256,14 @@ def _fetch_statsapi_probable_pitchers(game_date: str, cache: Optional[dict] = No
                     "name": pitcher_name,
                     "throws": pitcher.get("pitchHand", {}).get("code") or pitcher.get("pitchHand", {}).get("abbreviation"),
                     "source": "mlb_stats_api",
+                    "last_checked": checked_at,
                 }
 
     if cache_store is not None:
-        cache_store[game_date] = probables
+        cache_store[game_date] = {
+            "checked_at": checked_at,
+            "probables": probables,
+        }
     return probables
 
 
@@ -684,6 +748,10 @@ def fetch_mlb_games(
                     "away_pitcher_stats": existing.get("away_pitcher_stats", {}),
                     "home_pitcher_hand": existing.get("home_pitcher_hand"),
                     "away_pitcher_hand": existing.get("away_pitcher_hand"),
+                    "home_pitcher_source": existing.get("home_pitcher_source", "unknown"),
+                    "away_pitcher_source": existing.get("away_pitcher_source", "unknown"),
+                    "home_pitcher_last_checked": existing.get("home_pitcher_last_checked"),
+                    "away_pitcher_last_checked": existing.get("away_pitcher_last_checked"),
                     "home_bullpen_stats": existing.get("home_bullpen_stats", {}),
                     "away_bullpen_stats": existing.get("away_bullpen_stats", {}),
                 }
@@ -716,12 +784,17 @@ def fetch_mlb_games(
             away_starter = away_pitching.get("starter", {"name": entry.get("away_pitcher", "TBD")})
             home_profile = _fetch_pitcher_profile(home_starter.get("id"), cache)
             away_profile = _fetch_pitcher_profile(away_starter.get("id"), cache)
+            checked_at = _isoformat_utc(_utcnow())
             entry["home_pitcher"] = home_starter.get("name", "TBD")
             entry["away_pitcher"] = away_starter.get("name", "TBD")
             entry["home_pitcher_stats"] = {k: v for k, v in home_starter.items() if k not in {"name", "id"}}
             entry["away_pitcher_stats"] = {k: v for k, v in away_starter.items() if k not in {"name", "id"}}
             entry["home_pitcher_hand"] = home_profile.get("throws")
             entry["away_pitcher_hand"] = away_profile.get("throws")
+            entry["home_pitcher_source"] = "espn_summary" if entry["home_pitcher"] != "TBD" else "unavailable"
+            entry["away_pitcher_source"] = "espn_summary" if entry["away_pitcher"] != "TBD" else "unavailable"
+            entry["home_pitcher_last_checked"] = checked_at
+            entry["away_pitcher_last_checked"] = checked_at
             entry["home_bullpen_stats"] = home_pitching.get("bullpen", {})
             entry["away_bullpen_stats"] = away_pitching.get("bullpen", {})
         time.sleep(_REQUEST_DELAY)
@@ -741,6 +814,10 @@ def fetch_mlb_games(
             "away_pitcher": entry.get("away_pitcher", "TBD"),
             "home_pitcher_hand": entry.get("home_pitcher_hand"),
             "away_pitcher_hand": entry.get("away_pitcher_hand"),
+            "home_pitcher_source": entry.get("home_pitcher_source"),
+            "away_pitcher_source": entry.get("away_pitcher_source"),
+            "home_pitcher_last_checked": entry.get("home_pitcher_last_checked"),
+            "away_pitcher_last_checked": entry.get("away_pitcher_last_checked"),
             "home_pitcher_ip": entry.get("home_pitcher_stats", {}).get("innings_pitched", 0.0),
             "home_pitcher_runs_allowed": entry.get("home_pitcher_stats", {}).get("runs_allowed", 0),
             "home_pitcher_earned_runs": entry.get("home_pitcher_stats", {}).get("earned_runs", 0),
@@ -769,6 +846,8 @@ def fetch_mlb_games(
             "game_id", "date", "home_team", "away_team", "home_goals", "away_goals",
             "home_pitcher", "away_pitcher",
             "home_pitcher_hand", "away_pitcher_hand",
+            "home_pitcher_source", "away_pitcher_source",
+            "home_pitcher_last_checked", "away_pitcher_last_checked",
             "home_pitcher_ip", "home_pitcher_runs_allowed", "home_pitcher_earned_runs",
             "home_pitcher_walks", "home_pitcher_strikeouts",
             "home_bullpen_ip", "home_bullpen_runs_allowed", "home_bullpen_earned_runs",
@@ -782,11 +861,53 @@ def fetch_mlb_games(
     return games_df, None # Box scores not yet implemented for MLB
 
 
+def _event_starts_within_window(start_time: Optional[str], now: datetime, hours: float) -> bool:
+    start_dt = _parse_utc_datetime(start_time)
+    if start_dt is None:
+        return False
+    seconds_until_start = (start_dt - now).total_seconds()
+    return 0 <= seconds_until_start <= float(hours) * 3600
+
+
+def _any_game_near_start(events: list[dict], now: datetime, hours: float) -> bool:
+    for event in events:
+        competitions = event.get("competitions") or []
+        if not competitions:
+            continue
+        comp = competitions[0]
+        status_type = comp.get("status", {}).get("type", {})
+        if status_type.get("completed", False):
+            continue
+        if _event_starts_within_window(comp.get("date", event.get("date")), now, hours):
+            return True
+    return False
+
+
+def _tbd_pitcher_warnings(
+    *,
+    home_pitcher: str,
+    away_pitcher: str,
+    start_time: Optional[str],
+    now: datetime,
+    warning_hours: float,
+) -> list[str]:
+    if not _event_starts_within_window(start_time, now, warning_hours):
+        return []
+    warnings = []
+    if not home_pitcher or home_pitcher == "TBD":
+        warnings.append("home_pitcher_tbd_inside_pregame_window")
+    if not away_pitcher or away_pitcher == "TBD":
+        warnings.append("away_pitcher_tbd_inside_pregame_window")
+    return warnings
+
+
 def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch today's MLB games including probable pitchers."""
     cache = _load_espn_cache(cache_path)
+    now = _utcnow()
+    checked_at = _isoformat_utc(now)
     et_offset = timedelta(hours=5)
-    today_et = (datetime.now(timezone.utc) - et_offset).date()
+    today_et = (now - et_offset).date()
     game_date_str = today_et.strftime("%Y-%m-%d")
     espn_date = today_et.strftime("%Y%m%d")
 
@@ -794,7 +915,19 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
     resp = requests.get(url, timeout=30)
     resp.raise_for_status()
     data = resp.json()
-    statsapi_probables = _fetch_statsapi_probable_pitchers(game_date_str, cache)
+    sport_cfg = SPORTS.get("mlb", {})
+    force_refresh = _any_game_near_start(
+        data.get("events", []),
+        now,
+        sport_cfg.get("pitcher_force_refresh_hours", 4),
+    )
+    statsapi_probables = _fetch_statsapi_probable_pitchers(
+        game_date_str,
+        cache,
+        now=now,
+        ttl_minutes=sport_cfg.get("pitcher_cache_ttl_minutes", 120),
+        force_refresh=force_refresh,
+    )
 
     fixtures = []
     for event in data.get("events", []):
@@ -843,8 +976,10 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
         away_pitcher = "TBD"
         home_pitcher_hand = None
         away_pitcher_hand = None
-        home_pitcher_source = None
-        away_pitcher_source = None
+        home_pitcher_source = "unavailable"
+        away_pitcher_source = "unavailable"
+        home_pitcher_last_checked = checked_at
+        away_pitcher_last_checked = checked_at
         for competitor in comp.get("competitors", []):
             prob = competitor.get("probables")
             if prob:
@@ -855,25 +990,36 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
                     home_pitcher = p_name
                     home_pitcher_hand = profile.get("throws")
                     home_pitcher_source = "espn"
+                    home_pitcher_last_checked = checked_at
                 elif competitor.get("homeAway") == "away":
                     away_pitcher = p_name
                     away_pitcher_hand = profile.get("throws")
                     away_pitcher_source = "espn"
+                    away_pitcher_last_checked = checked_at
 
         if home_pitcher == "TBD":
             fallback = statsapi_probables.get(home_team_name)
             if fallback:
                 home_pitcher = fallback.get("name", "TBD")
                 home_pitcher_hand = home_pitcher_hand or fallback.get("throws")
-                home_pitcher_source = fallback.get("source")
+                home_pitcher_source = fallback.get("source") or "mlb_stats_api"
+                home_pitcher_last_checked = fallback.get("last_checked") or checked_at
         if away_pitcher == "TBD":
             fallback = statsapi_probables.get(away_team_name)
             if fallback:
                 away_pitcher = fallback.get("name", "TBD")
                 away_pitcher_hand = away_pitcher_hand or fallback.get("throws")
-                away_pitcher_source = fallback.get("source")
+                away_pitcher_source = fallback.get("source") or "mlb_stats_api"
+                away_pitcher_last_checked = fallback.get("last_checked") or checked_at
 
         start_time = comp.get("date", event.get("date"))
+        pitcher_warnings = _tbd_pitcher_warnings(
+            home_pitcher=home_pitcher,
+            away_pitcher=away_pitcher,
+            start_time=start_time,
+            now=now,
+            warning_hours=sport_cfg.get("pitcher_tbd_warning_hours", 2),
+        )
         home_team_id = home["team"].get("id")
         away_team_id = away["team"].get("id")
         confirmed_lineups = {}
@@ -918,9 +1064,12 @@ def fetch_mlb_schedule(cache_path: Optional[str] = None) -> list[dict]:
             "home_pitcher": home_pitcher,
             "home_pitcher_hand": home_pitcher_hand,
             "home_pitcher_source": home_pitcher_source,
+            "home_pitcher_last_checked": home_pitcher_last_checked,
             "away_pitcher": away_pitcher,
             "away_pitcher_hand": away_pitcher_hand,
             "away_pitcher_source": away_pitcher_source,
+            "away_pitcher_last_checked": away_pitcher_last_checked,
+            "pitcher_warnings": pitcher_warnings,
             "home_lineup_profile": home_lineup_profile,
             "away_lineup_profile": away_lineup_profile,
             "weather": weather,

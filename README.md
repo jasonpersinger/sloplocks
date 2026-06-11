@@ -121,7 +121,7 @@ Keyed:
 Free/keyless:
 
 - ESPN site/core APIs for schedules, results, rosters, team context, and sport-specific metadata.
-- MLB Stats API for probable-pitcher fallback when ESPN lists a starter as `TBD`.
+- MLB Stats API for probable-pitcher fallback when ESPN lists a starter as `TBD`. MLB pitcher assignments carry `*_pitcher_source` and `*_pitcher_last_checked`; Stats API probable-pitcher cache entries are TTL-validated and refreshed near first pitch.
 - Open-Meteo for MLB weather context.
 
 ## Pick Selection
@@ -138,12 +138,13 @@ Each sport config can define:
 
 - edge floor
 - model probability floor
+- confidence floor
 - minimum expected value
 - American odds band
 - max picks per lane
 - global max picks
 
-The selected lane is preserved on published picks as `selection_lane`. Older historical picks without this field should be treated as `core` in reports.
+The selected lane is preserved on published picks as `selection_lane`. SLOP LOCK publication also rejects candidates below the configured confidence floor or with a computed `NO_PLAY` tier. Older historical picks without `selection_lane` should be treated as `core` in reports.
 
 Totals picks are selected separately where enabled. MLB totals are live; NBA totals are modeled but can be suppressed by config and lane-health gates.
 
@@ -164,6 +165,8 @@ Sports on a live hold can publish a small capped number of picks when configured
 
 Important integrity rules:
 
+- Do not display or publish stale picks after the scheduled start time.
+- Do not publish `NO_PLAY` candidates as SLOP LOCKS.
 - Do not force low-confidence fallback picks into official output.
 - Do not combine moneyline CLV and totals CLV into one naive unit.
 - Prefer immutable/audit ledgers for reporting when available.
@@ -183,6 +186,7 @@ Important integrity rules:
 - `gate_failures`
 - `candidate_lanes`
 - `publication_guard`
+- MLB `pitcher_warnings` on match/pick records when starters remain `TBD` inside the configured pregame warning window.
 
 Typical low-volume causes:
 

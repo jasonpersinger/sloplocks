@@ -874,6 +874,24 @@
     return '[-]'
   }
 
+  function isFreshPick(pick, nowMs) {
+    if (!pick) return false;
+    if (pick.start_time) {
+      var startMs = Date.parse(pick.start_time);
+      if (!Number.isNaN(startMs)) return startMs > nowMs;
+    }
+    var dateText = String(pick.date || pick.match_date || '').slice(0, 10);
+    if (dateText) return dateText >= new Date(nowMs).toISOString().slice(0, 10);
+    return true;
+  }
+
+  function filterFreshPicks(picks) {
+    var nowMs = Date.now();
+    return (picks || []).filter(function (pick) {
+      return isFreshPick(pick, nowMs);
+    });
+  }
+
   function createPickCard(pick) {
     var isTotal = pick.market_type === 'total';
     var pickedTeam = isTotal
@@ -1384,7 +1402,7 @@
         var tb = b.start_time ? new Date(b.start_time).getTime() : Infinity;
         return ta - tb;
       });
-      renderFeed(allPicks);
+      renderFeed(filterFreshPicks(allPicks));
       renderStats('all');
     });
   }
@@ -1407,7 +1425,7 @@
           var tb = b.start_time ? new Date(b.start_time).getTime() : Infinity;
           return ta - tb;
         });
-        renderFeed(locks);
+        renderFeed(filterFreshPicks(locks));
         renderStats(sport);
       })
       .catch(function () {

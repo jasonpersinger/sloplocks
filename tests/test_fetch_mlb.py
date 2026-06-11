@@ -1,5 +1,7 @@
 """Tests for MLB fetch helpers."""
 
+from datetime import datetime, timedelta, timezone
+
 import pipeline.fetch_mlb as fetch_mlb
 from pipeline.fetch_mlb import (
     _extract_confirmed_mlb_lineups,
@@ -156,7 +158,7 @@ class TestPitcherProfile:
                     "bats": {"abbreviation": "L"},
                 }
 
-        def fake_get(url, timeout=30):
+        def fake_get(url, timeout=30, **_kwargs):
             calls.append(url)
             return FakeResponse()
 
@@ -214,7 +216,7 @@ class TestStatsApiProbables:
                     ]
                 }
 
-        def fake_get(url, timeout=30):
+        def fake_get(url, timeout=30, **_kwargs):
             calls.append(url)
             return FakeResponse()
 
@@ -229,6 +231,283 @@ class TestStatsApiProbables:
         assert first["Red Sox"]["name"] == "Garrett Crochet"
         assert second == first
         assert len(calls) == 1
+
+    def test_expired_cache_entry_is_refetched(self, monkeypatch):
+        calls = []
+        fetch_mlb._team_map = {"New York Yankees": "Yankees"}
+
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "dates": [
+                        {
+                            "games": [
+                                {
+                                    "teams": {
+                                        "home": {
+                                            "team": {"name": "New York Yankees"},
+                                            "probablePitcher": {
+                                                "id": 123,
+                                                "fullName": "Fresh Starter",
+                                                "pitchHand": {"code": "R"},
+                                            },
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+        def fake_get(url, timeout=30, **_kwargs):
+            calls.append(url)
+            return FakeResponse()
+
+        now = datetime(2026, 5, 27, 18, 30, tzinfo=timezone.utc)
+        cache = {
+            "statsapi_probables": {
+                "2026-05-27": {
+                    "checked_at": (now - timedelta(minutes=121)).isoformat(),
+                    "probables": {
+                        "Yankees": {
+                            "id": "999",
+                            "name": "Stale Starter",
+                            "throws": "L",
+                            "source": "mlb_stats_api",
+                            "last_checked": (now - timedelta(minutes=121)).isoformat(),
+                        }
+                    },
+                }
+            }
+        }
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+
+        probables = _fetch_statsapi_probable_pitchers(
+            "2026-05-27",
+            cache,
+            now=now,
+            ttl_minutes=120,
+        )
+
+        assert probables["Yankees"]["name"] == "Fresh Starter"
+        assert probables["Yankees"]["source"] == "mlb_stats_api"
+        assert probables["Yankees"]["last_checked"] == now.isoformat()
+        assert cache["statsapi_probables"]["2026-05-27"]["checked_at"] == now.isoformat()
+        assert len(calls) == 1
+
+    def test_force_refresh_bypasses_fresh_cache(self, monkeypatch):
+        calls = []
+        fetch_mlb._team_map = {"New York Yankees": "Yankees"}
+
+        class FakeResponse:
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return {
+                    "dates": [
+                        {
+                            "games": [
+                                {
+                                    "teams": {
+                                        "home": {
+                                            "team": {"name": "New York Yankees"},
+                                            "probablePitcher": {
+                                                "id": 123,
+                                                "fullName": "Refreshed Starter",
+                                                "pitchHand": {"code": "R"},
+                                            },
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+
+        now = datetime(2026, 5, 27, 18, 30, tzinfo=timezone.utc)
+        cache = {
+            "statsapi_probables": {
+                "2026-05-27": {
+                    "checked_at": (now - timedelta(minutes=5)).isoformat(),
+                    "probables": {
+                        "Yankees": {
+                            "id": "999",
+                            "name": "Cached Starter",
+                            "throws": "L",
+                            "source": "mlb_stats_api",
+                            "last_checked": (now - timedelta(minutes=5)).isoformat(),
+                        }
+                    },
+                }
+            }
+        }
+        monkeypatch.setattr(fetch_mlb.requests, "get", lambda url, timeout=30: calls.append(url) or FakeResponse())
+
+        probables = _fetch_statsapi_probable_pitchers(
+            "2026-05-27",
+            cache,
+            now=now,
+            ttl_minutes=120,
+            force_refresh=True,
+        )
+
+        assert probables["Yankees"]["name"] == "Refreshed Starter"
+        assert len(calls) == 1
+
+
+class TestMlbSchedulePitcherProvenance:
+    class FakeResponse:
+        def __init__(self, payload):
+            self._payload = payload
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self._payload
+
+    def _scoreboard_payload(self, *, start_time, home_probable=None, away_probable=None):
+        home = {
+            "homeAway": "home",
+            "team": {"id": "10", "displayName": "New York Yankees"},
+            "leaders": [],
+        }
+        away = {
+            "homeAway": "away",
+            "team": {"id": "2", "displayName": "Boston Red Sox"},
+            "leaders": [],
+        }
+        if home_probable is not None:
+            home["probables"] = [home_probable]
+        if away_probable is not None:
+            away["probables"] = [away_probable]
+        return {
+            "events": [
+                {
+                    "id": "401",
+                    "date": start_time,
+                    "competitions": [
+                        {
+                            "date": start_time,
+                            "neutralSite": False,
+                            "status": {"type": {"completed": False}},
+                            "competitors": [home, away],
+                        }
+                    ],
+                }
+            ]
+        }
+
+    def _install_common_mocks(self, monkeypatch, scoreboard_payload, statsapi_payload):
+        fetch_mlb._team_map = {
+            "New York Yankees": "Yankees",
+            "Boston Red Sox": "Red Sox",
+        }
+
+        def fake_get(url, timeout=30, **_kwargs):
+            if "scoreboard" in url:
+                return self.FakeResponse(scoreboard_payload)
+            if "statsapi.mlb.com" in url:
+                return self.FakeResponse(statsapi_payload)
+            if "/summary?event=" in url:
+                return self.FakeResponse({"injuries": [], "rosters": []})
+            if "/teams/" in url and "/roster" in url:
+                return self.FakeResponse({"athletes": []})
+            if "/athletes/" in url:
+                return self.FakeResponse({"throws": {"abbreviation": "R"}, "bats": {"abbreviation": "R"}})
+            return self.FakeResponse({"hourly": {"time": [], "temperature_2m": [], "wind_speed_10m": [], "precipitation_probability": []}})
+
+        monkeypatch.setattr(fetch_mlb.requests, "get", fake_get)
+        monkeypatch.setattr(fetch_mlb.time, "sleep", lambda *_args, **_kwargs: None)
+
+    def test_espn_probable_pitcher_includes_source_and_last_checked(self, monkeypatch, tmp_path):
+        start_time = "2026-05-27T23:05:00Z"
+        self._install_common_mocks(
+            monkeypatch,
+            self._scoreboard_payload(
+                start_time=start_time,
+                home_probable={"playerId": "123", "athlete": {"id": "123", "displayName": "Gerrit Cole"}},
+                away_probable={"playerId": "456", "athlete": {"id": "456", "displayName": "Garrett Crochet"}},
+            ),
+            {"dates": []},
+        )
+
+        fixtures = fetch_mlb.fetch_mlb_schedule(cache_path=str(tmp_path / "espn_cache.json"))
+
+        assert fixtures[0]["home_pitcher"] == "Gerrit Cole"
+        assert fixtures[0]["home_pitcher_source"] == "espn"
+        assert fixtures[0]["away_pitcher_source"] == "espn"
+        assert fixtures[0]["home_pitcher_last_checked"]
+        assert fixtures[0]["away_pitcher_last_checked"]
+        assert fixtures[0]["pitcher_warnings"] == []
+
+    def test_statsapi_fallback_includes_source_and_last_checked(self, monkeypatch, tmp_path):
+        start_time = "2026-05-27T23:05:00Z"
+        self._install_common_mocks(
+            monkeypatch,
+            self._scoreboard_payload(start_time=start_time),
+            {
+                "dates": [
+                    {
+                        "games": [
+                            {
+                                "teams": {
+                                    "home": {
+                                        "team": {"name": "New York Yankees"},
+                                        "probablePitcher": {
+                                            "id": 123,
+                                            "fullName": "Gerrit Cole",
+                                            "pitchHand": {"code": "R"},
+                                        },
+                                    },
+                                    "away": {
+                                        "team": {"name": "Boston Red Sox"},
+                                        "probablePitcher": {
+                                            "id": 456,
+                                            "fullName": "Garrett Crochet",
+                                            "pitchHand": {"code": "L"},
+                                        },
+                                    },
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+        )
+
+        fixtures = fetch_mlb.fetch_mlb_schedule(cache_path=str(tmp_path / "espn_cache.json"))
+
+        assert fixtures[0]["home_pitcher"] == "Gerrit Cole"
+        assert fixtures[0]["home_pitcher_source"] == "mlb_stats_api"
+        assert fixtures[0]["away_pitcher"] == "Garrett Crochet"
+        assert fixtures[0]["away_pitcher_source"] == "mlb_stats_api"
+        assert fixtures[0]["home_pitcher_last_checked"]
+        assert fixtures[0]["away_pitcher_last_checked"]
+
+    def test_tbd_pitchers_near_game_time_emit_warning(self, monkeypatch, tmp_path):
+        now = datetime.now(timezone.utc)
+        start_time = (now + timedelta(minutes=45)).isoformat().replace("+00:00", "Z")
+        self._install_common_mocks(
+            monkeypatch,
+            self._scoreboard_payload(start_time=start_time),
+            {"dates": []},
+        )
+        monkeypatch.setitem(fetch_mlb.SPORTS["mlb"], "pitcher_tbd_warning_hours", 2)
+
+        fixtures = fetch_mlb.fetch_mlb_schedule(cache_path=str(tmp_path / "espn_cache.json"))
+
+        assert fixtures[0]["home_pitcher"] == "TBD"
+        assert fixtures[0]["home_pitcher_source"] == "unavailable"
+        assert fixtures[0]["away_pitcher_source"] == "unavailable"
+        assert fixtures[0]["pitcher_warnings"] == [
+            "home_pitcher_tbd_inside_pregame_window",
+            "away_pitcher_tbd_inside_pregame_window",
+        ]
 
 
 class TestBallparkWeather:
