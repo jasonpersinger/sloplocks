@@ -1,73 +1,61 @@
 {
+  "snapshot_version": 1,
   "generated_at": "2026-06-26T14:11:21Z",
+  "sport": "nhl",
+  "sport_name": "NHL",
   "run_id": "daily-20260626T141104236162Z",
   "run_type": "daily",
   "snapshot_timestamp": "2026-06-26T14:11:04Z",
-  "snapshot_path": "tracking/snapshots/2026-06-26/nhl/daily-20260626T141104236162Z.json",
-  "sport": "nhl",
-  "sport_name": "NHL",
-  "outcomes": [
-    "home",
-    "away"
-  ],
-  "slop_locks": [],
-  "totals_locks": [],
-  "slimegrinder": [],
-  "longslop": null,
-  "matches": [],
-  "totals_matches": [],
-  "season_stats": {
-    "total_matches": 1422,
-    "home_wins": 740,
-    "away_wins": 682,
-    "home_win_pct": 0.52,
-    "away_win_pct": 0.48
-  },
-  "model_weights": {
-    "elo": 0.3362,
-    "results_features": 0.3105,
-    "nhl_matchup": 0.3533
-  },
-  "pick_stats": {
-    "slop_lock": {
-      "total": 90,
-      "evaluated": 49,
-      "wins": 30,
-      "losses": 19,
-      "pushes": 0,
-      "pending": 41,
-      "hit_rate": 0.612,
-      "roi": 0.061
-    },
-    "total_lock": {
-      "total": 0,
-      "evaluated": 0,
-      "wins": 0,
-      "losses": 0,
-      "pushes": 0,
-      "pending": 0,
-      "hit_rate": null,
-      "roi": null
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.015,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 50,
+      "confidence_dropoff": 7,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
     },
     "longslop": {
-      "total": 0,
-      "evaluated": 0,
-      "wins": 0,
-      "losses": 0,
-      "pushes": 0,
-      "pending": 0,
-      "hit_rate": null,
-      "roi": null
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 54
     },
-    "all": {
-      "total": 90,
-      "evaluated": 49,
-      "wins": 30,
-      "losses": 19,
-      "pushes": 0,
-      "pending": 41,
-      "hit_rate": 0.612,
-      "roi": 0.061
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 52
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54.0,
+      "max_picks": 3
     }
   },
   "publication_guard": {
@@ -362,380 +350,80 @@
       "totals_enabled": false
     }
   },
-  "lane_health": {
-    "moneyline": {
-      "market_type": "moneyline",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 90,
-        "evaluated": 49,
-        "pending": 41,
-        "hit_rate": 0.6122,
-        "roi": 0.0614,
-        "push_rate": 0.0,
-        "wins": 30,
-        "losses": 19,
-        "pushes": 0,
-        "avg_confidence": 47.3322,
-        "avg_expected_value": 0.2138,
-        "clv": {
-          "tracked": 46,
-          "avg_clv": 0.0054,
-          "positive_rate": 0.1739,
-          "non_negative_rate": 0.1739,
-          "moneyline_tracked": 46,
-          "moneyline_avg_clv": 0.0054,
-          "moneyline_positive_rate": 0.1739,
-          "moneyline_non_negative_rate": 0.1739,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 8,
-        "evaluated": 8,
-        "pending": 0,
-        "hit_rate": 0.75,
-        "roi": 0.3025,
-        "push_rate": 0.0,
-        "wins": 6,
-        "losses": 2,
-        "pushes": 0,
-        "avg_confidence": 55.45,
-        "avg_expected_value": 0.0583,
-        "clv": {
-          "tracked": 6,
-          "avg_clv": -0.0245,
-          "positive_rate": 0.0,
-          "non_negative_rate": 0.0,
-          "moneyline_tracked": 6,
-          "moneyline_avg_clv": -0.0245,
-          "moneyline_positive_rate": 0.0,
-          "moneyline_non_negative_rate": 0.0,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 8,
-        "avg_model_prob": 0.6023,
-        "actual_win_rate": 0.75,
-        "calibration_gap": -0.1477,
-        "overconfidence_gap": 0.0
-      },
-      "allow": true,
-      "status": "live",
-      "reasons": [],
-      "health_score": 1.0
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [],
+    "fixtures_in_window": [],
+    "odds": [],
+    "model_weights": {
+      "elo": 0.3362,
+      "results_features": 0.3105,
+      "nhl_matchup": 0.3533
     },
-    "totals": {
-      "market_type": "total",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 8,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "totals disabled by config"
-      ],
-      "health_score": 0.8571
-    },
-    "longslop": {
-      "market_type": null,
-      "pick_type": "longslop",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "longslop disabled by config",
-        "need more settled longslop picks (0/5)",
-        "need more recent settled longslop picks (0/3)",
-        "need more tracked longslop CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "slimegrinder": {
-      "market_type": null,
-      "pick_type": "slimegrinder",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "slimegrinder disabled by config",
-        "need more settled slimegrinder picks (0/5)",
-        "need more recent settled slimegrinder picks (0/3)",
-        "need more tracked slimegrinder CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "totals_enabled": false
-  },
-  "model_health": {
-    "ensemble": {
-      "sample_size": 40,
-      "accuracy": 0.6,
-      "avg_log_loss": 0.6399
-    },
-    "models": {
-      "elo": {
-        "sample_size": 40,
-        "accuracy": 0.6,
-        "avg_log_loss": 0.6606,
-        "weight": 0.3362,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "results_features": {
-        "sample_size": 40,
-        "accuracy": 0.525,
-        "avg_log_loss": 0.6823,
-        "weight": 0.3105,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "nhl_matchup": {
-        "sample_size": 40,
-        "accuracy": 0.65,
-        "avg_log_loss": 0.6558,
-        "weight": 0.3533,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      }
-    },
-    "disable_candidates": [],
-    "disabled_by_config": [],
-    "active_models": [
+    "models": [
       "elo",
       "results_features",
       "nhl_matchup"
-    ]
-  },
-  "calibration_sample_size": 125,
-  "selection_config": {
-    "outcomes": [
-      "home",
-      "away"
     ],
-    "slop_locks": {
-      "min_expected_value": 0.0,
-      "edge_floor": 0.015,
-      "probability_floor": 0.5,
-      "additional_confidence_floor": 50,
-      "confidence_dropoff": 7,
-      "max_picks": 5,
-      "lanes": {
-        "value_dog": {
-          "enabled": true,
-          "edge_floor": 0.04,
-          "probability_floor": 0.35,
-          "min_expected_value": 0.05,
-          "american_odds_min": 120,
-          "american_odds_max": 500,
-          "max_picks": 2
+    "model_health": {
+      "ensemble": {
+        "sample_size": 40,
+        "accuracy": 0.6,
+        "avg_log_loss": 0.6399
+      },
+      "models": {
+        "elo": {
+          "sample_size": 40,
+          "accuracy": 0.6,
+          "avg_log_loss": 0.6606,
+          "weight": 0.3362,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         },
-        "near_favorite": {
-          "enabled": true,
-          "edge_floor": 0.01,
-          "probability_floor": 0.52,
-          "min_expected_value": 0.0,
-          "american_odds_min": -180,
-          "american_odds_max": 120,
-          "max_picks": 3
+        "results_features": {
+          "sample_size": 40,
+          "accuracy": 0.525,
+          "avg_log_loss": 0.6823,
+          "weight": 0.3105,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "nhl_matchup": {
+          "sample_size": 40,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6558,
+          "weight": 0.3533,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         }
-      }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [],
+      "active_models": [
+        "elo",
+        "results_features",
+        "nhl_matchup"
+      ]
     },
-    "longslop": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 54
-    },
-    "slimegrinder": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 52
-    },
-    "totals_locks": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "edge_floor": 0.02,
-      "probability_floor": 0.53,
-      "confidence_floor": 54.0,
-      "max_picks": 3
-    }
+    "calibration_sample_size": 125
   },
-  "validation_issues": [],
+  "records": {
+    "matches": [],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
   "diagnostics": {
     "historical_matches": 1422,
     "fixtures_fetched": 0,
