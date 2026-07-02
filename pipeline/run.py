@@ -293,10 +293,13 @@ def _build_publication_guard(
     moneyline_publish_cap = None
     totals_publish_cap = None
 
+    # Lanes failing on data insufficiency ("research") or a soft performance
+    # miss ("hold") may still trickle a capped number of picks when their
+    # health score clears the floor; cold-start lanes fail the floor naturally.
     if (
         enforce_live_guard
         and not allow_moneyline
-        and moneyline_guard.get("status") == "hold"
+        and moneyline_guard.get("status") in {"hold", "research"}
         and (moneyline_guard.get("health_score") or 0.0) >= float(sport.get("moneyline_hold_min_health_score", 0.7) or 0.7)
     ):
         allow_moneyline = True
@@ -306,7 +309,7 @@ def _build_publication_guard(
         enforce_live_guard
         and not allow_totals
         and totals_enabled
-        and totals_guard.get("status") == "hold"
+        and totals_guard.get("status") in {"hold", "research"}
         and (totals_guard.get("health_score") or 0.0) >= float(sport.get("totals_hold_min_health_score", 0.75) or 0.75)
     ):
         allow_totals = True
@@ -2405,8 +2408,10 @@ def _compute_pick_stats(picks):
     Returns a dict with stats broken out by pick type.
     """
     stats = {}
+    # Shadow picks (published=False) are guard evidence, not public record.
+    published_picks = [p for p in picks if p.get("published", True)]
     for pick_type in ("slop_lock", "total_lock", "longslop", "all"):
-        subset = [p for p in picks if pick_type == "all" or p["type"] == pick_type]
+        subset = [p for p in published_picks if pick_type == "all" or p["type"] == pick_type]
         evaluated = [p for p in subset if p.get("evaluated")]
         wins = [p for p in evaluated if p.get("won")]
         pushes = [p for p in evaluated if p.get("push")]
@@ -3739,6 +3744,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         sport,
         enforce_live_guard=_is_live_public_output(base_dir),
     )
+    # Keep pre-guard candidates so suppressed lanes can still record shadow
+    # picks: unpublished evidence the guard needs to graduate a lane to live.
+    candidate_slop_locks = list(slop_locks)
+    candidate_totals_locks = list(totals_locks)
     if not publication_guard.get("allow_moneyline", True):
         slop_locks = []
         longslop = None
@@ -3868,55 +3877,77 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             pick["won"] = pick["pick"] == actual and not pick["push"]
             pick["home_goals"] = hg
             pick["away_goals"] = ag
-            resolved_results_rows.append(
-                _build_results_log_row(
-                    sport_key,
-                    pick.get("type", "pick"),
-                    pick,
-                    match_date,
-                    actual,
+            # Shadow picks settle in pick_history for guard evidence but stay
+            # out of the public results log.
+            if pick.get("published", True):
+                resolved_results_rows.append(
+                    _build_results_log_row(
+                        sport_key,
+                        pick.get("type", "pick"),
+                        pick,
+                        match_date,
+                        actual,
+                    )
                 )
-            )
 
     # Append today's new picks (deduplicate by game identity, not pick_date)
     today_str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    existing_keys = set()
+    existing_keys = {}
     for p in past_picks:
-        existing_keys.add((p["type"], p["home_team"], p["away_team"],
-                           p.get("match_date"), p["pick"]))
+        existing_keys[(p["type"], p["home_team"], p["away_team"],
+                       p.get("match_date"), p["pick"])] = p
 
-    for lock in slop_locks:
+    published_slop_keys = {
+        ("slop_lock", lock["home_team"], lock["away_team"],
+         str(lock["date"])[:10], lock["pick"])
+        for lock in slop_locks
+    }
+    shadow_slop_locks = [
+        lock for lock in candidate_slop_locks
+        if ("slop_lock", lock["home_team"], lock["away_team"],
+            str(lock["date"])[:10], lock["pick"]) not in published_slop_keys
+    ]
+    for lock in list(slop_locks) + shadow_slop_locks:
         pk = ("slop_lock", lock["home_team"], lock["away_team"],
               str(lock["date"])[:10], lock["pick"])
-        if pk not in existing_keys:
-            new_pick = {
-                "pick_date": today_str,
-                "type": "slop_lock",
-                "market_type": "moneyline",
-                "home_team": lock["home_team"],
-                "away_team": lock["away_team"],
-                "match_date": str(lock["date"])[:10],
-                "start_time": lock.get("start_time"),
-                **_pitcher_publication_fields(lock),
-                "pick": lock["pick"],
-                "model_prob": lock["model_prob"],
-                "implied_prob": lock["implied_prob"],
-                "market_implied_prob": lock.get("market_implied_prob"),
-                "edge": lock["edge"],
-                "expected_value": lock.get("expected_value", 0.0),
-                "american_odds": lock["american_odds"],
-                "decimal_odds": lock["decimal_odds"],
-                "confidence_score": lock.get("confidence_score"),
-                "selection_lane": lock.get("selection_lane"),
-                "kelly_fraction": lock.get("kelly_fraction"),
-                "fractional_kelly": lock.get("fractional_kelly"),
-                "run_id": run_context.get("run_id"),
-                "run_type": run_context.get("run_type"),
-                "snapshot_timestamp": run_context.get("run_timestamp"),
-                "snapshot_path": snapshot_relpath,
-                "evaluated": False,
-            }
-            past_picks.append(new_pick)
+        published = pk in published_slop_keys
+        existing = existing_keys.get(pk)
+        if existing is not None:
+            # A shadow pick whose lane has since gone live upgrades in place.
+            if published and not existing.get("published", True):
+                existing["published"] = True
+            continue
+        new_pick = {
+            "pick_date": today_str,
+            "type": "slop_lock",
+            "market_type": "moneyline",
+            "home_team": lock["home_team"],
+            "away_team": lock["away_team"],
+            "match_date": str(lock["date"])[:10],
+            "start_time": lock.get("start_time"),
+            **_pitcher_publication_fields(lock),
+            "pick": lock["pick"],
+            "model_prob": lock["model_prob"],
+            "implied_prob": lock["implied_prob"],
+            "market_implied_prob": lock.get("market_implied_prob"),
+            "edge": lock["edge"],
+            "expected_value": lock.get("expected_value", 0.0),
+            "american_odds": lock["american_odds"],
+            "decimal_odds": lock["decimal_odds"],
+            "confidence_score": lock.get("confidence_score"),
+            "selection_lane": lock.get("selection_lane"),
+            "kelly_fraction": lock.get("kelly_fraction"),
+            "fractional_kelly": lock.get("fractional_kelly"),
+            "run_id": run_context.get("run_id"),
+            "run_type": run_context.get("run_type"),
+            "snapshot_timestamp": run_context.get("run_timestamp"),
+            "snapshot_path": snapshot_relpath,
+            "published": published,
+            "evaluated": False,
+        }
+        past_picks.append(new_pick)
+        existing_keys[pk] = new_pick
+        if published:
             source_record = record_lookup.get(
                 ("moneyline", lock["home_team"], lock["away_team"], str(lock["date"])[:10])
             )
@@ -3960,9 +3991,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "run_type": run_context.get("run_type"),
                 "snapshot_timestamp": run_context.get("run_timestamp"),
                 "snapshot_path": snapshot_relpath,
+                "published": True,
                 "evaluated": False,
             }
             past_picks.append(new_pick)
+            existing_keys[pk] = new_pick
             source_record = record_lookup.get(
                 ("moneyline", longslop["home_team"], longslop["away_team"], str(longslop["date"])[:10])
             )
@@ -3978,39 +4011,57 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 )
             )
 
-    for total_lock in totals_locks:
+    published_totals_keys = {
+        ("total_lock", lock["home_team"], lock["away_team"],
+         str(lock["date"])[:10], lock["pick"])
+        for lock in totals_locks
+    }
+    shadow_totals_locks = [
+        lock for lock in candidate_totals_locks
+        if ("total_lock", lock["home_team"], lock["away_team"],
+            str(lock["date"])[:10], lock["pick"]) not in published_totals_keys
+    ]
+    for total_lock in list(totals_locks) + shadow_totals_locks:
         pk = ("total_lock", total_lock["home_team"], total_lock["away_team"],
               str(total_lock["date"])[:10], total_lock["pick"])
-        if pk not in existing_keys:
-            new_pick = {
-                "pick_date": today_str,
-                "type": "total_lock",
-                "market_type": "total",
-                "home_team": total_lock["home_team"],
-                "away_team": total_lock["away_team"],
-                "match_date": str(total_lock["date"])[:10],
-                "start_time": total_lock.get("start_time"),
-                **_pitcher_publication_fields(total_lock),
-                "pick": total_lock["pick"],
-                "total_line": total_lock.get("total_line"),
-                "expected_total": total_lock.get("expected_total"),
-                "model_prob": total_lock["model_prob"],
-                "implied_prob": total_lock["implied_prob"],
-                "market_implied_prob": total_lock.get("market_implied_prob"),
-                "edge": total_lock["edge"],
-                "expected_value": total_lock.get("expected_value", 0.0),
-                "american_odds": total_lock["american_odds"],
-                "decimal_odds": total_lock["decimal_odds"],
-                "confidence_score": total_lock.get("confidence_score"),
-                "kelly_fraction": total_lock.get("kelly_fraction"),
-                "fractional_kelly": total_lock.get("fractional_kelly"),
-                "run_id": run_context.get("run_id"),
-                "run_type": run_context.get("run_type"),
-                "snapshot_timestamp": run_context.get("run_timestamp"),
-                "snapshot_path": snapshot_relpath,
-                "evaluated": False,
-            }
-            past_picks.append(new_pick)
+        published = pk in published_totals_keys
+        existing = existing_keys.get(pk)
+        if existing is not None:
+            if published and not existing.get("published", True):
+                existing["published"] = True
+            continue
+        new_pick = {
+            "pick_date": today_str,
+            "type": "total_lock",
+            "market_type": "total",
+            "home_team": total_lock["home_team"],
+            "away_team": total_lock["away_team"],
+            "match_date": str(total_lock["date"])[:10],
+            "start_time": total_lock.get("start_time"),
+            **_pitcher_publication_fields(total_lock),
+            "pick": total_lock["pick"],
+            "total_line": total_lock.get("total_line"),
+            "expected_total": total_lock.get("expected_total"),
+            "model_prob": total_lock["model_prob"],
+            "implied_prob": total_lock["implied_prob"],
+            "market_implied_prob": total_lock.get("market_implied_prob"),
+            "edge": total_lock["edge"],
+            "expected_value": total_lock.get("expected_value", 0.0),
+            "american_odds": total_lock["american_odds"],
+            "decimal_odds": total_lock["decimal_odds"],
+            "confidence_score": total_lock.get("confidence_score"),
+            "kelly_fraction": total_lock.get("kelly_fraction"),
+            "fractional_kelly": total_lock.get("fractional_kelly"),
+            "run_id": run_context.get("run_id"),
+            "run_type": run_context.get("run_type"),
+            "snapshot_timestamp": run_context.get("run_timestamp"),
+            "snapshot_path": snapshot_relpath,
+            "published": published,
+            "evaluated": False,
+        }
+        past_picks.append(new_pick)
+        existing_keys[pk] = new_pick
+        if published:
             source_record = record_lookup.get(
                 ("total", total_lock["home_team"], total_lock["away_team"], str(total_lock["date"])[:10])
             )

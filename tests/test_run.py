@@ -1875,7 +1875,9 @@ class TestResultsLog:
         assert picks[0]["closing_line_value"] == pytest.approx(0.032, abs=1e-6)
         assert picks[0]["closing_market_books"] == 7
 
-    def test_publication_guard_can_suppress_moneylines_but_keep_totals(self):
+    def test_publication_guard_trickles_undersampled_but_healthy_moneylines(self):
+        """A lane short only on settled volume (research status) with a strong
+        health score trickle-publishes at the hold cap instead of going dark."""
         from pipeline.run import _build_publication_guard
 
         past_picks = []
@@ -1926,11 +1928,12 @@ class TestResultsLog:
 
         guard = _build_publication_guard(past_picks, sport, enforce_live_guard=True)
 
-        assert guard["allow_moneyline"] is False
+        assert guard["allow_moneyline"] is True
+        assert guard["moneyline_publish_cap"] == 1
         assert guard["allow_totals"] is True
-        assert guard["status"] == "partial"
-        assert "need more settled moneylines picks (8/10)" in guard["reason"]
-        assert guard["allow_longslop"] is False
+        assert guard["status"] == "live"
+        assert guard["lane_guards"]["moneyline"]["status"] == "research"
+        assert "need more settled moneylines picks (8/10)" in guard["lane_guards"]["moneyline"]["reasons"]
         assert guard["allow_slimegrinder"] is False
 
     def test_hydrate_pick_decision_log_market_snapshots_uses_saved_snapshot_odds(self, tmp_path):
@@ -1979,6 +1982,228 @@ class TestResultsLog:
             rows = list(csv.DictReader(f))
         assert rows[0]["market_snapshot_json"]
         assert "1.95" in rows[0]["market_snapshot_json"]
+
+
+class TestPublicationGuardTrickle:
+    @staticmethod
+    def _healthy_moneyline_picks():
+        return [
+            {
+                "evaluated": True,
+                "market_type": "moneyline",
+                "type": "slop_lock",
+                "closing_line_value": 0.02,
+                "model_prob": 0.52,
+                "won": True,
+                "decimal_odds": 2.0,
+                "match_date": f"2026-03-{10 + idx:02d}",
+            }
+            for idx in range(10)
+        ]
+
+    @staticmethod
+    def _guard_sport_config():
+        return {
+            "publication_min_evaluated_picks": 10,
+            "publication_min_evaluated_totals_picks": 8,
+            "totals_max_picks": 3,
+            "totals_hold_max_picks": 2,
+            "totals_hold_min_health_score": 0.75,
+            "moneyline_health_recent_window": 8,
+            "moneyline_health_min_recent_evaluated": 5,
+            "moneyline_health_min_recent_roi": 0.0,
+            "moneyline_health_max_overconfidence_gap": 0.12,
+            "moneyline_clv_guard_window": 8,
+            "moneyline_clv_guard_min_tracked": 5,
+            "moneyline_clv_guard_min_avg": 0.0,
+            "totals_health_recent_window": 8,
+            "totals_health_min_recent_evaluated": 5,
+            "totals_health_min_recent_roi": 0.0,
+            "totals_health_max_overconfidence_gap": 0.1,
+            "totals_clv_guard_window": 8,
+            "totals_clv_guard_min_tracked": 8,
+            "totals_clv_guard_min_avg": 0.0,
+            "enable_longslop": False,
+            "enable_slimegrinder": False,
+        }
+
+    def test_research_status_totals_get_capped_trickle(self):
+        """A lane failing only on data insufficiency (research status) should
+        still publish a capped trickle when its health score clears the floor."""
+        from pipeline.run import _build_publication_guard
+
+        past_picks = self._healthy_moneyline_picks()
+        for idx in range(10):
+            pick = {
+                "evaluated": True,
+                "market_type": "total",
+                "type": "total_lock",
+                "closing_line_value": 0.2,
+                "model_prob": 0.53,
+                "won": True,
+                "decimal_odds": 2.0,
+                "match_date": f"2026-03-{10 + idx:02d}",
+            }
+            if idx == 9:
+                # Newest pick is missing its closing-line snapshot: 7/8 tracked
+                # in the recent window, which is insufficiency, not bad play.
+                pick.pop("closing_line_value")
+            past_picks.append(pick)
+
+        guard = _build_publication_guard(past_picks, self._guard_sport_config(), enforce_live_guard=True)
+
+        assert guard["allow_moneyline"] is True
+        assert guard["allow_totals"] is True
+        assert guard["totals_publish_cap"] == 2
+        assert guard["lane_guards"]["totals"]["status"] == "research"
+
+    def test_cold_start_lane_stays_suppressed(self):
+        """A brand-new sport with no settled evidence must not trickle-publish:
+        its health score is too low to clear the hold floor."""
+        from pipeline.run import _build_publication_guard
+
+        guard = _build_publication_guard([], self._guard_sport_config(), enforce_live_guard=True)
+
+        assert guard["allow_moneyline"] is False
+        assert guard["moneyline_publish_cap"] is None
+        assert guard["status"] == "suppressed"
+
+
+class TestShadowPickRecording:
+    def _run_nba(self, mock_games, mock_schedule, mock_odds,
+                 sample_nba_matches, sample_nba_box_scores, output_dir, monkeypatch):
+        mock_games.return_value = (sample_nba_matches, sample_nba_box_scores)
+        mock_schedule.return_value = [
+            {
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "date": _TODAY,
+                "start_time": f"{_TODAY}T00:30:00Z",
+            }
+        ]
+        mock_odds.return_value = [
+            {
+                "home_team": "Lakers",
+                "away_team": "Warriors",
+                "commence_time": f"{_TODAY}T00:30:00Z",
+                "home_odds": 2.10,
+                "draw_odds": 0.0,
+                "away_odds": 1.75,
+                "total_line": 224.5,
+                "over_odds": 1.91,
+                "under_odds": 1.95,
+            }
+        ]
+        # The fixture model is a near coin flip, which the pick-tier policy
+        # rejects; tier policy is not under test here, recording is.
+        monkeypatch.setattr("pipeline.run.compute_pick_tier", lambda *a, **k: "LEAN")
+        monkeypatch.setitem(SPORTS["nba"], "totals_feature_min_games", 4)
+        monkeypatch.setitem(SPORTS["nba"], "totals_edge_threshold", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "totals_probability_floor", 0.5)
+        monkeypatch.setitem(SPORTS["nba"], "totals_confidence_threshold", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "totals_max_picks", 1)
+        monkeypatch.setitem(SPORTS["nba"], "slop_lock_edge_threshold", -1.0)
+        monkeypatch.setitem(SPORTS["nba"], "slop_lock_probability_floor", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "slop_lock_confidence_threshold", 0.0)
+        monkeypatch.setitem(SPORTS["nba"], "min_expected_value", -1.0)
+        monkeypatch.setitem(SPORTS["nba"], "slop_lock_lanes", {
+            "near_favorite": {
+                "enabled": True,
+                "edge_floor": -1.0,
+                "probability_floor": 0.0,
+                "min_expected_value": -1.0,
+                "american_odds_min": -100000,
+                "american_odds_max": 100000,
+                "max_picks": 5,
+            },
+        })
+        run_sport_pipeline("nba", output_dir=output_dir)
+
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_nba_espn_schedule")
+    @patch("pipeline.run.fetch_nba_espn_games")
+    def test_suppressed_lanes_record_shadow_picks(
+        self, mock_games, mock_schedule, mock_odds,
+        sample_nba_matches, sample_nba_box_scores, tmp_path, monkeypatch
+    ):
+        # Force live-guard enforcement with an empty pick history: every lane
+        # is suppressed, but candidates must still be recorded as shadows.
+        monkeypatch.setattr("pipeline.run._is_live_public_output", lambda base_dir: True)
+        output_dir = str(tmp_path / "nba")
+
+        self._run_nba(mock_games, mock_schedule, mock_odds,
+                      sample_nba_matches, sample_nba_box_scores, output_dir, monkeypatch)
+
+        with open(os.path.join(output_dir, "predictions.json")) as f:
+            data = json.load(f)
+        assert data["publication_guard"]["status"] == "suppressed"
+        assert data["slop_locks"] == []
+        assert data["totals_locks"] == []
+
+        with open(os.path.join(output_dir, "pick_history.json")) as f:
+            pick_history = json.load(f)
+        picks = pick_history["picks"]
+        assert picks, "suppressed run must still record shadow picks"
+        assert all(pick["published"] is False for pick in picks)
+        assert any(pick["type"] == "slop_lock" for pick in picks)
+        assert any(pick["type"] == "total_lock" for pick in picks)
+
+        # Shadow picks must not appear in the public record.
+        assert data["pick_stats"]["all"]["total"] == 0
+
+        # Shadow picks must not produce pick-decision ledger rows.
+        decision_log_path = os.path.join(tmp_path, "tracking", "pick_decisions.csv")
+        if os.path.exists(decision_log_path):
+            with open(decision_log_path, newline="") as f:
+                assert list(csv.DictReader(f)) == []
+
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_nba_espn_schedule")
+    @patch("pipeline.run.fetch_nba_espn_games")
+    def test_shadow_pick_upgraded_when_lane_goes_live(
+        self, mock_games, mock_schedule, mock_odds,
+        sample_nba_matches, sample_nba_box_scores, tmp_path, monkeypatch
+    ):
+        output_dir = str(tmp_path / "nba")
+
+        # Run 1: guard enforced, everything suppressed -> shadows only.
+        monkeypatch.setattr("pipeline.run._is_live_public_output", lambda base_dir: True)
+        self._run_nba(mock_games, mock_schedule, mock_odds,
+                      sample_nba_matches, sample_nba_box_scores, output_dir, monkeypatch)
+        with open(os.path.join(output_dir, "pick_history.json")) as f:
+            shadow_count = len(json.load(f)["picks"])
+        assert shadow_count > 0
+
+        # Run 2: guard not enforced (research mode publishes everything). The
+        # same candidates must upgrade in place, not duplicate.
+        monkeypatch.setattr("pipeline.run._is_live_public_output", lambda base_dir: False)
+        self._run_nba(mock_games, mock_schedule, mock_odds,
+                      sample_nba_matches, sample_nba_box_scores, output_dir, monkeypatch)
+
+        with open(os.path.join(output_dir, "pick_history.json")) as f:
+            picks = json.load(f)["picks"]
+        assert len(picks) == shadow_count
+        assert all(pick["published"] is True for pick in picks)
+
+    def test_compute_pick_stats_excludes_shadow_picks(self):
+        from pipeline.run import _compute_pick_stats
+
+        picks = [
+            {"type": "slop_lock", "evaluated": True, "won": True, "push": False,
+             "decimal_odds": 2.0, "published": True},
+            {"type": "slop_lock", "evaluated": True, "won": True, "push": False,
+             "decimal_odds": 2.0},  # legacy pick without flag counts as published
+            {"type": "slop_lock", "evaluated": True, "won": False, "push": False,
+             "decimal_odds": 2.0, "published": False},
+        ]
+
+        stats = _compute_pick_stats(picks)
+
+        assert stats["slop_lock"]["total"] == 2
+        assert stats["slop_lock"]["evaluated"] == 2
+        assert stats["slop_lock"]["wins"] == 2
+        assert stats["slop_lock"]["losses"] == 0
+        assert stats["all"]["total"] == 2
 
 
 class TestOddsTracking:
