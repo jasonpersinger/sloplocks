@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-07-02T13:45:58Z",
-  "run_id": "daily-20260702T134519760342Z",
+  "generated_at": "2026-07-02T18:26:40Z",
+  "run_id": "daily-20260702T182606812535Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-07-02T13:45:19Z",
-  "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T134519760342Z.json",
+  "snapshot_timestamp": "2026-07-02T18:26:06Z",
+  "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T182606812535Z.json",
   "sport": "wnba",
   "sport_name": "WNBA",
   "outcomes": [
@@ -65,25 +65,32 @@
       "away_injury_profile": null,
       "home_pitcher": null,
       "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
       "away_pitcher": null,
       "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
       "home_lineup_profile": null,
       "away_lineup_profile": null,
       "home_bullpen_tax": null,
       "away_bullpen_tax": null,
       "weather": null,
-      "pick": "home",
-      "model_prob": 0.501,
-      "edge": 0.0632,
-      "expected_value": 0.1843,
-      "kelly_fraction": 0.0784,
-      "fractional_kelly": 0.0157,
-      "confidence_score": 33.4,
-      "confidence_stars": 2,
-      "american_odds": 235,
+      "pick": "away",
+      "model_prob": 0.5124,
+      "edge": -0.0619,
+      "expected_value": -0.1066,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 62.5,
+      "confidence_stars": 1,
+      "american_odds": -278,
       "model_probs": {
-        "home": 0.501,
-        "away": 0.499
+        "home": 0.4876,
+        "away": 0.5124
       },
       "individual_models": {
         "elo": {
@@ -101,68 +108,204 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.3535,
-          "raw_model_prob": 0.501,
-          "implied_prob": 0.2903,
-          "market_implied_prob": 0.303,
-          "edge": 0.0632,
-          "expected_value": 0.1843,
-          "decimal_odds": 3.35,
-          "american_odds": 235,
-          "kelly_fraction": 0.0784,
-          "fractional_kelly": 0.0157,
-          "confidence_score": 33.4,
+          "model_prob": 0.3431,
+          "raw_model_prob": 0.4876,
+          "implied_prob": 0.2812,
+          "market_implied_prob": 0.2941,
+          "edge": 0.0619,
+          "expected_value": 0.2352,
+          "decimal_odds": 3.6,
+          "american_odds": 260,
+          "kelly_fraction": 0.0905,
+          "fractional_kelly": 0.0181,
+          "confidence_score": 33.2,
           "is_value": false,
           "unrealistic_flag": true,
-          "hold": 0.0438,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.6465,
-          "raw_model_prob": 0.499,
-          "implied_prob": 0.7097,
-          "market_implied_prob": 0.7407,
-          "edge": -0.0632,
-          "expected_value": -0.1143,
-          "decimal_odds": 1.37,
-          "american_odds": -270,
+          "model_prob": 0.6569,
+          "raw_model_prob": 0.5124,
+          "implied_prob": 0.7188,
+          "market_implied_prob": 0.7519,
+          "edge": -0.0619,
+          "expected_value": -0.1066,
+          "decimal_odds": 1.36,
+          "american_odds": -278,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 60.2,
+          "confidence_score": 62.5,
           "is_value": false,
           "unrealistic_flag": true,
-          "hold": 0.0438,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": 235,
-        "away": -270
+        "home": 260,
+        "away": -278
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 3.35,
-          "away": 1.37
+          "home": 3.6,
+          "away": 1.36
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.7097,
-            "home": 0.2903
+            "away": 0.7188,
+            "home": 0.2812
           },
           "raw_probs": {
-            "away": 0.7407,
-            "home": 0.303
+            "away": 0.7519,
+            "home": 0.2941
           },
-          "hold": 0.0438,
+          "hold": 0.0417,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "FanDuel",
-            "last_update": "2026-07-02T13:45:23Z",
+            "last_update": "2026-07-02T18:26:22Z",
+            "outcomes": {
+              "home": 3.35,
+              "away": 1.33
+            },
+            "raw_probs": {
+              "home": 0.2985,
+              "away": 0.7519
+            },
+            "fair_probs": {
+              "home": 0.2842,
+              "away": 0.7158
+            },
+            "hold": 0.0504
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-07-02T18:24:57Z",
+            "outcomes": {
+              "home": 3.4,
+              "away": 1.33
+            },
+            "raw_probs": {
+              "home": 0.2941,
+              "away": 0.7519
+            },
+            "fair_probs": {
+              "home": 0.2812,
+              "away": 0.7188
+            },
+            "hold": 0.046
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-07-02T18:26:10Z",
+            "outcomes": {
+              "home": 3.6,
+              "away": 1.31
+            },
+            "raw_probs": {
+              "home": 0.2778,
+              "away": 0.7634
+            },
+            "fair_probs": {
+              "home": 0.2668,
+              "away": 0.7332
+            },
+            "hold": 0.0411
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-07-02T18:25:57Z",
+            "outcomes": {
+              "home": 3.25,
+              "away": 1.35
+            },
+            "raw_probs": {
+              "home": 0.3077,
+              "away": 0.7407
+            },
+            "fair_probs": {
+              "home": 0.2935,
+              "away": 0.7065
+            },
+            "hold": 0.0484
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-07-02T18:26:13Z",
+            "outcomes": {
+              "home": 3.45,
+              "away": 1.33
+            },
+            "raw_probs": {
+              "home": 0.2899,
+              "away": 0.7519
+            },
+            "fair_probs": {
+              "home": 0.2782,
+              "away": 0.7218
+            },
+            "hold": 0.0417
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-07-02T18:26:22Z",
+            "outcomes": {
+              "home": 3.45,
+              "away": 1.33
+            },
+            "raw_probs": {
+              "home": 0.2899,
+              "away": 0.7519
+            },
+            "fair_probs": {
+              "home": 0.2782,
+              "away": 0.7218
+            },
+            "hold": 0.0417
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-07-02T18:25:47Z",
+            "outcomes": {
+              "home": 3.5,
+              "away": 1.33
+            },
+            "raw_probs": {
+              "home": 0.2857,
+              "away": 0.7519
+            },
+            "fair_probs": {
+              "home": 0.2754,
+              "away": 0.7246
+            },
+            "hold": 0.0376
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-07-02T18:26:04Z",
+            "outcomes": {
+              "home": 3.4,
+              "away": 1.34
+            },
+            "raw_probs": {
+              "home": 0.2941,
+              "away": 0.7463
+            },
+            "fair_probs": {
+              "home": 0.2827,
+              "away": 0.7173
+            },
+            "hold": 0.0404
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-07-02T18:24:22Z",
             "outcomes": {
               "home": 3.2,
               "away": 1.36
@@ -176,142 +319,6 @@
               "away": 0.7018
             },
             "hold": 0.0478
-          },
-          {
-            "book": "BetMGM",
-            "last_update": "2026-07-02T13:45:00Z",
-            "outcomes": {
-              "home": 3.3,
-              "away": 1.34
-            },
-            "raw_probs": {
-              "home": 0.303,
-              "away": 0.7463
-            },
-            "fair_probs": {
-              "home": 0.2888,
-              "away": 0.7112
-            },
-            "hold": 0.0493
-          },
-          {
-            "book": "DraftKings",
-            "last_update": "2026-07-02T13:45:12Z",
-            "outcomes": {
-              "home": 3.3,
-              "away": 1.35
-            },
-            "raw_probs": {
-              "home": 0.303,
-              "away": 0.7407
-            },
-            "fair_probs": {
-              "home": 0.2903,
-              "away": 0.7097
-            },
-            "hold": 0.0438
-          },
-          {
-            "book": "BetRivers",
-            "last_update": "2026-07-02T13:45:15Z",
-            "outcomes": {
-              "home": 3.1,
-              "away": 1.36
-            },
-            "raw_probs": {
-              "home": 0.3226,
-              "away": 0.7353
-            },
-            "fair_probs": {
-              "home": 0.3049,
-              "away": 0.6951
-            },
-            "hold": 0.0579
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-07-02T13:45:36Z",
-            "outcomes": {
-              "home": 3.34,
-              "away": 1.35
-            },
-            "raw_probs": {
-              "home": 0.2994,
-              "away": 0.7407
-            },
-            "fair_probs": {
-              "home": 0.2878,
-              "away": 0.7122
-            },
-            "hold": 0.0401
-          },
-          {
-            "book": "LowVig.ag",
-            "last_update": "2026-07-02T13:44:50Z",
-            "outcomes": {
-              "home": 3.34,
-              "away": 1.35
-            },
-            "raw_probs": {
-              "home": 0.2994,
-              "away": 0.7407
-            },
-            "fair_probs": {
-              "home": 0.2878,
-              "away": 0.7122
-            },
-            "hold": 0.0401
-          },
-          {
-            "book": "BetUS",
-            "last_update": "2026-07-02T13:45:12Z",
-            "outcomes": {
-              "home": 3.35,
-              "away": 1.35
-            },
-            "raw_probs": {
-              "home": 0.2985,
-              "away": 0.7407
-            },
-            "fair_probs": {
-              "home": 0.2872,
-              "away": 0.7128
-            },
-            "hold": 0.0392
-          },
-          {
-            "book": "Bovada",
-            "last_update": "2026-07-02T13:44:52Z",
-            "outcomes": {
-              "home": 3.25,
-              "away": 1.36
-            },
-            "raw_probs": {
-              "home": 0.3077,
-              "away": 0.7353
-            },
-            "fair_probs": {
-              "home": 0.295,
-              "away": 0.705
-            },
-            "hold": 0.043
-          },
-          {
-            "book": "MyBookie.ag",
-            "last_update": "2026-07-02T13:45:35Z",
-            "outcomes": {
-              "home": 3.12,
-              "away": 1.37
-            },
-            "raw_probs": {
-              "home": 0.3205,
-              "away": 0.7299
-            },
-            "fair_probs": {
-              "home": 0.3051,
-              "away": 0.6949
-            },
-            "hold": 0.0504
           }
         ]
       },
@@ -319,32 +326,32 @@
         "sport": "wnba",
         "home_team": "Mystics",
         "away_team": "Dream",
-        "home_impact": 0.0,
-        "away_impact": -3.0,
+        "home_impact": 1.0,
+        "away_impact": 3.0,
         "individual_factors": [
           {
-            "team": "Dream",
-            "description": "Brionna Jones is a key player and her absence significantly weakens the team's frontcourt.",
+            "team": "Mystics",
+            "description": "Sonia Citron and Georgia Amoore are both Day-To-Day, which could impact team depth and performance if either is unable to play.",
             "direction": "negative",
-            "magnitude": 3.0,
-            "confidence": 0.9
+            "magnitude": 1.0,
+            "confidence": 0.7
           },
           {
             "team": "Dream",
-            "description": "Aaliyah Nye's absence adds to the Dream's injury woes, further depleting their roster depth.",
+            "description": "Aaliyah Nye and Brionna Jones are both out, significantly impacting the Dream's frontcourt and overall depth.",
             "direction": "negative",
-            "magnitude": 2.0,
+            "magnitude": 3.0,
             "confidence": 0.8
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Atlanta Dream are facing significant challenges with both Brionna Jones and Aaliyah Nye out, which severely impacts their competitiveness. The Mystics have no major injuries reported, giving them a qualitative edge in this matchup."
+        "summary": "The Mystics have minor concerns with Citron and Amoore being Day-To-Day, but the Dream face a significant disadvantage with both Nye and Jones out. This gives the Mystics a slight edge at home."
       },
-      "qualitative_summary": "Qualitative (H:0.0 A:-3.0): disagreed. Brionna Jones is a key player and her absence significantly weakens the team's frontcourt.; Aaliyah Nye's absence adds to the Dream's injury woes, further depleting their roster depth.",
-      "run_id": "daily-20260702T134519760342Z",
+      "qualitative_summary": "Qualitative (H:1.0 A:3.0): agreed. Sonia Citron and Georgia Amoore are both Day-To-Day, which could impact team depth and performance if either is unable to play.; Aaliyah Nye and Brionna Jones are both out, significantly impacting the Dream's frontcourt and overall depth.",
+      "run_id": "daily-20260702T182606812535Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-07-02T13:45:19Z",
-      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T134519760342Z.json"
+      "snapshot_timestamp": "2026-07-02T18:26:06Z",
+      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T182606812535Z.json"
     },
     {
       "home_team": "Sun",
@@ -396,25 +403,32 @@
       "away_injury_profile": null,
       "home_pitcher": null,
       "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
       "away_pitcher": null,
       "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
       "home_lineup_profile": null,
       "away_lineup_profile": null,
       "home_bullpen_tax": null,
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "away",
-      "model_prob": 0.5374,
-      "edge": -0.0603,
-      "expected_value": -0.1117,
+      "model_prob": 0.5356,
+      "edge": -0.1272,
+      "expected_value": -0.2093,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
-      "confidence_score": 44.6,
+      "confidence_score": 21.8,
       "confidence_stars": 1,
-      "american_odds": -323,
+      "american_odds": -294,
       "model_probs": {
-        "home": 0.4626,
-        "away": 0.5374
+        "home": 0.4644,
+        "away": 0.5356
       },
       "individual_models": {
         "elo": {
@@ -432,217 +446,217 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.3219,
-          "raw_model_prob": 0.4626,
-          "implied_prob": 0.2616,
-          "market_implied_prob": 0.274,
-          "edge": 0.0603,
-          "expected_value": 0.2072,
-          "decimal_odds": 3.75,
-          "american_odds": 275,
-          "kelly_fraction": 0.0753,
-          "fractional_kelly": 0.0151,
-          "confidence_score": 16.0,
+          "model_prob": 0.4099,
+          "raw_model_prob": 0.4644,
+          "implied_prob": 0.2827,
+          "market_implied_prob": 0.2941,
+          "edge": 0.1272,
+          "expected_value": 0.4347,
+          "decimal_odds": 3.5,
+          "american_odds": 250,
+          "kelly_fraction": 0.1739,
+          "fractional_kelly": 0.0348,
+          "confidence_score": 19.8,
           "is_value": false,
-          "unrealistic_flag": true,
-          "hold": 0.0419,
+          "unrealistic_flag": false,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.6781,
-          "raw_model_prob": 0.5374,
-          "implied_prob": 0.7384,
-          "market_implied_prob": 0.7692,
-          "edge": -0.0603,
-          "expected_value": -0.1117,
-          "decimal_odds": 1.31,
-          "american_odds": -323,
+          "model_prob": 0.5901,
+          "raw_model_prob": 0.5356,
+          "implied_prob": 0.7173,
+          "market_implied_prob": 0.7463,
+          "edge": -0.1272,
+          "expected_value": -0.2093,
+          "decimal_odds": 1.34,
+          "american_odds": -294,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 44.6,
+          "confidence_score": 21.8,
           "is_value": false,
-          "unrealistic_flag": true,
-          "hold": 0.0419,
+          "unrealistic_flag": false,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": 275,
-        "away": -323
+        "home": 250,
+        "away": -294
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 3.75,
-          "away": 1.31
+          "home": 3.5,
+          "away": 1.34
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.7384,
-            "home": 0.2616
+            "away": 0.7173,
+            "home": 0.2827
           },
           "raw_probs": {
-            "away": 0.7692,
-            "home": 0.274
+            "away": 0.7463,
+            "home": 0.2941
           },
-          "hold": 0.0419,
+          "hold": 0.0417,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "FanDuel",
-            "last_update": "2026-07-02T13:45:23Z",
+            "last_update": "2026-07-02T18:26:22Z",
             "outcomes": {
-              "home": 3.45,
-              "away": 1.31
+              "home": 3.25,
+              "away": 1.34
             },
             "raw_probs": {
-              "home": 0.2899,
-              "away": 0.7634
+              "home": 0.3077,
+              "away": 0.7463
             },
             "fair_probs": {
-              "home": 0.2752,
-              "away": 0.7248
+              "home": 0.2919,
+              "away": 0.7081
             },
-            "hold": 0.0532
+            "hold": 0.054
           },
           {
             "book": "DraftKings",
-            "last_update": "2026-07-02T13:45:12Z",
+            "last_update": "2026-07-02T18:26:10Z",
             "outcomes": {
-              "home": 3.6,
-              "away": 1.31
+              "home": 3.4,
+              "away": 1.34
             },
             "raw_probs": {
-              "home": 0.2778,
-              "away": 0.7634
+              "home": 0.2941,
+              "away": 0.7463
             },
             "fair_probs": {
-              "home": 0.2668,
-              "away": 0.7332
+              "home": 0.2827,
+              "away": 0.7173
             },
-            "hold": 0.0411
+            "hold": 0.0404
           },
           {
             "book": "BetMGM",
-            "last_update": "2026-07-02T13:45:00Z",
+            "last_update": "2026-07-02T18:24:57Z",
             "outcomes": {
-              "home": 3.6,
-              "away": 1.31
+              "home": 3.3,
+              "away": 1.34
             },
             "raw_probs": {
-              "home": 0.2778,
-              "away": 0.7634
+              "home": 0.303,
+              "away": 0.7463
             },
             "fair_probs": {
-              "home": 0.2668,
-              "away": 0.7332
+              "home": 0.2888,
+              "away": 0.7112
             },
-            "hold": 0.0411
+            "hold": 0.0493
           },
           {
             "book": "BetRivers",
-            "last_update": "2026-07-02T13:45:15Z",
+            "last_update": "2026-07-02T18:25:57Z",
             "outcomes": {
-              "home": 3.65,
-              "away": 1.28
+              "home": 3.3,
+              "away": 1.34
             },
             "raw_probs": {
-              "home": 0.274,
-              "away": 0.7812
+              "home": 0.303,
+              "away": 0.7463
             },
             "fair_probs": {
-              "home": 0.2596,
-              "away": 0.7404
+              "home": 0.2888,
+              "away": 0.7112
             },
-            "hold": 0.0552
+            "hold": 0.0493
           },
           {
             "book": "BetOnline.ag",
-            "last_update": "2026-07-02T13:45:36Z",
+            "last_update": "2026-07-02T18:26:13Z",
             "outcomes": {
-              "home": 3.67,
-              "away": 1.3
+              "home": 3.45,
+              "away": 1.33
             },
             "raw_probs": {
-              "home": 0.2725,
-              "away": 0.7692
+              "home": 0.2899,
+              "away": 0.7519
             },
             "fair_probs": {
-              "home": 0.2616,
-              "away": 0.7384
+              "home": 0.2782,
+              "away": 0.7218
             },
             "hold": 0.0417
           },
           {
             "book": "LowVig.ag",
-            "last_update": "2026-07-02T13:44:50Z",
+            "last_update": "2026-07-02T18:26:22Z",
             "outcomes": {
-              "home": 3.67,
-              "away": 1.3
+              "home": 3.45,
+              "away": 1.33
             },
             "raw_probs": {
-              "home": 0.2725,
-              "away": 0.7692
+              "home": 0.2899,
+              "away": 0.7519
             },
             "fair_probs": {
-              "home": 0.2616,
-              "away": 0.7384
+              "home": 0.2782,
+              "away": 0.7218
             },
             "hold": 0.0417
           },
           {
             "book": "BetUS",
-            "last_update": "2026-07-02T13:45:12Z",
+            "last_update": "2026-07-02T18:25:47Z",
             "outcomes": {
-              "home": 3.75,
-              "away": 1.29
+              "home": 3.5,
+              "away": 1.33
             },
             "raw_probs": {
-              "home": 0.2667,
-              "away": 0.7752
+              "home": 0.2857,
+              "away": 0.7519
             },
             "fair_probs": {
-              "home": 0.256,
-              "away": 0.744
+              "home": 0.2754,
+              "away": 0.7246
             },
-            "hold": 0.0419
+            "hold": 0.0376
           },
           {
             "book": "Bovada",
-            "last_update": "2026-07-02T13:44:52Z",
+            "last_update": "2026-07-02T18:26:04Z",
             "outcomes": {
-              "home": 3.75,
-              "away": 1.29
+              "home": 3.5,
+              "away": 1.33
             },
             "raw_probs": {
-              "home": 0.2667,
-              "away": 0.7752
+              "home": 0.2857,
+              "away": 0.7519
             },
             "fair_probs": {
-              "home": 0.256,
-              "away": 0.744
+              "home": 0.2754,
+              "away": 0.7246
             },
-            "hold": 0.0419
+            "hold": 0.0376
           },
           {
             "book": "MyBookie.ag",
-            "last_update": "2026-07-02T13:45:35Z",
+            "last_update": "2026-07-02T18:24:22Z",
             "outcomes": {
-              "home": 3.65,
-              "away": 1.29
+              "home": 3.3,
+              "away": 1.34
             },
             "raw_probs": {
-              "home": 0.274,
-              "away": 0.7752
+              "home": 0.303,
+              "away": 0.7463
             },
             "fair_probs": {
-              "home": 0.2611,
-              "away": 0.7389
+              "home": 0.2888,
+              "away": 0.7112
             },
-            "hold": 0.0492
+            "hold": 0.0493
           }
         ]
       },
@@ -651,31 +665,31 @@
         "home_team": "Sun",
         "away_team": "Wings",
         "home_impact": 0.0,
-        "away_impact": -2.0,
+        "away_impact": -3.0,
         "individual_factors": [
           {
             "team": "Wings",
-            "description": "Odyssey Sims is a key player for the Wings and her absence will impact the team's performance significantly.",
+            "description": "Odyssey Sims is a key playmaker and her absence will significantly impact the team's offensive flow.",
             "direction": "negative",
-            "magnitude": 2.0,
+            "magnitude": 3.0,
             "confidence": 0.9
           },
           {
             "team": "Wings",
-            "description": "Alanna Smith is also out, which further weakens the Wings' roster depth.",
+            "description": "Alanna Smith is a solid contributor and her absence adds to the overall impact of missing key players.",
             "direction": "negative",
-            "magnitude": 1.0,
+            "magnitude": 2.0,
             "confidence": 0.8
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Dallas Wings will be without key players Odyssey Sims and Alanna Smith, which significantly impacts their overall performance. The Sun benefit from this situation, giving them a qualitative edge."
+        "summary": "The Dallas Wings are missing two key players, Odyssey Sims and Alanna Smith, which significantly impacts their performance. The absence of Sims, a key playmaker, is particularly detrimental, leading to a total away impact score of -3. The Sun benefit from this situation, giving them a qualitative edge at home."
       },
-      "qualitative_summary": "Qualitative (H:0.0 A:-2.0): disagreed. Odyssey Sims is a key player for the Wings and her absence will impact the team's performance significantly.; Alanna Smith is also out, which further weakens the Wings' roster depth.",
-      "run_id": "daily-20260702T134519760342Z",
+      "qualitative_summary": "Qualitative (H:0.0 A:-3.0): disagreed. Odyssey Sims is a key playmaker and her absence will significantly impact the team's offensive flow.; Alanna Smith is a solid contributor and her absence adds to the overall impact of missing key players.",
+      "run_id": "daily-20260702T182606812535Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-07-02T13:45:19Z",
-      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T134519760342Z.json"
+      "snapshot_timestamp": "2026-07-02T18:26:06Z",
+      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T182606812535Z.json"
     },
     {
       "home_team": "Mercury",
@@ -727,25 +741,32 @@
       "away_injury_profile": null,
       "home_pitcher": null,
       "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
       "away_pitcher": null,
       "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
       "home_lineup_profile": null,
       "away_lineup_profile": null,
       "home_bullpen_tax": null,
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.6727,
-      "edge": 0.0469,
-      "expected_value": 0.047,
-      "kelly_fraction": 0.077,
-      "fractional_kelly": 0.0154,
-      "confidence_score": 62.4,
-      "confidence_stars": 2,
-      "american_odds": -164,
+      "model_prob": 0.6707,
+      "edge": 0.0528,
+      "expected_value": 0.0655,
+      "kelly_fraction": 0.1008,
+      "fractional_kelly": 0.0202,
+      "confidence_score": 64.3,
+      "confidence_stars": 3,
+      "american_odds": -154,
       "model_probs": {
-        "home": 0.6727,
-        "away": 0.3273
+        "home": 0.6707,
+        "away": 0.3293
       },
       "individual_models": {
         "elo": {
@@ -763,217 +784,217 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.6503,
-          "raw_model_prob": 0.6727,
-          "implied_prob": 0.6034,
-          "market_implied_prob": 0.6289,
-          "edge": 0.0469,
-          "expected_value": 0.047,
-          "decimal_odds": 1.61,
-          "american_odds": -164,
-          "kelly_fraction": 0.077,
-          "fractional_kelly": 0.0154,
-          "confidence_score": 62.4,
+          "model_prob": 0.6458,
+          "raw_model_prob": 0.6707,
+          "implied_prob": 0.593,
+          "market_implied_prob": 0.6173,
+          "edge": 0.0528,
+          "expected_value": 0.0655,
+          "decimal_odds": 1.65,
+          "american_odds": -154,
+          "kelly_fraction": 0.1008,
+          "fractional_kelly": 0.0202,
+          "confidence_score": 64.3,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0451,
+          "hold": 0.0428,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.3497,
-          "raw_model_prob": 0.3273,
-          "implied_prob": 0.3966,
-          "market_implied_prob": 0.4082,
-          "edge": -0.0469,
-          "expected_value": -0.1257,
-          "decimal_odds": 2.5,
-          "american_odds": 150,
+          "model_prob": 0.3542,
+          "raw_model_prob": 0.3293,
+          "implied_prob": 0.407,
+          "market_implied_prob": 0.4237,
+          "edge": -0.0528,
+          "expected_value": -0.1428,
+          "decimal_odds": 2.42,
+          "american_odds": 142,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
           "confidence_score": 7.9,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0451,
+          "hold": 0.0428,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": -164,
-        "away": 150
+        "home": -154,
+        "away": 142
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 1.61,
-          "away": 2.5
+          "home": 1.65,
+          "away": 2.42
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.3966,
-            "home": 0.6034
+            "away": 0.407,
+            "home": 0.593
           },
           "raw_probs": {
-            "away": 0.4082,
-            "home": 0.6289
+            "away": 0.4237,
+            "home": 0.6173
           },
-          "hold": 0.0451,
+          "hold": 0.0428,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "FanDuel",
-            "last_update": "2026-07-02T13:45:23Z",
-            "outcomes": {
-              "home": 1.59,
-              "away": 2.38
-            },
-            "raw_probs": {
-              "home": 0.6289,
-              "away": 0.4202
-            },
-            "fair_probs": {
-              "home": 0.5995,
-              "away": 0.4005
-            },
-            "hold": 0.0491
-          },
-          {
-            "book": "DraftKings",
-            "last_update": "2026-07-02T13:45:12Z",
+            "last_update": "2026-07-02T18:26:22Z",
             "outcomes": {
               "home": 1.57,
-              "away": 2.45
+              "away": 2.42
             },
             "raw_probs": {
               "home": 0.6369,
-              "away": 0.4082
+              "away": 0.4132
             },
             "fair_probs": {
-              "home": 0.6095,
-              "away": 0.3905
+              "home": 0.6065,
+              "away": 0.3935
             },
-            "hold": 0.0451
+            "hold": 0.0502
+          },
+          {
+            "book": "DraftKings",
+            "last_update": "2026-07-02T18:26:10Z",
+            "outcomes": {
+              "home": 1.62,
+              "away": 2.36
+            },
+            "raw_probs": {
+              "home": 0.6173,
+              "away": 0.4237
+            },
+            "fair_probs": {
+              "home": 0.593,
+              "away": 0.407
+            },
+            "hold": 0.041
           },
           {
             "book": "BetMGM",
-            "last_update": "2026-07-02T13:45:00Z",
+            "last_update": "2026-07-02T18:24:57Z",
             "outcomes": {
-              "home": 1.59,
-              "away": 2.4
+              "home": 1.62,
+              "away": 2.35
             },
             "raw_probs": {
-              "home": 0.6289,
-              "away": 0.4167
+              "home": 0.6173,
+              "away": 0.4255
             },
             "fair_probs": {
-              "home": 0.6015,
-              "away": 0.3985
+              "home": 0.5919,
+              "away": 0.4081
             },
-            "hold": 0.0456
+            "hold": 0.0428
           },
           {
             "book": "BetRivers",
-            "last_update": "2026-07-02T13:45:15Z",
+            "last_update": "2026-07-02T18:25:57Z",
             "outcomes": {
-              "home": 1.54,
-              "away": 2.5
-            },
-            "raw_probs": {
-              "home": 0.6494,
-              "away": 0.4
-            },
-            "fair_probs": {
-              "home": 0.6188,
-              "away": 0.3812
-            },
-            "hold": 0.0494
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-07-02T13:45:36Z",
-            "outcomes": {
-              "home": 1.61,
-              "away": 2.45
-            },
-            "raw_probs": {
-              "home": 0.6211,
-              "away": 0.4082
-            },
-            "fair_probs": {
-              "home": 0.6034,
-              "away": 0.3966
-            },
-            "hold": 0.0293
-          },
-          {
-            "book": "LowVig.ag",
-            "last_update": "2026-07-02T13:44:50Z",
-            "outcomes": {
-              "home": 1.61,
-              "away": 2.45
-            },
-            "raw_probs": {
-              "home": 0.6211,
-              "away": 0.4082
-            },
-            "fair_probs": {
-              "home": 0.6034,
-              "away": 0.3966
-            },
-            "hold": 0.0293
-          },
-          {
-            "book": "BetUS",
-            "last_update": "2026-07-02T13:45:12Z",
-            "outcomes": {
-              "home": 1.59,
-              "away": 2.48
-            },
-            "raw_probs": {
-              "home": 0.6289,
-              "away": 0.4032
-            },
-            "fair_probs": {
-              "home": 0.6093,
-              "away": 0.3907
-            },
-            "hold": 0.0322
-          },
-          {
-            "book": "Bovada",
-            "last_update": "2026-07-02T13:44:52Z",
-            "outcomes": {
-              "home": 1.61,
+              "home": 1.56,
               "away": 2.4
             },
             "raw_probs": {
-              "home": 0.6211,
+              "home": 0.641,
               "away": 0.4167
             },
             "fair_probs": {
-              "home": 0.5985,
-              "away": 0.4015
+              "home": 0.6061,
+              "away": 0.3939
             },
-            "hold": 0.0378
+            "hold": 0.0577
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-07-02T18:26:13Z",
+            "outcomes": {
+              "home": 1.65,
+              "away": 2.35
+            },
+            "raw_probs": {
+              "home": 0.6061,
+              "away": 0.4255
+            },
+            "fair_probs": {
+              "home": 0.5875,
+              "away": 0.4125
+            },
+            "hold": 0.0316
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-07-02T18:26:22Z",
+            "outcomes": {
+              "home": 1.65,
+              "away": 2.35
+            },
+            "raw_probs": {
+              "home": 0.6061,
+              "away": 0.4255
+            },
+            "fair_probs": {
+              "home": 0.5875,
+              "away": 0.4125
+            },
+            "hold": 0.0316
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-07-02T18:25:47Z",
+            "outcomes": {
+              "home": 1.62,
+              "away": 2.4
+            },
+            "raw_probs": {
+              "home": 0.6173,
+              "away": 0.4167
+            },
+            "fair_probs": {
+              "home": 0.597,
+              "away": 0.403
+            },
+            "hold": 0.034
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-07-02T18:26:04Z",
+            "outcomes": {
+              "home": 1.62,
+              "away": 2.35
+            },
+            "raw_probs": {
+              "home": 0.6173,
+              "away": 0.4255
+            },
+            "fair_probs": {
+              "home": 0.5919,
+              "away": 0.4081
+            },
+            "hold": 0.0428
           },
           {
             "book": "MyBookie.ag",
-            "last_update": "2026-07-02T13:45:35Z",
+            "last_update": "2026-07-02T18:24:22Z",
             "outcomes": {
-              "home": 1.61,
-              "away": 2.33
+              "home": 1.6,
+              "away": 2.36
             },
             "raw_probs": {
-              "home": 0.6211,
-              "away": 0.4292
+              "home": 0.625,
+              "away": 0.4237
             },
             "fair_probs": {
-              "home": 0.5914,
-              "away": 0.4086
+              "home": 0.596,
+              "away": 0.404
             },
-            "hold": 0.0503
+            "hold": 0.0487
           }
         ]
       },
@@ -981,32 +1002,32 @@
         "sport": "wnba",
         "home_team": "Mercury",
         "away_team": "Storm",
-        "home_impact": -3.0,
+        "home_impact": -4.0,
         "away_impact": -3.0,
         "individual_factors": [
           {
             "team": "Mercury",
-            "description": "Multiple key players out, including starters, impacting overall team performance.",
+            "description": "Multiple key players out, including starters, significantly impacting team depth and performance.",
             "direction": "negative",
-            "magnitude": 3.0,
+            "magnitude": 4.0,
             "confidence": 0.9
           },
           {
             "team": "Storm",
-            "description": "Two key players out, including a starter, affecting team depth and performance.",
+            "description": "Two key players out, including a starter, impacting team performance but less severe than Mercury's situation.",
             "direction": "negative",
             "magnitude": 3.0,
-            "confidence": 0.9
+            "confidence": 0.8
           }
         ],
-        "net_qualitative_edge": "none",
-        "summary": "Both teams are significantly impacted by injuries, with multiple key players out for each side. This results in a balanced qualitative edge, as both teams face similar challenges."
+        "net_qualitative_edge": "away",
+        "summary": "The Mercury are facing a significant disadvantage with multiple key players out, while the Storm also have injuries but to a lesser extent. This gives the Storm a qualitative edge in this matchup."
       },
-      "qualitative_summary": "Qualitative (H:-3.0 A:-3.0): no effect. Multiple key players out, including starters, impacting overall team performance.; Two key players out, including a starter, affecting team depth and performance.",
-      "run_id": "daily-20260702T134519760342Z",
+      "qualitative_summary": "Qualitative (H:-4.0 A:-3.0): disagreed. Multiple key players out, including starters, significantly impacting team depth and performance.; Two key players out, including a starter, impacting team performance but less severe than Mercury's situation.",
+      "run_id": "daily-20260702T182606812535Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-07-02T13:45:19Z",
-      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T134519760342Z.json"
+      "snapshot_timestamp": "2026-07-02T18:26:06Z",
+      "snapshot_path": "tracking/snapshots/2026-07-02/wnba/daily-20260702T182606812535Z.json"
     }
   ],
   "totals_matches": [],
