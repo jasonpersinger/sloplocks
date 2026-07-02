@@ -1,10 +1,12 @@
-const CACHE_NAME = 'sloplocks-v8';
+const CACHE_NAME = 'sloplocks-v9';
+// Relative URLs so the app works from a subpath (GitHub Pages serves the
+// site at /sloplocks/); they resolve against the service worker's scope.
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  './',
+  'index.html',
+  'manifest.json',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap'
 ];
 
@@ -36,7 +38,7 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
 
   // Network-first for data files (they update daily)
-  if (url.pathname.startsWith('/data/')) {
+  if (url.pathname.includes('/data/')) {
     event.respondWith(
       fetch(request)
         .then(response => {
@@ -66,7 +68,7 @@ self.addEventListener('fetch', event => {
       .catch(() => {
         // Offline fallback for navigation requests
         if (request.mode === 'navigate') {
-          return caches.match('/index.html');
+          return caches.match('index.html');
         }
         return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
       })

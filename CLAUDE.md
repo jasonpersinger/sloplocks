@@ -1,7 +1,7 @@
 # SLOP LOCKS — Project Brief
 
 ## What is this?
-Multi-sport prediction engine with ensemble models and automated betting edge detection. Live at https://sloplocks.lol.
+Multi-sport prediction engine with ensemble models and automated betting edge detection. Live at https://jasonpersinger.me/sloplocks/ (GitHub Pages).
 
 ## Supported Sports
 - **NBA** — 2-way outcomes (home/away), Elo + AdjustedEfficiency + FourFactors ensemble with B2B rest adjustment
@@ -10,8 +10,8 @@ Multi-sport prediction engine with ensemble models and automated betting edge de
 - Pipeline: Python 3.11+ (scipy, pandas, numpy, requests, beautifulsoup4)
 - Frontend: Single-file HTML/CSS/JS (index.html)
 - Automation: GitHub Actions (daily cron at 6am UTC)
-- Hosting: Netlify (auto-deploy from GitHub on push to master)
-- Domain: sloplocks.lol
+- Hosting: GitHub Pages (auto-deploy from master branch root on push)
+- URL: jasonpersinger.me/sloplocks (subpath — keep frontend asset/data paths relative)
 
 ## Architecture
 - GitHub Action runs daily at 6am UTC
@@ -99,7 +99,7 @@ sloplocks/
 - ENSEMBLE_ACCURACY_WINDOW = 10 (rolling window for model weights)
 
 ## Deployment
-Push to master auto-deploys to Netlify. Pipeline runs daily via GitHub Action, commits updated `data/{sport}/predictions.json`. Bump `CACHE_NAME` in sw.js when updating static assets.
+Push to master auto-deploys via GitHub Pages (GitHub-managed pages-build-deployment workflow). Pipeline runs daily via GitHub Action, commits updated `data/{sport}/predictions.json`. Bump `CACHE_NAME` in sw.js when updating static assets.
 
 ## Adding a New Sport
 1. Add sport config to `SPORTS` dict in `config.py`

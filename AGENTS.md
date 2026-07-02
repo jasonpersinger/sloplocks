@@ -29,7 +29,7 @@ MMA was intentionally removed from the live product and pipeline.
 - Core libs: `pandas`, `numpy`, `scipy`, `requests`, `scikit-learn`, `beautifulsoup4`
 - Frontend: static `index.html` with embedded CSS and JS
 - PWA shell: root `manifest.json` and `sw.js`
-- Hosting: Netlify, deployed from `master`
+- Hosting: GitHub Pages, deployed from `master` (repo root, served at /sloplocks/)
 - Automation: GitHub Actions
 
 ## High-Level Architecture
@@ -174,10 +174,10 @@ GitHub workflows:
   - full pipeline run, commit updated `data/`, notify Discord
 - [refresh-picks.yml](/home/jason/sloplocks/.github/workflows/refresh-picks.yml)
   - fast odds refresh, commit updated `data/`, notify Discord
-- [deploy-site.yml](/home/jason/sloplocks/.github/workflows/deploy-site.yml)
-  - deploy static site to Netlify on push to `master`
 
-Netlify deploy config is in [netlify.toml](/home/jason/sloplocks/netlify.toml).
+GitHub Pages deploys the repo root automatically on every push to `master`
+(the GitHub-managed pages-build-deployment workflow); there is no deploy
+workflow in this repo.
 
 ## Commands
 
@@ -243,8 +243,6 @@ Main keys:
 Some workflows also use:
 - `GEMINI_API_KEY`
 - `DISCORD_WEBHOOK_URL`
-- `NETLIFY_AUTH_TOKEN`
-- `NETLIFY_SITE_ID`
 
 Notes:
 - `OPENAI_API_KEY` powers the game-level qualitative layer in `pipeline/qualitative_analysis.py`.

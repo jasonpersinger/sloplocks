@@ -2,7 +2,7 @@
 
 Static PWA for model-driven sports betting picks, pick history, and pipeline health reporting.
 
-Live site: [sloplocks.lol](https://sloplocks.lol)
+Live site: [jasonpersinger.me/sloplocks](https://jasonpersinger.me/sloplocks/) (GitHub Pages)
 
 SLOP LOCKS is intentionally simple at runtime: there is no backend app server and no client-side build step. A Python pipeline writes committed JSON/CSV files into `data/`, and the single-file frontend reads those static files directly.
 
@@ -56,7 +56,6 @@ sloplocks/
 |-- index.html                  # Full static frontend, CSS, and client-side JS
 |-- manifest.json               # Root PWA manifest
 |-- sw.js                       # Service worker
-|-- netlify.toml                # Netlify deploy config
 |-- data/                       # Committed generated data and tracking ledgers
 |-- pipeline/
 |   |-- config.py               # Sport registry, thresholds, API bases, data paths
@@ -79,7 +78,6 @@ sloplocks/
 `-- .github/workflows/
     |-- daily.yml               # Full pipeline, commit data, Discord notify
     |-- refresh-picks.yml       # Manual odds refresh, commit data, Discord notify
-    `-- deploy-site.yml         # Netlify production deploy on master
 ```
 
 ## Data Products
@@ -116,7 +114,6 @@ Keyed:
 - Optional balldontlie data paths for NBA-related enrichment.
 - Optional OpenAI qualitative context when enabled.
 - Discord webhook for notifications.
-- Netlify credentials for production deploys.
 
 Free/keyless:
 
@@ -243,8 +240,6 @@ Loaded from `.env` when present.
 | `OPENAI_API_KEY` | Game-level qualitative context via `gpt-4o-mini`. | Optional. |
 | `ENABLE_QUALITATIVE` | Enables qualitative adjustment paths. | Optional. |
 | `DISCORD_WEBHOOK_URL` | Discord notifications from workflows. | Optional. |
-| `NETLIFY_AUTH_TOKEN` | Netlify deploy workflow. | Required for production deploy workflow. |
-| `NETLIFY_SITE_ID` | Netlify deploy workflow. | Required for production deploy workflow. |
 | `GEMINI_API_KEY` | Legacy/draft-special workflow compatibility. | Usually unused. |
 | `ANTHROPIC_API_KEY` | Legacy/configured key. | Usually unused. |
 
@@ -321,7 +316,6 @@ GitHub Actions:
 | --- | --- | --- |
 | `.github/workflows/daily.yml` | Daily at 12:00 UTC and manual dispatch | Runs full pipeline, commits updated `data/`, posts Discord notification if configured. |
 | `.github/workflows/refresh-picks.yml` | Manual dispatch | Runs fast odds refresh, commits updated `data/`, posts Discord notification if configured. |
-| `.github/workflows/deploy-site.yml` | Push to `master` and manual dispatch | Deploys the repo root to Netlify production. |
 
 Daily and refresh workflows commit as `sloplocks-bot`.
 
@@ -336,7 +330,7 @@ Normal code path:
 3. Run relevant verification.
 4. Open a PR into `master`.
 5. Merge to `master`.
-6. Netlify deploy workflow publishes the static site.
+6. GitHub Pages publishes the static site automatically on push to `master`.
 
 Generated `data/` changes are expected from automation. Do not mix unrelated generated-data churn into code commits unless the task specifically requires it.
 
