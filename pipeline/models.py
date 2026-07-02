@@ -18,6 +18,7 @@ from pipeline.config import (
     MLB_PARK_FACTORS,
     TIME_DECAY_RATE,
 )
+from pipeline.fetch_mlb import _is_placeholder_pitcher_name
 
 
 # ---------------------------------------------------------------------------
@@ -785,7 +786,7 @@ class PitcherMatchupModel:
             away_pitcher = row.get("away_pitcher")
             if int(row["home_goals"]) == int(row["away_goals"]):
                 continue
-            if not home_pitcher or not away_pitcher or home_pitcher == "TBD" or away_pitcher == "TBD":
+            if _is_placeholder_pitcher_name(home_pitcher) or _is_placeholder_pitcher_name(away_pitcher):
                 continue
 
             home_logs = list(pitcher_logs.get(home_pitcher, []))
@@ -821,7 +822,7 @@ class PitcherMatchupModel:
         self.model.fit(np.array(X), np.array(y))
 
     def predict(self, home_pitcher, away_pitcher, game_date=None):
-        if self.model is None or not home_pitcher or not away_pitcher or home_pitcher == "TBD" or away_pitcher == "TBD":
+        if self.model is None or _is_placeholder_pitcher_name(home_pitcher) or _is_placeholder_pitcher_name(away_pitcher):
             return {"home": 0.5, "away": 0.5}
 
         X = np.array([self._feature_vector(
@@ -1350,12 +1351,12 @@ class MlbTotalsModel:
                 "innings": float(row.get("away_bullpen_ip", 0.0) or 0.0),
                 "bullpen_earned_runs": float(row.get("away_bullpen_earned_runs", 0.0) or 0.0),
             })
-            if home_pitcher and home_pitcher != "TBD":
+            if not _is_placeholder_pitcher_name(home_pitcher):
                 pitcher_logs.setdefault(home_pitcher, []).append({
                     "innings": float(row.get("home_pitcher_ip", 0.0) or 0.0),
                     "earned_runs": float(row.get("home_pitcher_earned_runs", 0.0) or 0.0),
                 })
-            if away_pitcher and away_pitcher != "TBD":
+            if not _is_placeholder_pitcher_name(away_pitcher):
                 pitcher_logs.setdefault(away_pitcher, []).append({
                     "innings": float(row.get("away_pitcher_ip", 0.0) or 0.0),
                     "earned_runs": float(row.get("away_pitcher_earned_runs", 0.0) or 0.0),

@@ -12,6 +12,73 @@ def _write_predictions(base_dir, sport, payload):
         json.dump(payload, f)
 
 
+def test_merge_live_fixture_moves_pitcher_provenance_as_a_bundle():
+    record = {
+        "home_team": "Aces",
+        "away_team": "Bruins",
+        "date": "2026-07-04",
+        "home_pitcher": "Old Home",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-07-04T10:00:00+00:00",
+        "home_pitcher_cache_stale": False,
+        "away_pitcher": "Old Away",
+        "away_pitcher_hand": "L",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-07-04T10:00:00+00:00",
+        "away_pitcher_cache_stale": False,
+        "pitcher_warnings": [],
+    }
+    live_fixture = {
+        "home_pitcher": "New Home",
+        "home_pitcher_hand": "L",
+        "home_pitcher_source": "mlb_stats_api",
+        "home_pitcher_last_checked": "2026-07-04T14:00:00+00:00",
+        "home_pitcher_cache_stale": True,
+        "away_pitcher": "New Away",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "mlb_stats_api",
+        "away_pitcher_last_checked": "2026-07-04T14:00:00+00:00",
+        "away_pitcher_cache_stale": True,
+        "pitcher_warnings": ["home_pitcher_from_stale_cache", "away_pitcher_from_stale_cache"],
+    }
+
+    merged = refresh_picks._merge_live_fixture(record, live_fixture)
+
+    assert merged["home_pitcher"] == "New Home"
+    assert merged["home_pitcher_hand"] == "L"
+    assert merged["home_pitcher_source"] == "mlb_stats_api"
+    assert merged["home_pitcher_last_checked"] == "2026-07-04T14:00:00+00:00"
+    assert merged["home_pitcher_cache_stale"] is True
+    assert merged["away_pitcher"] == "New Away"
+    assert merged["away_pitcher_hand"] == "R"
+    assert merged["away_pitcher_source"] == "mlb_stats_api"
+    assert merged["away_pitcher_last_checked"] == "2026-07-04T14:00:00+00:00"
+    assert merged["away_pitcher_cache_stale"] is True
+    assert merged["pitcher_warnings"] == ["home_pitcher_from_stale_cache", "away_pitcher_from_stale_cache"]
+
+
+def test_merge_live_fixture_does_not_update_pitcher_name_without_provenance():
+    record = {
+        "home_pitcher": "Old Home",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-07-04T10:00:00+00:00",
+        "away_pitcher": "Old Away",
+        "away_pitcher_hand": "L",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-07-04T10:00:00+00:00",
+    }
+
+    merged = refresh_picks._merge_live_fixture(
+        record,
+        {"home_pitcher": "Unproven Home", "away_pitcher": "Unproven Away"},
+    )
+
+    assert merged["home_pitcher"] == "Old Home"
+    assert merged["away_pitcher"] == "Old Away"
+
+
 def test_refresh_nba_updates_live_metadata_and_preserves_baseline(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     payload = {

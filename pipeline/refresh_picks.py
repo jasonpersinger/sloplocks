@@ -110,6 +110,26 @@ def _load_live_fixtures(sport_key: str, data_path: Path) -> list[dict]:
     return []
 
 
+def _merge_pitcher_bundle(merged: dict, live_fixture: dict, side: str) -> None:
+    """Copy pitcher fields only when live metadata carries auditable provenance."""
+    name_key = f"{side}_pitcher"
+    source_key = f"{side}_pitcher_source"
+    checked_key = f"{side}_pitcher_last_checked"
+    if live_fixture.get(name_key) is None:
+        return
+    if not live_fixture.get(source_key) or not live_fixture.get(checked_key):
+        return
+    for key in (
+        name_key,
+        f"{side}_pitcher_hand",
+        source_key,
+        checked_key,
+        f"{side}_pitcher_cache_stale",
+    ):
+        if live_fixture.get(key) is not None:
+            merged[key] = live_fixture.get(key)
+
+
 def _merge_live_fixture(record: dict, live_fixture: Optional[dict]) -> dict:
     """Patch a stored match or totals record with fresh fixture metadata."""
     if not live_fixture:
@@ -126,10 +146,6 @@ def _merge_live_fixture(record: dict, live_fixture: Optional[dict]) -> dict:
         "home_bullpen_tax",
         "away_bullpen_tax",
         "weather",
-        "home_pitcher",
-        "away_pitcher",
-        "home_pitcher_hand",
-        "away_pitcher_hand",
         "home_goalie",
         "away_goalie",
         "home_goalie_status",
@@ -139,6 +155,10 @@ def _merge_live_fixture(record: dict, live_fixture: Optional[dict]) -> dict:
     ):
         if live_fixture.get(key) is not None:
             merged[key] = live_fixture.get(key)
+    _merge_pitcher_bundle(merged, live_fixture, "home")
+    _merge_pitcher_bundle(merged, live_fixture, "away")
+    if live_fixture.get("pitcher_warnings") is not None:
+        merged["pitcher_warnings"] = list(live_fixture.get("pitcher_warnings") or [])
     return merged
 
 

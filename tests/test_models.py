@@ -388,6 +388,16 @@ class TestPitcherMatchupModel:
         assert probs["home"] > 0.5
         assert math.isclose(probs["home"] + probs["away"], 1.0, abs_tol=1e-9)
 
+    def test_placeholder_pitchers_do_not_enter_pitcher_history(self):
+        games = self._sample_pitcher_games()
+        games.loc[0, "home_pitcher"] = "Unknown"
+        games.loc[0, "away_pitcher"] = "TBA"
+
+        model = PitcherMatchupModel(games, feature_window=4, min_games=4)
+
+        assert "Unknown" not in model.pitcher_logs
+        assert "TBA" not in model.pitcher_logs
+
     def test_tracks_pitcher_rest_days(self):
         model = PitcherMatchupModel(self._sample_pitcher_games(), feature_window=4, min_games=4)
         features = model._pitcher_features(
@@ -561,6 +571,16 @@ class TestMlbTotalsModel:
         assert result["expected_total"] > 7.0
         assert 0.0 < result["over"] < 1.0
         assert math.isclose(result["over"] + result["under"], 1.0, abs_tol=1e-9)
+
+    def test_placeholder_pitchers_do_not_enter_totals_pitcher_history(self):
+        games = self._sample_games()
+        games.loc[0, "home_pitcher"] = "To Be Announced"
+        games.loc[0, "away_pitcher"] = "Undecided"
+
+        model = MlbTotalsModel(games, feature_window=4, min_games=4)
+
+        assert "To Be Announced" not in model.pitcher_logs
+        assert "Undecided" not in model.pitcher_logs
 
 
 class TestRecentBoxScoreModel:

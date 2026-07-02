@@ -596,11 +596,13 @@ class TestRunMLBPipeline:
                 "home_pitcher_hand": "R",
                 "home_pitcher_source": "espn",
                 "home_pitcher_last_checked": f"{_TODAY}T12:00:00+00:00",
+                "home_pitcher_cache_stale": False,
                 "away_pitcher": "Bruins Starter",
                 "away_pitcher_hand": "L",
                 "away_pitcher_source": "mlb_stats_api",
                 "away_pitcher_last_checked": f"{_TODAY}T12:00:00+00:00",
-                "pitcher_warnings": [],
+                "away_pitcher_cache_stale": True,
+                "pitcher_warnings": ["away_pitcher_from_stale_cache"],
                 "home_lineup_profile": {
                     "active_hitters": 13,
                     "available_hitters": 13,
@@ -654,6 +656,11 @@ class TestRunMLBPipeline:
         monkeypatch.setitem(SPORTS["mlb"], "handedness_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "totals_feature_min_games", 4)
         monkeypatch.setitem(SPORTS["mlb"], "results_feature_min_games", 50)
+        monkeypatch.setitem(SPORTS["mlb"], "min_expected_value", -1.0)
+        monkeypatch.setitem(SPORTS["mlb"], "slop_lock_edge_threshold", -1.0)
+        monkeypatch.setitem(SPORTS["mlb"], "slop_lock_probability_floor", 0.0)
+        monkeypatch.setitem(SPORTS["mlb"], "slop_lock_confidence_threshold", 0.0)
+        monkeypatch.setattr("pipeline.run.compute_pick_tier", lambda confidence, probability, edge: "LEAN")
 
         output_dir = str(tmp_path / "mlb")
         run_sport_pipeline("mlb", output_dir=output_dir)
@@ -670,14 +677,26 @@ class TestRunMLBPipeline:
         assert match["home_pitcher_source"] == "espn"
         assert match["away_pitcher_source"] == "mlb_stats_api"
         assert match["home_pitcher_last_checked"] == f"{_TODAY}T12:00:00+00:00"
-        assert match["pitcher_warnings"] == []
+        assert match["away_pitcher_cache_stale"] is True
+        assert match["pitcher_warnings"] == ["away_pitcher_from_stale_cache"]
         total_market = data["totals_matches"][0]
         assert total_market["total_line"] == 8.5
         assert total_market["home_lineup_profile"]["available_hitters"] == 13
         assert total_market["home_pitcher_source"] == "espn"
         assert total_market["away_pitcher_source"] == "mlb_stats_api"
+        assert total_market["away_pitcher_cache_stale"] is True
         assert total_market["pick"] in {"over", "under"}
         assert "over" in total_market["edges"]
+        with open(os.path.join(output_dir, "pick_history.json")) as f:
+            pick_history = json.load(f)
+        moneyline_pick = next(pick for pick in pick_history["picks"] if pick["type"] == "slop_lock")
+        assert moneyline_pick["home_pitcher"] == "Aces Starter"
+        assert moneyline_pick["home_pitcher_source"] == "espn"
+        assert moneyline_pick["home_pitcher_last_checked"] == f"{_TODAY}T12:00:00+00:00"
+        assert moneyline_pick["away_pitcher"] == "Bruins Starter"
+        assert moneyline_pick["away_pitcher_source"] == "mlb_stats_api"
+        assert moneyline_pick["away_pitcher_cache_stale"] is True
+        assert moneyline_pick["pitcher_warnings"] == ["away_pitcher_from_stale_cache"]
 
 
 class TestMlbWeatherAdjustment:

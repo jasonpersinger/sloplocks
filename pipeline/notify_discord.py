@@ -187,10 +187,21 @@ def _enrich_item(item: dict, sport_key: str, source: str, match: Optional[dict] 
         if enriched.get("pick") in best_odds:
             enriched["american_odds"] = best_odds[enriched["pick"]]
 
-    if enriched.get("home_pitcher") is None:
-        enriched["home_pitcher"] = match.get("home_pitcher")
-    if enriched.get("away_pitcher") is None:
-        enriched["away_pitcher"] = match.get("away_pitcher")
+    for field in (
+        "home_pitcher",
+        "home_pitcher_hand",
+        "home_pitcher_source",
+        "home_pitcher_last_checked",
+        "home_pitcher_cache_stale",
+        "away_pitcher",
+        "away_pitcher_hand",
+        "away_pitcher_source",
+        "away_pitcher_last_checked",
+        "away_pitcher_cache_stale",
+        "pitcher_warnings",
+    ):
+        if enriched.get(field) is None and match.get(field) is not None:
+            enriched[field] = match.get(field)
     if enriched.get("start_time") is None:
         enriched["start_time"] = match.get("start_time")
     
@@ -350,7 +361,18 @@ def _pitcher_note(item: dict) -> str:
         return ""
     home_pitcher = item.get("home_pitcher") or "TBD"
     away_pitcher = item.get("away_pitcher") or "TBD"
-    return f"\nPitchers: {away_pitcher} vs {home_pitcher}"
+    note = f"\nPitchers: {away_pitcher} vs {home_pitcher}"
+    warnings = item.get("pitcher_warnings") or []
+    stale_sides = []
+    if item.get("away_pitcher_cache_stale"):
+        stale_sides.append("away")
+    if item.get("home_pitcher_cache_stale"):
+        stale_sides.append("home")
+    if stale_sides or warnings:
+        flags = [f"stale cache: {', '.join(stale_sides)}"] if stale_sides else []
+        flags.extend(str(warning) for warning in warnings)
+        note += f"\nPitcher flags: {', '.join(flags)}"
+    return note
 
 
 def _lock_field(item: dict, sport_key: str, show_ai: bool = True) -> dict:

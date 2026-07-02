@@ -109,6 +109,13 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
         },
         home_pitcher="Yamamoto",
         away_pitcher="Cease",
+        home_pitcher_source="espn",
+        home_pitcher_last_checked="2026-03-28T12:00:00+00:00",
+        home_pitcher_cache_stale=False,
+        away_pitcher_source="mlb_stats_api",
+        away_pitcher_last_checked="2026-03-28T10:00:00+00:00",
+        away_pitcher_cache_stale=True,
+        pitcher_warnings=["away_pitcher_from_stale_cache"],
     )
     mlb_longslop = {
         "home_team": "Dodgers",
@@ -172,6 +179,7 @@ def test_build_payload_includes_all_sports_and_richer_fields(monkeypatch, tmp_pa
     assert "EV 0.17u" in full_text
     assert "Kelly 4.1%" in full_text
     assert "Pitchers: Cease vs Yamamoto" in full_text
+    assert "Pitcher flags: stale cache: away, away_pitcher_from_stale_cache" in full_text
     assert "Mar 28 07:00 PM ET" in full_text
     assert "SLATE DIAGNOSTICS" in full_text
     assert "CONTROL PANEL" in full_text
