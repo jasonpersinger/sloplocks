@@ -2442,6 +2442,38 @@ def _compute_pick_stats(picks):
     return stats
 
 
+def _build_recent_results(picks, limit=25):
+    """Return the newest settled published picks trimmed to display fields.
+
+    Feeds the frontend HISTORY section; shadow picks stay out of the public
+    record, so only published picks appear here.
+    """
+    settled = [
+        p for p in picks
+        if p.get("evaluated") and p.get("published", True)
+    ]
+    settled.sort(
+        key=lambda p: (str(p.get("match_date") or ""), str(p.get("pick_date") or ""))
+    )
+    recent = []
+    for p in reversed(settled[-int(limit):]):
+        recent.append({
+            "match_date": p.get("match_date"),
+            "type": p.get("type"),
+            "market_type": p.get("market_type", "moneyline"),
+            "home_team": p.get("home_team"),
+            "away_team": p.get("away_team"),
+            "pick": p.get("pick"),
+            "total_line": p.get("total_line"),
+            "american_odds": p.get("american_odds"),
+            "won": bool(p.get("won")),
+            "push": bool(p.get("push")),
+            "home_goals": p.get("home_goals"),
+            "away_goals": p.get("away_goals"),
+        })
+    return recent
+
+
 def _match_key(record: dict) -> tuple[str, str, str]:
     """Return a stable key for one matchup record."""
     return (
@@ -4094,6 +4126,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 
     # Compute pick stats for output
     pick_stats = _compute_pick_stats(past_picks)
+    recent_results = _build_recent_results(past_picks)
 
     # ------------------------------------------------------------------
     # 7. Compute season stats
@@ -4174,6 +4207,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         "season_stats": season_stats,
         "model_weights": {k: round(v, 4) for k, v in model_weight_dict.items()},
         "pick_stats": pick_stats,
+        "recent_results": recent_results,
         "publication_guard": publication_guard,
         "lane_health": publication_guard.get("lane_guards", {}),
         "model_health": runtime_model_health,

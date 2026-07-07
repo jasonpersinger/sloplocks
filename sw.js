@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sloplocks-v9';
+const CACHE_NAME = 'sloplocks-v10';
 // Relative URLs so the app works from a subpath (GitHub Pages serves the
 // site at /sloplocks/); they resolve against the service worker's scope.
 const STATIC_ASSETS = [

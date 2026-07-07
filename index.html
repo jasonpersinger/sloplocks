@@ -1267,16 +1267,45 @@
     }
   }
 
+  function buildRecentResultsBlock(results) {
+    results = (results || []).slice(0, 25);
+    if (!results.length) return null;
+    var wins = 0, losses = 0, pushes = 0;
+    var lines = results.map(function (r) {
+      var marker;
+      if (r.push) { marker = '[P]'; pushes++; }
+      else if (r.won) { marker = '[W]'; wins++; }
+      else { marker = '[L]'; losses++; }
+      var pickText = r.market_type === 'total'
+        ? String(r.pick || '').toUpperCase() + (r.total_line != null ? ' ' + r.total_line : '')
+        : String((r.pick === 'home' ? r.home_team : r.away_team) || '').toUpperCase();
+      var odds = r.american_odds != null
+        ? ' ' + (r.american_odds > 0 ? '+' + r.american_odds : r.american_odds)
+        : '';
+      var matchup = (r.home_goals != null && r.away_goals != null)
+        ? r.away_team + ' ' + r.away_goals + ' @ ' + r.home_team + ' ' + r.home_goals
+        : r.away_team + ' @ ' + r.home_team;
+      return marker + ' ' + String(r.match_date || '').slice(5) + '  ' + matchup + ' -> ' + pickText + odds;
+    });
+    var record = wins + '-' + losses + (pushes ? '-' + pushes : '');
+    return createDashboardBlock('Recent results', lines, record, { preformatted: true });
+  }
+
   function renderFeed(picks) {
-    if (!picks || picks.length === 0) {
+    var historyBlock = null;
+    if (currentSport !== 'all' && currentSport !== 'dashboard') {
+      historyBlock = buildRecentResultsBlock(((loadedSportsData[currentSport] || {}).recent_results));
+    }
+    if ((!picks || picks.length === 0) && !historyBlock) {
       showMessage('[ NO PICKS ]\n\nTry another tab later.', false);
       return;
     }
     clearFeed();
-    feed.appendChild(createStatusRail(currentSport, picks));
-    picks.forEach(function (pick) {
+    feed.appendChild(createStatusRail(currentSport, picks || []));
+    (picks || []).forEach(function (pick) {
       feed.appendChild(createPickCard(pick));
     });
+    if (historyBlock) feed.appendChild(historyBlock);
   }
 
   function renderStats(mode) {

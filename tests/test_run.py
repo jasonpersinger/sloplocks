@@ -2206,6 +2206,56 @@ class TestShadowPickRecording:
         assert stats["all"]["total"] == 2
 
 
+class TestRecentResults:
+    def test_published_settled_newest_first(self):
+        from pipeline.run import _build_recent_results
+
+        picks = [
+            {"type": "slop_lock", "market_type": "moneyline", "evaluated": True,
+             "won": True, "push": False, "match_date": "2026-07-01",
+             "home_team": "Astros", "away_team": "Pirates", "pick": "home",
+             "american_odds": -145, "home_goals": 6, "away_goals": 3},
+            {"type": "total_lock", "market_type": "total", "evaluated": True,
+             "won": False, "push": False, "match_date": "2026-07-02",
+             "home_team": "Twins", "away_team": "Royals", "pick": "over",
+             "total_line": 9.5, "american_odds": -110, "home_goals": 4, "away_goals": 3},
+            # Shadow pick: settled but never published, must not appear.
+            {"type": "slop_lock", "market_type": "moneyline", "evaluated": True,
+             "won": True, "push": False, "match_date": "2026-07-03",
+             "home_team": "Aces", "away_team": "Liberty", "pick": "home",
+             "published": False},
+            # Pending pick: not settled yet, must not appear.
+            {"type": "slop_lock", "market_type": "moneyline", "evaluated": False,
+             "match_date": "2026-07-04", "home_team": "Cubs", "away_team": "Reds",
+             "pick": "away"},
+        ]
+
+        results = _build_recent_results(picks)
+
+        assert [r["match_date"] for r in results] == ["2026-07-02", "2026-07-01"]
+        assert results[0]["pick"] == "over"
+        assert results[0]["total_line"] == 9.5
+        assert results[1]["won"] is True
+        assert results[1]["home_goals"] == 6
+        assert all("model_prob" not in r for r in results)
+
+    def test_respects_limit(self):
+        from pipeline.run import _build_recent_results
+
+        picks = [
+            {"type": "slop_lock", "market_type": "moneyline", "evaluated": True,
+             "won": True, "push": False, "match_date": f"2026-06-{day:02d}",
+             "home_team": "H", "away_team": "A", "pick": "home"}
+            for day in range(1, 31)
+        ]
+
+        results = _build_recent_results(picks, limit=25)
+
+        assert len(results) == 25
+        assert results[0]["match_date"] == "2026-06-30"
+        assert results[-1]["match_date"] == "2026-06-06"
+
+
 class TestOddsTracking:
     def test_append_odds_snapshot_log_dedupes_same_market_state(self, tmp_path):
         from pipeline.run import _append_odds_snapshot_log
