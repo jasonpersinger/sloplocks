@@ -1,428 +1,63 @@
 {
+  "snapshot_version": 1,
   "generated_at": "2026-07-10T14:07:57Z",
+  "sport": "nba",
+  "sport_name": "NBA",
   "run_id": "daily-20260710T140752287230Z",
   "run_type": "daily",
   "snapshot_timestamp": "2026-07-10T14:07:52Z",
-  "snapshot_path": "tracking/snapshots/2026-07-10/nba/daily-20260710T140752287230Z.json",
-  "sport": "nba",
-  "sport_name": "NBA",
-  "outcomes": [
-    "home",
-    "away"
-  ],
-  "slop_locks": [],
-  "totals_locks": [],
-  "slimegrinder": [],
-  "longslop": null,
-  "matches": [],
-  "totals_matches": [],
-  "season_stats": {
-    "total_matches": 1323,
-    "home_wins": 736,
-    "away_wins": 587,
-    "home_win_pct": 0.556,
-    "away_win_pct": 0.444
-  },
-  "model_weights": {
-    "elo": 0.2576,
-    "results_features": 0.255,
-    "recent_boxscore": 0.2548,
-    "nba_matchup": 0.2325
-  },
-  "pick_stats": {
-    "slop_lock": {
-      "total": 91,
-      "evaluated": 29,
-      "wins": 23,
-      "losses": 6,
-      "pushes": 0,
-      "pending": 62,
-      "hit_rate": 0.793,
-      "roi": 0.11
-    },
-    "total_lock": {
-      "total": 14,
-      "evaluated": 6,
-      "wins": 2,
-      "losses": 4,
-      "pushes": 0,
-      "pending": 8,
-      "hit_rate": 0.333,
-      "roi": -0.36
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 52,
+      "confidence_dropoff": 8,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
     },
     "longslop": {
-      "total": 0,
-      "evaluated": 0,
-      "wins": 0,
-      "losses": 0,
-      "pushes": 0,
-      "pending": 0,
-      "hit_rate": null,
-      "roi": null
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
     },
-    "all": {
-      "total": 105,
-      "evaluated": 35,
-      "wins": 25,
-      "losses": 10,
-      "pushes": 0,
-      "pending": 70,
-      "hit_rate": 0.714,
-      "roi": 0.025
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 0
     }
   },
-  "recent_results": [
-    {
-      "match_date": "2026-04-21",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Spurs",
-      "away_team": "Trail Blazers",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -625,
-      "won": true,
-      "push": false,
-      "home_goals": 111,
-      "away_goals": 98
-    },
-    {
-      "match_date": "2026-04-20",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Cavaliers",
-      "away_team": "Raptors",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -370,
-      "won": true,
-      "push": false,
-      "home_goals": 115,
-      "away_goals": 105
-    },
-    {
-      "match_date": "2026-04-19",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Celtics",
-      "away_team": "76ers",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -714,
-      "won": true,
-      "push": false,
-      "home_goals": 123,
-      "away_goals": 91
-    },
-    {
-      "match_date": "2026-04-19",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Thunder",
-      "away_team": "Suns",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -1000,
-      "won": true,
-      "push": false,
-      "home_goals": 119,
-      "away_goals": 84
-    },
-    {
-      "match_date": "2026-04-18",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Cavaliers",
-      "away_team": "Raptors",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -333,
-      "won": true,
-      "push": false,
-      "home_goals": 126,
-      "away_goals": 113
-    },
-    {
-      "match_date": "2026-04-18",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Knicks",
-      "away_team": "Hawks",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -222,
-      "won": true,
-      "push": false,
-      "home_goals": 113,
-      "away_goals": 102
-    },
-    {
-      "match_date": "2026-04-18",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Nuggets",
-      "away_team": "Timberwolves",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -256,
-      "won": true,
-      "push": false,
-      "home_goals": 116,
-      "away_goals": 105
-    },
-    {
-      "match_date": "2026-04-17",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Magic",
-      "away_team": "Hornets",
-      "pick": "away",
-      "total_line": null,
-      "american_odds": -156,
-      "won": false,
-      "push": false,
-      "home_goals": 121,
-      "away_goals": 90
-    },
-    {
-      "match_date": "2026-04-15",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "76ers",
-      "away_team": "Magic",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -123,
-      "won": true,
-      "push": false,
-      "home_goals": 109,
-      "away_goals": 97
-    },
-    {
-      "match_date": "2026-04-14",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Hornets",
-      "away_team": "Heat",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -213,
-      "won": true,
-      "push": false,
-      "home_goals": 127,
-      "away_goals": 126
-    },
-    {
-      "match_date": "2026-04-12",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Raptors",
-      "away_team": "Nets",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -5000,
-      "won": true,
-      "push": false,
-      "home_goals": 136,
-      "away_goals": 101
-    },
-    {
-      "match_date": "2026-04-10",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Celtics",
-      "away_team": "Pelicans",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -1429,
-      "won": true,
-      "push": false,
-      "home_goals": 144,
-      "away_goals": 118
-    },
-    {
-      "match_date": "2026-04-08",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Pistons",
-      "away_team": "Bucks",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -2500,
-      "won": true,
-      "push": false,
-      "home_goals": 137,
-      "away_goals": 111
-    },
-    {
-      "match_date": "2026-04-06",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Magic",
-      "away_team": "Pistons",
-      "pick": "away",
-      "total_line": null,
-      "american_odds": -156,
-      "won": false,
-      "push": false,
-      "home_goals": 123,
-      "away_goals": 107
-    },
-    {
-      "match_date": "2026-04-05",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Nets",
-      "away_team": "Wizards",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -159,
-      "won": true,
-      "push": false,
-      "home_goals": 121,
-      "away_goals": 115
-    },
-    {
-      "match_date": "2026-04-05",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Timberwolves",
-      "away_team": "Hornets",
-      "pick": "away",
-      "total_line": null,
-      "american_odds": -115,
-      "won": true,
-      "push": false,
-      "home_goals": 108,
-      "away_goals": 122
-    },
-    {
-      "match_date": "2026-04-05",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Cavaliers",
-      "away_team": "Pacers",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": null,
-      "won": true,
-      "push": false,
-      "home_goals": 117,
-      "away_goals": 108
-    },
-    {
-      "match_date": "2026-04-05",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Thunder",
-      "away_team": "Jazz",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": null,
-      "won": true,
-      "push": false,
-      "home_goals": 146,
-      "away_goals": 111
-    },
-    {
-      "match_date": "2026-04-04",
-      "type": "total_lock",
-      "market_type": "total",
-      "home_team": "Nuggets",
-      "away_team": "Spurs",
-      "pick": "under",
-      "total_line": 242.5,
-      "american_odds": -105,
-      "won": false,
-      "push": false,
-      "home_goals": 136,
-      "away_goals": 134
-    },
-    {
-      "match_date": "2026-04-04",
-      "type": "total_lock",
-      "market_type": "total",
-      "home_team": "Heat",
-      "away_team": "Wizards",
-      "pick": "under",
-      "total_line": 247.5,
-      "american_odds": -108,
-      "won": false,
-      "push": false,
-      "home_goals": 152,
-      "away_goals": 136
-    },
-    {
-      "match_date": "2026-04-04",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "76ers",
-      "away_team": "Pistons",
-      "pick": "away",
-      "total_line": null,
-      "american_odds": -135,
-      "won": true,
-      "push": false,
-      "home_goals": 93,
-      "away_goals": 116
-    },
-    {
-      "match_date": "2026-04-04",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Nuggets",
-      "away_team": "Spurs",
-      "pick": "away",
-      "total_line": null,
-      "american_odds": -130,
-      "won": false,
-      "push": false,
-      "home_goals": 136,
-      "away_goals": 134
-    },
-    {
-      "match_date": "2026-04-03",
-      "type": "total_lock",
-      "market_type": "total",
-      "home_team": "Hornets",
-      "away_team": "Pacers",
-      "pick": "under",
-      "total_line": 235.5,
-      "american_odds": -105,
-      "won": false,
-      "push": false,
-      "home_goals": 129,
-      "away_goals": 108
-    },
-    {
-      "match_date": "2026-04-02",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Hornets",
-      "away_team": "Suns",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -200,
-      "won": true,
-      "push": false,
-      "home_goals": 127,
-      "away_goals": 107
-    },
-    {
-      "match_date": "2026-04-02",
-      "type": "slop_lock",
-      "market_type": "moneyline",
-      "home_team": "Pistons",
-      "away_team": "Timberwolves",
-      "pick": "home",
-      "total_line": null,
-      "american_odds": -154,
-      "won": true,
-      "push": false,
-      "home_goals": 113,
-      "away_goals": 108
-    }
-  ],
   "publication_guard": {
     "enforced": true,
     "allow_moneyline": true,
@@ -721,407 +356,103 @@
       "totals_enabled": false
     }
   },
-  "lane_health": {
-    "moneyline": {
-      "market_type": "moneyline",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 91,
-        "evaluated": 29,
-        "pending": 62,
-        "hit_rate": 0.7931,
-        "roi": 0.11,
-        "push_rate": 0.0,
-        "wins": 23,
-        "losses": 6,
-        "pushes": 0,
-        "avg_confidence": 54.9271,
-        "avg_expected_value": -0.0054,
-        "clv": {
-          "tracked": 44,
-          "avg_clv": 0.0338,
-          "positive_rate": 0.2273,
-          "non_negative_rate": 0.2273,
-          "moneyline_tracked": 44,
-          "moneyline_avg_clv": 0.0338,
-          "moneyline_positive_rate": 0.2273,
-          "moneyline_non_negative_rate": 0.2273,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 8,
-        "evaluated": 8,
-        "pending": 0,
-        "hit_rate": 0.875,
-        "roi": 0.1013,
-        "push_rate": 0.0,
-        "wins": 7,
-        "losses": 1,
-        "pushes": 0,
-        "avg_confidence": 44.6625,
-        "avg_expected_value": -0.0809,
-        "clv": {
-          "tracked": 7,
-          "avg_clv": -0.0008,
-          "positive_rate": 0.1429,
-          "non_negative_rate": 0.1429,
-          "moneyline_tracked": 7,
-          "moneyline_avg_clv": -0.0008,
-          "moneyline_positive_rate": 0.1429,
-          "moneyline_non_negative_rate": 0.1429,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 8,
-        "avg_model_prob": 0.711,
-        "actual_win_rate": 0.875,
-        "calibration_gap": -0.164,
-        "overconfidence_gap": 0.0
-      },
-      "allow": true,
-      "status": "live",
-      "reasons": [],
-      "health_score": 1.0
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [],
+    "fixtures_in_window": [],
+    "odds": [],
+    "model_weights": {
+      "elo": 0.2576,
+      "results_features": 0.255,
+      "recent_boxscore": 0.2548,
+      "nba_matchup": 0.2325
     },
-    "totals": {
-      "market_type": "total",
-      "pick_type": null,
-      "overall": {
-        "total_picks": 14,
-        "evaluated": 6,
-        "pending": 8,
-        "hit_rate": 0.3333,
-        "roi": -0.36,
-        "push_rate": 0.0,
-        "wins": 2,
-        "losses": 4,
-        "pushes": 0,
-        "avg_confidence": 75.3786,
-        "avg_expected_value": 0.1204,
-        "clv": {
-          "tracked": 6,
-          "avg_clv": -6.1667,
-          "positive_rate": 0.5,
-          "non_negative_rate": 0.6667,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 6,
-          "totals_avg_clv": -6.1667,
-          "totals_positive_rate": 0.5,
-          "totals_non_negative_rate": 0.6667
-        }
-      },
-      "recent": {
-        "total_picks": 6,
-        "evaluated": 6,
-        "pending": 0,
-        "hit_rate": 0.3333,
-        "roi": -0.36,
-        "push_rate": 0.0,
-        "wins": 2,
-        "losses": 4,
-        "pushes": 0,
-        "avg_confidence": 77.15,
-        "avg_expected_value": 0.1254,
-        "clv": {
-          "tracked": 6,
-          "avg_clv": -6.1667,
-          "positive_rate": 0.5,
-          "non_negative_rate": 0.6667,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 6,
-          "totals_avg_clv": -6.1667,
-          "totals_positive_rate": 0.5,
-          "totals_non_negative_rate": 0.6667
-        },
-        "recent_count": 8,
-        "avg_model_prob": 0.5821,
-        "actual_win_rate": 0.3333,
-        "calibration_gap": 0.2488,
-        "overconfidence_gap": 0.2488
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "totals disabled by config",
-        "need more settled totals picks (6/10)",
-        "recent totals CLV -6.1667 is below 0.0000",
-        "recent totals ROI -0.3600 is below 0.0000",
-        "recent totals overconfidence gap 0.2488 exceeds 0.1000"
-      ],
-      "health_score": 0.2857
-    },
-    "longslop": {
-      "market_type": null,
-      "pick_type": "longslop",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "longslop disabled by config",
-        "need more settled longslop picks (0/5)",
-        "need more recent settled longslop picks (0/3)",
-        "need more tracked longslop CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "slimegrinder": {
-      "market_type": null,
-      "pick_type": "slimegrinder",
-      "overall": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        }
-      },
-      "recent": {
-        "total_picks": 0,
-        "evaluated": 0,
-        "pending": 0,
-        "hit_rate": null,
-        "roi": null,
-        "wins": 0,
-        "losses": 0,
-        "pushes": 0,
-        "avg_confidence": null,
-        "avg_expected_value": null,
-        "clv": {
-          "tracked": 0,
-          "avg_clv": null,
-          "positive_rate": null,
-          "non_negative_rate": null,
-          "moneyline_tracked": 0,
-          "moneyline_avg_clv": null,
-          "moneyline_positive_rate": null,
-          "moneyline_non_negative_rate": null,
-          "totals_tracked": 0,
-          "totals_avg_clv": null,
-          "totals_positive_rate": null,
-          "totals_non_negative_rate": null
-        },
-        "recent_count": 5,
-        "avg_model_prob": null,
-        "actual_win_rate": null,
-        "calibration_gap": null,
-        "overconfidence_gap": null
-      },
-      "allow": false,
-      "status": "disabled",
-      "reasons": [
-        "slimegrinder disabled by config",
-        "need more settled slimegrinder picks (0/5)",
-        "need more recent settled slimegrinder picks (0/3)",
-        "need more tracked slimegrinder CLV (0/3)"
-      ],
-      "health_score": 0.4286
-    },
-    "totals_enabled": false
-  },
-  "model_health": {
-    "ensemble": {
-      "sample_size": 40,
-      "accuracy": 0.8,
-      "avg_log_loss": 0.5015
-    },
-    "models": {
-      "elo": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5156,
-        "weight": 0.213,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "four_factors": {
-        "sample_size": 40,
-        "accuracy": 0.65,
-        "avg_log_loss": 0.6517,
-        "weight": 0.1734,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "results_features": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5371,
-        "weight": 0.2108,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "recent_boxscore": {
-        "sample_size": 40,
-        "accuracy": 0.775,
-        "avg_log_loss": 0.5384,
-        "weight": 0.2107,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      },
-      "nba_matchup": {
-        "sample_size": 40,
-        "accuracy": 0.7,
-        "avg_log_loss": 0.5493,
-        "weight": 0.1922,
-        "status": "active",
-        "disable_candidate": false,
-        "reasons": []
-      }
-    },
-    "disable_candidates": [],
-    "disabled_by_config": [
-      "four_factors"
-    ],
-    "active_models": [
+    "models": [
       "elo",
       "results_features",
       "recent_boxscore",
       "nba_matchup"
-    ]
-  },
-  "calibration_sample_size": 215,
-  "selection_config": {
-    "outcomes": [
-      "home",
-      "away"
     ],
-    "slop_locks": {
-      "min_expected_value": 0.0,
-      "edge_floor": 0.02,
-      "probability_floor": 0.5,
-      "additional_confidence_floor": 52,
-      "confidence_dropoff": 8,
-      "max_picks": 5,
-      "lanes": {
-        "value_dog": {
-          "enabled": true,
-          "edge_floor": 0.04,
-          "probability_floor": 0.35,
-          "min_expected_value": 0.05,
-          "american_odds_min": 120,
-          "american_odds_max": 500,
-          "max_picks": 2
+    "model_health": {
+      "ensemble": {
+        "sample_size": 40,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.5015
+      },
+      "models": {
+        "elo": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5156,
+          "weight": 0.213,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         },
-        "near_favorite": {
-          "enabled": true,
-          "edge_floor": 0.01,
-          "probability_floor": 0.52,
-          "min_expected_value": 0.0,
-          "american_odds_min": -180,
-          "american_odds_max": 120,
-          "max_picks": 3
+        "four_factors": {
+          "sample_size": 40,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6517,
+          "weight": 0.1734,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5371,
+          "weight": 0.2108,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "recent_boxscore": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5384,
+          "weight": 0.2107,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "nba_matchup": {
+          "sample_size": 40,
+          "accuracy": 0.7,
+          "avg_log_loss": 0.5493,
+          "weight": 0.1922,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
         }
-      }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [
+        "four_factors"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "recent_boxscore",
+        "nba_matchup"
+      ]
     },
-    "longslop": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 55
-    },
-    "slimegrinder": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "confidence_floor": 55
-    },
-    "totals_locks": {
-      "enabled": false,
-      "min_expected_value": 0.0,
-      "edge_floor": 0.02,
-      "probability_floor": 0.53,
-      "confidence_floor": 54,
-      "max_picks": 0
-    }
+    "calibration_sample_size": 215
   },
-  "validation_issues": [],
+  "records": {
+    "matches": [],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
   "diagnostics": {
     "historical_matches": 1323,
     "fixtures_fetched": 0,
