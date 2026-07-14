@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-07-13T14:17:51Z",
+  "updated_at": "2026-07-14T13:19:32Z",
   "sports": {
     "nba": {
       "name": "NBA",
       "status": "ok",
-      "updated_at": "2026-07-13T14:17:07Z",
+      "updated_at": "2026-07-14T13:18:59Z",
       "diagnostics": {
         "historical_matches": 1323,
         "fixtures_fetched": 0,
@@ -346,7 +346,7 @@
     "nhl": {
       "name": "NHL",
       "status": "ok",
-      "updated_at": "2026-07-13T14:17:16Z",
+      "updated_at": "2026-07-14T13:19:07Z",
       "diagnostics": {
         "historical_matches": 1422,
         "fixtures_fetched": 0,
@@ -682,28 +682,28 @@
     "wnba": {
       "name": "WNBA",
       "status": "ok",
-      "updated_at": "2026-07-13T14:17:34Z",
+      "updated_at": "2026-07-14T13:19:20Z",
       "diagnostics": {
-        "historical_matches": 193,
+        "historical_matches": 195,
         "fixtures_fetched": 2,
         "fixtures_in_window": 2,
         "fixtures_completed": 0,
         "fixtures_pending": 2,
-        "odds_events_fetched": 4,
+        "odds_events_fetched": 5,
         "fixtures_with_odds": 2,
         "fixtures_without_odds": 0,
         "coverage_gap_examples": [],
         "matches_modeled": 2,
         "matches_with_market": 2,
-        "matches_with_positive_ev": 2,
+        "matches_with_positive_ev": 1,
         "matches_with_qualitative": 2,
-        "lock_eligible_matches": 0,
-        "lock_eligible_outcomes": 0,
+        "lock_eligible_matches": 1,
+        "lock_eligible_outcomes": 1,
         "gate_failures": {
           "missing_odds": 0,
-          "negative_expected_value": 2,
+          "negative_expected_value": 3,
           "below_edge_floor": 0,
-          "below_probability_floor": 2
+          "below_probability_floor": 0
         },
         "candidate_lanes": {
           "value_dog": {
@@ -1017,31 +1017,33 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=2 | odds=2/2 | +ev=2 | sense=2 | eligible=0 | locks=0 | need more settled moneylines picks (1/15); need more recent settled moneylines picks (1/4); need more tracked moneylines CLV (1/3); recent moneylines CLV -0.0238 is below -0.0050; totals disabled by config"
+        "summary": "modeled=2 | odds=2/2 | +ev=1 | sense=2 | eligible=1 | locks=0 | need more settled moneylines picks (1/15); need more recent settled moneylines picks (1/4); need more tracked moneylines CLV (1/3); recent moneylines CLV -0.0238 is below -0.0050; totals disabled by config"
       }
     },
     "mlb": {
       "name": "MLB",
       "status": "ok",
-      "updated_at": "2026-07-13T14:17:51Z",
+      "updated_at": "2026-07-14T13:19:31Z",
       "diagnostics": {
         "historical_matches": 1523,
-        "fixtures_fetched": 0,
-        "fixtures_in_window": 0,
+        "fixtures_fetched": 1,
+        "fixtures_in_window": 1,
         "fixtures_completed": 0,
-        "fixtures_pending": 0,
+        "fixtures_pending": 1,
         "odds_events_fetched": 1,
         "fixtures_with_odds": 0,
-        "fixtures_without_odds": 0,
-        "coverage_gap_examples": [],
-        "matches_modeled": 0,
-        "matches_with_market": 0,
+        "fixtures_without_odds": 1,
+        "coverage_gap_examples": [
+          "American All-Stars @ National All-Stars"
+        ],
+        "matches_modeled": 1,
+        "matches_with_market": 1,
         "matches_with_positive_ev": 0,
-        "matches_with_qualitative": 0,
+        "matches_with_qualitative": 1,
         "lock_eligible_matches": 0,
         "lock_eligible_outcomes": 0,
         "gate_failures": {
-          "missing_odds": 0,
+          "missing_odds": 2,
           "negative_expected_value": 0,
           "below_edge_floor": 0,
           "below_probability_floor": 0
@@ -1068,11 +1070,11 @@
           "moneyline_publish_cap": null,
           "totals_publish_cap": null,
           "evaluated_picks": 241,
-          "evaluated_totals_picks": 79,
+          "evaluated_totals_picks": 82,
           "min_evaluated_picks": 20,
           "min_evaluated_totals_picks": 10,
           "status": "partial",
-          "reason": "recent totals ROI -0.2787 is below -0.1000; recent totals overconfidence gap 0.2006 exceeds 0.1000",
+          "reason": "recent totals ROI -0.5337 is below -0.1000; recent totals overconfidence gap 0.3311 exceeds 0.1000",
           "lane_guards": {
             "moneyline": {
               "market_type": "moneyline",
@@ -1146,13 +1148,13 @@
               "pick_type": null,
               "overall": {
                 "total_picks": 90,
-                "evaluated": 79,
-                "pending": 11,
-                "hit_rate": 0.6203,
-                "roi": 0.2134,
-                "push_rate": 0.0253,
-                "wins": 49,
-                "losses": 28,
+                "evaluated": 82,
+                "pending": 8,
+                "hit_rate": 0.622,
+                "roi": 0.2145,
+                "push_rate": 0.0244,
+                "wins": 51,
+                "losses": 29,
                 "pushes": 2,
                 "avg_confidence": 74.0433,
                 "avg_expected_value": 0.1604,
@@ -1175,39 +1177,39 @@
                 "total_picks": 8,
                 "evaluated": 8,
                 "pending": 0,
-                "hit_rate": 0.375,
-                "roi": -0.2787,
+                "hit_rate": 0.25,
+                "roi": -0.5337,
                 "push_rate": 0.0,
-                "wins": 3,
-                "losses": 5,
+                "wins": 2,
+                "losses": 6,
                 "pushes": 0,
-                "avg_confidence": 65.2375,
-                "avg_expected_value": 0.1364,
+                "avg_confidence": 67.0375,
+                "avg_expected_value": 0.1406,
                 "clv": {
                   "tracked": 8,
-                  "avg_clv": 0.0625,
-                  "positive_rate": 0.125,
+                  "avg_clv": 0.0,
+                  "positive_rate": 0.0,
                   "non_negative_rate": 1.0,
                   "moneyline_tracked": 0,
                   "moneyline_avg_clv": null,
                   "moneyline_positive_rate": null,
                   "moneyline_non_negative_rate": null,
                   "totals_tracked": 8,
-                  "totals_avg_clv": 0.0625,
-                  "totals_positive_rate": 0.125,
+                  "totals_avg_clv": 0.0,
+                  "totals_positive_rate": 0.0,
                   "totals_non_negative_rate": 1.0
                 },
                 "recent_count": 8,
-                "avg_model_prob": 0.5756,
-                "actual_win_rate": 0.375,
-                "calibration_gap": 0.2006,
-                "overconfidence_gap": 0.2006
+                "avg_model_prob": 0.5811,
+                "actual_win_rate": 0.25,
+                "calibration_gap": 0.3311,
+                "overconfidence_gap": 0.3311
               },
               "allow": false,
               "status": "hold",
               "reasons": [
-                "recent totals ROI -0.2787 is below -0.1000",
-                "recent totals overconfidence gap 0.2006 exceeds 0.1000"
+                "recent totals ROI -0.5337 is below -0.1000",
+                "recent totals overconfidence gap 0.3311 exceeds 0.1000"
               ],
               "health_score": 0.7143
             },
@@ -1356,7 +1358,7 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=0 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0 | recent totals ROI -0.2787 is below -0.1000; recent totals overconfidence gap 0.2006 exceeds 0.1000"
+        "summary": "modeled=1 | odds=0/1 | +ev=0 | sense=1 | eligible=0 | locks=0 | recent totals ROI -0.5337 is below -0.1000; recent totals overconfidence gap 0.3311 exceeds 0.1000"
       }
     },
     "ncaam": {
@@ -1364,7 +1366,7 @@
       "status": "season_disabled",
       "active": false,
       "reason": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
-      "updated_at": "2026-07-13T14:17:51Z",
+      "updated_at": "2026-07-14T13:19:32Z",
       "diagnostics": {
         "summary": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
         "season_disabled": true
