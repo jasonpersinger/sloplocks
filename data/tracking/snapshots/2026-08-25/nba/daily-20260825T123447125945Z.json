@@ -1,0 +1,7022 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-08-25T12:34:52Z",
+  "sport": "nba",
+  "sport_name": "NBA",
+  "run_id": "daily-20260825T123447125945Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-08-25T12:34:47Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.5,
+      "additional_confidence_floor": 52,
+      "confidence_dropoff": 8,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
+    },
+    "longslop": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "slimegrinder": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 55
+    },
+    "totals_locks": {
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 0
+    }
+  },
+  "publication_guard": {
+    "enforced": true,
+    "allow_moneyline": true,
+    "allow_totals": false,
+    "allow_longslop": false,
+    "allow_slimegrinder": false,
+    "moneyline_publish_cap": null,
+    "totals_publish_cap": null,
+    "evaluated_picks": 29,
+    "evaluated_totals_picks": 6,
+    "min_evaluated_picks": 20,
+    "min_evaluated_totals_picks": 10,
+    "status": "partial",
+    "reason": "totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000",
+    "lane_guards": {
+      "moneyline": {
+        "market_type": "moneyline",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 91,
+          "evaluated": 29,
+          "pending": 62,
+          "hit_rate": 0.7931,
+          "roi": 0.11,
+          "push_rate": 0.0,
+          "wins": 23,
+          "losses": 6,
+          "pushes": 0,
+          "avg_confidence": 54.9271,
+          "avg_expected_value": -0.0054,
+          "clv": {
+            "tracked": 44,
+            "avg_clv": 0.0338,
+            "positive_rate": 0.2273,
+            "non_negative_rate": 0.2273,
+            "moneyline_tracked": 44,
+            "moneyline_avg_clv": 0.0338,
+            "moneyline_positive_rate": 0.2273,
+            "moneyline_non_negative_rate": 0.2273,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.875,
+          "roi": 0.1013,
+          "push_rate": 0.0,
+          "wins": 7,
+          "losses": 1,
+          "pushes": 0,
+          "avg_confidence": 44.6625,
+          "avg_expected_value": -0.0809,
+          "clv": {
+            "tracked": 7,
+            "avg_clv": -0.0008,
+            "positive_rate": 0.1429,
+            "non_negative_rate": 0.1429,
+            "moneyline_tracked": 7,
+            "moneyline_avg_clv": -0.0008,
+            "moneyline_positive_rate": 0.1429,
+            "moneyline_non_negative_rate": 0.1429,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.711,
+          "actual_win_rate": 0.875,
+          "calibration_gap": -0.164,
+          "overconfidence_gap": 0.0
+        },
+        "allow": true,
+        "status": "live",
+        "reasons": [],
+        "health_score": 1.0
+      },
+      "totals": {
+        "market_type": "total",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 14,
+          "evaluated": 6,
+          "pending": 8,
+          "hit_rate": 0.3333,
+          "roi": -0.36,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 4,
+          "pushes": 0,
+          "avg_confidence": 75.3786,
+          "avg_expected_value": 0.1204,
+          "clv": {
+            "tracked": 6,
+            "avg_clv": -6.1667,
+            "positive_rate": 0.5,
+            "non_negative_rate": 0.6667,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 6,
+            "totals_avg_clv": -6.1667,
+            "totals_positive_rate": 0.5,
+            "totals_non_negative_rate": 0.6667
+          }
+        },
+        "recent": {
+          "total_picks": 6,
+          "evaluated": 6,
+          "pending": 0,
+          "hit_rate": 0.3333,
+          "roi": -0.36,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 4,
+          "pushes": 0,
+          "avg_confidence": 77.15,
+          "avg_expected_value": 0.1254,
+          "clv": {
+            "tracked": 6,
+            "avg_clv": -6.1667,
+            "positive_rate": 0.5,
+            "non_negative_rate": 0.6667,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 6,
+            "totals_avg_clv": -6.1667,
+            "totals_positive_rate": 0.5,
+            "totals_non_negative_rate": 0.6667
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5821,
+          "actual_win_rate": 0.3333,
+          "calibration_gap": 0.2488,
+          "overconfidence_gap": 0.2488
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "totals disabled by config",
+          "need more settled totals picks (6/10)",
+          "recent totals CLV -6.1667 is below 0.0000",
+          "recent totals ROI -0.3600 is below 0.0000",
+          "recent totals overconfidence gap 0.2488 exceeds 0.1000"
+        ],
+        "health_score": 0.2857
+      },
+      "longslop": {
+        "market_type": null,
+        "pick_type": "longslop",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "longslop disabled by config",
+          "need more settled longslop picks (0/5)",
+          "need more recent settled longslop picks (0/3)",
+          "need more tracked longslop CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "slimegrinder": {
+        "market_type": null,
+        "pick_type": "slimegrinder",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "slimegrinder disabled by config",
+          "need more settled slimegrinder picks (0/5)",
+          "need more recent settled slimegrinder picks (0/3)",
+          "need more tracked slimegrinder CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "totals_enabled": false
+    }
+  },
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [],
+    "fixtures_in_window": [],
+    "odds": [
+      {
+        "home_team": "Pistons",
+        "away_team": "Celtics",
+        "commence_time": "2026-10-20T19:00:00Z",
+        "home_odds": 1.83,
+        "draw_odds": 0.0,
+        "away_odds": 2.05,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4675,
+            "home": 0.5325
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.5556
+          },
+          "hold": 0.0434,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.83,
+            "away": 2.05
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4675,
+              "home": 0.5325
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.5556
+            },
+            "hold": 0.0434,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.02
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.495
+              },
+              "fair_probs": {
+                "home": 0.5247,
+                "away": 0.4753
+              },
+              "hold": 0.0415
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.82,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5495,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5198,
+                "away": 0.4802
+              },
+              "hold": 0.0571
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            }
+          ]
+        },
+        "total_line": 222.5,
+        "over_odds": 1.91,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 222.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 222.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Knicks",
+        "away_team": "76ers",
+        "commence_time": "2026-10-20T23:00:00Z",
+        "home_odds": 1.54,
+        "draw_odds": 0.0,
+        "away_odds": 2.76,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3639,
+            "home": 0.6361
+          },
+          "raw_probs": {
+            "away": 0.3788,
+            "home": 0.6623
+          },
+          "hold": 0.041,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.54,
+            "away": 2.76
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3639,
+              "home": 0.6361
+            },
+            "raw_probs": {
+              "away": 0.3788,
+              "home": 0.6623
+            },
+            "hold": 0.041,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.48,
+                "away": 2.76
+              },
+              "raw_probs": {
+                "home": 0.6757,
+                "away": 0.3623
+              },
+              "fair_probs": {
+                "home": 0.6509,
+                "away": 0.3491
+              },
+              "hold": 0.038
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6234,
+                "away": 0.3766
+              },
+              "hold": 0.0623
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.54,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.6494,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6188,
+                "away": 0.3812
+              },
+              "hold": 0.0494
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.64
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.3788
+              },
+              "fair_probs": {
+                "home": 0.6361,
+                "away": 0.3639
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.65
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.3774
+              },
+              "fair_probs": {
+                "home": 0.637,
+                "away": 0.363
+              },
+              "hold": 0.0396
+            }
+          ]
+        },
+        "total_line": 231.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 231.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 231.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Spurs",
+        "away_team": "Thunder",
+        "commence_time": "2026-10-21T01:30:00Z",
+        "home_odds": 1.83,
+        "draw_odds": 0.0,
+        "away_odds": 2.07,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4677,
+            "home": 0.5323
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.5525
+          },
+          "hold": 0.0464,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.83,
+            "away": 2.07
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4677,
+              "home": 0.5323
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.5525
+            },
+            "hold": 0.0464,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.81,
+                "away": 2.06
+              },
+              "raw_probs": {
+                "home": 0.5525,
+                "away": 0.4854
+              },
+              "fair_probs": {
+                "home": 0.5323,
+                "away": 0.4677
+              },
+              "hold": 0.0379
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.76,
+                "away": 2.07
+              },
+              "raw_probs": {
+                "home": 0.5682,
+                "away": 0.4831
+              },
+              "fair_probs": {
+                "home": 0.5405,
+                "away": 0.4595
+              },
+              "hold": 0.0513
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            }
+          ]
+        },
+        "total_line": 230.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 230.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 230.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Magic",
+        "away_team": "Hawks",
+        "commence_time": "2026-10-21T23:10:00Z",
+        "home_odds": 1.74,
+        "draw_odds": 0.0,
+        "away_odds": 2.15,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4473,
+            "home": 0.5527
+          },
+          "raw_probs": {
+            "away": 0.4651,
+            "home": 0.5747
+          },
+          "hold": 0.0398,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.74,
+            "away": 2.15
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4473,
+              "home": 0.5527
+            },
+            "raw_probs": {
+              "away": 0.4651,
+              "home": 0.5747
+            },
+            "hold": 0.0398,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.74,
+                "away": 2.14
+              },
+              "raw_probs": {
+                "home": 0.5747,
+                "away": 0.4673
+              },
+              "fair_probs": {
+                "home": 0.5515,
+                "away": 0.4485
+              },
+              "hold": 0.042
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.74,
+                "away": 2.15
+              },
+              "raw_probs": {
+                "home": 0.5747,
+                "away": 0.4651
+              },
+              "fair_probs": {
+                "home": 0.5527,
+                "away": 0.4473
+              },
+              "hold": 0.0398
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.74,
+                "away": 2.15
+              },
+              "raw_probs": {
+                "home": 0.5747,
+                "away": 0.4651
+              },
+              "fair_probs": {
+                "home": 0.5527,
+                "away": 0.4473
+              },
+              "hold": 0.0398
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Wizards",
+        "away_team": "Bucks",
+        "commence_time": "2026-10-21T23:10:00Z",
+        "home_odds": 1.45,
+        "draw_odds": 0.0,
+        "away_odds": 2.9,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3303,
+            "home": 0.6697
+          },
+          "raw_probs": {
+            "away": 0.3448,
+            "home": 0.6993
+          },
+          "hold": 0.0441,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.45,
+            "away": 2.9
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3303,
+              "home": 0.6697
+            },
+            "raw_probs": {
+              "away": 0.3448,
+              "home": 0.6993
+            },
+            "hold": 0.0441,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.43,
+                "away": 2.9
+              },
+              "raw_probs": {
+                "home": 0.6993,
+                "away": 0.3448
+              },
+              "fair_probs": {
+                "home": 0.6697,
+                "away": 0.3303
+              },
+              "hold": 0.0441
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.43,
+                "away": 2.9
+              },
+              "raw_probs": {
+                "home": 0.6993,
+                "away": 0.3448
+              },
+              "fair_probs": {
+                "home": 0.6697,
+                "away": 0.3303
+              },
+              "hold": 0.0441
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.45,
+                "away": 2.8
+              },
+              "raw_probs": {
+                "home": 0.6897,
+                "away": 0.3571
+              },
+              "fair_probs": {
+                "home": 0.6588,
+                "away": 0.3412
+              },
+              "hold": 0.0468
+            }
+          ]
+        },
+        "total_line": 238.5,
+        "over_odds": 1.95,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 238.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 238.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Nets",
+        "away_team": "Hornets",
+        "commence_time": "2026-10-21T23:40:00Z",
+        "home_odds": 2.45,
+        "draw_odds": 0.0,
+        "away_odds": 1.61,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6035,
+            "home": 0.3965
+          },
+          "raw_probs": {
+            "away": 0.6289,
+            "home": 0.4132
+          },
+          "hold": 0.0378,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.45,
+            "away": 1.61
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6035,
+              "home": 0.3965
+            },
+            "raw_probs": {
+              "away": 0.6289,
+              "home": 0.4132
+            },
+            "hold": 0.0378,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.42,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4132,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3965,
+                "away": 0.6035
+              },
+              "hold": 0.0422
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3936,
+                "away": 0.6064
+              },
+              "hold": 0.0371
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.61
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6211
+              },
+              "fair_probs": {
+                "home": 0.4015,
+                "away": 0.5985
+              },
+              "hold": 0.0378
+            }
+          ]
+        },
+        "total_line": 226.5,
+        "over_odds": 1.95,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 226.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 226.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Heat",
+        "away_team": "Timberwolves",
+        "commence_time": "2026-10-21T23:40:00Z",
+        "home_odds": 1.93,
+        "draw_odds": 0.0,
+        "away_odds": 2.05,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4696,
+            "home": 0.5304
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.551
+          },
+          "hold": 0.0398,
+          "books_tracked": 4,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.93,
+            "away": 2.05
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4696,
+              "home": 0.5304
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.551
+            },
+            "hold": 0.0398,
+            "books_tracked": 4,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.93,
+                "away": 1.93
+              },
+              "raw_probs": {
+                "home": 0.5181,
+                "away": 0.5181
+              },
+              "fair_probs": {
+                "home": 0.5,
+                "away": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5284,
+                "away": 0.4716
+              },
+              "hold": 0.0343
+            }
+          ]
+        },
+        "total_line": 242.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 242.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 2,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 242.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 2,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Pelicans",
+        "away_team": "Pacers",
+        "commence_time": "2026-10-22T00:10:00Z",
+        "home_odds": 2.4,
+        "draw_odds": 0.0,
+        "away_odds": 1.62,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.593,
+            "home": 0.407
+          },
+          "raw_probs": {
+            "away": 0.6173,
+            "home": 0.4237
+          },
+          "hold": 0.041,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.4,
+            "away": 1.62
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.593,
+              "home": 0.407
+            },
+            "raw_probs": {
+              "away": 0.6173,
+              "home": 0.4237
+            },
+            "hold": 0.041,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.35,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4255,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.4081,
+                "away": 0.5919
+              },
+              "hold": 0.0428
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.61
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6211
+              },
+              "fair_probs": {
+                "home": 0.4015,
+                "away": 0.5985
+              },
+              "hold": 0.0378
+            }
+          ]
+        },
+        "total_line": 243.5,
+        "over_odds": 1.95,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 243.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 243.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Grizzlies",
+        "away_team": "Jazz",
+        "commence_time": "2026-10-22T00:10:00Z",
+        "home_odds": 2.25,
+        "draw_odds": 0.0,
+        "away_odds": 1.69,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5711,
+            "home": 0.4289
+          },
+          "raw_probs": {
+            "away": 0.5917,
+            "home": 0.4464
+          },
+          "hold": 0.0417,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.25,
+            "away": 1.69
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5711,
+              "home": 0.4289
+            },
+            "raw_probs": {
+              "away": 0.5917,
+              "home": 0.4464
+            },
+            "hold": 0.0417,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.24,
+                "away": 1.68
+              },
+              "raw_probs": {
+                "home": 0.4464,
+                "away": 0.5952
+              },
+              "fair_probs": {
+                "home": 0.4286,
+                "away": 0.5714
+              },
+              "hold": 0.0417
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.25,
+                "away": 1.69
+              },
+              "raw_probs": {
+                "home": 0.4444,
+                "away": 0.5917
+              },
+              "fair_probs": {
+                "home": 0.4289,
+                "away": 0.5711
+              },
+              "hold": 0.0362
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 2.2,
+                "away": 1.69
+              },
+              "raw_probs": {
+                "home": 0.4545,
+                "away": 0.5917
+              },
+              "fair_probs": {
+                "home": 0.4344,
+                "away": 0.5656
+              },
+              "hold": 0.0463
+            }
+          ]
+        },
+        "total_line": 241.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 241.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 241.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Rockets",
+        "away_team": "Mavericks",
+        "commence_time": "2026-10-22T00:40:00Z",
+        "home_odds": 1.33,
+        "draw_odds": 0.0,
+        "away_odds": 3.55,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2739,
+            "home": 0.7261
+          },
+          "raw_probs": {
+            "away": 0.2857,
+            "home": 0.7576
+          },
+          "hold": 0.0433,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.33,
+            "away": 3.55
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2739,
+              "home": 0.7261
+            },
+            "raw_probs": {
+              "away": 0.2857,
+              "home": 0.7576
+            },
+            "hold": 0.0433,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.32,
+                "away": 3.5
+              },
+              "raw_probs": {
+                "home": 0.7576,
+                "away": 0.2857
+              },
+              "fair_probs": {
+                "home": 0.7261,
+                "away": 0.2739
+              },
+              "hold": 0.0433
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.32,
+                "away": 3.55
+              },
+              "raw_probs": {
+                "home": 0.7576,
+                "away": 0.2817
+              },
+              "fair_probs": {
+                "home": 0.729,
+                "away": 0.271
+              },
+              "hold": 0.0393
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.33,
+                "away": 3.4
+              },
+              "raw_probs": {
+                "home": 0.7519,
+                "away": 0.2941
+              },
+              "fair_probs": {
+                "home": 0.7188,
+                "away": 0.2812
+              },
+              "hold": 0.046
+            }
+          ]
+        },
+        "total_line": 226.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 226.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 2,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 226.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 2,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Lakers",
+        "away_team": "Warriors",
+        "commence_time": "2026-10-22T02:10:00Z",
+        "home_odds": 1.6,
+        "draw_odds": 0.0,
+        "away_odds": 2.55,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3819,
+            "home": 0.6181
+          },
+          "raw_probs": {
+            "away": 0.3961,
+            "home": 0.641
+          },
+          "hold": 0.0396,
+          "books_tracked": 4,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.6,
+            "away": 2.55
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3819,
+              "home": 0.6181
+            },
+            "raw_probs": {
+              "away": 0.3961,
+              "home": 0.641
+            },
+            "hold": 0.0396,
+            "books_tracked": 4,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.56,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.641,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6158,
+                "away": 0.3842
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.6,
+                "away": 2.42
+              },
+              "raw_probs": {
+                "home": 0.625,
+                "away": 0.4132
+              },
+              "fair_probs": {
+                "home": 0.602,
+                "away": 0.398
+              },
+              "hold": 0.0382
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.56,
+                "away": 2.55
+              },
+              "raw_probs": {
+                "home": 0.641,
+                "away": 0.3922
+              },
+              "fair_probs": {
+                "home": 0.6204,
+                "away": 0.3796
+              },
+              "hold": 0.0332
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.53,
+                "away": 2.55
+              },
+              "raw_probs": {
+                "home": 0.6536,
+                "away": 0.3922
+              },
+              "fair_probs": {
+                "home": 0.625,
+                "away": 0.375
+              },
+              "hold": 0.0458
+            }
+          ]
+        },
+        "total_line": 235.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 235.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 235.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Trail Blazers",
+        "away_team": "Suns",
+        "commence_time": "2026-10-22T02:10:00Z",
+        "home_odds": 1.59,
+        "draw_odds": 0.0,
+        "away_odds": 2.45,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3936,
+            "home": 0.6064
+          },
+          "raw_probs": {
+            "away": 0.4082,
+            "home": 0.6289
+          },
+          "hold": 0.0422,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.59,
+            "away": 2.45
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3936,
+              "home": 0.6064
+            },
+            "raw_probs": {
+              "away": 0.4082,
+              "home": 0.6289
+            },
+            "hold": 0.0422,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.59,
+                "away": 2.42
+              },
+              "raw_probs": {
+                "home": 0.6289,
+                "away": 0.4132
+              },
+              "fair_probs": {
+                "home": 0.6035,
+                "away": 0.3965
+              },
+              "hold": 0.0422
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.59,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6289,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6064,
+                "away": 0.3936
+              },
+              "hold": 0.0371
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6095,
+                "away": 0.3905
+              },
+              "hold": 0.0451
+            }
+          ]
+        },
+        "total_line": 235.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 235.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 235.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "76ers",
+        "away_team": "Cavaliers",
+        "commence_time": "2026-10-22T23:10:00Z",
+        "home_odds": 1.59,
+        "draw_odds": 0.0,
+        "away_odds": 2.45,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3905,
+            "home": 0.6095
+          },
+          "raw_probs": {
+            "away": 0.4082,
+            "home": 0.6369
+          },
+          "hold": 0.0451,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.59,
+            "away": 2.45
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3905,
+              "home": 0.6095
+            },
+            "raw_probs": {
+              "away": 0.4082,
+              "home": 0.6369
+            },
+            "hold": 0.0451,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6095,
+                "away": 0.3905
+              },
+              "hold": 0.0451
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.59,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6289,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6064,
+                "away": 0.3936
+              },
+              "hold": 0.0371
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6095,
+                "away": 0.3905
+              },
+              "hold": 0.0451
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.91,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Nuggets",
+        "commence_time": "2026-10-23T01:40:00Z",
+        "home_odds": 1.36,
+        "draw_odds": 0.0,
+        "away_odds": 3.25,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2966,
+            "home": 0.7034
+          },
+          "raw_probs": {
+            "away": 0.3101,
+            "home": 0.7353
+          },
+          "hold": 0.0454,
+          "books_tracked": 2,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.36,
+            "away": 3.25
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2966,
+              "home": 0.7034
+            },
+            "raw_probs": {
+              "away": 0.3101,
+              "home": 0.7353
+            },
+            "hold": 0.0454,
+            "books_tracked": 2,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.36,
+                "away": 3.25
+              },
+              "raw_probs": {
+                "home": 0.7353,
+                "away": 0.3077
+              },
+              "fair_probs": {
+                "home": 0.705,
+                "away": 0.295
+              },
+              "hold": 0.043
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.36,
+                "away": 3.2
+              },
+              "raw_probs": {
+                "home": 0.7353,
+                "away": 0.3125
+              },
+              "fair_probs": {
+                "home": 0.7018,
+                "away": 0.2982
+              },
+              "hold": 0.0478
+            }
+          ]
+        },
+        "total_line": 232.5,
+        "over_odds": 1.95,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 232.5,
+          "fair_probs": {
+            "over": 0.4948,
+            "under": 0.5052
+          },
+          "raw_probs": {
+            "over": 0.5182,
+            "under": 0.5292
+          },
+          "hold": 0.0474,
+          "books_tracked": 2,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 232.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4948,
+              "under": 0.5052
+            },
+            "raw_probs": {
+              "over": 0.5182,
+              "under": 0.5292
+            },
+            "hold": 0.0474,
+            "books_tracked": 2,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Celtics",
+        "away_team": "Knicks",
+        "commence_time": "2026-10-23T23:10:00Z",
+        "home_odds": 1.77,
+        "draw_odds": 0.0,
+        "away_odds": 2.1,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4574,
+            "home": 0.5426
+          },
+          "raw_probs": {
+            "away": 0.4762,
+            "home": 0.565
+          },
+          "hold": 0.0412,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.77,
+            "away": 2.1
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4574,
+              "home": 0.5426
+            },
+            "raw_probs": {
+              "away": 0.4762,
+              "home": 0.565
+            },
+            "hold": 0.0412,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.77,
+                "away": 2.1
+              },
+              "raw_probs": {
+                "home": 0.565,
+                "away": 0.4762
+              },
+              "fair_probs": {
+                "home": 0.5426,
+                "away": 0.4574
+              },
+              "hold": 0.0412
+            }
+          ]
+        },
+        "total_line": 223.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 223.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 223.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Spurs",
+        "away_team": "Rockets",
+        "commence_time": "2026-10-24T01:40:00Z",
+        "home_odds": 1.46,
+        "draw_odds": 0.0,
+        "away_odds": 2.8,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3427,
+            "home": 0.6573
+          },
+          "raw_probs": {
+            "away": 0.3571,
+            "home": 0.6849
+          },
+          "hold": 0.0421,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.46,
+            "away": 2.8
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3427,
+              "home": 0.6573
+            },
+            "raw_probs": {
+              "away": 0.3571,
+              "home": 0.6849
+            },
+            "hold": 0.0421,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.46,
+                "away": 2.8
+              },
+              "raw_probs": {
+                "home": 0.6849,
+                "away": 0.3571
+              },
+              "fair_probs": {
+                "home": 0.6573,
+                "away": 0.3427
+              },
+              "hold": 0.0421
+            }
+          ]
+        },
+        "total_line": 225.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 225.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 225.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Wizards",
+        "away_team": "Hornets",
+        "commence_time": "2026-10-30T23:10:00Z",
+        "home_odds": 1.95,
+        "draw_odds": 0.0,
+        "away_odds": 1.87,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5105,
+            "home": 0.4895
+          },
+          "raw_probs": {
+            "away": 0.5348,
+            "home": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.95,
+            "away": 1.87
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5105,
+              "home": 0.4895
+            },
+            "raw_probs": {
+              "away": 0.5348,
+              "home": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.95,
+                "away": 1.87
+              },
+              "raw_probs": {
+                "home": 0.5128,
+                "away": 0.5348
+              },
+              "fair_probs": {
+                "home": 0.4895,
+                "away": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        },
+        "total_line": 235.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 235.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 235.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Celtics",
+        "away_team": "Bulls",
+        "commence_time": "2026-10-30T23:40:00Z",
+        "home_odds": 1.17,
+        "draw_odds": 0.0,
+        "away_odds": 5.25,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.1822,
+            "home": 0.8178
+          },
+          "raw_probs": {
+            "away": 0.1905,
+            "home": 0.8547
+          },
+          "hold": 0.0452,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.17,
+            "away": 5.25
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.1822,
+              "home": 0.8178
+            },
+            "raw_probs": {
+              "away": 0.1905,
+              "home": 0.8547
+            },
+            "hold": 0.0452,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.17,
+                "away": 5.25
+              },
+              "raw_probs": {
+                "home": 0.8547,
+                "away": 0.1905
+              },
+              "fair_probs": {
+                "home": 0.8178,
+                "away": 0.1822
+              },
+              "hold": 0.0452
+            }
+          ]
+        },
+        "total_line": 232.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 232.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 232.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Nets",
+        "away_team": "Pistons",
+        "commence_time": "2026-10-30T23:40:00Z",
+        "home_odds": 3.5,
+        "draw_odds": 0.0,
+        "away_odds": 1.32,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.7261,
+            "home": 0.2739
+          },
+          "raw_probs": {
+            "away": 0.7576,
+            "home": 0.2857
+          },
+          "hold": 0.0433,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 3.5,
+            "away": 1.32
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.7261,
+              "home": 0.2739
+            },
+            "raw_probs": {
+              "away": 0.7576,
+              "home": 0.2857
+            },
+            "hold": 0.0433,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 3.5,
+                "away": 1.32
+              },
+              "raw_probs": {
+                "home": 0.2857,
+                "away": 0.7576
+              },
+              "fair_probs": {
+                "home": 0.2739,
+                "away": 0.7261
+              },
+              "hold": 0.0433
+            }
+          ]
+        },
+        "total_line": 225.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 225.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 225.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "76ers",
+        "away_team": "Knicks",
+        "commence_time": "2026-10-30T23:40:00Z",
+        "home_odds": 1.8,
+        "draw_odds": 0.0,
+        "away_odds": 2.05,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4675,
+            "home": 0.5325
+          },
+          "raw_probs": {
+            "away": 0.4878,
+            "home": 0.5556
+          },
+          "hold": 0.0434,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.8,
+            "away": 2.05
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4675,
+              "home": 0.5325
+            },
+            "raw_probs": {
+              "away": 0.4878,
+              "home": 0.5556
+            },
+            "hold": 0.0434,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.8,
+                "away": 2.05
+              },
+              "raw_probs": {
+                "home": 0.5556,
+                "away": 0.4878
+              },
+              "fair_probs": {
+                "home": 0.5325,
+                "away": 0.4675
+              },
+              "hold": 0.0434
+            }
+          ]
+        },
+        "total_line": 231.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 231.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 231.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Mavericks",
+        "away_team": "Rockets",
+        "commence_time": "2026-10-31T00:10:00Z",
+        "home_odds": 2.42,
+        "draw_odds": 0.0,
+        "away_odds": 1.59,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6035,
+            "home": 0.3965
+          },
+          "raw_probs": {
+            "away": 0.6289,
+            "home": 0.4132
+          },
+          "hold": 0.0422,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.42,
+            "away": 1.59
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6035,
+              "home": 0.3965
+            },
+            "raw_probs": {
+              "away": 0.6289,
+              "home": 0.4132
+            },
+            "hold": 0.0422,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.42,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4132,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3965,
+                "away": 0.6035
+              },
+              "hold": 0.0422
+            }
+          ]
+        },
+        "total_line": 226.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 226.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 226.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Heat",
+        "away_team": "Pacers",
+        "commence_time": "2026-10-31T00:10:00Z",
+        "home_odds": 1.65,
+        "draw_odds": 0.0,
+        "away_odds": 2.3,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4177,
+            "home": 0.5823
+          },
+          "raw_probs": {
+            "away": 0.4348,
+            "home": 0.6061
+          },
+          "hold": 0.0408,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.65,
+            "away": 2.3
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4177,
+              "home": 0.5823
+            },
+            "raw_probs": {
+              "away": 0.4348,
+              "home": 0.6061
+            },
+            "hold": 0.0408,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            }
+          ]
+        },
+        "total_line": 241.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 241.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 241.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Suns",
+        "away_team": "Nuggets",
+        "commence_time": "2026-10-31T02:10:00Z",
+        "home_odds": 2.14,
+        "draw_odds": 0.0,
+        "away_odds": 1.74,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5515,
+            "home": 0.4485
+          },
+          "raw_probs": {
+            "away": 0.5747,
+            "home": 0.4673
+          },
+          "hold": 0.042,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.14,
+            "away": 1.74
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5515,
+              "home": 0.4485
+            },
+            "raw_probs": {
+              "away": 0.5747,
+              "home": 0.4673
+            },
+            "hold": 0.042,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.14,
+                "away": 1.74
+              },
+              "raw_probs": {
+                "home": 0.4673,
+                "away": 0.5747
+              },
+              "fair_probs": {
+                "home": 0.4485,
+                "away": 0.5515
+              },
+              "hold": 0.042
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Warriors",
+        "away_team": "Lakers",
+        "commence_time": "2026-10-31T02:10:00Z",
+        "home_odds": 1.91,
+        "draw_odds": 0.0,
+        "away_odds": 1.91,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5,
+            "home": 0.5
+          },
+          "raw_probs": {
+            "away": 0.5236,
+            "home": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.91,
+            "away": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5,
+              "home": 0.5
+            },
+            "raw_probs": {
+              "away": 0.5236,
+              "home": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.91,
+                "away": 1.91
+              },
+              "raw_probs": {
+                "home": 0.5236,
+                "away": 0.5236
+              },
+              "fair_probs": {
+                "home": 0.5,
+                "away": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        },
+        "total_line": 235.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 235.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 235.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Cavaliers",
+        "away_team": "76ers",
+        "commence_time": "2026-11-07T00:40:00Z",
+        "home_odds": 1.82,
+        "draw_odds": 0.0,
+        "away_odds": 2.02,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.474,
+            "home": 0.526
+          },
+          "raw_probs": {
+            "away": 0.495,
+            "home": 0.5495
+          },
+          "hold": 0.0445,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.82,
+            "away": 2.02
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.474,
+              "home": 0.526
+            },
+            "raw_probs": {
+              "away": 0.495,
+              "home": 0.5495
+            },
+            "hold": 0.0445,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.82,
+                "away": 2.02
+              },
+              "raw_probs": {
+                "home": 0.5495,
+                "away": 0.495
+              },
+              "fair_probs": {
+                "home": 0.526,
+                "away": 0.474
+              },
+              "hold": 0.0445
+            }
+          ]
+        },
+        "total_line": 234.5,
+        "over_odds": 1.95,
+        "under_odds": 1.87,
+        "totals_benchmark": {
+          "line": 234.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 234.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.87
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Lakers",
+        "away_team": "Trail Blazers",
+        "commence_time": "2026-11-07T03:10:00Z",
+        "home_odds": 1.62,
+        "draw_odds": 0.0,
+        "away_odds": 2.36,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.407,
+            "home": 0.593
+          },
+          "raw_probs": {
+            "away": 0.4237,
+            "home": 0.6173
+          },
+          "hold": 0.041,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.62,
+            "away": 2.36
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.407,
+              "home": 0.593
+            },
+            "raw_probs": {
+              "away": 0.4237,
+              "home": 0.6173
+            },
+            "hold": 0.041,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.593,
+                "away": 0.407
+              },
+              "hold": 0.041
+            }
+          ]
+        },
+        "total_line": 238.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 238.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 238.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Pacers",
+        "away_team": "Knicks",
+        "commence_time": "2026-11-14T00:10:00Z",
+        "home_odds": 2.1,
+        "draw_odds": 0.0,
+        "away_odds": 1.77,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5426,
+            "home": 0.4574
+          },
+          "raw_probs": {
+            "away": 0.565,
+            "home": 0.4762
+          },
+          "hold": 0.0412,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.1,
+            "away": 1.77
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5426,
+              "home": 0.4574
+            },
+            "raw_probs": {
+              "away": 0.565,
+              "home": 0.4762
+            },
+            "hold": 0.0412,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Spurs",
+        "away_team": "Warriors",
+        "commence_time": "2026-11-14T02:40:00Z",
+        "home_odds": 1.19,
+        "draw_odds": 0.0,
+        "away_odds": 4.9,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.1954,
+            "home": 0.8046
+          },
+          "raw_probs": {
+            "away": 0.2041,
+            "home": 0.8403
+          },
+          "hold": 0.0444,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.19,
+            "away": 4.9
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.1954,
+              "home": 0.8046
+            },
+            "raw_probs": {
+              "away": 0.2041,
+              "home": 0.8403
+            },
+            "hold": 0.0444,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.19,
+                "away": 4.9
+              },
+              "raw_probs": {
+                "home": 0.8403,
+                "away": 0.2041
+              },
+              "fair_probs": {
+                "home": 0.8046,
+                "away": 0.1954
+              },
+              "hold": 0.0444
+            }
+          ]
+        },
+        "total_line": 234.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 234.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 234.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Nuggets",
+        "away_team": "Rockets",
+        "commence_time": "2026-11-21T03:10:00Z",
+        "home_odds": 1.65,
+        "draw_odds": 0.0,
+        "away_odds": 2.3,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4177,
+            "home": 0.5823
+          },
+          "raw_probs": {
+            "away": 0.4348,
+            "home": 0.6061
+          },
+          "hold": 0.0408,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.65,
+            "away": 2.3
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4177,
+              "home": 0.5823
+            },
+            "raw_probs": {
+              "away": 0.4348,
+              "home": 0.6061
+            },
+            "hold": 0.0408,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            }
+          ]
+        },
+        "total_line": 228.5,
+        "over_odds": 1.95,
+        "under_odds": 1.87,
+        "totals_benchmark": {
+          "line": 228.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 228.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.87
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Wizards",
+        "away_team": "Celtics",
+        "commence_time": "2026-11-25T01:10:00Z",
+        "home_odds": 2.6,
+        "draw_odds": 0.0,
+        "away_odds": 1.52,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6311,
+            "home": 0.3689
+          },
+          "raw_probs": {
+            "away": 0.6579,
+            "home": 0.3846
+          },
+          "hold": 0.0425,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.6,
+            "away": 1.52
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6311,
+              "home": 0.3689
+            },
+            "raw_probs": {
+              "away": 0.6579,
+              "home": 0.3846
+            },
+            "hold": 0.0425,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.6,
+                "away": 1.52
+              },
+              "raw_probs": {
+                "home": 0.3846,
+                "away": 0.6579
+              },
+              "fair_probs": {
+                "home": 0.3689,
+                "away": 0.6311
+              },
+              "hold": 0.0425
+            }
+          ]
+        },
+        "total_line": 230.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 230.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 230.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Nuggets",
+        "away_team": "Mavericks",
+        "commence_time": "2026-11-25T03:10:00Z",
+        "home_odds": 1.29,
+        "draw_odds": 0.0,
+        "away_odds": 3.75,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.256,
+            "home": 0.744
+          },
+          "raw_probs": {
+            "away": 0.2667,
+            "home": 0.7752
+          },
+          "hold": 0.0419,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.29,
+            "away": 3.75
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.256,
+              "home": 0.744
+            },
+            "raw_probs": {
+              "away": 0.2667,
+              "home": 0.7752
+            },
+            "hold": 0.0419,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.29,
+                "away": 3.75
+              },
+              "raw_probs": {
+                "home": 0.7752,
+                "away": 0.2667
+              },
+              "fair_probs": {
+                "home": 0.744,
+                "away": 0.256
+              },
+              "hold": 0.0419
+            }
+          ]
+        },
+        "total_line": 237.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 237.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 237.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "76ers",
+        "away_team": "Heat",
+        "commence_time": "2026-11-25T22:10:00Z",
+        "home_odds": 1.62,
+        "draw_odds": 0.0,
+        "away_odds": 2.36,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.407,
+            "home": 0.593
+          },
+          "raw_probs": {
+            "away": 0.4237,
+            "home": 0.6173
+          },
+          "hold": 0.041,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.62,
+            "away": 2.36
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.407,
+              "home": 0.593
+            },
+            "raw_probs": {
+              "away": 0.4237,
+              "home": 0.6173
+            },
+            "hold": 0.041,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.62,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.6173,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.593,
+                "away": 0.407
+              },
+              "hold": 0.041
+            }
+          ]
+        },
+        "total_line": 239.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 239.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 239.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Thunder",
+        "away_team": "Timberwolves",
+        "commence_time": "2026-11-26T00:40:00Z",
+        "home_odds": 1.27,
+        "draw_odds": 0.0,
+        "away_odds": 3.95,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2433,
+            "home": 0.7567
+          },
+          "raw_probs": {
+            "away": 0.2532,
+            "home": 0.7874
+          },
+          "hold": 0.0406,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.27,
+            "away": 3.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2433,
+              "home": 0.7567
+            },
+            "raw_probs": {
+              "away": 0.2532,
+              "home": 0.7874
+            },
+            "hold": 0.0406,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.27,
+                "away": 3.95
+              },
+              "raw_probs": {
+                "home": 0.7874,
+                "away": 0.2532
+              },
+              "fair_probs": {
+                "home": 0.7567,
+                "away": 0.2433
+              },
+              "hold": 0.0406
+            }
+          ]
+        },
+        "total_line": 234.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 234.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 234.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Trail Blazers",
+        "away_team": "Spurs",
+        "commence_time": "2026-11-26T03:10:00Z",
+        "home_odds": 2.42,
+        "draw_odds": 0.0,
+        "away_odds": 1.59,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6035,
+            "home": 0.3965
+          },
+          "raw_probs": {
+            "away": 0.6289,
+            "home": 0.4132
+          },
+          "hold": 0.0422,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.42,
+            "away": 1.59
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6035,
+              "home": 0.3965
+            },
+            "raw_probs": {
+              "away": 0.6289,
+              "home": 0.4132
+            },
+            "hold": 0.0422,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.42,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4132,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3965,
+                "away": 0.6035
+              },
+              "hold": 0.0422
+            }
+          ]
+        },
+        "total_line": 237.5,
+        "over_odds": 1.87,
+        "under_odds": 1.95,
+        "totals_benchmark": {
+          "line": 237.5,
+          "fair_probs": {
+            "over": 0.5105,
+            "under": 0.4895
+          },
+          "raw_probs": {
+            "over": 0.5348,
+            "under": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 237.5,
+          "execution_prices": {
+            "over": 1.87,
+            "under": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5105,
+              "under": 0.4895
+            },
+            "raw_probs": {
+              "over": 0.5348,
+              "under": 0.5128
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.87,
+                "under": 1.95
+              },
+              "raw_probs": {
+                "over": 0.5348,
+                "under": 0.5128
+              },
+              "fair_probs": {
+                "over": 0.5105,
+                "under": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Knicks",
+        "away_team": "Heat",
+        "commence_time": "2026-11-28T00:10:00Z",
+        "home_odds": 1.52,
+        "draw_odds": 0.0,
+        "away_odds": 2.6,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3689,
+            "home": 0.6311
+          },
+          "raw_probs": {
+            "away": 0.3846,
+            "home": 0.6579
+          },
+          "hold": 0.0425,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.52,
+            "away": 2.6
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3689,
+              "home": 0.6311
+            },
+            "raw_probs": {
+              "away": 0.3846,
+              "home": 0.6579
+            },
+            "hold": 0.0425,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.52,
+                "away": 2.6
+              },
+              "raw_probs": {
+                "home": 0.6579,
+                "away": 0.3846
+              },
+              "fair_probs": {
+                "home": 0.6311,
+                "away": 0.3689
+              },
+              "hold": 0.0425
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.95,
+        "under_odds": 1.87,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.4895,
+            "under": 0.5105
+          },
+          "raw_probs": {
+            "over": 0.5128,
+            "under": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.95,
+            "under": 1.87
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.4895,
+              "under": 0.5105
+            },
+            "raw_probs": {
+              "over": 0.5128,
+              "under": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.95,
+                "under": 1.87
+              },
+              "raw_probs": {
+                "over": 0.5128,
+                "under": 0.5348
+              },
+              "fair_probs": {
+                "over": 0.4895,
+                "under": 0.5105
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Spurs",
+        "away_team": "Lakers",
+        "commence_time": "2026-11-28T02:40:00Z",
+        "home_odds": 1.35,
+        "draw_odds": 0.0,
+        "away_odds": 3.3,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.2903,
+            "home": 0.7097
+          },
+          "raw_probs": {
+            "away": 0.303,
+            "home": 0.7407
+          },
+          "hold": 0.0438,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.35,
+            "away": 3.3
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.2903,
+              "home": 0.7097
+            },
+            "raw_probs": {
+              "away": 0.303,
+              "home": 0.7407
+            },
+            "hold": 0.0438,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.35,
+                "away": 3.3
+              },
+              "raw_probs": {
+                "home": 0.7407,
+                "away": 0.303
+              },
+              "fair_probs": {
+                "home": 0.7097,
+                "away": 0.2903
+              },
+              "hold": 0.0438
+            }
+          ]
+        },
+        "total_line": 232.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 232.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 232.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 1,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Knicks",
+        "away_team": "Spurs",
+        "commence_time": "2026-12-25T17:00:00Z",
+        "home_odds": 2.0,
+        "draw_odds": 0.0,
+        "away_odds": 1.95,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5,
+            "home": 0.5
+          },
+          "raw_probs": {
+            "away": 0.5291,
+            "home": 0.5291
+          },
+          "hold": 0.0476,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.0,
+            "away": 1.95
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5,
+              "home": 0.5
+            },
+            "raw_probs": {
+              "away": 0.5291,
+              "home": 0.5291
+            },
+            "hold": 0.0476,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.96,
+                "away": 1.89
+              },
+              "raw_probs": {
+                "home": 0.5102,
+                "away": 0.5291
+              },
+              "fair_probs": {
+                "home": 0.4909,
+                "away": 0.5091
+              },
+              "hold": 0.0393
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.89,
+                "away": 1.89
+              },
+              "raw_probs": {
+                "home": 0.5291,
+                "away": 0.5291
+              },
+              "fair_probs": {
+                "home": 0.5,
+                "away": 0.5
+              },
+              "hold": 0.0582
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.0,
+                "away": 1.83
+              },
+              "raw_probs": {
+                "home": 0.5,
+                "away": 0.5464
+              },
+              "fair_probs": {
+                "home": 0.4778,
+                "away": 0.5222
+              },
+              "hold": 0.0464
+            }
+          ]
+        },
+        "total_line": 227.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 227.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 2,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 227.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 2,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Celtics",
+        "away_team": "Heat",
+        "commence_time": "2026-12-25T19:30:00Z",
+        "home_odds": 1.57,
+        "draw_odds": 0.0,
+        "away_odds": 2.62,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.3766,
+            "home": 0.6234
+          },
+          "raw_probs": {
+            "away": 0.4,
+            "home": 0.6579
+          },
+          "hold": 0.0425,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.57,
+            "away": 2.62
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.3766,
+              "home": 0.6234
+            },
+            "raw_probs": {
+              "away": 0.4,
+              "home": 0.6579
+            },
+            "hold": 0.0425,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.52,
+                "away": 2.62
+              },
+              "raw_probs": {
+                "home": 0.6579,
+                "away": 0.3817
+              },
+              "fair_probs": {
+                "home": 0.6329,
+                "away": 0.3671
+              },
+              "hold": 0.0396
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.51,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.6623,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6234,
+                "away": 0.3766
+              },
+              "hold": 0.0623
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.52,
+                "away": 2.6
+              },
+              "raw_probs": {
+                "home": 0.6579,
+                "away": 0.3846
+              },
+              "fair_probs": {
+                "home": 0.6311,
+                "away": 0.3689
+              },
+              "hold": 0.0425
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.45
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4082
+              },
+              "fair_probs": {
+                "home": 0.6095,
+                "away": 0.3905
+              },
+              "hold": 0.0451
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.57,
+                "away": 2.5
+              },
+              "raw_probs": {
+                "home": 0.6369,
+                "away": 0.4
+              },
+              "fair_probs": {
+                "home": 0.6143,
+                "away": 0.3857
+              },
+              "hold": 0.0369
+            }
+          ]
+        },
+        "total_line": 231.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 231.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 231.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Lakers",
+        "away_team": "76ers",
+        "commence_time": "2026-12-25T22:00:00Z",
+        "home_odds": 1.93,
+        "draw_odds": 0.0,
+        "away_odds": 2.0,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4895,
+            "home": 0.5105
+          },
+          "raw_probs": {
+            "away": 0.5128,
+            "home": 0.5348
+          },
+          "hold": 0.0476,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.93,
+            "away": 2.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4895,
+              "home": 0.5105
+            },
+            "raw_probs": {
+              "away": 0.5128,
+              "home": 0.5348
+            },
+            "hold": 0.0476,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 1.93,
+                "away": 1.93
+              },
+              "raw_probs": {
+                "home": 0.5181,
+                "away": 0.5181
+              },
+              "fair_probs": {
+                "home": 0.5,
+                "away": 0.5
+              },
+              "hold": 0.0363
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 1.85,
+                "away": 1.94
+              },
+              "raw_probs": {
+                "home": 0.5405,
+                "away": 0.5155
+              },
+              "fair_probs": {
+                "home": 0.5119,
+                "away": 0.4881
+              },
+              "hold": 0.056
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            }
+          ]
+        },
+        "total_line": 237.5,
+        "over_odds": 1.94,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 237.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 237.5,
+          "execution_prices": {
+            "over": 1.94,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "over": 1.94,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5155,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.4921,
+                "under": 0.5079
+              },
+              "hold": 0.0474
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Timberwolves",
+        "away_team": "Thunder",
+        "commence_time": "2026-12-26T01:00:00Z",
+        "home_odds": 2.45,
+        "draw_odds": 0.0,
+        "away_odds": 1.62,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.593,
+            "home": 0.407
+          },
+          "raw_probs": {
+            "away": 0.6173,
+            "home": 0.4237
+          },
+          "hold": 0.041,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.45,
+            "away": 1.62
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.593,
+              "home": 0.407
+            },
+            "raw_probs": {
+              "away": 0.6173,
+              "home": 0.4237
+            },
+            "hold": 0.041,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 2.32,
+                "away": 1.61
+              },
+              "raw_probs": {
+                "home": 0.431,
+                "away": 0.6211
+              },
+              "fair_probs": {
+                "home": 0.4097,
+                "away": 0.5903
+              },
+              "hold": 0.0522
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 2.35,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4255,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.4081,
+                "away": 0.5919
+              },
+              "hold": 0.0428
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3936,
+                "away": 0.6064
+              },
+              "hold": 0.0371
+            }
+          ]
+        },
+        "total_line": 233.5,
+        "over_odds": 1.91,
+        "under_odds": 1.93,
+        "totals_benchmark": {
+          "line": 233.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 233.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.93
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "over": 1.89,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5291,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5052,
+                "under": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Warriors",
+        "away_team": "Nuggets",
+        "commence_time": "2026-12-26T03:30:00Z",
+        "home_odds": 2.15,
+        "draw_odds": 0.0,
+        "away_odds": 1.78,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.5464,
+            "home": 0.4536
+          },
+          "raw_probs": {
+            "away": 0.5682,
+            "home": 0.4717
+          },
+          "hold": 0.0412,
+          "books_tracked": 5,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.15,
+            "away": 1.78
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.5464,
+              "home": 0.4536
+            },
+            "raw_probs": {
+              "away": 0.5682,
+              "home": 0.4717
+            },
+            "hold": 0.0412,
+            "books_tracked": 5,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-08-25T12:34:13Z",
+              "outcomes": {
+                "home": 2.12,
+                "away": 1.76
+              },
+              "raw_probs": {
+                "home": 0.4717,
+                "away": 0.5682
+              },
+              "fair_probs": {
+                "home": 0.4536,
+                "away": 0.5464
+              },
+              "hold": 0.0399
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-08-25T12:34:43Z",
+              "outcomes": {
+                "home": 2.04,
+                "away": 1.78
+              },
+              "raw_probs": {
+                "home": 0.4902,
+                "away": 0.5618
+              },
+              "fair_probs": {
+                "home": 0.466,
+                "away": 0.534
+              },
+              "hold": 0.052
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "home": 2.14,
+                "away": 1.74
+              },
+              "raw_probs": {
+                "home": 0.4673,
+                "away": 0.5747
+              },
+              "fair_probs": {
+                "home": 0.4485,
+                "away": 0.5515
+              },
+              "hold": 0.042
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "home": 2.1,
+                "away": 1.77
+              },
+              "raw_probs": {
+                "home": 0.4762,
+                "away": 0.565
+              },
+              "fair_probs": {
+                "home": 0.4574,
+                "away": 0.5426
+              },
+              "hold": 0.0412
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "home": 2.15,
+                "away": 1.74
+              },
+              "raw_probs": {
+                "home": 0.4651,
+                "away": 0.5747
+              },
+              "fair_probs": {
+                "home": 0.4473,
+                "away": 0.5527
+              },
+              "hold": 0.0398
+            }
+          ]
+        },
+        "total_line": 238.5,
+        "over_odds": 1.91,
+        "under_odds": 1.91,
+        "totals_benchmark": {
+          "line": 238.5,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 238.5,
+          "execution_prices": {
+            "over": 1.91,
+            "under": 1.91
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 3,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-08-25T12:34:45Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-08-25T12:33:27Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-08-25T12:33:32Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.2576,
+      "results_features": 0.255,
+      "recent_boxscore": 0.2548,
+      "nba_matchup": 0.2325
+    },
+    "models": [
+      "elo",
+      "results_features",
+      "recent_boxscore",
+      "nba_matchup"
+    ],
+    "model_health": {
+      "ensemble": {
+        "sample_size": 40,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.5015
+      },
+      "models": {
+        "elo": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5156,
+          "weight": 0.213,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "four_factors": {
+          "sample_size": 40,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6517,
+          "weight": 0.1734,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5371,
+          "weight": 0.2108,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "recent_boxscore": {
+          "sample_size": 40,
+          "accuracy": 0.775,
+          "avg_log_loss": 0.5384,
+          "weight": 0.2107,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "nba_matchup": {
+          "sample_size": 40,
+          "accuracy": 0.7,
+          "avg_log_loss": 0.5493,
+          "weight": 0.1922,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [
+        "four_factors"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "recent_boxscore",
+        "nba_matchup"
+      ]
+    },
+    "calibration_sample_size": 215
+  },
+  "records": {
+    "matches": [],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 1323,
+    "fixtures_fetched": 0,
+    "fixtures_in_window": 0,
+    "fixtures_completed": 0,
+    "fixtures_pending": 0,
+    "odds_events_fetched": 41,
+    "fixtures_with_odds": 0,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 0,
+    "matches_with_market": 0,
+    "matches_with_positive_ev": 0,
+    "matches_with_qualitative": 0,
+    "lock_eligible_matches": 0,
+    "lock_eligible_outcomes": 0,
+    "gate_failures": {
+      "missing_odds": 0,
+      "negative_expected_value": 0,
+      "below_edge_floor": 0,
+      "below_probability_floor": 0
+    },
+    "candidate_lanes": {
+      "value_dog": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      },
+      "near_favorite": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      }
+    },
+    "slop_locks_posted": 0,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": true,
+      "allow_totals": false,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "moneyline_publish_cap": null,
+      "totals_publish_cap": null,
+      "evaluated_picks": 29,
+      "evaluated_totals_picks": 6,
+      "min_evaluated_picks": 20,
+      "min_evaluated_totals_picks": 10,
+      "status": "partial",
+      "reason": "totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000",
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 91,
+            "evaluated": 29,
+            "pending": 62,
+            "hit_rate": 0.7931,
+            "roi": 0.11,
+            "push_rate": 0.0,
+            "wins": 23,
+            "losses": 6,
+            "pushes": 0,
+            "avg_confidence": 54.9271,
+            "avg_expected_value": -0.0054,
+            "clv": {
+              "tracked": 44,
+              "avg_clv": 0.0338,
+              "positive_rate": 0.2273,
+              "non_negative_rate": 0.2273,
+              "moneyline_tracked": 44,
+              "moneyline_avg_clv": 0.0338,
+              "moneyline_positive_rate": 0.2273,
+              "moneyline_non_negative_rate": 0.2273,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.875,
+            "roi": 0.1013,
+            "push_rate": 0.0,
+            "wins": 7,
+            "losses": 1,
+            "pushes": 0,
+            "avg_confidence": 44.6625,
+            "avg_expected_value": -0.0809,
+            "clv": {
+              "tracked": 7,
+              "avg_clv": -0.0008,
+              "positive_rate": 0.1429,
+              "non_negative_rate": 0.1429,
+              "moneyline_tracked": 7,
+              "moneyline_avg_clv": -0.0008,
+              "moneyline_positive_rate": 0.1429,
+              "moneyline_non_negative_rate": 0.1429,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.711,
+            "actual_win_rate": 0.875,
+            "calibration_gap": -0.164,
+            "overconfidence_gap": 0.0
+          },
+          "allow": true,
+          "status": "live",
+          "reasons": [],
+          "health_score": 1.0
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 14,
+            "evaluated": 6,
+            "pending": 8,
+            "hit_rate": 0.3333,
+            "roi": -0.36,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 75.3786,
+            "avg_expected_value": 0.1204,
+            "clv": {
+              "tracked": 6,
+              "avg_clv": -6.1667,
+              "positive_rate": 0.5,
+              "non_negative_rate": 0.6667,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 6,
+              "totals_avg_clv": -6.1667,
+              "totals_positive_rate": 0.5,
+              "totals_non_negative_rate": 0.6667
+            }
+          },
+          "recent": {
+            "total_picks": 6,
+            "evaluated": 6,
+            "pending": 0,
+            "hit_rate": 0.3333,
+            "roi": -0.36,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 77.15,
+            "avg_expected_value": 0.1254,
+            "clv": {
+              "tracked": 6,
+              "avg_clv": -6.1667,
+              "positive_rate": 0.5,
+              "non_negative_rate": 0.6667,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 6,
+              "totals_avg_clv": -6.1667,
+              "totals_positive_rate": 0.5,
+              "totals_non_negative_rate": 0.6667
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5821,
+            "actual_win_rate": 0.3333,
+            "calibration_gap": 0.2488,
+            "overconfidence_gap": 0.2488
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "totals disabled by config",
+            "need more settled totals picks (6/10)",
+            "recent totals CLV -6.1667 is below 0.0000",
+            "recent totals ROI -0.3600 is below 0.0000",
+            "recent totals overconfidence gap 0.2488 exceeds 0.1000"
+          ],
+          "health_score": 0.2857
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": false
+      }
+    },
+    "validation_issues": [],
+    "validation_issues_count": 0,
+    "summary": "modeled=0 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0 | totals disabled by config; need more settled totals picks (6/10); recent totals CLV -6.1667 is below 0.0000; recent totals ROI -0.3600 is below 0.0000; recent totals overconfidence gap 0.2488 exceeds 0.1000"
+  }
+}
