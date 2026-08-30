@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-08-29T16:07:03Z",
+  "updated_at": "2026-08-30T15:55:30Z",
   "sports": {
     "nba": {
       "name": "NBA",
       "status": "ok",
-      "updated_at": "2026-08-29T16:02:43Z",
+      "updated_at": "2026-08-30T15:51:45Z",
       "diagnostics": {
         "historical_matches": 1323,
         "fixtures_fetched": 0,
@@ -346,7 +346,7 @@
     "nhl": {
       "name": "NHL",
       "status": "ok",
-      "updated_at": "2026-08-29T16:02:53Z",
+      "updated_at": "2026-08-30T15:51:55Z",
       "diagnostics": {
         "historical_matches": 1422,
         "fixtures_fetched": 0,
@@ -682,28 +682,28 @@
     "wnba": {
       "name": "WNBA",
       "status": "ok",
-      "updated_at": "2026-08-29T16:03:08Z",
+      "updated_at": "2026-08-30T15:52:15Z",
       "diagnostics": {
-        "historical_matches": 314,
-        "fixtures_fetched": 2,
-        "fixtures_in_window": 2,
+        "historical_matches": 316,
+        "fixtures_fetched": 4,
+        "fixtures_in_window": 4,
         "fixtures_completed": 0,
-        "fixtures_pending": 2,
-        "odds_events_fetched": 3,
-        "fixtures_with_odds": 2,
+        "fixtures_pending": 4,
+        "odds_events_fetched": 4,
+        "fixtures_with_odds": 4,
         "fixtures_without_odds": 0,
         "coverage_gap_examples": [],
-        "matches_modeled": 2,
-        "matches_with_market": 2,
-        "matches_with_positive_ev": 2,
-        "matches_with_qualitative": 2,
-        "lock_eligible_matches": 0,
-        "lock_eligible_outcomes": 0,
+        "matches_modeled": 4,
+        "matches_with_market": 4,
+        "matches_with_positive_ev": 3,
+        "matches_with_qualitative": 4,
+        "lock_eligible_matches": 2,
+        "lock_eligible_outcomes": 2,
         "gate_failures": {
           "missing_odds": 0,
-          "negative_expected_value": 2,
+          "negative_expected_value": 5,
           "below_edge_floor": 0,
-          "below_probability_floor": 2
+          "below_probability_floor": 1
         },
         "candidate_lanes": {
           "value_dog": {
@@ -715,7 +715,7 @@
             "eligible_matches": 0
           }
         },
-        "slop_locks_posted": 0,
+        "slop_locks_posted": 1,
         "longslop_posted": 0,
         "slimegrinders_posted": 0,
         "publication_guard": {
@@ -1014,43 +1014,43 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=2 | odds=2/2 | +ev=2 | sense=2 | eligible=0 | locks=0 | totals disabled by config"
+        "summary": "modeled=4 | odds=4/4 | +ev=3 | sense=4 | eligible=2 | locks=1 | totals disabled by config"
       }
     },
     "mlb": {
       "name": "MLB",
       "status": "ok",
-      "updated_at": "2026-08-29T16:07:02Z",
+      "updated_at": "2026-08-30T15:55:29Z",
       "diagnostics": {
-        "historical_matches": 2106,
-        "fixtures_fetched": 17,
-        "fixtures_in_window": 17,
+        "historical_matches": 2123,
+        "fixtures_fetched": 14,
+        "fixtures_in_window": 14,
         "fixtures_completed": 0,
-        "fixtures_pending": 17,
-        "odds_events_fetched": 17,
-        "fixtures_with_odds": 17,
+        "fixtures_pending": 14,
+        "odds_events_fetched": 14,
+        "fixtures_with_odds": 14,
         "fixtures_without_odds": 0,
         "coverage_gap_examples": [],
-        "matches_modeled": 17,
-        "matches_with_market": 17,
-        "matches_with_positive_ev": 12,
-        "matches_with_qualitative": 17,
-        "lock_eligible_matches": 6,
-        "lock_eligible_outcomes": 6,
+        "matches_modeled": 14,
+        "matches_with_market": 14,
+        "matches_with_positive_ev": 13,
+        "matches_with_qualitative": 14,
+        "lock_eligible_matches": 7,
+        "lock_eligible_outcomes": 7,
         "gate_failures": {
           "missing_odds": 0,
-          "negative_expected_value": 20,
-          "below_edge_floor": 7,
-          "below_probability_floor": 7
+          "negative_expected_value": 15,
+          "below_edge_floor": 4,
+          "below_probability_floor": 9
         },
         "candidate_lanes": {
           "value_dog": {
-            "eligible_outcomes": 5,
-            "eligible_matches": 5
+            "eligible_outcomes": 7,
+            "eligible_matches": 7
           },
           "near_favorite": {
-            "eligible_outcomes": 1,
-            "eligible_matches": 1
+            "eligible_outcomes": 0,
+            "eligible_matches": 0
           }
         },
         "slop_locks_posted": 0,
@@ -1065,11 +1065,11 @@
           "moneyline_publish_cap": null,
           "totals_publish_cap": null,
           "evaluated_picks": 250,
-          "evaluated_totals_picks": 194,
+          "evaluated_totals_picks": 196,
           "min_evaluated_picks": 20,
           "min_evaluated_totals_picks": 10,
           "status": "partial",
-          "reason": "recent totals ROI -0.4963 is below -0.1000; recent totals overconfidence gap 0.3285 exceeds 0.1000",
+          "reason": "recent totals CLV -0.0625 is below -0.0200; recent totals ROI -0.4963 is below -0.1000; recent totals overconfidence gap 0.3353 exceeds 0.1000",
           "lane_guards": {
             "moneyline": {
               "market_type": "moneyline",
@@ -1142,30 +1142,30 @@
               "market_type": "total",
               "pick_type": null,
               "overall": {
-                "total_picks": 220,
-                "evaluated": 194,
-                "pending": 26,
-                "hit_rate": 0.5309,
-                "roi": 0.0571,
-                "push_rate": 0.0361,
+                "total_picks": 223,
+                "evaluated": 196,
+                "pending": 27,
+                "hit_rate": 0.5255,
+                "roi": 0.0463,
+                "push_rate": 0.0357,
                 "wins": 103,
-                "losses": 84,
+                "losses": 86,
                 "pushes": 7,
-                "avg_confidence": 72.3005,
-                "avg_expected_value": 0.153,
+                "avg_confidence": 72.2269,
+                "avg_expected_value": 0.1528,
                 "clv": {
-                  "tracked": 196,
-                  "avg_clv": 0.0332,
-                  "positive_rate": 0.0867,
-                  "non_negative_rate": 0.9235,
+                  "tracked": 199,
+                  "avg_clv": 0.0327,
+                  "positive_rate": 0.0854,
+                  "non_negative_rate": 0.9246,
                   "moneyline_tracked": 0,
                   "moneyline_avg_clv": null,
                   "moneyline_positive_rate": null,
                   "moneyline_non_negative_rate": null,
-                  "totals_tracked": 196,
-                  "totals_avg_clv": 0.0332,
-                  "totals_positive_rate": 0.0867,
-                  "totals_non_negative_rate": 0.9235
+                  "totals_tracked": 199,
+                  "totals_avg_clv": 0.0327,
+                  "totals_positive_rate": 0.0854,
+                  "totals_non_negative_rate": 0.9246
                 }
               },
               "recent": {
@@ -1178,35 +1178,36 @@
                 "wins": 2,
                 "losses": 6,
                 "pushes": 0,
-                "avg_confidence": 66.35,
-                "avg_expected_value": 0.1477,
+                "avg_confidence": 67.8875,
+                "avg_expected_value": 0.1486,
                 "clv": {
                   "tracked": 8,
-                  "avg_clv": 0.0,
+                  "avg_clv": -0.0625,
                   "positive_rate": 0.0,
-                  "non_negative_rate": 1.0,
+                  "non_negative_rate": 0.875,
                   "moneyline_tracked": 0,
                   "moneyline_avg_clv": null,
                   "moneyline_positive_rate": null,
                   "moneyline_non_negative_rate": null,
                   "totals_tracked": 8,
-                  "totals_avg_clv": 0.0,
+                  "totals_avg_clv": -0.0625,
                   "totals_positive_rate": 0.0,
-                  "totals_non_negative_rate": 1.0
+                  "totals_non_negative_rate": 0.875
                 },
                 "recent_count": 8,
-                "avg_model_prob": 0.5785,
+                "avg_model_prob": 0.5853,
                 "actual_win_rate": 0.25,
-                "calibration_gap": 0.3285,
-                "overconfidence_gap": 0.3285
+                "calibration_gap": 0.3353,
+                "overconfidence_gap": 0.3353
               },
               "allow": false,
               "status": "hold",
               "reasons": [
+                "recent totals CLV -0.0625 is below -0.0200",
                 "recent totals ROI -0.4963 is below -0.1000",
-                "recent totals overconfidence gap 0.3285 exceeds 0.1000"
+                "recent totals overconfidence gap 0.3353 exceeds 0.1000"
               ],
-              "health_score": 0.7143
+              "health_score": 0.5714
             },
             "longslop": {
               "market_type": null,
@@ -1353,7 +1354,7 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=17 | odds=17/17 | +ev=12 | sense=17 | eligible=6 | locks=0 | recent totals ROI -0.4963 is below -0.1000; recent totals overconfidence gap 0.3285 exceeds 0.1000"
+        "summary": "modeled=14 | odds=14/14 | +ev=13 | sense=14 | eligible=7 | locks=0 | recent totals CLV -0.0625 is below -0.0200; recent totals ROI -0.4963 is below -0.1000; recent totals overconfidence gap 0.3353 exceeds 0.1000"
       }
     },
     "ncaam": {
@@ -1361,7 +1362,7 @@
       "status": "season_disabled",
       "active": false,
       "reason": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
-      "updated_at": "2026-08-29T16:07:03Z",
+      "updated_at": "2026-08-30T15:55:30Z",
       "diagnostics": {
         "summary": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
         "season_disabled": true
