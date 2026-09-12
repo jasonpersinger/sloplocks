@@ -365,12 +365,35 @@ class EloRatings:
         K-factor for rating updates. Defaults to ``ELO_K_FACTOR`` from config.
     home_advantage : float or None
         Elo points added to home team. Defaults to ``ELO_HOME_ADVANTAGE``.
+    margin_divisor : float
+        Divide the raw scoring margin by this before it feeds the
+        goal-difference K multiplier. 1.0 (default) leaves the margin as-is,
+        which is right for goal-scale sports. Football passes 7.0 so a margin
+        is measured in touchdowns rather than points.
+    margin_cap : float or None
+        Optional ceiling on the raw margin before scaling, for leagues where
+        blowouts are routine and carry little rating information.
+    season_carryover : float or None
+        Fraction of a team's rating above/below the mean that survives a
+        season boundary, e.g. 0.67 keeps two thirds and regresses one third.
+        ``None`` (default) disables boundary handling entirely, which is the
+        right behaviour for sports fitted from a single season of results.
     """
 
-    def __init__(self, teams, initial_rating=1500, k_factor=None, home_advantage=None):
+    # A gap this long between consecutive games means an off-season.
+    SEASON_GAP_DAYS = 60
+
+    def __init__(self, teams, initial_rating=1500, k_factor=None, home_advantage=None,
+                 margin_divisor=1.0, margin_cap=None, season_carryover=None):
+        self.initial_rating = float(initial_rating)
         self.ratings = {t: float(initial_rating) for t in teams}
         self.k_factor = k_factor if k_factor is not None else ELO_K_FACTOR
         self.home_advantage = home_advantage if home_advantage is not None else ELO_HOME_ADVANTAGE
+        self.margin_divisor = float(margin_divisor or 1.0)
+        self.margin_cap = float(margin_cap) if margin_cap else None
+        self.season_carryover = (
+            None if season_carryover is None else float(season_carryover)
+        )
 
     def get_rating(self, team):
         """Return the current Elo rating for *team*."""
@@ -380,6 +403,30 @@ class EloRatings:
     def expected_score(rating_a, rating_b):
         """Compute expected score for player A given both ratings."""
         return 1.0 / (1.0 + 10.0 ** ((rating_b - rating_a) / 400.0))
+
+    @staticmethod
+    def _goal_diff_multiplier(goal_diff):
+        """Return the K multiplier for a margin already on the goal scale."""
+        if goal_diff <= 1:
+            return 1.0
+        if goal_diff == 2:
+            return 1.5
+        return (11.0 + goal_diff) / 8.0
+
+    def _margin_multiplier(self, margin):
+        """Convert a raw scoring margin into a K multiplier.
+
+        With the default ``margin_divisor`` of 1.0 this is exactly
+        ``_goal_diff_multiplier``. When a divisor is configured the margin is
+        first capped, then rescaled and rounded to the nearest goal-equivalent
+        unit (floored at 1) so the multiplier stays monotonic in the margin.
+        """
+        margin = abs(float(margin))
+        if self.margin_cap is not None:
+            margin = min(margin, self.margin_cap)
+        if self.margin_divisor == 1.0:
+            return self._goal_diff_multiplier(margin)
+        return self._goal_diff_multiplier(max(1, round(margin / self.margin_divisor)))
 
     def update(self, home, away, hg, ag):
         """Update ratings after a single match.
@@ -406,16 +453,8 @@ class EloRatings:
         e_home = self.expected_score(r_home + self.home_advantage, r_away)
         e_away = 1.0 - e_home
 
-        # Goal-difference multiplier
-        goal_diff = abs(hg - ag)
-        if goal_diff <= 1:
-            gd_mult = 1.0
-        elif goal_diff == 2:
-            gd_mult = 1.5
-        else:
-            gd_mult = (11.0 + goal_diff) / 8.0
-
-        k = self.k_factor * gd_mult
+        # Goal-difference multiplier, on the sport's own margin scale
+        k = self.k_factor * self._margin_multiplier(abs(hg - ag))
 
         self.ratings[home] = r_home + k * (s_home - e_home)
         self.ratings[away] = r_away + k * (s_away - e_away)
@@ -442,8 +481,12 @@ class EloRatings:
         days_ago = (most_recent - dates).dt.days.values.astype(float)
         recency = np.clip(np.exp(-recency_decay * days_ago), 0.5, 1.0)
 
+        boundaries = self._season_boundaries(df, dates)
+
         original_k = self.k_factor
         for idx, (_, row) in enumerate(df.iterrows()):
+            if boundaries[idx]:
+                self.regress_to_mean(self.season_carryover)
             self.k_factor = original_k * recency[idx]
             self.update(
                 row["home_team"],
@@ -452,6 +495,48 @@ class EloRatings:
                 int(row["away_goals"]),
             )
         self.k_factor = original_k
+
+    def regress_to_mean(self, carryover):
+        """Pull every rating toward the initial rating.
+
+        ``carryover`` is the fraction of the deviation from the mean that is
+        retained, so 1.0 is a no-op and 0.0 resets every team.
+        """
+        if carryover is None:
+            return
+        mean = self.initial_rating
+        self.ratings = {
+            team: mean + carryover * (rating - mean)
+            for team, rating in self.ratings.items()
+        }
+
+    def _season_boundaries(self, df, dates):
+        """Flag the first game of each season after the first.
+
+        Prefers an explicit ``season_year`` column, which the football feeds
+        provide; otherwise falls back to a long gap between consecutive games,
+        which is how every league's off-season shows up in a date series.
+        Returns an all-False list when carryover is disabled, so sports fitted
+        from one season keep their existing behaviour untouched.
+        """
+        flags = [False] * len(df)
+        if self.season_carryover is None or len(df) == 0:
+            return flags
+
+        if "season_year" in df.columns:
+            seasons = df["season_year"].tolist()
+            for idx in range(1, len(seasons)):
+                previous, current = seasons[idx - 1], seasons[idx]
+                if pd.notna(previous) and pd.notna(current) and previous != current:
+                    flags[idx] = True
+            return flags
+
+        gaps = dates.diff().dt.days
+        for idx in range(1, len(df)):
+            gap = gaps.iloc[idx]
+            if pd.notna(gap) and gap >= self.SEASON_GAP_DAYS:
+                flags[idx] = True
+        return flags
 
 
 def elo_predict(elo, home_team, away_team, outcomes=None,
@@ -525,9 +610,12 @@ class ResultsFeatureModel:
     sparse box-score or roster data.
     """
 
-    def __init__(self, games, feature_window=8, min_games=30):
+    def __init__(self, games, feature_window=8, min_games=30, rest_cap_days=7.0):
         self.feature_window = feature_window
         self.min_games = min_games
+        # Daily-cadence sports saturate at a week of rest. Weekly sports need a
+        # longer cap or every team looks identical and bye weeks vanish.
+        self.rest_cap_days = float(rest_cap_days)
         self.model = None
         self.team_logs = {}
         self.feature_names = [
@@ -541,14 +629,13 @@ class ResultsFeatureModel:
         ]
         self._fit(games)
 
-    @staticmethod
-    def _days_since_last(logs, cutoff_date=None):
+    def _days_since_last(self, logs, cutoff_date=None):
         if not logs:
-            return 7.0
+            return self.rest_cap_days
         last_date = pd.to_datetime(logs[-1]["date"])
         current_date = pd.to_datetime(cutoff_date) if cutoff_date is not None else last_date
         days = (current_date - last_date).days
-        return float(max(0, min(days, 7)))
+        return float(max(0, min(days, self.rest_cap_days)))
 
     def _team_features(self, logs, venue=None, cutoff_date=None):
         if not logs:
@@ -558,7 +645,7 @@ class ResultsFeatureModel:
                 "season_margin": 0.0,
                 "recent_margin": 0.0,
                 "venue_win_pct": 0.5,
-                "rest_days": 7.0,
+                "rest_days": self.rest_cap_days,
                 "games_played": 0.0,
             }
 
@@ -599,7 +686,7 @@ class ResultsFeatureModel:
             home_feats["season_margin"] - away_feats["season_margin"],
             home_feats["recent_margin"] - away_feats["recent_margin"],
             home_feats["venue_win_pct"] - away_feats["venue_win_pct"],
-            (home_feats["rest_days"] - away_feats["rest_days"]) / 7.0,
+            (home_feats["rest_days"] - away_feats["rest_days"]) / self.rest_cap_days,
             (home_feats["games_played"] - away_feats["games_played"]) / 20.0,
         ])
 

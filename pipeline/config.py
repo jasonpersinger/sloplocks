@@ -32,6 +32,9 @@ NBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba"
 WNBA_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/basketball/wnba"
 MLB_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/baseball/mlb"
 NHL_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl"
+NFL_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/football/nfl"
+NCAAF_ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/football/college-football"
+NCAAF_CORE_API_BASE = "https://sports.core.api.espn.com/v2/sports/football/leagues/college-football"
 MLB_CORE_API_BASE = "https://sports.core.api.espn.com/v2/sports/baseball/leagues/mlb"
 MLB_STATS_API_BASE = "https://statsapi.mlb.com/api/v1"
 OPEN_METEO_BASE = "https://api.open-meteo.com/v1/forecast"
@@ -451,6 +454,10 @@ SPORTS = {
         "totals_confidence_threshold": 54,
         "totals_max_picks": 3,
         "totals_default_stddev": 3.1,
+        # Regression runs hot+flat vs market lines; recenter each slate's
+        # projections on the market mean so only relative signal creates edges.
+        "totals_recenter_to_market": True,
+        "totals_recenter_min_slate": 5,
         "results_feature_window": 12,
         "results_feature_min_games": 50,
         "recent_form_window": 10,
@@ -518,5 +525,195 @@ SPORTS = {
         "qualitative_weight": 0.3,
         "enable_qualitative": True,
         "data_dir": os.path.join(DATA_DIR, "mlb"),
+    },
+    "nfl": {
+        "name": "NFL",
+        "display_name": "NFL",
+        "odds_sport": "americanfootball_nfl",
+        "outcomes": ["home", "away"],
+        "models": ["elo", "results_features"],
+        "disabled_models": [],
+        "accuracy_softmax_temperature": 2.5,
+        "probability_calibration_min_samples": 20,
+        "probability_calibration_blend": 0.4,
+        "probability_calibration_window_days": 240,
+        "probability_calibration_holdout_days": 7,
+        # 17-game season: K stays moderate, and margins are divided into
+        # touchdown-sized units before the Elo goal-diff multiplier so a
+        # 3-score win does not swing ratings like a 3-goal hockey win.
+        "elo_k_factor": 20,
+        "elo_home_advantage": 48,
+        "elo_margin_divisor": 7.0,
+        # Three seasons of history give Elo a real week-1 prior; without it
+        # every team sits at 1500 until roughly week 5 of a 17-game season.
+        "history_seasons": 3,
+        # Keep two thirds of last season's rating, regress one third to the
+        # mean. The draft and free agency are built for parity, so the NFL
+        # reverts harder year over year than college does.
+        "elo_season_carryover": 0.67,
+        # Football is weekly: a 5-game window is ~1/3 of the season.
+        "results_feature_window": 5,
+        "results_feature_min_games": 30,
+        # Bye weeks produce 13-14 days of rest, so the rest feature must not
+        # be clamped at the 7-day default used by the daily-cadence sports.
+        "results_feature_rest_cap_days": 14,
+        "recent_form_window": 5,
+        "recent_form_max_adjustment": 30,
+        "min_expected_value": 0.0,
+        "kelly_fraction": 0.2,
+        "slop_lock_edge_threshold": 0.03,
+        "slop_lock_probability_floor": 0.52,
+        "slop_lock_confidence_threshold": 53,
+        "slop_lock_confidence_dropoff": 7,
+        "slop_lock_max_picks": 3,
+        "moneyline_hold_max_picks": 1,
+        "moneyline_hold_min_health_score": 0.7,
+        # No football totals model exists yet; totals stay off end to end.
+        "totals_max_picks": 0,
+        "publication_min_evaluated_totals_picks": 0,
+        "slop_lock_lanes": {
+            "value_dog": {
+                "enabled": True,
+                "edge_floor": 0.04,
+                "probability_floor": 0.35,
+                "min_expected_value": 0.05,
+                "american_odds_min": 120,
+                "american_odds_max": 500,
+                "max_picks": 1,
+            },
+            "near_favorite": {
+                "enabled": True,
+                "edge_floor": 0.015,
+                "probability_floor": 0.52,
+                "min_expected_value": 0.0,
+                "american_odds_min": -180,
+                "american_odds_max": 120,
+                "max_picks": 2,
+            },
+        },
+        "publication_min_evaluated_picks": 20,
+        "moneyline_health_recent_window": 8,
+        "moneyline_health_min_recent_evaluated": 5,
+        "moneyline_health_min_recent_roi": -0.15,
+        "moneyline_health_max_overconfidence_gap": 0.15,
+        "moneyline_clv_guard_window": 5,
+        "moneyline_clv_guard_min_tracked": 3,
+        "moneyline_clv_guard_min_avg": -0.025,
+        "enable_longslop": False,
+        "enable_slimegrinder": False,
+        "longslop_confidence_threshold": 55,
+        "slimegrinder_confidence_threshold": 55,
+        # Football never plays back-to-back days. Its fatigue case is the
+        # short week (Thursday game on 4 days rest); its rest case is the bye.
+        "back_to_back_penalty": 0,
+        "fatigue_window_days": 0,
+        "fatigue_threshold_games": 0,
+        "fatigue_penalty": 0,
+        "short_rest_days": 5,
+        "short_rest_penalty": 15,
+        "rest_bonus_days": 10,
+        "rest_bonus_max_days": 21,
+        "rest_bonus_points": 12,
+        "accuracy_window": 40,
+        "season_start_month": 8,
+        "season_start_day": 1,
+        "qualitative_weight": 0.4,
+        "enable_qualitative": True,
+        "data_dir": os.path.join(DATA_DIR, "nfl"),
+    },
+    "ncaaf": {
+        "name": "NCAAF",
+        "display_name": "NCAAF",
+        "odds_sport": "americanfootball_ncaaf",
+        "outcomes": ["home", "away"],
+        "models": ["elo", "results_features"],
+        "disabled_models": [],
+        "accuracy_softmax_temperature": 2.5,
+        "probability_calibration_min_samples": 40,
+        "probability_calibration_blend": 0.4,
+        "probability_calibration_window_days": 240,
+        "probability_calibration_holdout_days": 7,
+        # ~134 FBS teams with a far wider talent spread than the NFL, on a
+        # 12-game regular season: a higher K is needed for ratings to separate
+        # within one year, and the home edge is larger than the NFL's.
+        "elo_k_factor": 26,
+        "elo_home_advantage": 65,
+        "elo_margin_divisor": 7.0,
+        # Blowouts are routine in non-conference play, so cap the margin that
+        # can feed the Elo multiplier to stop cupcake wins inflating ratings.
+        "elo_margin_cap": 28,
+        "history_seasons": 3,
+        # College keeps more of its rating than the NFL: there is no draft or
+        # salary cap, so program strength persists strongly year over year.
+        "elo_season_carryover": 0.72,
+        "results_feature_window": 5,
+        "results_feature_min_games": 120,
+        "results_feature_rest_cap_days": 14,
+        "recent_form_window": 5,
+        "recent_form_max_adjustment": 40,
+        "min_expected_value": 0.0,
+        "kelly_fraction": 0.15,
+        # Wider spread of team strength means more lopsided prices; require a
+        # larger edge than the NFL before a pick is eligible.
+        "slop_lock_edge_threshold": 0.04,
+        "slop_lock_probability_floor": 0.55,
+        "slop_lock_confidence_threshold": 55,
+        "slop_lock_confidence_dropoff": 7,
+        "slop_lock_max_picks": 4,
+        "moneyline_hold_max_picks": 1,
+        "moneyline_hold_min_health_score": 0.7,
+        "totals_max_picks": 0,
+        "publication_min_evaluated_totals_picks": 0,
+        "slop_lock_lanes": {
+            "value_dog": {
+                "enabled": True,
+                "edge_floor": 0.05,
+                "probability_floor": 0.35,
+                "min_expected_value": 0.05,
+                "american_odds_min": 120,
+                "american_odds_max": 500,
+                "max_picks": 2,
+            },
+            "near_favorite": {
+                "enabled": True,
+                "edge_floor": 0.02,
+                "probability_floor": 0.55,
+                "min_expected_value": 0.0,
+                "american_odds_min": -180,
+                "american_odds_max": 120,
+                "max_picks": 2,
+            },
+        },
+        "publication_min_evaluated_picks": 25,
+        "moneyline_health_recent_window": 10,
+        "moneyline_health_min_recent_evaluated": 6,
+        "moneyline_health_min_recent_roi": -0.15,
+        "moneyline_health_max_overconfidence_gap": 0.15,
+        "moneyline_clv_guard_window": 8,
+        "moneyline_clv_guard_min_tracked": 5,
+        "moneyline_clv_guard_min_avg": -0.025,
+        "enable_longslop": False,
+        "enable_slimegrinder": False,
+        "longslop_confidence_threshold": 57,
+        "slimegrinder_confidence_threshold": 57,
+        "back_to_back_penalty": 0,
+        "fatigue_window_days": 0,
+        "fatigue_threshold_games": 0,
+        "fatigue_penalty": 0,
+        # College bye weeks are common and scattered; short weeks are rare.
+        "short_rest_days": 5,
+        "short_rest_penalty": 10,
+        "rest_bonus_days": 10,
+        "rest_bonus_max_days": 21,
+        "rest_bonus_points": 10,
+        "accuracy_window": 80,
+        "season_start_month": 8,
+        "season_start_day": 1,
+        # FBS only. FCS opponents are folded into a single synthetic team so
+        # their results still inform FBS ratings without polluting the pool.
+        "espn_groups": [80],
+        "qualitative_weight": 0.35,
+        "enable_qualitative": True,
+        "data_dir": os.path.join(DATA_DIR, "ncaaf"),
     },
 }

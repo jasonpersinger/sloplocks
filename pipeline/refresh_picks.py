@@ -41,6 +41,8 @@ from pipeline.fetch_nba import normalize_nba_team_name, fetch_nba_espn_schedule
 from pipeline.fetch_wnba import normalize_wnba_team_name, fetch_wnba_espn_schedule
 from pipeline.fetch_nhl import normalize_nhl_team_name, fetch_nhl_schedule
 from pipeline.fetch_mlb import normalize_mlb_team_name, fetch_mlb_schedule
+from pipeline.fetch_nfl import normalize_nfl_team_name, fetch_nfl_schedule
+from pipeline.fetch_ncaaf import normalize_ncaaf_team_name, fetch_ncaaf_schedule
 from pipeline.run import (
     _append_odds_snapshot_log,
     _attach_run_metadata,
@@ -84,6 +86,8 @@ _NORMALIZERS = {
     "wnba": normalize_wnba_team_name,
     "nhl": normalize_nhl_team_name,
     "mlb": normalize_mlb_team_name,
+    "nfl": normalize_nfl_team_name,
+    "ncaaf": normalize_ncaaf_team_name,
 }
 
 
@@ -107,6 +111,10 @@ def _load_live_fixtures(sport_key: str, data_path: Path) -> list[dict]:
         return fetch_nhl_schedule(cache_path=cache_path)
     if sport_key == "mlb":
         return fetch_mlb_schedule(cache_path=cache_path)
+    if sport_key == "nfl":
+        return fetch_nfl_schedule(cache_path=cache_path)
+    if sport_key == "ncaaf":
+        return fetch_ncaaf_schedule(cache_path=cache_path)
     return []
 
 

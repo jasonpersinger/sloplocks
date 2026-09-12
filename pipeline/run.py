@@ -51,6 +51,8 @@ from pipeline.fetch_nba import fetch_nba_games, fetch_nba_schedule, normalize_nb
 from pipeline.fetch_wnba import fetch_wnba_espn_games, fetch_wnba_espn_schedule, normalize_wnba_team_name
 from pipeline.fetch_nhl import fetch_nhl_games, fetch_nhl_schedule, normalize_nhl_team_name
 from pipeline.fetch_mlb import fetch_mlb_games, fetch_mlb_schedule, normalize_mlb_team_name
+from pipeline.fetch_nfl import fetch_nfl_games, fetch_nfl_schedule, normalize_nfl_team_name
+from pipeline.fetch_ncaaf import fetch_ncaaf_games, fetch_ncaaf_schedule, normalize_ncaaf_team_name
 from pipeline.models import (
     BullpenMatchupModel,
     EloRatings,
@@ -1366,13 +1368,29 @@ def _rest_adjustment(team: str, before_date: str, matches: pd.DataFrame, sport: 
     if days_since == 1 and back_to_back_penalty:
         adjustment -= back_to_back_penalty
 
+    # Weekly sports have no back-to-backs; their fatigue case is the short
+    # week (e.g. an NFL Thursday game four days after a Sunday game).
+    short_rest_days = sport.get("short_rest_days", 0)
+    short_rest_penalty = sport.get("short_rest_penalty", 0.0)
+    if (
+        short_rest_days
+        and short_rest_penalty
+        and days_since is not None
+        and days_since < short_rest_days
+    ):
+        adjustment -= short_rest_penalty
+
     rest_bonus_days = sport.get("rest_bonus_days", 0)
     rest_bonus_points = sport.get("rest_bonus_points", 0.0)
+    # ``rest_bonus_max_days`` keeps a season-opening gap (months since the last
+    # game) from being scored as if it were a bye week.
+    rest_bonus_max_days = sport.get("rest_bonus_max_days")
     if (
         rest_bonus_days
         and rest_bonus_points
         and days_since is not None
         and days_since >= rest_bonus_days
+        and (rest_bonus_max_days is None or days_since <= rest_bonus_max_days)
     ):
         adjustment += rest_bonus_points
 
@@ -2474,6 +2492,81 @@ def _build_recent_results(picks, limit=25):
     return recent
 
 
+def _build_result_lookup(matches) -> dict:
+    """Map (home_team, away_team, date) -> (home_goals, away_goals).
+
+    Exact game dates are registered first; each result is then also offered
+    under the adjacent dates (+/-1 day) so picks whose schedule date is
+    timezone-shifted from the result date still settle. Because the shifted
+    entries never overwrite an exact one, back-to-back series games (MLB,
+    WNBA) always grade against their own date's score.
+    """
+    result_lookup: dict = {}
+    if matches is None or matches.empty:
+        return result_lookup
+    rows = []
+    for _, row in matches.iterrows():
+        date_str = str(row["date"])[:10]
+        score = (int(row["home_goals"]), int(row["away_goals"]))
+        rows.append((row["home_team"], row["away_team"], date_str, score))
+        result_lookup[(row["home_team"], row["away_team"], date_str)] = score
+    for home, away, date_str, score in rows:
+        base = datetime.strptime(date_str, "%Y-%m-%d")
+        for delta in (1, -1):
+            shifted = (base + timedelta(days=delta)).strftime("%Y-%m-%d")
+            result_lookup.setdefault((home, away, shifted), score)
+    return result_lookup
+
+
+def _recenter_totals_projections(records, odds_refs, kelly_fraction=0.25, min_slate=5):
+    """Recenter totals projections on the slate's mean gap vs market lines.
+
+    The totals regression runs hot and flat relative to the market, so raw
+    (expected_total - total_line) gaps are mostly a level artifact that makes
+    every low-lined game look like an over. Subtracting the slate-wide mean
+    gap keeps only each game's relative signal, making over/under edges
+    symmetric by construction. Probabilities, edges, and the model pick are
+    recomputed from the adjusted projection; the raw value is preserved on
+    the record. Returns the bias applied, or None on slates too small to
+    estimate it.
+    """
+    eligible = [
+        (record, odds)
+        for record, odds in zip(records, odds_refs)
+        if record.get("expected_total") is not None and record.get("total_line") is not None
+    ]
+    if len(eligible) < int(min_slate):
+        return None
+    bias = sum(r["expected_total"] - r["total_line"] for r, _ in eligible) / len(eligible)
+    for record, match_odds in eligible:
+        raw_expected = float(record["expected_total"])
+        adjusted = raw_expected - bias
+        sigma = max(1.5, float(record.get("total_stddev") or 3.1))
+        over_prob = float(1.0 - norm.cdf(float(record["total_line"]), loc=adjusted, scale=sigma))
+        over_prob = max(0.01, min(0.99, over_prob))
+        model_probs = {"over": over_prob, "under": 1.0 - over_prob}
+        edges = compute_totals_edges(
+            model_probs,
+            match_odds,
+            individual_probs=[model_probs],
+            fractional_kelly=kelly_fraction,
+        )
+        pick = max(model_probs, key=model_probs.get)
+        record["raw_expected_total"] = round(raw_expected, 3)
+        record["totals_slate_bias"] = round(bias, 3)
+        record["expected_total"] = round(adjusted, 3)
+        record["pick"] = pick
+        record["model_prob"] = round(model_probs[pick], 4)
+        record["model_probs"] = {k: round(v, 4) for k, v in model_probs.items()}
+        record["individual_models"] = {
+            "totals_model": {k: round(v, 4) for k, v in model_probs.items()}
+        }
+        record["edges"] = edges
+        record["confidence_score"] = edges.get(pick, {}).get("confidence_score", 0.0)
+        record["american_odds"] = edges.get(pick, {}).get("american_odds")
+    return bias
+
+
 def _match_key(record: dict) -> tuple[str, str, str]:
     """Return a stable key for one matchup record."""
     return (
@@ -3041,6 +3134,24 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             cache_path=os.path.join(sport_dir, "espn_cache.json")
         )
         matches = games_df
+    elif sport_key == "nfl":
+        games_df, box_scores_df = fetch_nfl_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json"),
+            history_seasons=sport.get("history_seasons", 1),
+        )
+        fixtures = fetch_nfl_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        matches = games_df
+    elif sport_key == "ncaaf":
+        games_df, box_scores_df = fetch_ncaaf_games(
+            cache_path=os.path.join(sport_dir, "espn_cache.json"),
+            history_seasons=sport.get("history_seasons", 1),
+        )
+        fixtures = fetch_ncaaf_schedule(
+            cache_path=os.path.join(sport_dir, "espn_cache.json")
+        )
+        matches = games_df
     else:
         raise ValueError(f"Unknown sport: {sport_key}")
 
@@ -3094,6 +3205,9 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             all_teams,
             k_factor=sport["elo_k_factor"],
             home_advantage=sport["elo_home_advantage"],
+            margin_divisor=sport.get("elo_margin_divisor", 1.0),
+            margin_cap=sport.get("elo_margin_cap"),
+            season_carryover=sport.get("elo_season_carryover"),
         )
         if matches is not None and not matches.empty:
             elo.process_season(matches)
@@ -3105,6 +3219,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             matches,
             feature_window=sport.get("results_feature_window", 8),
             min_games=sport.get("results_feature_min_games", 30),
+            rest_cap_days=sport.get("results_feature_rest_cap_days", 7.0),
         )
 
     recent_boxscore_model = None
@@ -3248,6 +3363,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         normalizer = normalize_mlb_team_name
     elif sport_key == "nhl":
         normalizer = normalize_nhl_team_name
+    elif sport_key == "nfl":
+        normalizer = normalize_nfl_team_name
+    elif sport_key == "ncaaf":
+        normalizer = normalize_ncaaf_team_name
     else:
         normalizer = lambda x: x
     normalization_error = _normalize_odds_list(odds_list, normalizer)
@@ -3278,6 +3397,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
 
     prediction_records = []
     totals_prediction_records = []
+    totals_match_odds_refs = []
 
     print(f"--- Running projections for {len(fixtures)} {sport_key.upper()} games ---")
 
@@ -3724,6 +3844,18 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "qualitative_analysis": total_qualitative,
                 "qualitative_summary": total_qualitative_summary,
             })
+            totals_match_odds_refs.append(match_odds)
+
+    totals_recenter_bias = None
+    if sport.get("totals_recenter_to_market") and totals_prediction_records:
+        totals_recenter_bias = _recenter_totals_projections(
+            totals_prediction_records,
+            totals_match_odds_refs,
+            kelly_fraction=sport.get("kelly_fraction", 0.25),
+            min_slate=sport.get("totals_recenter_min_slate", 5),
+        )
+        if totals_recenter_bias is not None:
+            print(f"Totals slate recentered by {totals_recenter_bias:+.2f} vs market lines")
 
     # ------------------------------------------------------------------
     # 5b. SLOP LOCKS + LONGSLOP
@@ -3820,15 +3952,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     if isinstance(longslop, dict):
         _attach_run_metadata(longslop, run_context, snapshot_relpath)
 
-    result_lookup = {}
-    if matches is not None and not matches.empty:
-        for _, row in matches.iterrows():
-            date_str = str(row["date"])[:10]
-            score = (int(row["home_goals"]), int(row["away_goals"]))
-            result_lookup[(row["home_team"], row["away_team"], date_str)] = score
-            # Also index under date+1 to handle UTC date shift for evening ET games
-            next_date = (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=1)).strftime("%Y-%m-%d")
-            result_lookup.setdefault((row["home_team"], row["away_team"], next_date), score)
+    result_lookup = _build_result_lookup(matches)
 
     updated_past = []
     resolved_results_rows = []

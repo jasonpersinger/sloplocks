@@ -1053,8 +1053,16 @@ class TestRunPipeline:
     @patch("pipeline.run.fetch_wnba_espn_games")
     @patch("pipeline.run.fetch_nba_espn_schedule")
     @patch("pipeline.run.fetch_nba_espn_games")
+    @patch("pipeline.run.fetch_ncaaf_schedule")
+    @patch("pipeline.run.fetch_ncaaf_games")
+    @patch("pipeline.run.fetch_nfl_schedule")
+    @patch("pipeline.run.fetch_nfl_games")
     def test_produces_per_sport_files_and_manifest(
         self,
+        mock_nfl_games,
+        mock_nfl_schedule,
+        mock_ncaaf_games,
+        mock_ncaaf_schedule,
         mock_nba_games,
         mock_nba_schedule,
         mock_wnba_games,
@@ -1093,6 +1101,13 @@ class TestRunPipeline:
         ]
         mock_mlb_games.return_value = (pd.DataFrame(columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]), None)
         mock_mlb_schedule.return_value = []
+        _empty_games = pd.DataFrame(
+            columns=["game_id", "date", "home_team", "away_team", "home_goals", "away_goals"]
+        )
+        mock_nfl_games.return_value = (_empty_games.copy(), None)
+        mock_nfl_schedule.return_value = []
+        mock_ncaaf_games.return_value = (_empty_games.copy(), None)
+        mock_ncaaf_schedule.return_value = []
         mock_odds.return_value = []
 
         output_dir = str(tmp_path)
@@ -1111,6 +1126,8 @@ class TestRunPipeline:
         assert manifest["sports"]["nba"]["status"] == "ok"
         assert manifest["sports"]["wnba"]["status"] == "ok"
         assert manifest["sports"]["nhl"]["status"] == "ok"
+        assert manifest["sports"]["nfl"]["status"] == "ok"
+        assert manifest["sports"]["ncaaf"]["status"] == "ok"
         assert manifest["sports"]["ncaam"]["status"] == "season_disabled"
         assert manifest["sports"]["ncaam"]["active"] is False
         assert "diagnostics" in manifest["sports"]["nba"]
@@ -2254,6 +2271,107 @@ class TestRecentResults:
         assert len(results) == 25
         assert results[0]["match_date"] == "2026-06-30"
         assert results[-1]["match_date"] == "2026-06-06"
+
+
+class TestBuildResultLookup:
+    def _matches(self, rows):
+        return pd.DataFrame(
+            rows, columns=["date", "home_team", "away_team", "home_goals", "away_goals"]
+        )
+
+    def test_result_dated_day_after_pick_matches(self):
+        # WNBA/UTC case: game recorded under 07-03 in results, pick dated 07-02.
+        from pipeline.run import _build_result_lookup
+
+        lookup = _build_result_lookup(
+            self._matches([["2026-07-03", "Mercury", "Storm", 90, 67]])
+        )
+
+        assert lookup[("Mercury", "Storm", "2026-07-02")] == (90, 67)
+
+    def test_result_dated_day_before_pick_matches(self):
+        # Original UTC-shift direction still works.
+        from pipeline.run import _build_result_lookup
+
+        lookup = _build_result_lookup(
+            self._matches([["2026-07-04", "Rangers", "Tigers", 3, 6]])
+        )
+
+        assert lookup[("Rangers", "Tigers", "2026-07-05")] == (3, 6)
+
+    def test_exact_date_beats_adjacent_series_game(self):
+        # MLB series: same matchup on consecutive days must grade against
+        # its own date, never a neighbor's score — regardless of row order.
+        from pipeline.run import _build_result_lookup
+
+        rows = [
+            ["2026-07-04", "Rangers", "Tigers", 5, 3],
+            ["2026-07-05", "Rangers", "Tigers", 2, 1],
+        ]
+        for ordering in (rows, list(reversed(rows))):
+            lookup = _build_result_lookup(self._matches(ordering))
+            assert lookup[("Rangers", "Tigers", "2026-07-04")] == (5, 3)
+            assert lookup[("Rangers", "Tigers", "2026-07-05")] == (2, 1)
+
+    def test_empty_matches(self):
+        from pipeline.run import _build_result_lookup
+
+        assert _build_result_lookup(None) == {}
+        assert _build_result_lookup(pd.DataFrame()) == {}
+
+
+class TestRecenterTotalsProjections:
+    def _slate(self, expected_totals, line=8.0, sigma=3.0):
+        records = []
+        odds_refs = []
+        for exp in expected_totals:
+            over_prob = 0.6 if exp > line else 0.5
+            records.append({
+                "market_type": "total",
+                "total_line": line,
+                "expected_total": exp,
+                "total_stddev": sigma,
+                "pick": "over",
+                "model_prob": over_prob,
+                "model_probs": {"over": over_prob, "under": 1.0 - over_prob},
+            })
+            odds_refs.append({"over_odds": 1.91, "under_odds": 1.91, "total_line": line})
+        return records, odds_refs
+
+    def test_removes_slate_bias_and_flips_low_projections_to_under(self):
+        from pipeline.run import _recenter_totals_projections
+
+        records, odds_refs = self._slate([8.5, 8.5, 8.5, 8.5, 8.0])
+
+        bias = _recenter_totals_projections(records, odds_refs)
+
+        assert bias == pytest.approx(0.4)
+        # Mean(expected - line) is now zero.
+        residual = sum(r["expected_total"] - r["total_line"] for r in records) / 5
+        assert residual == pytest.approx(0.0, abs=1e-6)
+        # Raw projections preserved for transparency.
+        assert records[0]["raw_expected_total"] == 8.5
+        assert records[0]["totals_slate_bias"] == pytest.approx(0.4)
+        # The below-average projection now leans under.
+        assert records[4]["expected_total"] == pytest.approx(7.6)
+        assert records[4]["pick"] == "under"
+        assert records[4]["model_probs"]["under"] > 0.5
+        # Above-average projections still lean over, but less strongly.
+        assert records[0]["pick"] == "over"
+        assert records[0]["model_probs"]["over"] < 0.6
+        # Edges were recomputed from the adjusted probabilities.
+        assert records[4]["edges"]["under"]["model_prob"] == records[4]["model_probs"]["under"]
+
+    def test_small_slate_untouched(self):
+        from pipeline.run import _recenter_totals_projections
+
+        records, odds_refs = self._slate([9.0, 9.0, 9.0, 9.0])
+        before = [dict(r) for r in records]
+
+        bias = _recenter_totals_projections(records, odds_refs, min_slate=5)
+
+        assert bias is None
+        assert records == before
 
 
 class TestOddsTracking:

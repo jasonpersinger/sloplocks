@@ -622,6 +622,8 @@
       <button class="pill" data-sport="wnba">WNBA</button>
       <button class="pill" data-sport="nhl">NHL</button>
       <button class="pill" data-sport="mlb">MLB</button>
+      <button class="pill" data-sport="nfl">NFL</button>
+      <button class="pill" data-sport="ncaaf">NCAAF</button>
     </nav>
 
     <main id="pick-feed">
@@ -667,7 +669,7 @@
     return formatDate(fallbackDate);
   }
 
-  var SPORT_LABELS = { nba: 'NBA', wnba: 'WNBA', nhl: 'NHL', mlb: 'MLB' };
+  var SPORT_LABELS = { nba: 'NBA', wnba: 'WNBA', nhl: 'NHL', mlb: 'MLB', nfl: 'NFL', ncaaf: 'NCAAF' };
   function formatSportLabel(sport) {
     return SPORT_LABELS[sport] || sport.toUpperCase();
   }
@@ -1366,7 +1368,7 @@
     }
   }
 
-  var ALL_SPORTS = ['nba', 'wnba', 'nhl', 'mlb'];
+  var ALL_SPORTS = ['nba', 'wnba', 'nhl', 'mlb', 'nfl', 'ncaaf'];
 
   function loadDashboard() {
     currentSport = 'dashboard';

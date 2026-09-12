@@ -26,6 +26,8 @@ from pipeline.fetch_nba import fetch_nba_espn_games
 from pipeline.fetch_wnba import fetch_wnba_espn_games
 from pipeline.fetch_ncaam import fetch_ncaam_games
 from pipeline.fetch_nhl import fetch_nhl_games
+from pipeline.fetch_nfl import fetch_nfl_games
+from pipeline.fetch_ncaaf import fetch_ncaaf_games
 from pipeline.models import (
     AdjustedEfficiency,
     BullpenMatchupModel,
@@ -1024,6 +1026,10 @@ def _load_raw_walkforward_inputs(sport_key: str, data_dir: str = "data") -> tupl
         return fetch_mlb_games(cache_path=cache_path)
     if sport_key == "nhl":
         return fetch_nhl_games(cache_path=cache_path)
+    if sport_key == "nfl":
+        return fetch_nfl_games(cache_path=cache_path)
+    if sport_key == "ncaaf":
+        return fetch_ncaaf_games(cache_path=cache_path)
     raise ValueError(f"Unsupported sport: {sport_key}")
 
 
@@ -1045,6 +1051,9 @@ def _build_walkforward_models(
             teams,
             k_factor=sport["elo_k_factor"],
             home_advantage=sport["elo_home_advantage"],
+            margin_divisor=sport.get("elo_margin_divisor", 1.0),
+            margin_cap=sport.get("elo_margin_cap"),
+            season_carryover=sport.get("elo_season_carryover"),
         )
         elo.process_season(train_matches)
         models["elo"] = elo
@@ -1054,6 +1063,7 @@ def _build_walkforward_models(
             train_matches,
             feature_window=sport.get("results_feature_window", 8),
             min_games=sport.get("results_feature_min_games", 30),
+            rest_cap_days=sport.get("results_feature_rest_cap_days", 7.0),
         )
 
     if sport_key in {"nba", "wnba", "ncaam"} and train_box_scores is not None and not train_box_scores.empty:
