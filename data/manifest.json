@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-12T14:52:24Z",
+  "updated_at": "2026-09-12T19:49:48Z",
   "sports": {
     "nba": {
       "name": "NBA",
@@ -1353,12 +1353,692 @@
         "summary": "modeled=15 | odds=15/15 | +ev=10 | sense=15 | eligible=5 | locks=0"
       }
     },
+    "nfl": {
+      "name": "NFL",
+      "status": "ok",
+      "updated_at": "2026-09-12T19:49:07Z",
+      "diagnostics": {
+        "historical_matches": 574,
+        "fixtures_fetched": 14,
+        "fixtures_in_window": 14,
+        "fixtures_completed": 0,
+        "fixtures_pending": 14,
+        "odds_events_fetched": 212,
+        "fixtures_with_odds": 14,
+        "fixtures_without_odds": 0,
+        "coverage_gap_examples": [],
+        "matches_modeled": 14,
+        "matches_with_market": 14,
+        "matches_with_positive_ev": 13,
+        "matches_with_qualitative": 14,
+        "lock_eligible_matches": 10,
+        "lock_eligible_outcomes": 10,
+        "gate_failures": {
+          "missing_odds": 0,
+          "negative_expected_value": 15,
+          "below_edge_floor": 1,
+          "below_probability_floor": 7
+        },
+        "candidate_lanes": {
+          "value_dog": {
+            "eligible_outcomes": 5,
+            "eligible_matches": 5
+          },
+          "near_favorite": {
+            "eligible_outcomes": 0,
+            "eligible_matches": 0
+          }
+        },
+        "slop_locks_posted": 0,
+        "longslop_posted": 0,
+        "slimegrinders_posted": 0,
+        "publication_guard": {
+          "enforced": true,
+          "allow_moneyline": false,
+          "allow_totals": false,
+          "allow_longslop": false,
+          "allow_slimegrinder": false,
+          "moneyline_publish_cap": null,
+          "totals_publish_cap": null,
+          "evaluated_picks": 0,
+          "evaluated_totals_picks": 0,
+          "min_evaluated_picks": 20,
+          "min_evaluated_totals_picks": 0,
+          "status": "suppressed",
+          "reason": "need more settled moneylines picks (0/20); need more recent settled moneylines picks (0/5); need more tracked moneylines CLV (0/3); totals disabled by config",
+          "lane_guards": {
+            "moneyline": {
+              "market_type": "moneyline",
+              "pick_type": null,
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 8,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "research",
+              "reasons": [
+                "need more settled moneylines picks (0/20)",
+                "need more recent settled moneylines picks (0/5)",
+                "need more tracked moneylines CLV (0/3)"
+              ],
+              "health_score": 0.5714
+            },
+            "totals": {
+              "market_type": "total",
+              "pick_type": null,
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 8,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "totals disabled by config"
+              ],
+              "health_score": 0.8571
+            },
+            "longslop": {
+              "market_type": null,
+              "pick_type": "longslop",
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 5,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "longslop disabled by config",
+                "need more settled longslop picks (0/5)",
+                "need more recent settled longslop picks (0/3)",
+                "need more tracked longslop CLV (0/3)"
+              ],
+              "health_score": 0.4286
+            },
+            "slimegrinder": {
+              "market_type": null,
+              "pick_type": "slimegrinder",
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 5,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "slimegrinder disabled by config",
+                "need more settled slimegrinder picks (0/5)",
+                "need more recent settled slimegrinder picks (0/3)",
+                "need more tracked slimegrinder CLV (0/3)"
+              ],
+              "health_score": 0.4286
+            },
+            "totals_enabled": false
+          }
+        },
+        "validation_issues": [],
+        "validation_issues_count": 0,
+        "summary": "modeled=14 | odds=14/14 | +ev=13 | sense=14 | eligible=10 | locks=0 | need more settled moneylines picks (0/20); need more recent settled moneylines picks (0/5); need more tracked moneylines CLV (0/3); totals disabled by config"
+      }
+    },
+    "ncaaf": {
+      "name": "NCAAF",
+      "status": "ok",
+      "updated_at": "2026-09-12T19:49:48Z",
+      "diagnostics": {
+        "historical_matches": 2036,
+        "fixtures_fetched": 49,
+        "fixtures_in_window": 49,
+        "fixtures_completed": 9,
+        "fixtures_pending": 40,
+        "odds_events_fetched": 73,
+        "fixtures_with_odds": 39,
+        "fixtures_without_odds": 10,
+        "coverage_gap_examples": [
+          "Arizona State @ Texas A&M",
+          "App State @ East Carolina",
+          "Penn State @ Temple"
+        ],
+        "matches_modeled": 49,
+        "matches_with_market": 49,
+        "matches_with_positive_ev": 33,
+        "matches_with_qualitative": 49,
+        "lock_eligible_matches": 10,
+        "lock_eligible_outcomes": 10,
+        "gate_failures": {
+          "missing_odds": 31,
+          "negative_expected_value": 34,
+          "below_edge_floor": 7,
+          "below_probability_floor": 22
+        },
+        "candidate_lanes": {
+          "value_dog": {
+            "eligible_outcomes": 6,
+            "eligible_matches": 6
+          },
+          "near_favorite": {
+            "eligible_outcomes": 0,
+            "eligible_matches": 0
+          }
+        },
+        "slop_locks_posted": 0,
+        "longslop_posted": 0,
+        "slimegrinders_posted": 0,
+        "publication_guard": {
+          "enforced": true,
+          "allow_moneyline": false,
+          "allow_totals": false,
+          "allow_longslop": false,
+          "allow_slimegrinder": false,
+          "moneyline_publish_cap": null,
+          "totals_publish_cap": null,
+          "evaluated_picks": 0,
+          "evaluated_totals_picks": 0,
+          "min_evaluated_picks": 25,
+          "min_evaluated_totals_picks": 0,
+          "status": "suppressed",
+          "reason": "need more settled moneylines picks (0/25); need more recent settled moneylines picks (0/6); need more tracked moneylines CLV (0/5); totals disabled by config",
+          "lane_guards": {
+            "moneyline": {
+              "market_type": "moneyline",
+              "pick_type": null,
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 10,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "research",
+              "reasons": [
+                "need more settled moneylines picks (0/25)",
+                "need more recent settled moneylines picks (0/6)",
+                "need more tracked moneylines CLV (0/5)"
+              ],
+              "health_score": 0.5714
+            },
+            "totals": {
+              "market_type": "total",
+              "pick_type": null,
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 8,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "totals disabled by config"
+              ],
+              "health_score": 0.8571
+            },
+            "longslop": {
+              "market_type": null,
+              "pick_type": "longslop",
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 5,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "longslop disabled by config",
+                "need more settled longslop picks (0/5)",
+                "need more recent settled longslop picks (0/3)",
+                "need more tracked longslop CLV (0/3)"
+              ],
+              "health_score": 0.4286
+            },
+            "slimegrinder": {
+              "market_type": null,
+              "pick_type": "slimegrinder",
+              "overall": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 0,
+                "evaluated": 0,
+                "pending": 0,
+                "hit_rate": null,
+                "roi": null,
+                "wins": 0,
+                "losses": 0,
+                "pushes": 0,
+                "avg_confidence": null,
+                "avg_expected_value": null,
+                "clv": {
+                  "tracked": 0,
+                  "avg_clv": null,
+                  "positive_rate": null,
+                  "non_negative_rate": null,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                },
+                "recent_count": 5,
+                "avg_model_prob": null,
+                "actual_win_rate": null,
+                "calibration_gap": null,
+                "overconfidence_gap": null
+              },
+              "allow": false,
+              "status": "disabled",
+              "reasons": [
+                "slimegrinder disabled by config",
+                "need more settled slimegrinder picks (0/5)",
+                "need more recent settled slimegrinder picks (0/3)",
+                "need more tracked slimegrinder CLV (0/3)"
+              ],
+              "health_score": 0.4286
+            },
+            "totals_enabled": false
+          }
+        },
+        "validation_issues": [],
+        "validation_issues_count": 0,
+        "summary": "modeled=49 | odds=39/49 | +ev=33 | sense=49 | eligible=10 | locks=0 | need more settled moneylines picks (0/25); need more recent settled moneylines picks (0/6); need more tracked moneylines CLV (0/5); totals disabled by config"
+      }
+    },
     "ncaam": {
       "name": "NCAAM",
       "status": "season_disabled",
       "active": false,
       "reason": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
-      "updated_at": "2026-09-12T14:52:24Z",
+      "updated_at": "2026-09-12T19:49:48Z",
       "diagnostics": {
         "summary": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
         "season_disabled": true
