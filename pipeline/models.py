@@ -1491,6 +1491,140 @@ def mlb_totals_predict(model, fixture: dict, total_line: float) -> dict[str, flo
     return model.predict_market(fixture, total_line)
 
 
+class FootballTotalsModel:
+    """Walk-forward regression model for football game totals.
+
+    Football has no box-score or starter feed in this pipeline, so the model is
+    built purely from final scores: each team's recent points scored and points
+    allowed, plus the recent combined totals of its games as a rough pace proxy.
+    That is enough signal for a totals line and keeps NFL and NCAAF on one
+    implementation.
+
+    The league baseline is learned from the training data rather than hardcoded,
+    because an NFL game averages roughly 44 points and a college game closer to
+    56; a shared constant would bias one of them.
+    """
+
+    def __init__(self, games, feature_window=5, min_games=40, default_stddev=10.5,
+                 projection_min=20.0, projection_max=80.0):
+        self.feature_window = feature_window
+        self.min_games = min_games
+        self.default_stddev = default_stddev
+        self.projection_min = float(projection_min)
+        self.projection_max = float(projection_max)
+        self.model = None
+        self.team_logs = {}
+        self.baseline_points = 22.0
+        self.baseline_total = 44.0
+        self.feature_names = [
+            "home_recent_points_for",
+            "away_recent_points_for",
+            "home_recent_points_allowed",
+            "away_recent_points_allowed",
+            "home_recent_game_total",
+            "away_recent_game_total",
+        ]
+        self.residual_std = default_stddev
+        self._fit(games)
+
+    def _recent_team_rates(self, logs):
+        if not logs:
+            return {
+                "points_for": self.baseline_points,
+                "points_allowed": self.baseline_points,
+                "game_total": self.baseline_total,
+            }
+        recent = logs[-self.feature_window :]
+        return {
+            "points_for": float(sum(item["points_for"] for item in recent) / len(recent)),
+            "points_allowed": float(sum(item["points_allowed"] for item in recent) / len(recent)),
+            "game_total": float(sum(item["game_total"] for item in recent) / len(recent)),
+        }
+
+    def _feature_vector(self, row, team_logs):
+        home_rates = self._recent_team_rates(team_logs.get(row["home_team"], []))
+        away_rates = self._recent_team_rates(team_logs.get(row["away_team"], []))
+        return np.array([
+            home_rates["points_for"],
+            away_rates["points_for"],
+            home_rates["points_allowed"],
+            away_rates["points_allowed"],
+            home_rates["game_total"],
+            away_rates["game_total"],
+        ])
+
+    def _fit(self, games):
+        required = {"home_team", "away_team", "home_goals", "away_goals", "date"}
+        if games is None or games.empty or not required.issubset(set(games.columns)):
+            return
+
+        df = games.sort_values("date").reset_index(drop=True)
+        totals = (df["home_goals"].astype(float) + df["away_goals"].astype(float))
+        self.baseline_total = float(totals.mean())
+        self.baseline_points = self.baseline_total / 2.0
+
+        team_logs: dict[str, list[dict]] = {}
+        X = []
+        y = []
+
+        for _, row in df.iterrows():
+            X.append(self._feature_vector(row, team_logs))
+            home_points = float(row["home_goals"])
+            away_points = float(row["away_goals"])
+            game_total = home_points + away_points
+            y.append(game_total)
+
+            team_logs.setdefault(row["home_team"], []).append({
+                "points_for": home_points,
+                "points_allowed": away_points,
+                "game_total": game_total,
+            })
+            team_logs.setdefault(row["away_team"], []).append({
+                "points_for": away_points,
+                "points_allowed": home_points,
+                "game_total": game_total,
+            })
+
+        self.team_logs = team_logs
+
+        if len(X) < self.min_games:
+            return
+
+        self.residual_std = _rolling_regression_residual_std(
+            X,
+            y,
+            min_train_rows=max(20, self.feature_window * 4),
+            floor=6.0,
+            default_stddev=self.default_stddev,
+        )
+        self.model = LinearRegression()
+        self.model.fit(np.array(X), np.array(y))
+
+    def predict_total(self, fixture: dict) -> float:
+        if self.model is None:
+            return self.baseline_total
+        features = self._feature_vector(fixture, self.team_logs)
+        total = float(self.model.predict(np.array([features]))[0])
+        return max(self.projection_min, min(self.projection_max, total))
+
+    def predict_market(self, fixture: dict, total_line: float) -> dict[str, float]:
+        expected_total = self.predict_total(fixture)
+        sigma = max(6.0, float(self.residual_std or self.default_stddev))
+        over_prob = float(1.0 - norm.cdf(total_line, loc=expected_total, scale=sigma))
+        over_prob = max(0.01, min(0.99, over_prob))
+        return {
+            "expected_total": expected_total,
+            "stddev": sigma,
+            "over": over_prob,
+            "under": 1.0 - over_prob,
+        }
+
+
+def football_totals_predict(model, fixture: dict, total_line: float) -> dict[str, float]:
+    """Predict football over/under probabilities and expected total."""
+    return model.predict_market(fixture, total_line)
+
+
 # ---------------------------------------------------------------------------
 # Recent box-score matchup model
 # ---------------------------------------------------------------------------

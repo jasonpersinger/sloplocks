@@ -433,6 +433,90 @@
       font-size: 11px;
     }
 
+    .slate-block {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      margin-top: 14px;
+    }
+
+    .slate-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .slate-title {
+      color: var(--accent);
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
+
+    .slate-note {
+      color: var(--fg-dim);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .slate-scroll { overflow-x: auto; }
+
+    .slate-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      min-width: 520px;
+    }
+
+    .slate-table th {
+      text-align: left;
+      color: var(--fg-dim);
+      font-weight: normal;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      padding: 5px 8px 5px 0;
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    .slate-table td {
+      padding: 7px 8px 7px 0;
+      border-bottom: 1px dashed rgba(73, 150, 70, 0.22);
+      color: var(--fg-soft);
+      vertical-align: top;
+    }
+
+    .slate-table tr:last-child td { border-bottom: none; }
+
+    .slate-game { color: var(--fg-faint); white-space: nowrap; }
+    .slate-pick { color: var(--accent); white-space: nowrap; }
+    .slate-num { text-align: right; white-space: nowrap; }
+    .slate-neg { color: var(--danger); }
+
+    .slate-lock-tag {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 1px 5px;
+      border: 1px solid var(--line-strong);
+      color: var(--accent);
+      font-size: 9px;
+      letter-spacing: 0.06em;
+    }
+
+    .slate-why {
+      color: var(--fg-faint);
+      font-size: 10px;
+      padding-top: 3px;
+      line-height: 1.45;
+      white-space: normal;
+      min-width: 220px;
+    }
+
     .status-grid {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1293,12 +1377,129 @@
     return createDashboardBlock('Recent results', lines, record, { preformatted: true });
   }
 
+  function buildFullSlateBlock(data, sport) {
+    if (!data || !data.full_slate) return null;
+    var matches = (data.matches || []).filter(function (m) { return m && m.pick; });
+    if (!matches.length) return null;
+
+    // Games already surfaced as locks get badged rather than duplicated away.
+    var lockKeys = {};
+    (data.slop_locks || []).forEach(function (p) {
+      lockKeys[(p.home_team || '') + '|' + (p.away_team || '')] = true;
+    });
+
+    matches.sort(function (a, b) {
+      var ca = a.confidence_score == null ? -1 : Number(a.confidence_score);
+      var cb = b.confidence_score == null ? -1 : Number(b.confidence_score);
+      return cb - ca;
+    });
+
+    var block = document.createElement('div');
+    block.className = 'slate-block';
+
+    var head = document.createElement('div');
+    head.className = 'slate-head';
+    var title = document.createElement('div');
+    title.className = 'slate-title';
+    title.textContent = '// FULL SLATE — ' + formatSportLabel(sport);
+    var note = document.createElement('div');
+    note.className = 'slate-note';
+    note.textContent = 'MODEL OUTPUT ON EVERY GAME · NOT A SLOP LOCK · ' + matches.length + ' GAMES';
+    head.appendChild(title);
+    head.appendChild(note);
+    block.appendChild(head);
+
+    var scroll = document.createElement('div');
+    scroll.className = 'slate-scroll';
+    var table = document.createElement('table');
+    table.className = 'slate-table';
+
+    var thead = document.createElement('thead');
+    var hrow = document.createElement('tr');
+    ['GAME', 'PICK', 'ODDS', 'MODEL', 'CONF', 'EDGE'].forEach(function (label, idx) {
+      var th = document.createElement('th');
+      th.textContent = label;
+      if (idx >= 2) th.className = 'slate-num';
+      hrow.appendChild(th);
+    });
+    thead.appendChild(hrow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    matches.forEach(function (m) {
+      var pickTeam = m.pick === 'home' ? m.home_team : m.away_team;
+      var row = document.createElement('tr');
+
+      var gameCell = document.createElement('td');
+      gameCell.className = 'slate-game';
+      gameCell.textContent = (m.away_team || '?') + ' @ ' + (m.home_team || '?');
+      row.appendChild(gameCell);
+
+      var pickCell = document.createElement('td');
+      pickCell.className = 'slate-pick';
+      pickCell.appendChild(document.createTextNode(pickTeam || '--'));
+      if (lockKeys[(m.home_team || '') + '|' + (m.away_team || '')]) {
+        var tag = document.createElement('span');
+        tag.className = 'slate-lock-tag';
+        tag.textContent = 'LOCK';
+        pickCell.appendChild(tag);
+      }
+      row.appendChild(pickCell);
+
+      var oddsCell = document.createElement('td');
+      oddsCell.className = 'slate-num';
+      oddsCell.textContent = m.american_odds == null
+        ? '--'
+        : (Number(m.american_odds) > 0 ? '+' : '') + m.american_odds;
+      row.appendChild(oddsCell);
+
+      var probCell = document.createElement('td');
+      probCell.className = 'slate-num';
+      probCell.textContent = m.model_prob == null ? '--' : pct(Number(m.model_prob));
+      row.appendChild(probCell);
+
+      var confCell = document.createElement('td');
+      confCell.className = 'slate-num';
+      confCell.textContent = m.confidence_score == null
+        ? '--'
+        : Math.round(Number(m.confidence_score)) + '/100';
+      row.appendChild(confCell);
+
+      var edgeCell = document.createElement('td');
+      edgeCell.className = 'slate-num' + (Number(m.edge) < 0 ? ' slate-neg' : '');
+      edgeCell.textContent = m.edge == null ? '--' : edgePct(Number(m.edge));
+      row.appendChild(edgeCell);
+
+      tbody.appendChild(row);
+
+      var why = m.blurb || m.model_vs_market || '';
+      if (why && String(why).trim() !== '') {
+        var whyRow = document.createElement('tr');
+        var whyCell = document.createElement('td');
+        whyCell.className = 'slate-why';
+        whyCell.colSpan = 6;
+        whyCell.textContent = String(why).trim();
+        whyRow.appendChild(whyCell);
+        tbody.appendChild(whyRow);
+      }
+    });
+
+    table.appendChild(tbody);
+    scroll.appendChild(table);
+    block.appendChild(scroll);
+    return block;
+  }
+
   function renderFeed(picks) {
     var historyBlock = null;
     if (currentSport !== 'all' && currentSport !== 'dashboard') {
       historyBlock = buildRecentResultsBlock(((loadedSportsData[currentSport] || {}).recent_results));
     }
-    if ((!picks || picks.length === 0) && !historyBlock) {
+    var slateBlock = null;
+    if (currentSport !== 'all' && currentSport !== 'dashboard') {
+      slateBlock = buildFullSlateBlock(loadedSportsData[currentSport], currentSport);
+    }
+    if ((!picks || picks.length === 0) && !historyBlock && !slateBlock) {
       showMessage('[ NO PICKS ]\n\nTry another tab later.', false);
       return;
     }
@@ -1307,6 +1508,7 @@
     (picks || []).forEach(function (pick) {
       feed.appendChild(createPickCard(pick));
     });
+    if (slateBlock) feed.appendChild(slateBlock);
     if (historyBlock) feed.appendChild(historyBlock);
   }
 

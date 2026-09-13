@@ -60,9 +60,29 @@ class TestFootballActivation:
         assert ncaaf["slop_lock_edge_threshold"] > nfl["slop_lock_edge_threshold"]
 
     @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
-    def test_totals_are_disabled(self, sport_key):
-        """No football totals model exists, so totals must stay off."""
-        assert SPORTS[sport_key]["totals_max_picks"] == 0
+    def test_totals_are_enabled(self, sport_key):
+        """Football totals run off FootballTotalsModel."""
+        sport = SPORTS[sport_key]
+        assert sport["totals_enabled"] is True
+        assert sport["totals_max_picks"] > 0
+        assert sport["totals_projection_min"] < sport["totals_projection_max"]
+
+    def test_ncaaf_totals_band_is_wider_than_nfl(self):
+        """College scoring is higher and more variable."""
+        assert SPORTS["ncaaf"]["totals_projection_max"] > SPORTS["nfl"]["totals_projection_max"]
+        assert SPORTS["ncaaf"]["totals_default_stddev"] > SPORTS["nfl"]["totals_default_stddev"]
+
+    def test_totals_odds_flag_preserved_for_existing_sports(self):
+        """nba and mlb requested totals odds before; nhl and wnba did not."""
+        assert SPORTS["nba"]["totals_enabled"] is True
+        assert SPORTS["mlb"]["totals_enabled"] is True
+        assert SPORTS["nhl"].get("totals_enabled", False) is False
+        assert SPORTS["wnba"].get("totals_enabled", False) is False
+
+    def test_only_nfl_publishes_a_full_slate(self):
+        assert SPORTS["nfl"]["publish_full_slate"] is True
+        for sport_key in ("nba", "nhl", "wnba", "mlb", "ncaaf"):
+            assert SPORTS[sport_key].get("publish_full_slate", False) is False
 
     @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
     def test_registered_in_notifier_and_normalizers(self, sport_key):
@@ -361,6 +381,112 @@ class TestFootballRestAdjustment:
 
 
 # ---------------------------------------------------------------------------
+# Football totals model
+# ---------------------------------------------------------------------------
+
+class TestFootballTotalsModel:
+    @staticmethod
+    def _scoring_games(high_scoring, low_scoring, weeks=12):
+        """Two clusters: one that plays shootouts, one that plays rock fights."""
+        from itertools import product
+
+        base = datetime.strptime("2026-09-06", "%Y-%m-%d")
+        rows = []
+        for week in range(weeks):
+            date_str = (base + timedelta(days=7 * week)).strftime("%Y-%m-%d")
+            for home, away in product(high_scoring, low_scoring):
+                rows.append({
+                    "date": date_str,
+                    "home_team": home,
+                    "away_team": away,
+                    "home_goals": 35,
+                    "away_goals": 10,
+                })
+            for i in range(len(high_scoring) - 1):
+                rows.append({
+                    "date": date_str,
+                    "home_team": high_scoring[i],
+                    "away_team": high_scoring[i + 1],
+                    "home_goals": 38,
+                    "away_goals": 34,
+                })
+            for i in range(len(low_scoring) - 1):
+                rows.append({
+                    "date": date_str,
+                    "home_team": low_scoring[i],
+                    "away_team": low_scoring[i + 1],
+                    "home_goals": 13,
+                    "away_goals": 9,
+                })
+        return pd.DataFrame(rows)
+
+    def _model(self, min_games=40):
+        from pipeline.models import FootballTotalsModel
+
+        games = self._scoring_games(["Air", "Sky", "Bomb"], ["Mud", "Grind", "Rock"])
+        return FootballTotalsModel(games, feature_window=5, min_games=min_games), games
+
+    def test_baseline_is_learned_from_the_data(self):
+        model, games = self._model()
+        expected = float((games["home_goals"] + games["away_goals"]).mean())
+        assert model.baseline_total == pytest.approx(expected)
+
+    def test_unfitted_model_returns_the_league_baseline(self):
+        from pipeline.models import FootballTotalsModel
+
+        model = FootballTotalsModel(pd.DataFrame(), min_games=10)
+        assert model.predict_total({"home_team": "A", "away_team": "B"}) == model.baseline_total
+
+    def test_min_games_gate_prevents_fitting(self):
+        model, _ = self._model(min_games=10_000)
+        assert model.model is None
+
+    def test_shootout_matchup_projects_higher_than_rock_fight(self):
+        model, _ = self._model()
+        assert model.model is not None
+        high = model.predict_total({"home_team": "Air", "away_team": "Sky"})
+        low = model.predict_total({"home_team": "Mud", "away_team": "Grind"})
+        assert high > low
+
+    def test_projection_is_clamped_to_the_configured_band(self):
+        from pipeline.models import FootballTotalsModel
+
+        games = self._scoring_games(["Air", "Sky", "Bomb"], ["Mud", "Grind", "Rock"])
+        model = FootballTotalsModel(
+            games, feature_window=5, min_games=40,
+            projection_min=40.0, projection_max=41.0,
+        )
+        value = model.predict_total({"home_team": "Air", "away_team": "Sky"})
+        assert 40.0 <= value <= 41.0
+
+    def test_predict_market_returns_complementary_probabilities(self):
+        from pipeline.models import football_totals_predict
+
+        model, _ = self._model()
+        out = football_totals_predict(model, {"home_team": "Air", "away_team": "Sky"}, 48.5)
+        assert out["over"] + out["under"] == pytest.approx(1.0)
+        assert 0.0 < out["over"] < 1.0
+        assert out["stddev"] >= 6.0
+
+    def test_a_line_above_the_projection_favours_the_under(self):
+        from pipeline.models import football_totals_predict
+
+        model, _ = self._model()
+        projection = model.predict_total({"home_team": "Mud", "away_team": "Grind"})
+        out = football_totals_predict(
+            model, {"home_team": "Mud", "away_team": "Grind"}, projection + 12.0
+        )
+        assert out["under"] > out["over"]
+
+    def test_missing_score_columns_leaves_model_unfitted(self):
+        from pipeline.models import FootballTotalsModel
+
+        df = pd.DataFrame([{"date": "2026-09-06", "home_team": "A", "away_team": "B"}])
+        model = FootballTotalsModel(df, min_games=1)
+        assert model.model is None
+
+
+# ---------------------------------------------------------------------------
 # NCAAF-specific parsing
 # ---------------------------------------------------------------------------
 
@@ -575,14 +701,15 @@ class TestNflPipelineEndToEnd:
         assert abs(sum(match["model_probs"].values()) - 1.0) < 0.01
         assert "elo" in data["model_weights"]
         assert "results_features" in data["model_weights"]
-        # No football totals model, so no totals are produced.
+        # Totals need a posted line; this fixture's odds carry none.
         assert data.get("totals_matches", []) == []
+        assert data["full_slate"] is True
         assert data["diagnostics"]["fixtures_with_odds"] == 1
 
     @patch("pipeline.run.fetch_odds")
     @patch("pipeline.run.fetch_nfl_schedule")
     @patch("pipeline.run.fetch_nfl_games")
-    def test_odds_are_requested_without_totals(
+    def test_odds_are_requested_with_totals(
         self, mock_games, mock_schedule, mock_odds, tmp_path
     ):
         mock_games.return_value = (_football_matches(["Chiefs", "Bills"]), None)
@@ -593,7 +720,7 @@ class TestNflPipelineEndToEnd:
 
         _, kwargs = mock_odds.call_args
         assert kwargs["sport_key"] == "americanfootball_nfl"
-        assert kwargs["include_totals"] is False
+        assert kwargs["include_totals"] is True
 
 
 class TestNcaafPipelineEndToEnd:

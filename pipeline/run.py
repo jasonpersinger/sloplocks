@@ -17,7 +17,6 @@ import pandas as pd
 from scipy.stats import norm
 
 from pipeline.config import (
-    ANTHROPIC_API_KEY,
     DATA_DIR,
     ENABLE_QUALITATIVE,
     QUALITATIVE_DEFAULT_WEIGHT,
@@ -59,6 +58,7 @@ from pipeline.models import (
     HandednessMatchupModel,
     MlbTotalsModel,
     NbaMatchupModel,
+    FootballTotalsModel,
     NbaTotalsModel,
     NhlMatchupModel,
     PitcherMatchupModel,
@@ -68,6 +68,7 @@ from pipeline.models import (
     handedness_matchup_predict,
     mlb_totals_predict,
     nba_matchup_predict,
+    football_totals_predict,
     nba_totals_predict,
     nhl_matchup_predict,
     ResultsFeatureModel,
@@ -1921,99 +1922,6 @@ def _apply_nhl_injury_adjustment(
     return _normalize_two_way_probs(adjusted)
 
 
-# ---------------------------------------------------------------------------
-# Blurb generation (via Claude API)
-# ---------------------------------------------------------------------------
-
-def _generate_blurbs(picks, pick_type="lock"):
-    """Generate short analysis blurbs for picks using Claude.
-
-    Parameters
-    ----------
-    picks : list[dict] or dict or None
-        SLOP LOCK list or single LONGSLOP dict.
-    pick_type : str
-        "lock" or "longslop" — controls the prompt tone.
-
-    Returns the picks with a "blurb" field added to each. Fails silently
-    (blurb = "") if the API key is missing or the call fails.
-    """
-    if not ANTHROPIC_API_KEY:
-        if isinstance(picks, list):
-            for p in picks:
-                p["blurb"] = ""
-        elif picks:
-            picks["blurb"] = ""
-        return picks
-
-    if picks is None:
-        return None
-
-    items = picks if isinstance(picks, list) else [picks]
-    if not items:
-        return picks
-
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    except Exception:
-        for p in items:
-            p["blurb"] = ""
-        return picks
-
-    for p in items:
-        try:
-            # Build individual model breakdown
-            models_str = ""
-            ind = p.get("individual_models", {})
-            pick_outcome = p["pick"]
-            for model_name, probs in ind.items():
-                prob = probs.get(pick_outcome, 0)
-                models_str += f"  {model_name}: {prob:.1%}\n"
-
-            if pick_type == "lock":
-                prompt = (
-                    f"You are the analytics voice for SLOP LOCKS, a sports betting predictions site. "
-                    f"Write exactly 1-2 sentences explaining why the model is confident in this pick. Be direct, "
-                    f"confident, concise. No hedging. Reference the model probability and why this outcome is likely.\n\n"
-                    f"Match: {p['home_team']} vs {p['away_team']}\n"
-                    f"Pick: {pick_outcome}\n"
-                    f"Model probability: {p['model_prob']:.1%}\n"
-                    f"Books implied: {p['implied_prob']:.1%}\n"
-                    f"Edge: {p['edge']:.1%}\n"
-                    f"Odds: {p['american_odds']:+d}\n"
-                    f"Individual models:\n{models_str}"
-                )
-            else:
-                prompt = (
-                    f"You are the analytics voice for SLOP LOCKS, a sports betting predictions site. "
-                    f"Write exactly 1-2 sentences explaining why this longshot may hit. Be bold, "
-                    f"intriguing, concise. This is a +500 or longer pick our model believes in.\n\n"
-                    f"Match: {p['home_team']} vs {p['away_team']}\n"
-                    f"Pick: {pick_outcome}\n"
-                    f"Model probability: {p['model_prob']:.1%}\n"
-                    f"Books implied: {p['implied_prob']:.1%}\n"
-                    f"Edge: {p['edge']:.1%}\n"
-                    f"Odds: {p['american_odds']:+d}\n"
-                    f"Individual models:\n{models_str}"
-                )
-
-            resp = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=100,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            p["blurb"] = resp.content[0].text.strip()
-        except Exception:
-            p["blurb"] = ""
-
-    # Strip individual_models from final output (only needed for blurb gen)
-    for p in items:
-        p.pop("individual_models", None)
-
-    return picks
-
-
 def _exclude_opponent_conflicts(locks: list[dict]) -> list[dict]:
     """Remove picks where a picked team is also the losing side of another pick.
 
@@ -2221,6 +2129,10 @@ def _compute_slop_locks(
                 "individual_models": rec.get("individual_models", {}),
                 "qualitative_analysis": rec.get("qualitative_analysis"),
                 "qualitative_summary": rec.get("qualitative_summary"),
+                "blurb": rec.get("blurb"),
+                "model_vs_market": rec.get("model_vs_market"),
+                "key_risk": rec.get("key_risk"),
+                "ai_confidence_label": rec.get("ai_confidence_label"),
                 "selection_lane": selection_lane,
             }
             formatted_pick["tier"] = tier
@@ -2352,6 +2264,10 @@ def _compute_totals_locks(
                     "confidence_score": edge_data.get("confidence_score", 0.0),
                     "qualitative_analysis": rec.get("qualitative_analysis"),
                     "qualitative_summary": rec.get("qualitative_summary"),
+                    "blurb": rec.get("blurb"),
+                    "model_vs_market": rec.get("model_vs_market"),
+                    "key_risk": rec.get("key_risk"),
+                    "ai_confidence_label": rec.get("ai_confidence_label"),
                 })
 
     candidates.sort(
@@ -3019,6 +2935,46 @@ def _print_pipeline_diagnostics(sport_key: str, diagnostics: dict) -> None:
 # Per-sport pipeline
 # ---------------------------------------------------------------------------
 
+def _build_game_ai_context(sport_key, home, away, fix, blended, individual_models,
+                           match_odds, elo, is_neutral):
+    """Assemble the model's own reasoning for the qualitative analyst.
+
+    Probabilities here are pre-qualitative: they are the signal the analyst is
+    being asked to explain and then adjust. The qualitative nudge that follows
+    is capped small, so the published numbers stay close to these.
+    """
+    pick = max(blended, key=blended.get) if blended else None
+    model_prob = blended.get(pick) if pick else None
+
+    implied_prob = None
+    if match_odds and pick:
+        benchmark = (match_odds.get("moneyline_benchmark") or {}).get("fair_probs") or {}
+        implied_prob = benchmark.get(pick)
+
+    context = {
+        "sport": sport_key,
+        "home_team": home,
+        "away_team": away,
+        "date": fix["date"],
+        "start_time": fix.get("start_time"),
+        "pick": pick,
+        "model_prob": model_prob,
+        "implied_prob": implied_prob,
+        "individual_models": individual_models,
+        "neutral": bool(is_neutral),
+    }
+    if model_prob is not None and implied_prob is not None:
+        context["edge"] = model_prob - implied_prob
+    if match_odds and pick:
+        context["american_odds"] = match_odds.get(f"{pick}_odds")
+    if elo is not None:
+        context["elo_ratings"] = {
+            "home": elo.get_rating(home),
+            "away": elo.get_rating(away),
+        }
+    return context
+
+
 def _format_qualitative_summary(blended_pre_qual, qualitative_data):
     """Return a human-readable summary of qualitative impact and its effect."""
     if not qualitative_data or qualitative_data.get("summary") == "No significant qualitative factors identified or API error.":
@@ -3160,7 +3116,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     try:
         odds_list = fetch_odds(
             sport_key=sport["odds_sport"],
-            include_totals=(sport_key in {"mlb", "nba"}),
+            include_totals=bool(sport.get("totals_enabled", False)),
         )
     except Exception:
         pass
@@ -3296,6 +3252,15 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             feature_window=sport.get("totals_feature_window", 8),
             min_games=sport.get("totals_feature_min_games", 30),
             default_stddev=sport.get("totals_default_stddev", 13.5),
+        )
+    elif sport_key in {"nfl", "ncaaf"} and matches is not None and not matches.empty:
+        totals_model = FootballTotalsModel(
+            matches,
+            feature_window=sport.get("totals_feature_window", 5),
+            min_games=sport.get("totals_feature_min_games", 40),
+            default_stddev=sport.get("totals_default_stddev", 10.5),
+            projection_min=sport.get("totals_projection_min", 20.0),
+            projection_max=sport.get("totals_projection_max", 80.0),
         )
 
     # ------------------------------------------------------------------
@@ -3605,6 +3570,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             blend=sport.get("probability_calibration_blend", 0.5),
         )
 
+        # Look the market up before the AI call so the analyst can explain the
+        # model's number against the book's, not just recite injury notes.
+        match_odds = _lookup_match_odds(odds_lookup, sport_key, home, away)
+
         # ------------------------------------------------------------------
         # Qualitative Gemini Integration
         # ------------------------------------------------------------------
@@ -3615,13 +3584,17 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             and analyze_game_qualitative is not None
         ):
             context_text = get_game_context(sport_key, fix)
-            game_for_ai = {
-                "sport": sport_key,
-                "home_team": home,
-                "away_team": away,
-                "date": fix["date"],
-                "start_time": fix.get("start_time"),
-            }
+            game_for_ai = _build_game_ai_context(
+                sport_key=sport_key,
+                home=home,
+                away=away,
+                fix=fix,
+                blended=blended,
+                individual_models=individual_models,
+                match_odds=match_odds,
+                elo=elo,
+                is_neutral=is_neutral,
+            )
             qualitative_data = analyze_game_qualitative(game_for_ai, context_text)
             qualitative_summary = _format_qualitative_summary(blended, qualitative_data)
             blended = _apply_qualitative_adjustment(
@@ -3632,8 +3605,6 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         else:
             qualitative_summary = None
 
-        # Edges and best odds
-        match_odds = _lookup_match_odds(odds_lookup, sport_key, home, away)
         
         # Always compute edges, even if odds are missing, to get model_probs and baseline stats
         edges = compute_edges(
@@ -3720,6 +3691,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             "market_snapshot": (match_odds or {}).get("moneyline_market_snapshot"),
             "qualitative_analysis": qualitative_data,
             "qualitative_summary": qualitative_summary,
+            "blurb": (qualitative_data or {}).get("pick_rationale") or "",
+            "model_vs_market": (qualitative_data or {}).get("model_vs_market") or "",
+            "key_risk": (qualitative_data or {}).get("key_risk") or "",
+            "ai_confidence_label": (qualitative_data or {}).get("confidence_label") or "",
         }
         prediction_records.append(record)
 
@@ -3748,6 +3723,12 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                     away_tax=away_bullpen_tax,
                     max_runs_delta=sport.get("bullpen_total_adjustment_max_delta", 0.3),
                 )
+            elif sport_key in {"nfl", "ncaaf"}:
+                total_projection = football_totals_predict(
+                    totals_model,
+                    fix,
+                    total_line=float(match_odds["total_line"]),
+                )
             else:
                 total_projection = nba_totals_predict(
                     totals_model,
@@ -3770,6 +3751,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "date": fix["date"],
                 "start_time": fix.get("start_time"),
                 "total_line": float(match_odds["total_line"]),
+                "expected_total": total_projection.get("expected_total"),
+                "stddev": total_projection.get("stddev"),
+                "over_prob": total_projection.get("over"),
+                "under_prob": total_projection.get("under"),
             }
             total_qualitative = None
             total_qualitative_summary = ""
@@ -3785,7 +3770,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                     total_qualitative,
                     max_points_delta=sport.get("qualitative_total_adjustment_max_points", 0.5),
                 )
-                lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)
+                lo = sport.get("totals_projection_min")
+                hi = sport.get("totals_projection_max")
+                if lo is None or hi is None:
+                    lo, hi = (4.5, 16.0) if sport_key == "mlb" else (180.0, 270.0)
                 total_projection["expected_total"] = max(lo, min(hi, total_projection["expected_total"]))
             sigma = max(1.5, float(total_projection.get("stddev", sport.get("totals_default_stddev", 3.1))))
             over_prob = float(
@@ -3843,6 +3831,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
                 "market_snapshot": match_odds.get("totals_market_snapshot"),
                 "qualitative_analysis": total_qualitative,
                 "qualitative_summary": total_qualitative_summary,
+                "blurb": (total_qualitative or {}).get("pick_rationale") or "",
+                "model_vs_market": (total_qualitative or {}).get("model_vs_market") or "",
+                "key_risk": (total_qualitative or {}).get("key_risk") or "",
+                "ai_confidence_label": (total_qualitative or {}).get("confidence_label") or "",
             })
             totals_match_odds_refs.append(match_odds)
 
@@ -3940,8 +3932,11 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
     )
 
     # Generate analysis blurbs via Claude
-    slop_locks = _generate_blurbs(slop_locks, pick_type="lock")
-    longslop = _generate_blurbs(longslop, pick_type="longslop")
+    # Blurbs now come from the Gemini qualitative pass, which already sees the
+    # model's numbers; the old Claude call produced nothing in production.
+    # It also stripped the per-model breakdown from published picks, so keep that.
+    for _pick in list(slop_locks or []) + ([longslop] if longslop else []):
+        _pick.pop("individual_models", None)
 
     snapshot_relpath = _snapshot_relative_path(sport_key, run_context)
     _attach_run_metadata_list(prediction_records, run_context, snapshot_relpath)
@@ -4322,6 +4317,10 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
         "sport": sport_key,
         "sport_name": sport["display_name"],
         "outcomes": outcomes,
+        # Render every game's moneyline pick, not just the locks. Independent of
+        # the publication guard: the full slate is labelled model output, while
+        # locks remain the gated public record.
+        "full_slate": bool(sport.get("publish_full_slate", False)),
         "slop_locks": slop_locks,
         "totals_locks": totals_locks,
         "slimegrinder": slimegrinder,

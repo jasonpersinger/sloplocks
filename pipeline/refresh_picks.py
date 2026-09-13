@@ -209,7 +209,7 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
     try:
         odds_list = fetch_odds(
             sport_key=sport["odds_sport"],
-            include_totals=(sport_key in {"nba", "mlb"}),
+            include_totals=bool(sport.get("totals_enabled", False)),
         )
         normalization_error = _normalize_odds_list(odds_list, normalizer)
         if normalization_error:

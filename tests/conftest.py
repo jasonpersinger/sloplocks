@@ -4,6 +4,22 @@ import pytest
 import pandas as pd
 from datetime import datetime, timedelta
 
+import pipeline.run
+
+
+@pytest.fixture(autouse=True)
+def no_live_ai_calls(monkeypatch):
+    """Keep the suite off billed AI endpoints.
+
+    ``pipeline.config`` calls ``load_dotenv(override=True)`` at import, so a
+    populated ``.env`` would otherwise hand real credentials to the qualitative
+    layer and the suite would make live API calls. Tests that exercise the AI
+    path set their own key after this fixture runs.
+    """
+    for key in ("GEMINI_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setattr(pipeline.run, "ENABLE_QUALITATIVE", False, raising=False)
+
 
 @pytest.fixture
 def sample_matches():
