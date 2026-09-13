@@ -60,6 +60,7 @@ from pipeline.run import (
     _apply_qualitative_adjustment,
     _apply_total_qualitative_adjustment,
     _apply_latest_market_snapshots,
+    _build_game_ai_context,
     _build_publication_guard,
     _build_pipeline_diagnostics,
     _build_run_context,
@@ -284,16 +285,28 @@ def refresh_sport(sport_key: str, run_context: Optional[dict] = None) -> None:
         # ------------------------------------------------------------------
         if ENABLE_QUALITATIVE and sport.get("enable_qualitative", False):
             context_text = get_game_context(sport_key, match)
-            game_for_ai = {
-                "sport": sport_key,
-                "home_team": match["home_team"],
-                "away_team": match["away_team"],
-                "date": match["date"],
-                "start_time": match.get("start_time"),
-            }
+            # Same context builder the daily run uses, so a refreshed blurb
+            # explains the model rather than reciting injuries.
+            game_for_ai = _build_game_ai_context(
+                sport_key=sport_key,
+                home=match["home_team"],
+                away=match["away_team"],
+                fix=match,
+                blended=refreshed_probs,
+                individual_models=match.get("individual_models") or {},
+                match_odds=_lookup_match_odds(
+                    odds_lookup, sport_key, match["home_team"], match["away_team"]
+                ),
+                elo=None,
+                is_neutral=match.get("neutral", False),
+            )
             qualitative_data = analyze_game_qualitative(game_for_ai, context_text)
             match["qualitative_analysis"] = qualitative_data
             match["qualitative_summary"] = _format_qualitative_summary(refreshed_probs, qualitative_data)
+            match["blurb"] = (qualitative_data or {}).get("pick_rationale") or ""
+            match["model_vs_market"] = (qualitative_data or {}).get("model_vs_market") or ""
+            match["key_risk"] = (qualitative_data or {}).get("key_risk") or ""
+            match["ai_confidence_label"] = (qualitative_data or {}).get("confidence_label") or ""
             refreshed_probs = _apply_qualitative_adjustment(
                 refreshed_probs,
                 qualitative_data,

@@ -16,7 +16,6 @@ PUBLIC_RECORD_ARCHIVE_DIRNAME = "public_record_archives"
 # API Keys (from environment / GitHub Secrets)
 ODDS_API_KEY = os.environ.get("ODDS_API_KEY", "")
 BALLDONTLIE_API_KEY = os.environ.get("BALLDONTLIE_API_KEY", "")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
 
 # The Odds API
 ODDS_API_BASE = "https://api.the-odds-api.com/v4"
