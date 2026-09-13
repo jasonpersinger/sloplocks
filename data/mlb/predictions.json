@@ -216,7 +216,7 @@
       "date": "2026-09-12",
       "start_time": "2026-09-12T17:10Z",
       "matchday": null,
-      "completed": false,
+      "completed": true,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
@@ -1708,7 +1708,7 @@
           "unrealistic_flag": false,
           "hold": 0.0415,
           "market_source": "median_complete_book_no_vig",
-          "market_books": 9
+          "market_books": 7
         },
         "away": {
           "model_prob": 0.4886,
@@ -1726,7 +1726,7 @@
           "unrealistic_flag": false,
           "hold": 0.0415,
           "market_source": "median_complete_book_no_vig",
-          "market_books": 9
+          "market_books": 7
         }
       },
       "best_odds": {
@@ -1909,8 +1909,8 @@
       },
       "qualitative_analysis": {
         "sport": "mlb",
-        "home_team": "Nationals",
-        "away_team": "Angels",
+        "home_team": "Tigers",
+        "away_team": "Rockies",
         "home_impact": 0.0,
         "away_impact": 0.0,
         "individual_factors": [
@@ -1979,7 +1979,7 @@
       "date": "2026-09-12",
       "start_time": "2026-09-12T20:05Z",
       "matchday": null,
-      "completed": false,
+      "completed": true,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
@@ -6504,7 +6504,14 @@
         "switch_hitters": 0,
         "lefty_share": 0.4615,
         "righty_share": 0.5385,
-        "switch_share": 0.0
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.5556,
+        "confirmed_righty_share": 0.3333,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0.6
       },
       "away_lineup_profile": {
         "active_hitters": 13,
@@ -6517,7 +6524,14 @@
         "switch_hitters": 0,
         "lefty_share": 0.2308,
         "righty_share": 0.7692,
-        "switch_share": 0.0
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.0,
+        "confirmed_righty_share": 0.8889,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
       },
       "home_bullpen_tax": 0.75,
       "away_bullpen_tax": 0.135,
@@ -7064,7 +7078,14 @@
         "switch_hitters": 0,
         "lefty_share": 0.3077,
         "righty_share": 0.6923,
-        "switch_share": 0.0
+        "switch_share": 0.0,
+        "confirmed_lineup": true,
+        "confirmed_hitters": 9,
+        "confirmed_top_order_score": 1.0,
+        "confirmed_lefty_share": 0.5556,
+        "confirmed_righty_share": 0.2222,
+        "confirmed_switch_share": 0.0,
+        "confirmed_leader_absence_burden": 0
       },
       "home_bullpen_tax": 0.014,
       "away_bullpen_tax": 0.17,
@@ -7544,13 +7565,13 @@
           {
             "description": "Freddie Freeman is Day-To-Day, which could impact the Dodgers' lineup and scoring potential.",
             "direction": "under",
-            "magnitude": 2.0,
+            "magnitude": 3.0,
             "confidence": 0.7
           },
           {
             "description": "Both teams have multiple players on the IL, which may weaken their offensive capabilities.",
             "direction": "under",
-            "magnitude": 1.0,
+            "magnitude": 2.0,
             "confidence": 0.6
           }
         ],
@@ -9482,16 +9503,16 @@
             "book": "BetUS",
             "last_update": "2026-09-12T14:50:26Z",
             "outcomes": {
-              "over": 1.91,
-              "under": 1.91
+              "over": 1.97,
+              "under": 1.85
             },
             "raw_probs": {
-              "over": 0.5236,
-              "under": 0.5236
+              "over": 0.5076,
+              "under": 0.5405
             },
             "fair_probs": {
-              "over": 0.5,
-              "under": 0.5
+              "over": 0.4843,
+              "under": 0.5157
             },
             "hold": 0.0471
           },
@@ -10640,17 +10661,50 @@
       "max_picks": 3
     }
   },
-  "validation_issues": [],
+  "validation_issues": [
+    {
+      "reason": "stale_pick",
+      "pick_type": "total_lock",
+      "market_type": "total",
+      "home_team": "Brewers",
+      "away_team": "Reds",
+      "match_date": "2026-09-12",
+      "pick": "under",
+      "detail": "2026-09-12T23:10Z"
+    },
+    {
+      "reason": "stale_pick",
+      "pick_type": "total_lock",
+      "market_type": "total",
+      "home_team": "Diamondbacks",
+      "away_team": "Rangers",
+      "match_date": "2026-09-12",
+      "pick": "over",
+      "detail": "2026-09-13T00:10Z"
+    },
+    {
+      "reason": "stale_pick",
+      "pick_type": "total_lock",
+      "market_type": "total",
+      "home_team": "Rays",
+      "away_team": "Astros",
+      "match_date": "2026-09-12",
+      "pick": "over",
+      "detail": "2026-09-12T22:10Z"
+    }
+  ],
   "diagnostics": {
     "historical_matches": 2295,
     "fixtures_fetched": 15,
     "fixtures_in_window": 15,
-    "fixtures_completed": 0,
-    "fixtures_pending": 15,
-    "odds_events_fetched": 15,
-    "fixtures_with_odds": 15,
-    "fixtures_without_odds": 0,
-    "coverage_gap_examples": [],
+    "fixtures_completed": 9,
+    "fixtures_pending": 6,
+    "odds_events_fetched": 17,
+    "fixtures_with_odds": 14,
+    "fixtures_without_odds": 1,
+    "coverage_gap_examples": [
+      "Guardians @ Twins"
+    ],
     "matches_modeled": 15,
     "matches_with_market": 15,
     "matches_with_positive_ev": 10,
