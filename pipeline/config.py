@@ -648,6 +648,8 @@ SPORTS = {
         "name": "NCAAF",
         "display_name": "NCAAF",
         "odds_sport": "americanfootball_ncaaf",
+        # Publish a moneyline pick for every game, not just Slop Locks.
+        "publish_full_slate": True,
         "outcomes": ["home", "away"],
         "models": ["elo", "results_features"],
         "disabled_models": [],

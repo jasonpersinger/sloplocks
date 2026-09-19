@@ -79,9 +79,13 @@ class TestFootballActivation:
         assert SPORTS["nhl"].get("totals_enabled", False) is False
         assert SPORTS["wnba"].get("totals_enabled", False) is False
 
-    def test_only_nfl_publishes_a_full_slate(self):
-        assert SPORTS["nfl"]["publish_full_slate"] is True
-        for sport_key in ("nba", "nhl", "wnba", "mlb", "ncaaf"):
+    @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
+    def test_football_publishes_a_full_slate(self, sport_key):
+        """Both football sports show a pick on every game, not just locks."""
+        assert SPORTS[sport_key]["publish_full_slate"] is True
+
+    def test_other_sports_do_not_publish_a_full_slate(self):
+        for sport_key in ("nba", "nhl", "wnba", "mlb"):
             assert SPORTS[sport_key].get("publish_full_slate", False) is False
 
     @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
@@ -862,6 +866,7 @@ class TestNcaafPipelineEndToEnd:
             data = json.load(f)
 
         assert data["sport"] == "ncaaf"
+        assert data["full_slate"] is True
         assert len(data["matches"]) == 1
         match = data["matches"][0]
         assert set(match["model_probs"]) == {"home", "away"}
@@ -900,6 +905,49 @@ class TestNcaafPipelineEndToEnd:
 
         # The weaker home team loses its home edge at a neutral site.
         assert probs[True] < probs[False]
+
+
+class TestFullSlatePayload:
+    """The slate table needs a pick and a probability on every row."""
+
+    @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
+    def test_full_slate_sports_enable_qualitative(self, sport_key):
+        """Rows render the AI rationale, so the analysis layer must be on."""
+        assert SPORTS[sport_key]["enable_qualitative"] is True
+
+    @patch("pipeline.run.fetch_odds")
+    @patch("pipeline.run.fetch_ncaaf_schedule")
+    @patch("pipeline.run.fetch_ncaaf_games")
+    def test_games_without_odds_still_get_a_pick(
+        self, mock_games, mock_schedule, mock_odds, tmp_path, monkeypatch
+    ):
+        """College slates routinely outrun the books; those games still show."""
+        teams = ["Georgia", "Alabama", "Ohio State", "Texas", "Purdue", "Vanderbilt"]
+        mock_games.return_value = (_football_matches(teams), None)
+        mock_schedule.return_value = [{
+            "home_team": "Purdue",
+            "away_team": "Georgia",
+            "date": _TODAY,
+            "start_time": f"{_TODAY}T20:00:00Z",
+            "completed": False,
+            "neutral": False,
+        }]
+        mock_odds.return_value = []          # no market for this fixture
+        monkeypatch.setitem(SPORTS["ncaaf"], "results_feature_min_games", 10)
+
+        output_dir = str(tmp_path / "ncaaf")
+        run_sport_pipeline("ncaaf", output_dir=output_dir)
+
+        with open(os.path.join(output_dir, "predictions.json")) as f:
+            data = json.load(f)
+
+        assert data["full_slate"] is True
+        assert len(data["matches"]) == 1
+        match = data["matches"][0]
+        assert match["pick"] in {"home", "away"}
+        assert match["model_prob"] is not None
+        assert match["american_odds"] is None      # rendered as "--"
+        assert data["slop_locks"] == []
 
 
 class TestManifestActivation:

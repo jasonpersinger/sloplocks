@@ -1465,9 +1465,10 @@
         : Math.round(Number(m.confidence_score)) + '/100';
       row.appendChild(confCell);
 
+      var hasMarket = m.american_odds != null;
       var edgeCell = document.createElement('td');
-      edgeCell.className = 'slate-num' + (Number(m.edge) < 0 ? ' slate-neg' : '');
-      edgeCell.textContent = m.edge == null ? '--' : edgePct(Number(m.edge));
+      edgeCell.className = 'slate-num' + (hasMarket && Number(m.edge) < 0 ? ' slate-neg' : '');
+      edgeCell.textContent = (!hasMarket || m.edge == null) ? '--' : edgePct(Number(m.edge));
       row.appendChild(edgeCell);
 
       tbody.appendChild(row);
