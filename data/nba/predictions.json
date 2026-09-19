@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-15T16:02:03Z",
-  "run_id": "daily-20260915T160158950216Z",
+  "generated_at": "2026-09-19T13:58:06Z",
+  "run_id": "daily-20260919T135802252564Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-09-15T16:01:58Z",
-  "snapshot_path": "tracking/snapshots/2026-09-15/nba/daily-20260915T160158950216Z.json",
+  "snapshot_timestamp": "2026-09-19T13:58:02Z",
+  "snapshot_path": "tracking/snapshots/2026-09-19/nba/daily-20260919T135802252564Z.json",
   "sport": "nba",
   "sport_name": "NBA",
   "outcomes": [
@@ -1075,13 +1075,14 @@
       "nba_matchup"
     ]
   },
-  "calibration_sample_size": 221,
+  "calibration_sample_size": 206,
   "selection_config": {
     "outcomes": [
       "home",
       "away"
     ],
     "slop_locks": {
+      "reject_unrealistic_divergence": true,
       "min_expected_value": 0.0,
       "edge_floor": 0.02,
       "probability_floor": 0.5,
@@ -1110,16 +1111,19 @@
       }
     },
     "longslop": {
+      "reject_unrealistic_divergence": true,
       "enabled": false,
       "min_expected_value": 0.0,
       "confidence_floor": 55
     },
     "slimegrinder": {
+      "reject_unrealistic_divergence": true,
       "enabled": false,
       "min_expected_value": 0.0,
       "confidence_floor": 55
     },
     "totals_locks": {
+      "reject_unrealistic_divergence": true,
       "enabled": false,
       "min_expected_value": 0.0,
       "edge_floor": 0.02,
