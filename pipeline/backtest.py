@@ -1065,6 +1065,8 @@ def _build_walkforward_models(
             feature_window=sport.get("results_feature_window", 8),
             min_games=sport.get("results_feature_min_games", 30),
             rest_cap_days=sport.get("results_feature_rest_cap_days", 7.0),
+            opponent_adjust=sport.get("results_feature_opponent_adjust", False),
+            opponent_rating_decay=sport.get("results_feature_opponent_decay", 0.90),
         )
 
     if sport_key in {"nba", "wnba", "ncaam"} and train_box_scores is not None and not train_box_scores.empty:

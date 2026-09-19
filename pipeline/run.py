@@ -3191,6 +3191,8 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             feature_window=sport.get("results_feature_window", 8),
             min_games=sport.get("results_feature_min_games", 30),
             rest_cap_days=sport.get("results_feature_rest_cap_days", 7.0),
+            opponent_adjust=sport.get("results_feature_opponent_adjust", False),
+            opponent_rating_decay=sport.get("results_feature_opponent_decay", 0.90),
         )
 
     recent_boxscore_model = None

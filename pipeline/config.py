@@ -676,6 +676,12 @@ SPORTS = {
         "results_feature_window": 5,
         "results_feature_min_games": 120,
         "results_feature_rest_cap_days": 14,
+        # College schedules are wildly uneven, so raw margins mislead: beating
+        # three cupcakes by 40 looked identical to beating three good teams by
+        # 40. Worth +3.3% walk-forward log loss here; measured as a slight
+        # negative for the NFL's balanced schedule, so it stays off there.
+        "results_feature_opponent_adjust": True,
+        "results_feature_opponent_decay": 0.90,
         "recent_form_window": 5,
         "recent_form_max_adjustment": 40,
         "min_expected_value": 0.0,

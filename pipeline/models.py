@@ -631,12 +631,20 @@ class ResultsFeatureModel:
     sparse box-score or roster data.
     """
 
-    def __init__(self, games, feature_window=8, min_games=30, rest_cap_days=7.0):
+    def __init__(self, games, feature_window=8, min_games=30, rest_cap_days=7.0,
+                 opponent_adjust=False, opponent_rating_decay=0.90):
         self.feature_window = feature_window
         self.min_games = min_games
         # Daily-cadence sports saturate at a week of rest. Weekly sports need a
         # longer cap or every team looks identical and bye weeks vanish.
         self.rest_cap_days = float(rest_cap_days)
+        # Raw margins ignore who you played. In a league with a balanced
+        # schedule that is harmless, but where schedules are wildly uneven it
+        # makes beating three cupcakes by 40 look like beating three good teams
+        # by 40. Off by default so balanced-schedule sports are untouched.
+        self.opponent_adjust = bool(opponent_adjust)
+        self.opponent_rating_decay = float(opponent_rating_decay)
+        self.opponent_ratings = {}
         self.model = None
         self.team_logs = {}
         self.feature_names = [
@@ -648,6 +656,8 @@ class ResultsFeatureModel:
             "rest_days_diff",
             "games_played_diff",
         ]
+        if self.opponent_adjust:
+            self.feature_names.append("strength_of_schedule_diff")
         self._fit(games)
 
     def _days_since_last(self, logs, cutoff_date=None):
@@ -657,6 +667,14 @@ class ResultsFeatureModel:
         current_date = pd.to_datetime(cutoff_date) if cutoff_date is not None else last_date
         days = (current_date - last_date).days
         return float(max(0, min(days, self.rest_cap_days)))
+
+    def _strength_of_schedule(self, games):
+        """Mean rating of the opponents faced in the recent window."""
+        if not self.opponent_adjust or not games:
+            return 0.0
+        return float(
+            sum(self.opponent_ratings.get(g.get("opponent"), 0.0) for g in games) / len(games)
+        )
 
     def _team_features(self, logs, venue=None, cutoff_date=None):
         if not logs:
@@ -668,6 +686,7 @@ class ResultsFeatureModel:
                 "venue_win_pct": 0.5,
                 "rest_days": self.rest_cap_days,
                 "games_played": 0.0,
+                "strength_of_schedule": 0.0,
             }
 
         season_games = logs
@@ -692,6 +711,7 @@ class ResultsFeatureModel:
             "venue_win_pct": _win_pct(venue_games),
             "rest_days": self._days_since_last(logs, cutoff_date=cutoff_date),
             "games_played": float(len(season_games)),
+            "strength_of_schedule": self._strength_of_schedule(recent_games),
         }
 
     def _feature_vector(self, home_logs, away_logs, neutral_site=False, cutoff_date=None):
@@ -709,7 +729,9 @@ class ResultsFeatureModel:
             home_feats["venue_win_pct"] - away_feats["venue_win_pct"],
             (home_feats["rest_days"] - away_feats["rest_days"]) / self.rest_cap_days,
             (home_feats["games_played"] - away_feats["games_played"]) / 20.0,
-        ])
+        ] + ([
+            home_feats["strength_of_schedule"] - away_feats["strength_of_schedule"],
+        ] if self.opponent_adjust else []))
 
     def _fit(self, games):
         if games is None or games.empty:
@@ -744,13 +766,24 @@ class ResultsFeatureModel:
                 "result": 1.0 if home_margin > 0 else 0.0,
                 "margin": float(home_margin),
                 "venue": "home",
+                "opponent": away,
             })
             team_logs.setdefault(away, []).append({
                 "date": date_str,
                 "result": 1.0 if away_margin > 0 else 0.0,
                 "margin": float(away_margin),
                 "venue": "away",
+                "opponent": home,
             })
+            if self.opponent_adjust:
+                # Exponentially-decayed point differential, updated only after
+                # the row above was featurised, so no future information leaks.
+                decay = self.opponent_rating_decay
+                for team, margin in ((home, home_margin), (away, away_margin)):
+                    self.opponent_ratings[team] = (
+                        decay * self.opponent_ratings.get(team, 0.0)
+                        + (1.0 - decay) * float(margin)
+                    )
 
         self.team_logs = team_logs
 

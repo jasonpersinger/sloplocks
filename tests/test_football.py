@@ -153,6 +153,77 @@ class TestEloMarginScaling:
 
 
 # ---------------------------------------------------------------------------
+# Opponent-adjusted results features
+# ---------------------------------------------------------------------------
+
+class TestOpponentAdjustment:
+    """Raw margins ignore who you played, which misleads on uneven schedules."""
+
+    @staticmethod
+    def _games():
+        """Two 3-0 teams: one beat strong sides, one beat cupcakes."""
+        from itertools import count
+        base = datetime.strptime("2026-09-05", "%Y-%m-%d")
+        rows = []
+        day = count(0)
+        def add(h, a, hg, ag):
+            rows.append({"date": (base + timedelta(days=7 * next(day))).strftime("%Y-%m-%d"),
+                         "home_team": h, "away_team": a, "home_goals": hg, "away_goals": ag})
+        # Establish a strong tier and a weak tier.
+        for _ in range(6):
+            add("StrongA", "Cupcake1", 42, 7)
+            add("StrongB", "Cupcake2", 38, 10)
+            add("StrongA", "Cupcake2", 45, 3)
+        # Padder beats only cupcakes by 40; Prover beats strong teams by 40.
+        for _ in range(6):
+            add("Padder", "Cupcake1", 45, 5)
+            add("Prover", "StrongA", 45, 5)
+        return pd.DataFrame(rows)
+
+    def _model(self, **kw):
+        from pipeline.models import ResultsFeatureModel
+        return ResultsFeatureModel(self._games(), feature_window=5, min_games=10, **kw)
+
+    def test_disabled_by_default(self):
+        m = self._model()
+        assert m.opponent_adjust is False
+        assert "strength_of_schedule_diff" not in m.feature_names
+
+    def test_enabled_adds_exactly_one_feature(self):
+        off, on = self._model(), self._model(opponent_adjust=True)
+        assert len(on.feature_names) == len(off.feature_names) + 1
+        assert on.feature_names[-1] == "strength_of_schedule_diff"
+
+    def test_feature_vector_width_matches_feature_names(self):
+        for kw in ({}, {"opponent_adjust": True}):
+            m = self._model(**kw)
+            vec = m._feature_vector(m.team_logs.get("Prover", []), m.team_logs.get("Padder", []))
+            assert len(vec) == len(m.feature_names)
+
+    def test_schedule_strength_separates_the_two_unbeaten_teams(self):
+        m = self._model(opponent_adjust=True)
+        prover = m._team_features(m.team_logs["Prover"])["strength_of_schedule"]
+        padder = m._team_features(m.team_logs["Padder"])["strength_of_schedule"]
+        assert prover > padder
+
+    def test_schedule_strength_is_inert_when_disabled(self):
+        m = self._model()
+        assert m._team_features(m.team_logs["Prover"])["strength_of_schedule"] == 0.0
+
+    def test_opponent_ratings_stay_empty_when_disabled(self):
+        assert self._model().opponent_ratings == {}
+
+    def test_logs_record_the_opponent(self):
+        m = self._model()
+        assert all("opponent" in g for g in m.team_logs["Prover"])
+
+    def test_only_ncaaf_opts_in(self):
+        assert SPORTS["ncaaf"]["results_feature_opponent_adjust"] is True
+        for sport_key in ("nba", "nhl", "wnba", "mlb", "nfl"):
+            assert SPORTS[sport_key].get("results_feature_opponent_adjust", False) is False
+
+
+# ---------------------------------------------------------------------------
 # Elo margin model
 # ---------------------------------------------------------------------------
 
