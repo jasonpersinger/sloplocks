@@ -389,15 +389,13 @@ def fetch_ncaaf_games(
     cache = _load_espn_cache(cache_path)
     fetch_dates = _incremental_dates(cache, dates)
 
-    # Games cluster on Saturdays with strays midweek, so pull a week per call.
-    for chunk_start in range(0, len(fetch_dates), 7):
-        chunk = fetch_dates[chunk_start:chunk_start + 7]
-        if not chunk:
-            continue
-        span = f"{chunk[0].replace('-', '')}-{chunk[-1].replace('-', '')}"
+    # One request per date. ESPN's scoreboard accepted YYYYMMDD-YYYYMMDD ranges
+    # until 2026-09-16 and now answers them with a 400, so this matches the
+    # single-date pattern every other fetcher in this repo uses.
+    for date_str in fetch_dates:
         url = (
             f"{NCAAF_ESPN_BASE}/scoreboard"
-            f"?dates={span}&limit=900&groups={FBS_GROUP}"
+            f"?dates={date_str.replace('-', '')}&limit=900&groups={FBS_GROUP}"
         )
         try:
             resp = requests.get(url, timeout=30)
@@ -431,9 +429,9 @@ def fetch_ncaaf_games(
 def fetch_ncaaf_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch upcoming FBS fixtures from ESPN.
 
-    Requests a date span rather than a single day, because college football
-    plays Thursday through Saturday with midweek MACtion, and bowl season
-    scatters games across two weeks. Fixtures where the opponent is not FBS are
+    Walks the window one day at a time, because college football plays Thursday
+    through Saturday with midweek MACtion, and bowl season scatters games across
+    two weeks. Fixtures where the opponent is not FBS are
     dropped: a rating for the synthetic FCS entity is useful for fitting but
     not something to publish a pick on.
 
@@ -442,20 +440,28 @@ def fetch_ncaaf_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """
     et_offset = timedelta(hours=5)
     today_et = (datetime.now(timezone.utc) - et_offset).date()
-    start = today_et - timedelta(days=1)
-    end = today_et + timedelta(days=2)
-    span = f"{start.strftime('%Y%m%d')}-{end.strftime('%Y%m%d')}"
+    window = [today_et + timedelta(days=offset) for offset in range(-1, 3)]
 
-    url = (
-        f"{NCAAF_ESPN_BASE}/scoreboard"
-        f"?dates={span}&limit=900&groups={FBS_GROUP}"
-    )
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    events = []
+    seen_event_ids = set()
+    for day in window:
+        url = (
+            f"{NCAAF_ESPN_BASE}/scoreboard"
+            f"?dates={day.strftime('%Y%m%d')}&limit=900&groups={FBS_GROUP}"
+        )
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        for event in resp.json().get("events", []):
+            # A late kickoff can surface on two adjacent scoreboard days.
+            event_id = event.get("id")
+            if event_id in seen_event_ids:
+                continue
+            seen_event_ids.add(event_id)
+            events.append(event)
+        time.sleep(_REQUEST_DELAY)
 
     fixtures = []
-    for event in data.get("events", []):
+    for event in events:
         competitions = event.get("competitions") or []
         if not competitions:
             continue

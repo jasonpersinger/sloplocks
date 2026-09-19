@@ -3,7 +3,7 @@
 import json
 import os
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -378,6 +378,106 @@ class TestFootballRestAdjustment:
         }])
         # Back-to-back still penalised exactly as before.
         assert _rest_adjustment("Lakers", "2026-02-11", matches, nba) == -nba["back_to_back_penalty"]
+
+
+# ---------------------------------------------------------------------------
+# ESPN request shape
+# ---------------------------------------------------------------------------
+
+class TestEspnRequestsUseSingleDates:
+    """ESPN's scoreboard endpoint rejects YYYYMMDD-YYYYMMDD ranges with a 400.
+
+    Every other fetcher in this repo requests one date at a time; the football
+    fetchers briefly batched whole weeks into a range, which ESPN accepted until
+    2026-09-16 and then stopped accepting. These tests pin the request shape.
+    """
+
+    @staticmethod
+    def _dates_params(mock_get):
+        """Return the `dates` query value of every scoreboard call made."""
+        from urllib.parse import parse_qs, urlparse
+
+        values = []
+        for call in mock_get.call_args_list:
+            url = call.args[0] if call.args else call.kwargs.get("url", "")
+            if "scoreboard" not in url:
+                continue
+            values.extend(parse_qs(urlparse(url).query).get("dates", []))
+        return values
+
+    @staticmethod
+    def _ok(payload):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = payload
+        resp.raise_for_status.return_value = None
+        return resp
+
+    @patch("pipeline.fetch_nfl._team_map", {})
+    @patch("pipeline.fetch_nfl.requests.get")
+    def test_nfl_schedule_requests_one_date_at_a_time(self, mock_get):
+        from pipeline.fetch_nfl import fetch_nfl_schedule
+
+        mock_get.return_value = self._ok({"events": []})
+        fetch_nfl_schedule()
+
+        dates = self._dates_params(mock_get)
+        assert dates, "expected at least one scoreboard request"
+        for value in dates:
+            assert "-" not in value, f"range request would 400: dates={value}"
+            assert len(value) == 8, f"expected YYYYMMDD, got {value}"
+
+    @patch("pipeline.fetch_nfl._team_map", {})
+    @patch("pipeline.fetch_nfl.requests.get")
+    def test_nfl_games_request_one_date_at_a_time(self, mock_get):
+        from pipeline.fetch_nfl import fetch_nfl_games
+
+        mock_get.return_value = self._ok({"events": []})
+        fetch_nfl_games(dates=["2026-09-17", "2026-09-18", "2026-09-19"])
+
+        dates = self._dates_params(mock_get)
+        assert dates
+        for value in dates:
+            assert "-" not in value, f"range request would 400: dates={value}"
+
+    @patch("pipeline.fetch_ncaaf._team_map", {})
+    @patch("pipeline.fetch_ncaaf._team_conferences", {})
+    @patch("pipeline.fetch_ncaaf.requests.get")
+    def test_ncaaf_schedule_requests_one_date_at_a_time(self, mock_get):
+        from pipeline.fetch_ncaaf import fetch_ncaaf_schedule
+
+        mock_get.return_value = self._ok({"events": []})
+        fetch_ncaaf_schedule()
+
+        dates = self._dates_params(mock_get)
+        assert dates
+        for value in dates:
+            assert "-" not in value, f"range request would 400: dates={value}"
+
+    @patch("pipeline.fetch_ncaaf._team_map", {})
+    @patch("pipeline.fetch_ncaaf._team_conferences", {})
+    @patch("pipeline.fetch_ncaaf.requests.get")
+    def test_ncaaf_games_request_one_date_at_a_time(self, mock_get):
+        from pipeline.fetch_ncaaf import fetch_ncaaf_games
+
+        mock_get.return_value = self._ok({"events": []})
+        fetch_ncaaf_games(dates=["2026-09-17", "2026-09-18", "2026-09-19"])
+
+        dates = self._dates_params(mock_get)
+        assert dates
+        for value in dates:
+            assert "-" not in value, f"range request would 400: dates={value}"
+
+    @patch("pipeline.fetch_nfl._team_map", {})
+    @patch("pipeline.fetch_nfl.requests.get")
+    def test_schedule_covers_the_whole_pipeline_window(self, mock_get):
+        """run_sport_pipeline keeps yesterday through two days out."""
+        from pipeline.fetch_nfl import fetch_nfl_schedule
+
+        mock_get.return_value = self._ok({"events": []})
+        fetch_nfl_schedule()
+
+        assert len(set(self._dates_params(mock_get))) == 4
 
 
 # ---------------------------------------------------------------------------

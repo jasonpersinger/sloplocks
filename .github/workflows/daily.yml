@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Serialised with refresh-picks so the two never race each other on data/.
+concurrency:
+  group: sloplocks-data
+  cancel-in-progress: false
+
 jobs:
   predict:
     runs-on: ubuntu-latest
@@ -20,6 +25,10 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          # A scheduled run is pinned to the SHA when the event was created,
+          # which can be hours stale if the queue is backed up. The job always
+          # pushes to master, so check out master's tip rather than that SHA.
+          ref: master
 
       - name: Set up Python
         uses: actions/setup-python@v6
@@ -39,14 +48,36 @@ jobs:
         run: python -m pipeline.run
 
       - name: Commit and push predictions
+        # Runs even when the pipeline step failed. run.py exits non-zero if ANY
+        # sport errored, which previously threw away every healthy sport's data
+        # too - a football fetch break froze the whole site for four days. The
+        # job still reports failure; the good data just stops being collateral.
+        if: always()
         run: |
+          set -uo pipefail
           git config user.name "sloplocks-bot"
           git config user.email "bot@sloplocks.lol"
           git add data/
-          git diff --staged --quiet || git commit -m "data: daily predictions $(date -u +%Y-%m-%d)"
-          # Use rebase with ours strategy for data files to prioritize fresh predictions
-          git pull --rebase origin master -X ours
-          git push origin master
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git commit -m "data: daily predictions $(date -u +%Y-%m-%d)"
+          # Another push landing between the rebase and the push previously
+          # discarded the whole run, so retry the sequence.
+          # -X theirs keeps THIS run's regenerated data: during a rebase "ours"
+          # is the upstream side, so the old flag preferred stale remote data.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase -X theirs origin master && git push origin master; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "Push attempt $attempt failed; retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::Could not push generated data after 5 attempts."
+          exit 1
 
       - name: Notify Discord
         env:

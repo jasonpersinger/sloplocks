@@ -227,14 +227,11 @@ def fetch_nfl_games(
     cache = _load_espn_cache(cache_path)
     fetch_dates = _incremental_dates(cache, dates)
 
-    # The NFL plays on a handful of days per week, so request whole weeks in one
-    # call rather than issuing a request per empty Tuesday.
-    for chunk_start in range(0, len(fetch_dates), 7):
-        chunk = fetch_dates[chunk_start:chunk_start + 7]
-        if not chunk:
-            continue
-        span = f"{chunk[0].replace('-', '')}-{chunk[-1].replace('-', '')}"
-        url = f"{NFL_ESPN_BASE}/scoreboard?dates={span}&limit=100"
+    # One request per date. ESPN's scoreboard accepted YYYYMMDD-YYYYMMDD ranges
+    # until 2026-09-16 and now answers them with a 400, so this matches the
+    # single-date pattern every other fetcher in this repo uses.
+    for date_str in fetch_dates:
+        url = f"{NFL_ESPN_BASE}/scoreboard?dates={date_str.replace('-', '')}&limit=100"
         try:
             resp = requests.get(url, timeout=30)
             resp.raise_for_status()
@@ -267,26 +264,35 @@ def fetch_nfl_schedule(cache_path: Optional[str] = None) -> list[dict]:
     """Fetch upcoming NFL fixtures from ESPN.
 
     Unlike the daily-cadence sports, the NFL plays on scattered days, so this
-    requests a date span rather than a single day. The span matches the window
-    ``run_sport_pipeline`` keeps (yesterday through two days out), so a
-    Thursday, Saturday, Sunday or Monday slate is picked up on the day it runs.
+    walks the window one day at a time rather than requesting a single day. The
+    window matches the one ``run_sport_pipeline`` keeps (yesterday through two
+    days out), so a Thursday, Saturday, Sunday or Monday slate is picked up on
+    the day it runs.
 
     ``cache_path`` is accepted for signature parity with the other schedule
     fetchers; the schedule is always fetched live.
     """
     et_offset = timedelta(hours=5)
     today_et = (datetime.now(timezone.utc) - et_offset).date()
-    start = today_et - timedelta(days=1)
-    end = today_et + timedelta(days=2)
-    span = f"{start.strftime('%Y%m%d')}-{end.strftime('%Y%m%d')}"
+    window = [today_et + timedelta(days=offset) for offset in range(-1, 3)]
 
-    url = f"{NFL_ESPN_BASE}/scoreboard?dates={span}&limit=100"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
+    events = []
+    seen_event_ids = set()
+    for day in window:
+        url = f"{NFL_ESPN_BASE}/scoreboard?dates={day.strftime('%Y%m%d')}&limit=100"
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        for event in resp.json().get("events", []):
+            # A late kickoff can surface on two adjacent scoreboard days.
+            event_id = event.get("id")
+            if event_id in seen_event_ids:
+                continue
+            seen_event_ids.add(event_id)
+            events.append(event)
+        time.sleep(_REQUEST_DELAY)
 
     fixtures = []
-    for event in data.get("events", []):
+    for event in events:
         competitions = event.get("competitions") or []
         if not competitions:
             continue

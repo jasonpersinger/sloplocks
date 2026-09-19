@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Shares a group with daily.yml so the two never race each other on data/.
+concurrency:
+  group: sloplocks-data
+  cancel-in-progress: false
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
@@ -35,14 +40,34 @@ jobs:
           ENABLE_QUALITATIVE: true
         run: python -m pipeline.refresh_picks
 
-      - name: Commit and push
+      - name: Commit and push refreshed picks
+        # See daily.yml: keep healthy sports' data even if one sport errored.
+        if: always()
         run: |
+          set -uo pipefail
           git config user.name "sloplocks-bot"
           git config user.email "bot@sloplocks.lol"
           git add data/
-          git diff --staged --quiet || git commit -m "data: refresh picks $(date -u +%Y-%m-%dT%H:%MZ)"
-          git pull --rebase origin master -X ours
-          git push origin master
+          if git diff --staged --quiet; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git commit -m "data: refresh picks $(date -u +%Y-%m-%dT%H:%MZ)"
+          # Another push landing between the rebase and the push previously
+          # discarded the whole run, so retry the sequence.
+          # -X theirs keeps THIS run's regenerated data: during a rebase "ours"
+          # is the upstream side, so the old flag preferred stale remote data.
+          for attempt in 1 2 3 4 5; do
+            if git pull --rebase -X theirs origin master && git push origin master; then
+              echo "Pushed on attempt $attempt."
+              exit 0
+            fi
+            git rebase --abort 2>/dev/null || true
+            echo "Push attempt $attempt failed; retrying."
+            sleep $((attempt * 10))
+          done
+          echo "::error::Could not push generated data after 5 attempts."
+          exit 1
 
       - name: Notify Discord
         env:
