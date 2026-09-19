@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-09-19T09:03:08Z",
+  "updated_at": "2026-09-19T13:19:12Z",
   "sports": {
     "nba": {
       "name": "NBA",
@@ -1375,7 +1375,7 @@
     "nfl": {
       "name": "NFL",
       "status": "ok",
-      "updated_at": "2026-09-19T08:08:50Z",
+      "updated_at": "2026-09-19T13:14:23Z",
       "diagnostics": {
         "historical_matches": 589,
         "fixtures_fetched": 15,
@@ -1388,24 +1388,24 @@
         "coverage_gap_examples": [],
         "matches_modeled": 15,
         "matches_with_market": 15,
-        "matches_with_positive_ev": 15,
+        "matches_with_positive_ev": 14,
         "matches_with_qualitative": 15,
         "lock_eligible_matches": 8,
         "lock_eligible_outcomes": 8,
         "gate_failures": {
           "missing_odds": 0,
-          "negative_expected_value": 15,
-          "below_edge_floor": 1,
-          "below_probability_floor": 13
+          "negative_expected_value": 16,
+          "below_edge_floor": 2,
+          "below_probability_floor": 11
         },
         "candidate_lanes": {
           "value_dog": {
-            "eligible_outcomes": 7,
-            "eligible_matches": 7
+            "eligible_outcomes": 6,
+            "eligible_matches": 6
           },
           "near_favorite": {
-            "eligible_outcomes": 0,
-            "eligible_matches": 0
+            "eligible_outcomes": 1,
+            "eligible_matches": 1
           }
         },
         "slop_locks_posted": 0,
@@ -1419,25 +1419,52 @@
           "allow_slimegrinder": false,
           "moneyline_publish_cap": null,
           "totals_publish_cap": null,
-          "evaluated_picks": 1,
-          "evaluated_totals_picks": 1,
+          "evaluated_picks": 4,
+          "evaluated_totals_picks": 4,
           "min_evaluated_picks": 20,
           "min_evaluated_totals_picks": 10,
           "status": "suppressed",
-          "reason": "need more settled moneylines picks (1/20); need more recent settled moneylines picks (1/5); need more tracked moneylines CLV (0/3); recent moneylines ROI -1.0000 is below -0.1500; recent moneylines overconfidence gap 0.5498 exceeds 0.1500; need more settled totals picks (1/10); need more recent settled totals picks (1/5); need more tracked totals CLV (0/3)",
+          "reason": "need more settled moneylines picks (4/20); need more recent settled moneylines picks (4/5); recent moneylines ROI -0.5500 is below -0.1500; recent moneylines overconfidence gap 0.3277 exceeds 0.1500; need more settled totals picks (4/10); need more recent settled totals picks (4/5); need more tracked totals CLV (2/3)",
           "lane_guards": {
             "moneyline": {
               "market_type": "moneyline",
               "pick_type": null,
               "overall": {
-                "total_picks": 4,
-                "evaluated": 1,
-                "pending": 3,
-                "hit_rate": 0.0,
-                "roi": -1.0,
+                "total_picks": 5,
+                "evaluated": 4,
+                "pending": 1,
+                "hit_rate": 0.25,
+                "roi": -0.55,
                 "push_rate": 0.0,
-                "wins": 0,
-                "losses": 1,
+                "wins": 1,
+                "losses": 3,
+                "pushes": 0,
+                "avg_confidence": 63.46,
+                "avg_expected_value": 0.1112,
+                "clv": {
+                  "tracked": 4,
+                  "avg_clv": -0.0202,
+                  "positive_rate": 0.0,
+                  "non_negative_rate": 0.0,
+                  "moneyline_tracked": 4,
+                  "moneyline_avg_clv": -0.0202,
+                  "moneyline_positive_rate": 0.0,
+                  "moneyline_non_negative_rate": 0.0,
+                  "totals_tracked": 0,
+                  "totals_avg_clv": null,
+                  "totals_positive_rate": null,
+                  "totals_non_negative_rate": null
+                }
+              },
+              "recent": {
+                "total_picks": 4,
+                "evaluated": 4,
+                "pending": 0,
+                "hit_rate": 0.25,
+                "roi": -0.55,
+                "push_rate": 0.0,
+                "wins": 1,
+                "losses": 3,
                 "pushes": 0,
                 "avg_confidence": 62.325,
                 "avg_expected_value": 0.131,
@@ -1454,63 +1481,62 @@
                   "totals_avg_clv": null,
                   "totals_positive_rate": null,
                   "totals_non_negative_rate": null
-                }
-              },
-              "recent": {
-                "total_picks": 1,
-                "evaluated": 1,
-                "pending": 0,
-                "hit_rate": 0.0,
-                "roi": -1.0,
-                "push_rate": 0.0,
-                "wins": 0,
-                "losses": 1,
-                "pushes": 0,
-                "avg_confidence": 56.2,
-                "avg_expected_value": 0.1766,
-                "clv": {
-                  "tracked": 0,
-                  "avg_clv": null,
-                  "positive_rate": null,
-                  "non_negative_rate": null,
-                  "moneyline_tracked": 0,
-                  "moneyline_avg_clv": null,
-                  "moneyline_positive_rate": null,
-                  "moneyline_non_negative_rate": null,
-                  "totals_tracked": 0,
-                  "totals_avg_clv": null,
-                  "totals_positive_rate": null,
-                  "totals_non_negative_rate": null
                 },
                 "recent_count": 8,
-                "avg_model_prob": 0.5498,
-                "actual_win_rate": 0.0,
-                "calibration_gap": 0.5498,
-                "overconfidence_gap": 0.5498
+                "avg_model_prob": 0.5777,
+                "actual_win_rate": 0.25,
+                "calibration_gap": 0.3277,
+                "overconfidence_gap": 0.3277
               },
               "allow": false,
               "status": "hold",
               "reasons": [
-                "need more settled moneylines picks (1/20)",
-                "need more recent settled moneylines picks (1/5)",
-                "need more tracked moneylines CLV (0/3)",
-                "recent moneylines ROI -1.0000 is below -0.1500",
-                "recent moneylines overconfidence gap 0.5498 exceeds 0.1500"
+                "need more settled moneylines picks (4/20)",
+                "need more recent settled moneylines picks (4/5)",
+                "recent moneylines ROI -0.5500 is below -0.1500",
+                "recent moneylines overconfidence gap 0.3277 exceeds 0.1500"
               ],
-              "health_score": 0.2857
+              "health_score": 0.4286
             },
             "totals": {
               "market_type": "total",
               "pick_type": null,
               "overall": {
-                "total_picks": 4,
-                "evaluated": 1,
-                "pending": 3,
-                "hit_rate": 1.0,
-                "roi": 0.98,
+                "total_picks": 6,
+                "evaluated": 4,
+                "pending": 2,
+                "hit_rate": 0.5,
+                "roi": -0.0225,
                 "push_rate": 0.0,
-                "wins": 1,
-                "losses": 0,
+                "wins": 2,
+                "losses": 2,
+                "pushes": 0,
+                "avg_confidence": 72.4667,
+                "avg_expected_value": 0.1593,
+                "clv": {
+                  "tracked": 4,
+                  "avg_clv": 0.0,
+                  "positive_rate": 0.0,
+                  "non_negative_rate": 1.0,
+                  "moneyline_tracked": 0,
+                  "moneyline_avg_clv": null,
+                  "moneyline_positive_rate": null,
+                  "moneyline_non_negative_rate": null,
+                  "totals_tracked": 4,
+                  "totals_avg_clv": 0.0,
+                  "totals_positive_rate": 0.0,
+                  "totals_non_negative_rate": 1.0
+                }
+              },
+              "recent": {
+                "total_picks": 4,
+                "evaluated": 4,
+                "pending": 0,
+                "hit_rate": 0.5,
+                "roi": -0.0225,
+                "push_rate": 0.0,
+                "wins": 2,
+                "losses": 2,
                 "pushes": 0,
                 "avg_confidence": 71.875,
                 "avg_expected_value": 0.1666,
@@ -1527,46 +1553,19 @@
                   "totals_avg_clv": 0.0,
                   "totals_positive_rate": 0.0,
                   "totals_non_negative_rate": 1.0
-                }
-              },
-              "recent": {
-                "total_picks": 1,
-                "evaluated": 1,
-                "pending": 0,
-                "hit_rate": 1.0,
-                "roi": 0.98,
-                "push_rate": 0.0,
-                "wins": 1,
-                "losses": 0,
-                "pushes": 0,
-                "avg_confidence": 72.7,
-                "avg_expected_value": 0.1718,
-                "clv": {
-                  "tracked": 0,
-                  "avg_clv": null,
-                  "positive_rate": null,
-                  "non_negative_rate": null,
-                  "moneyline_tracked": 0,
-                  "moneyline_avg_clv": null,
-                  "moneyline_positive_rate": null,
-                  "moneyline_non_negative_rate": null,
-                  "totals_tracked": 0,
-                  "totals_avg_clv": null,
-                  "totals_positive_rate": null,
-                  "totals_non_negative_rate": null
                 },
                 "recent_count": 8,
-                "avg_model_prob": 0.5918,
-                "actual_win_rate": 1.0,
-                "calibration_gap": -0.4082,
-                "overconfidence_gap": 0.0
+                "avg_model_prob": 0.5991,
+                "actual_win_rate": 0.5,
+                "calibration_gap": 0.0991,
+                "overconfidence_gap": 0.0991
               },
               "allow": false,
               "status": "research",
               "reasons": [
-                "need more settled totals picks (1/10)",
-                "need more recent settled totals picks (1/5)",
-                "need more tracked totals CLV (0/3)"
+                "need more settled totals picks (4/10)",
+                "need more recent settled totals picks (4/5)",
+                "need more tracked totals CLV (2/3)"
               ],
               "health_score": 0.5714
             },
@@ -1715,13 +1714,13 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=15 | odds=15/15 | +ev=15 | sense=15 | eligible=8 | locks=0 | need more settled moneylines picks (1/20); need more recent settled moneylines picks (1/5); need more tracked moneylines CLV (0/3); recent moneylines ROI -1.0000 is below -0.1500; recent moneylines overconfidence gap 0.5498 exceeds 0.1500; need more settled totals picks (1/10); need more recent settled totals picks (1/5); need more tracked totals CLV (0/3)"
+        "summary": "modeled=15 | odds=15/15 | +ev=14 | sense=15 | eligible=8 | locks=0 | need more settled moneylines picks (4/20); need more recent settled moneylines picks (4/5); recent moneylines ROI -0.5500 is below -0.1500; recent moneylines overconfidence gap 0.3277 exceeds 0.1500; need more settled totals picks (4/10); need more recent settled totals picks (4/5); need more tracked totals CLV (2/3)"
       }
     },
     "ncaaf": {
       "name": "NCAAF",
       "status": "ok",
-      "updated_at": "2026-09-19T09:03:08Z",
+      "updated_at": "2026-09-19T13:19:12Z",
       "diagnostics": {
         "historical_matches": 2112,
         "fixtures_fetched": 23,
@@ -1738,15 +1737,15 @@
         ],
         "matches_modeled": 23,
         "matches_with_market": 23,
-        "matches_with_positive_ev": 17,
+        "matches_with_positive_ev": 18,
         "matches_with_qualitative": 23,
-        "lock_eligible_matches": 5,
-        "lock_eligible_outcomes": 5,
+        "lock_eligible_matches": 6,
+        "lock_eligible_outcomes": 6,
         "gate_failures": {
           "missing_odds": 11,
-          "negative_expected_value": 18,
-          "below_edge_floor": 2,
-          "below_probability_floor": 10
+          "negative_expected_value": 17,
+          "below_edge_floor": 3,
+          "below_probability_floor": 9
         },
         "candidate_lanes": {
           "value_dog": {
@@ -2062,7 +2061,7 @@
         },
         "validation_issues": [],
         "validation_issues_count": 0,
-        "summary": "modeled=23 | odds=20/23 | +ev=17 | sense=23 | eligible=5 | locks=1 | need more settled totals picks (6/12); recent totals ROI -0.3800 is below -0.1500; recent totals overconfidence gap 0.2889 exceeds 0.1500"
+        "summary": "modeled=23 | odds=20/23 | +ev=18 | sense=23 | eligible=6 | locks=1 | need more settled totals picks (6/12); recent totals ROI -0.3800 is below -0.1500; recent totals overconfidence gap 0.2889 exceeds 0.1500"
       }
     },
     "ncaam": {
@@ -2070,7 +2069,7 @@
       "status": "season_disabled",
       "active": false,
       "reason": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
-      "updated_at": "2026-09-19T09:03:08Z",
+      "updated_at": "2026-09-19T13:19:12Z",
       "diagnostics": {
         "summary": "NCAAM is out of season; historical data remains available, but live picks are disabled.",
         "season_disabled": true

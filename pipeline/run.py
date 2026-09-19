@@ -544,9 +544,11 @@ def _attach_run_metadata_list(records: list[dict], run_context: dict, snapshot_p
 
 def _selection_snapshot_config(sport: dict, outcomes: list[str], min_expected_value: float) -> dict:
     """Capture the selection gates used by this run."""
+    reject_divergent = bool(sport.get("reject_unrealistic_divergence", True))
     return {
         "outcomes": list(outcomes),
         "slop_locks": {
+            "reject_unrealistic_divergence": reject_divergent,
             "min_expected_value": min_expected_value,
             "edge_floor": sport.get("slop_lock_edge_threshold", 0.03),
             "probability_floor": sport.get("slop_lock_probability_floor", 0.45),
@@ -556,16 +558,19 @@ def _selection_snapshot_config(sport: dict, outcomes: list[str], min_expected_va
             "lanes": sport.get("slop_lock_lanes", {}),
         },
         "longslop": {
+            "reject_unrealistic_divergence": reject_divergent,
             "enabled": bool(sport.get("enable_longslop", False)),
             "min_expected_value": min_expected_value,
             "confidence_floor": sport.get("longslop_confidence_threshold", 65.0),
         },
         "slimegrinder": {
+            "reject_unrealistic_divergence": reject_divergent,
             "enabled": bool(sport.get("enable_slimegrinder", False)),
             "min_expected_value": min_expected_value,
             "confidence_floor": sport.get("slimegrinder_confidence_threshold", 65.0),
         },
         "totals_locks": {
+            "reject_unrealistic_divergence": reject_divergent,
             "enabled": int(sport.get("totals_max_picks", 0) or 0) > 0,
             "min_expected_value": sport.get("totals_min_expected_value", min_expected_value),
             "edge_floor": sport.get("totals_edge_threshold", 0.02),
@@ -2262,6 +2267,8 @@ def _compute_totals_locks(
                     "kelly_fraction": round(edge_data.get("kelly_fraction") or 0.0, 4),
                     "fractional_kelly": round(edge_data.get("fractional_kelly") or 0.0, 4),
                     "confidence_score": edge_data.get("confidence_score", 0.0),
+                "unrealistic_flag": bool(edge_data.get("unrealistic_flag")),
+                    "unrealistic_flag": bool(edge_data.get("unrealistic_flag")),
                     "qualitative_analysis": rec.get("qualitative_analysis"),
                     "qualitative_summary": rec.get("qualitative_summary"),
                     "blurb": rec.get("blurb"),
@@ -2589,6 +2596,13 @@ def _passes_pick_gate(record: dict, pick_type: str, config: dict, issues: list[d
 
     if american is None:
         issues.append(_validation_issue("missing_american_odds", pick_type, record))
+        return False
+    # A model that disagrees with the market by more than MAX_ALLOWED_DIVERGENCE
+    # is usually under-resolved rather than right: measured against settled
+    # results, the favourite in those games wins at roughly the market's rate,
+    # not ours. Refuse the pick instead of treating the gap as value.
+    if config.get("reject_unrealistic_divergence", True) and record.get("unrealistic_flag"):
+        issues.append(_validation_issue("model_diverges_from_market", pick_type, record))
         return False
     if ev is None:
         issues.append(_validation_issue("missing_expected_value", pick_type, record))
@@ -3164,6 +3178,7 @@ def run_sport_pipeline(sport_key, output_dir=None, run_context=None):
             margin_divisor=sport.get("elo_margin_divisor", 1.0),
             margin_cap=sport.get("elo_margin_cap"),
             season_carryover=sport.get("elo_season_carryover"),
+            margin_model=sport.get("elo_margin_model", "tiered"),
         )
         if matches is not None and not matches.empty:
             elo.process_season(matches)

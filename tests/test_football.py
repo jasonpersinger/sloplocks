@@ -52,9 +52,9 @@ class TestFootballActivation:
         # Wider talent spread and a larger home edge than the pros.
         assert ncaaf["elo_k_factor"] > nfl["elo_k_factor"]
         assert ncaaf["elo_home_advantage"] > nfl["elo_home_advantage"]
-        # Blowouts are routine, so college caps the rating-relevant margin.
-        assert ncaaf.get("elo_margin_cap") is not None
-        assert nfl.get("elo_margin_cap") is None
+        # Both use the log multiplier; college needs a hotter K to separate
+        # 138 teams inside a 12-game season.
+        assert ncaaf["elo_margin_model"] == nfl["elo_margin_model"] == "log"
         # More teams and more games means a larger fitting floor.
         assert ncaaf["results_feature_min_games"] > nfl["results_feature_min_games"]
         assert ncaaf["slop_lock_edge_threshold"] > nfl["slop_lock_edge_threshold"]
@@ -153,6 +153,77 @@ class TestEloMarginScaling:
 
 
 # ---------------------------------------------------------------------------
+# Elo margin model
+# ---------------------------------------------------------------------------
+
+class TestLogMarginModel:
+    """Football margins are continuous; the tiered multiplier quantised them.
+
+    Under the old scheme every win of 0-10 points produced the same multiplier,
+    which held the NFL inside a 154-point Elo band and capped the model near
+    76% on any favourite.
+    """
+
+    def test_tiered_is_still_the_default(self):
+        elo = EloRatings(["A", "B"])
+        assert elo.margin_model == "tiered"
+        assert elo._margin_multiplier(1) == 1.0
+        assert elo._margin_multiplier(2) == 1.5
+
+    def test_log_model_separates_close_from_comfortable_wins(self):
+        elo = EloRatings(["A", "B"], margin_model="log")
+        three = elo._margin_multiplier(3)
+        ten = elo._margin_multiplier(10)
+        seventeen = elo._margin_multiplier(17)
+        assert three < ten < seventeen
+
+    def test_old_scheme_could_not_separate_them(self):
+        """Regression: this is the behaviour the log model replaces."""
+        old = EloRatings(["A", "B"], margin_divisor=7.0)
+        assert old._margin_multiplier(3) == old._margin_multiplier(10) == 1.0
+
+    def test_log_multiplier_is_monotonic(self):
+        elo = EloRatings(["A", "B"], margin_model="log")
+        values = [elo._margin_multiplier(m) for m in range(0, 60)]
+        assert values == sorted(values)
+
+    def test_autocorrelation_damper_shrinks_favourite_blowouts(self):
+        """A blowout by an already-dominant side moves ratings less."""
+        elo = EloRatings(["A", "B"], margin_model="log")
+        underdog_blowout = elo._margin_multiplier(28, winner_rating_edge=0.0)
+        favourite_blowout = elo._margin_multiplier(28, winner_rating_edge=400.0)
+        assert favourite_blowout < underdog_blowout
+
+    def test_log_model_produces_a_usable_rating_spread(self):
+        """The point of the change: ratings must be able to express a mismatch."""
+        base = datetime.strptime("2026-09-06", "%Y-%m-%d")
+        rows = []
+        for week in range(12):
+            date_str = (base + timedelta(days=7 * week)).strftime("%Y-%m-%d")
+            rows.append({"date": date_str, "home_team": "Strong", "away_team": "Weak",
+                         "home_goals": 34, "away_goals": 10, "season_year": 2026})
+        df = pd.DataFrame(rows)
+
+        tiered = EloRatings(["Strong", "Weak"], k_factor=44, margin_divisor=7.0)
+        tiered.process_season(df)
+        logm = EloRatings(["Strong", "Weak"], k_factor=44, margin_model="log")
+        logm.process_season(df)
+
+        tiered_gap = tiered.get_rating("Strong") - tiered.get_rating("Weak")
+        log_gap = logm.get_rating("Strong") - logm.get_rating("Weak")
+        assert log_gap > tiered_gap
+
+    @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
+    def test_football_uses_the_log_model(self, sport_key):
+        assert SPORTS[sport_key]["elo_margin_model"] == "log"
+
+    def test_other_sports_keep_the_tiered_model(self):
+        for sport_key in ("nba", "nhl", "wnba", "mlb"):
+            assert SPORTS[sport_key].get("elo_margin_model", "tiered") == "tiered"
+            assert SPORTS[sport_key].get("elo_margin_divisor", 1.0) == 1.0
+
+
+# ---------------------------------------------------------------------------
 # Cross-season carryover
 # ---------------------------------------------------------------------------
 
@@ -242,13 +313,15 @@ class TestSeasonCarryover:
         explicit_none.process_season(df)
         assert baseline.ratings == explicit_none.ratings
 
-    @pytest.mark.parametrize("sport_key,expected", [("nfl", 0.67), ("ncaaf", 0.72)])
-    def test_football_configures_carryover(self, sport_key, expected):
-        assert SPORTS[sport_key]["elo_season_carryover"] == expected
+    @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
+    def test_football_configures_carryover(self, sport_key):
+        """Tuned by walk-forward log loss; the curve is flat from 0.70 to 0.90.
 
-    def test_college_retains_more_than_the_nfl(self):
-        """No draft or salary cap, so program strength persists harder."""
-        assert SPORTS["ncaaf"]["elo_season_carryover"] > SPORTS["nfl"]["elo_season_carryover"]
+        An earlier 0.67 compounded across two season boundaries, leaving only
+        ~45% of any separation built two seasons ago.
+        """
+        carry = SPORTS[sport_key]["elo_season_carryover"]
+        assert 0.70 <= carry <= 0.90
 
     @pytest.mark.parametrize("sport_key", ["nfl", "ncaaf"])
     def test_football_pulls_multiple_seasons_of_history(self, sport_key):
@@ -948,6 +1021,62 @@ class TestFullSlatePayload:
         assert match["model_prob"] is not None
         assert match["american_odds"] is None      # rendered as "--"
         assert data["slop_locks"] == []
+
+
+class TestDivergenceGate:
+    """A model far from the market is usually under-resolved, not right.
+
+    Measured against settled results, the favourite in market-90%+ games won
+    93.1% of the time - about where the market priced it, not where the model
+    did. So a huge gap is a reason to stand down, not a value signal.
+    """
+
+    @staticmethod
+    def _record(flagged):
+        return {
+            "home_team": "A", "away_team": "B", "pick": "home",
+            "american_odds": 150, "expected_value": 0.30, "edge": 0.20,
+            "model_prob": 0.60, "confidence_score": 90.0,
+            "unrealistic_flag": flagged,
+        }
+
+    @staticmethod
+    def _config(reject=True):
+        return {
+            "reject_unrealistic_divergence": reject,
+            "min_expected_value": 0.0, "edge_floor": 0.0,
+            "probability_floor": 0.0, "additional_confidence_floor": 0.0,
+            "max_picks": 5, "lanes": {},
+        }
+
+    def test_flagged_pick_is_rejected(self):
+        from pipeline.run import _passes_pick_gate
+
+        issues = []
+        assert _passes_pick_gate(self._record(True), "slop_lock", self._config(), issues) is False
+        assert any(i["reason"] == "model_diverges_from_market" for i in issues)
+
+    def test_unflagged_pick_still_passes(self):
+        from pipeline.run import _passes_pick_gate
+
+        issues = []
+        assert _passes_pick_gate(self._record(False), "slop_lock", self._config(), issues) is True
+        assert issues == []
+
+    def test_gate_can_be_disabled_per_sport(self):
+        from pipeline.run import _passes_pick_gate
+
+        issues = []
+        assert _passes_pick_gate(
+            self._record(True), "slop_lock", self._config(reject=False), issues
+        ) is True
+
+    def test_gate_is_on_by_default_for_every_sport(self):
+        from pipeline.run import _selection_snapshot_config
+
+        for sport_key, sport in SPORTS.items():
+            cfg = _selection_snapshot_config(sport, ["home", "away"], 0.0)
+            assert cfg["slop_locks"]["reject_unrealistic_divergence"] is True, sport_key
 
 
 class TestManifestActivation:

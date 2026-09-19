@@ -1054,6 +1054,7 @@ def _build_walkforward_models(
             margin_divisor=sport.get("elo_margin_divisor", 1.0),
             margin_cap=sport.get("elo_margin_cap"),
             season_carryover=sport.get("elo_season_carryover"),
+            margin_model=sport.get("elo_margin_model", "tiered"),
         )
         elo.process_season(train_matches)
         models["elo"] = elo

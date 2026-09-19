@@ -378,13 +378,20 @@ class EloRatings:
         season boundary, e.g. 0.67 keeps two thirds and regresses one third.
         ``None`` (default) disables boundary handling entirely, which is the
         right behaviour for sports fitted from a single season of results.
+    margin_model : str
+        ``"tiered"`` (default) uses the stepped goal-difference multiplier,
+        which is right for low-integer scorelines. ``"log"`` uses the smooth
+        ``ln(margin + 1)`` curve with an autocorrelation damper, which suits
+        point-scoring sports: the tiered form quantises football margins so
+        heavily that most results move ratings by the same amount.
     """
 
     # A gap this long between consecutive games means an off-season.
     SEASON_GAP_DAYS = 60
 
     def __init__(self, teams, initial_rating=1500, k_factor=None, home_advantage=None,
-                 margin_divisor=1.0, margin_cap=None, season_carryover=None):
+                 margin_divisor=1.0, margin_cap=None, season_carryover=None,
+                 margin_model="tiered"):
         self.initial_rating = float(initial_rating)
         self.ratings = {t: float(initial_rating) for t in teams}
         self.k_factor = k_factor if k_factor is not None else ELO_K_FACTOR
@@ -394,6 +401,7 @@ class EloRatings:
         self.season_carryover = (
             None if season_carryover is None else float(season_carryover)
         )
+        self.margin_model = margin_model
 
     def get_rating(self, team):
         """Return the current Elo rating for *team*."""
@@ -413,17 +421,23 @@ class EloRatings:
             return 1.5
         return (11.0 + goal_diff) / 8.0
 
-    def _margin_multiplier(self, margin):
+    def _margin_multiplier(self, margin, winner_rating_edge=0.0):
         """Convert a raw scoring margin into a K multiplier.
 
-        With the default ``margin_divisor`` of 1.0 this is exactly
-        ``_goal_diff_multiplier``. When a divisor is configured the margin is
-        first capped, then rescaled and rounded to the nearest goal-equivalent
-        unit (floored at 1) so the multiplier stays monotonic in the margin.
+        ``margin_model="tiered"`` (the default) keeps the stepped goal-scale
+        behaviour. ``margin_model="log"`` uses ``ln(margin + 1)`` scaled by an
+        autocorrelation damper, so that a 3-point win and a 17-point win are
+        distinguishable. The damper shrinks the update when the winner was
+        already the stronger side, which stops dominant teams running away.
         """
         margin = abs(float(margin))
         if self.margin_cap is not None:
             margin = min(margin, self.margin_cap)
+
+        if self.margin_model == "log":
+            damper = 2.2 / (max(0.0, float(winner_rating_edge)) * 0.001 + 2.2)
+            return math.log(margin / self.margin_divisor + 1.0) * damper
+
         if self.margin_divisor == 1.0:
             return self._goal_diff_multiplier(margin)
         return self._goal_diff_multiplier(max(1, round(margin / self.margin_divisor)))
@@ -453,8 +467,15 @@ class EloRatings:
         e_home = self.expected_score(r_home + self.home_advantage, r_away)
         e_away = 1.0 - e_home
 
-        # Goal-difference multiplier, on the sport's own margin scale
-        k = self.k_factor * self._margin_multiplier(abs(hg - ag))
+        # Goal-difference multiplier, on the sport's own margin scale. The log
+        # model also needs how far ahead the winner already was.
+        if hg > ag:
+            winner_edge = (r_home + self.home_advantage) - r_away
+        elif hg < ag:
+            winner_edge = r_away - (r_home + self.home_advantage)
+        else:
+            winner_edge = 0.0
+        k = self.k_factor * self._margin_multiplier(abs(hg - ag), winner_edge)
 
         self.ratings[home] = r_home + k * (s_home - e_home)
         self.ratings[away] = r_away + k * (s_away - e_away)

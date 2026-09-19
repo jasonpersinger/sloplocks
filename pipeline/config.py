@@ -541,19 +541,22 @@ SPORTS = {
         "probability_calibration_blend": 0.4,
         "probability_calibration_window_days": 240,
         "probability_calibration_holdout_days": 7,
-        # 17-game season: K stays moderate, and margins are divided into
-        # touchdown-sized units before the Elo goal-diff multiplier so a
-        # 3-score win does not swing ratings like a 3-goal hockey win.
-        "elo_k_factor": 20,
+        # Football margins are continuous, so the stepped goal-diff multiplier
+        # quantised them badly: every win of 0-10 points moved ratings by the
+        # same amount, leaving the whole league inside a 154-point Elo band and
+        # capping the model at ~76% on any favourite. The log multiplier plus a
+        # higher K restore the spread. Tuned by walk-forward log loss; see the
+        # commit message for the sweep.
+        "elo_margin_model": "log",
+        "elo_k_factor": 44,
         "elo_home_advantage": 48,
-        "elo_margin_divisor": 7.0,
         # Three seasons of history give Elo a real week-1 prior; without it
         # every team sits at 1500 until roughly week 5 of a 17-game season.
         "history_seasons": 3,
-        # Keep two thirds of last season's rating, regress one third to the
-        # mean. The draft and free agency are built for parity, so the NFL
-        # reverts harder year over year than college does.
-        "elo_season_carryover": 0.67,
+        # Keep four fifths of last season's rating. The earlier 0.67 compounded
+        # across two boundaries, so only ~45% of any separation built in 2024
+        # survived into 2026.
+        "elo_season_carryover": 0.80,
         # Football is weekly: a 5-game window is ~1/3 of the season.
         "results_feature_window": 5,
         "results_feature_min_games": 30,
@@ -658,19 +661,18 @@ SPORTS = {
         "probability_calibration_blend": 0.4,
         "probability_calibration_window_days": 240,
         "probability_calibration_holdout_days": 7,
-        # ~134 FBS teams with a far wider talent spread than the NFL, on a
+        # ~138 FBS teams with a far wider talent spread than the NFL, on a
         # 12-game regular season: a higher K is needed for ratings to separate
         # within one year, and the home edge is larger than the NFL's.
-        "elo_k_factor": 26,
+        # The log multiplier's autocorrelation damper already shrinks blowouts
+        # by heavy favourites, so the old explicit margin cap is gone - it
+        # measurably hurt log loss once the damper was doing that job.
+        "elo_margin_model": "log",
+        "elo_k_factor": 56,
         "elo_home_advantage": 65,
-        "elo_margin_divisor": 7.0,
-        # Blowouts are routine in non-conference play, so cap the margin that
-        # can feed the Elo multiplier to stop cupcake wins inflating ratings.
-        "elo_margin_cap": 28,
         "history_seasons": 3,
-        # College keeps more of its rating than the NFL: there is no draft or
-        # salary cap, so program strength persists strongly year over year.
-        "elo_season_carryover": 0.72,
+        # Flat between 0.70 and 0.90 in the sweep; 0.80 sits in the middle.
+        "elo_season_carryover": 0.80,
         "results_feature_window": 5,
         "results_feature_min_games": 120,
         "results_feature_rest_cap_days": 14,

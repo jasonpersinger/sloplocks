@@ -467,6 +467,10 @@ class TestRunNBAPipeline:
         monkeypatch.setitem(SPORTS["nba"], "totals_probability_floor", 0.5)
         monkeypatch.setitem(SPORTS["nba"], "totals_confidence_threshold", 0.0)
         monkeypatch.setitem(SPORTS["nba"], "totals_max_picks", 1)
+        # These fixtures invent prices, so the model lands far outside the
+        # market and trips the divergence gate. This test is about lock
+        # plumbing, not divergence, so scope that gate off.
+        monkeypatch.setitem(SPORTS["nba"], "reject_unrealistic_divergence", False)
 
         output_dir = str(tmp_path / "nba")
         run_sport_pipeline("nba", output_dir=output_dir)
@@ -2089,6 +2093,10 @@ class TestPublicationGuardTrickle:
 class TestShadowPickRecording:
     def _run_nba(self, mock_games, mock_schedule, mock_odds,
                  sample_nba_matches, sample_nba_box_scores, output_dir, monkeypatch):
+        # These fixtures invent prices, so the model lands far outside the
+        # market and trips the divergence gate. This test is about lock
+        # plumbing, not divergence, so scope that gate off.
+        monkeypatch.setitem(SPORTS["nba"], "reject_unrealistic_divergence", False)
         mock_games.return_value = (sample_nba_matches, sample_nba_box_scores)
         mock_schedule.return_value = [
             {
