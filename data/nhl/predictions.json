@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-23T10:15:58Z",
-  "run_id": "daily-20260923T101457523937Z",
+  "generated_at": "2026-09-23T15:56:15Z",
+  "run_id": "daily-20260923T155516496314Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-09-23T10:14:57Z",
-  "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T101457523937Z.json",
+  "snapshot_timestamp": "2026-09-23T15:55:16Z",
+  "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T155516496314Z.json",
   "sport": "nhl",
   "sport_name": "NHL",
   "outcomes": [
@@ -31,8 +31,8 @@
       "home_goalie_status": "expected",
       "away_goalie_status": "expected",
       "home_injury_profile": {
-        "injury_burden": 2.7,
-        "uncertainty_burden": 0.7,
+        "injury_burden": 2.35,
+        "uncertainty_burden": 0.35,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -131,54 +131,82 @@
         "sport": "nhl",
         "home_team": "Senators",
         "away_team": "Maple Leafs",
-        "home_impact": 0,
-        "away_impact": -4,
+        "home_impact": -1,
+        "away_impact": -5,
         "individual_factors": [
           {
             "team": "Senators",
-            "description": "Key defensive injuries (Thomas Chabot, Artem Zub) and a middle-six forward (Warren Foegele) are out or day-to-day.",
+            "description": "Artem Zub (Out): Key top-4 defenseman out.",
             "direction": "negative",
-            "magnitude": 3,
+            "magnitude": 2,
             "confidence": 0.9
           },
           {
             "team": "Senators",
-            "description": "Elite starting goalie Linus Ullmark is expected to start.",
+            "description": "Linus Ullmark (Expected): Elite starting goalie expected to play.",
             "direction": "positive",
             "magnitude": 3,
-            "confidence": 0.9
+            "confidence": 1.0
           },
           {
-            "team": "Maple Leafs",
-            "description": "Middle-six forward Max Domi and bottom-six forward Dakota Joshua are out.",
+            "team": "Senators",
+            "description": "Kurtis MacDermid (Day-To-Day): Depth defenseman out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Senators",
+            "description": "Warren Foegele (Out): Depth forward out.",
             "direction": "negative",
             "magnitude": 1,
             "confidence": 0.8
           },
           {
             "team": "Maple Leafs",
-            "description": "Backup goalie Anthony Stolarz is expected to start against an elite starter.",
+            "description": "Max Domi (Out): Middle-six forward and playmaker out.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 0.9
+          },
+          {
+            "team": "Maple Leafs",
+            "description": "Anthony Stolarz (Expected): Backup goalie starting against an elite starter.",
             "direction": "negative",
             "magnitude": 3,
-            "confidence": 0.9
+            "confidence": 1.0
+          },
+          {
+            "team": "Maple Leafs",
+            "description": "Dakota Joshua (Out): Depth forward out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Maple Leafs",
+            "description": "William Villeneuve (Out): Depth defenseman out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Senators' qualitative impact is neutral, as the positive effect of their elite starting goalie Linus Ullmark offsets significant injuries to key defensemen. The Maple Leafs face a significant negative impact due to their backup goalie Anthony Stolarz starting against an elite opponent, compounded by injuries to two forwards.",
-        "pick_rationale": "The model strongly favors the Senators, with the nhl_matchup model showing a particularly high probability of 91.1%. This pick is supported by a significant qualitative edge for the Senators, primarily driven by their elite starting goalie Linus Ullmark facing the Maple Leafs' backup Anthony Stolarz. Despite some key injuries to their defense, the Senators benefit from this favorable goaltending matchup.",
-        "model_vs_market": "The model projects the Senators to win at 72.6%, indicating a substantial edge over what the market would typically price for a standard NHL game.",
-        "key_risk": "The Senators' significant injuries to key defensemen Thomas Chabot and Artem Zub could weaken their defensive structure more than anticipated.",
+        "summary": "The Senators benefit significantly from their elite starting goalie Linus Ullmark, despite missing a key defenseman Artem Zub and two depth players. The Maple Leafs are heavily disadvantaged by starting backup goalie Anthony Stolarz and missing middle-six forward Max Domi, along with two depth players.",
+        "pick_rationale": "The model projects a strong edge for the Senators, with the nhl_matchup model showing particularly high conviction at 91.1%. This is further supported by a significant qualitative advantage for the Senators, primarily due to their elite starting goaltender Linus Ullmark facing the Maple Leafs' backup Anthony Stolarz. The Maple Leafs are also missing key forward Max Domi, adding to their disadvantage.",
+        "model_vs_market": "The model indicates a substantial edge for the Senators at 72.6% probability, but without a current market line, the exact disagreement cannot be quantified.",
+        "key_risk": "The primary risk is that Anthony Stolarz performs exceptionally well, or the Senators' injuries to Zub and other depth players prove more impactful than anticipated.",
         "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:0 A:-4): agreed. Key defensive injuries (Thomas Chabot, Artem Zub) and a middle-six forward (Warren Foegele) are out or day-to-day.; Elite starting goalie Linus Ullmark is expected to start.",
-      "blurb": "The model strongly favors the Senators, with the nhl_matchup model showing a particularly high probability of 91.1%. This pick is supported by a significant qualitative edge for the Senators, primarily driven by their elite starting goalie Linus Ullmark facing the Maple Leafs' backup Anthony Stolarz. Despite some key injuries to their defense, the Senators benefit from this favorable goaltending matchup.",
-      "model_vs_market": "The model projects the Senators to win at 72.6%, indicating a substantial edge over what the market would typically price for a standard NHL game.",
-      "key_risk": "The Senators' significant injuries to key defensemen Thomas Chabot and Artem Zub could weaken their defensive structure more than anticipated.",
+      "qualitative_summary": "Qualitative (H:-1 A:-5): agreed. Artem Zub (Out): Key top-4 defenseman out.; Linus Ullmark (Expected): Elite starting goalie expected to play.",
+      "blurb": "The model projects a strong edge for the Senators, with the nhl_matchup model showing particularly high conviction at 91.1%. This is further supported by a significant qualitative advantage for the Senators, primarily due to their elite starting goaltender Linus Ullmark facing the Maple Leafs' backup Anthony Stolarz. The Maple Leafs are also missing key forward Max Domi, adding to their disadvantage.",
+      "model_vs_market": "The model indicates a substantial edge for the Senators at 72.6% probability, but without a current market line, the exact disagreement cannot be quantified.",
+      "key_risk": "The primary risk is that Anthony Stolarz performs exceptionally well, or the Senators' injuries to Zub and other depth players prove more impactful than anticipated.",
       "ai_confidence_label": "strong",
-      "run_id": "daily-20260923T101457523937Z",
+      "run_id": "daily-20260923T155516496314Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-23T10:14:57Z",
-      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T101457523937Z.json"
+      "snapshot_timestamp": "2026-09-23T15:55:16Z",
+      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T155516496314Z.json"
     },
     {
       "home_team": "Maple Leafs",
@@ -202,8 +230,8 @@
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 2.7,
-        "uncertainty_burden": 0.7,
+        "injury_burden": 2.35,
+        "uncertainty_burden": 0.35,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -225,7 +253,7 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "away",
-      "model_prob": 0.7031,
+      "model_prob": 0.7011,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
@@ -234,8 +262,8 @@
       "confidence_stars": 2,
       "american_odds": null,
       "model_probs": {
-        "home": 0.2969,
-        "away": 0.7031
+        "home": 0.2989,
+        "away": 0.7011
       },
       "individual_models": {
         "elo": {
@@ -253,8 +281,8 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.2969,
-          "raw_model_prob": 0.2969,
+          "model_prob": 0.2989,
+          "raw_model_prob": 0.2989,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -271,8 +299,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.7031,
-          "raw_model_prob": 0.7031,
+          "model_prob": 0.7011,
+          "raw_model_prob": 0.7011,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -296,67 +324,74 @@
         "home_team": "Maple Leafs",
         "away_team": "Senators",
         "home_impact": -5,
-        "away_impact": 0,
+        "away_impact": -1,
         "individual_factors": [
           {
             "team": "Maple Leafs",
-            "description": "Key forward Max Domi is out.",
+            "description": "Max Domi (Out): Solid top-9 forward.",
             "direction": "negative",
             "magnitude": 2,
             "confidence": 1
           },
           {
             "team": "Maple Leafs",
-            "description": "Depth players Dakota Joshua and William Villeneuve are out.",
+            "description": "Anthony Stolarz (Expected Goalie): Backup starting against an elite goalie.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Maple Leafs",
+            "description": "Dakota Joshua (Out): Depth forward.",
             "direction": "negative",
             "magnitude": 1,
             "confidence": 1
           },
           {
             "team": "Maple Leafs",
-            "description": "Backup goalie Anthony Stolarz is starting against an elite opponent.",
+            "description": "William Villeneuve (Out): Depth defenseman.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Artem Zub (Out): Top-4 defenseman.",
             "direction": "negative",
             "magnitude": 3,
             "confidence": 1
           },
           {
             "team": "Senators",
-            "description": "Solid defenseman Artem Zub is out.",
-            "direction": "negative",
-            "magnitude": 2,
-            "confidence": 1
-          },
-          {
-            "team": "Senators",
-            "description": "Depth forward Warren Foegele is out.",
-            "direction": "negative",
-            "magnitude": 1,
-            "confidence": 1
-          },
-          {
-            "team": "Senators",
-            "description": "Elite starting goalie Linus Ullmark is expected to start.",
+            "description": "Linus Ullmark (Expected Goalie): Elite starting goalie.",
             "direction": "positive",
             "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Warren Foegele (Out): Depth forward.",
+            "direction": "negative",
+            "magnitude": 1,
             "confidence": 1
           }
         ],
         "net_qualitative_edge": "away",
-        "summary": "The Maple Leafs are significantly impacted by injuries to key forward Max Domi and depth players, compounded by their backup goalie starting against an elite opponent. The Senators are missing a solid defenseman and a depth forward, but benefit greatly from their elite starting goalie.",
-        "pick_rationale": "The model identifies a strong edge for the Senators, with a 69.3% probability, driven primarily by the nhl_matchup model which assigns an 89.4% probability. Qualitatively, the Senators benefit from an elite starting goalie in Linus Ullmark, while the Maple Leafs are missing key forward Max Domi and are starting a backup goalie. This qualitative advantage aligns with the model's strong lean towards the Senators.",
-        "model_vs_market": "The model's 69.3% probability for the Senators indicates a substantial edge over the implied market probability, which is not provided but is clearly lower given the model's pick.",
-        "key_risk": "The primary risk is that the Maple Leafs' offense performs exceptionally well against Ullmark, or that Stolarz has an unexpectedly strong performance.",
+        "summary": "The Maple Leafs are significantly impacted by injuries to key forwards Max Domi and depth players, compounded by starting backup goalie Anthony Stolarz against an elite opponent. The Senators are missing a key defenseman in Artem Zub and a depth forward, but benefit immensely from starting Vezina-winner Linus Ullmark. The net qualitative edge strongly favors the Senators due to the significant goaltending mismatch and Toronto's injuries.",
+        "pick_rationale": "The model identifies a strong edge on the Senators, driven primarily by the nhl_matchup model (89.4%) and supported by the elo model (70.1%). This pick is further bolstered by a significant qualitative advantage for the Senators, mainly due to the elite goaltending of Linus Ullmark facing Toronto's backup Anthony Stolarz, alongside multiple key injuries for the Maple Leafs. The market is likely underpricing the combined impact of these factors.",
+        "model_vs_market": "The model projects the Senators to win at 69.3%, which represents a substantial edge over the implied probability of the market's current line.",
+        "key_risk": "The primary risk is that Anthony Stolarz has an unexpectedly strong performance, or the Maple Leafs' remaining offensive talent overcomes their injuries and the Senators' strong goaltending.",
         "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-5 A:0): agreed. Key forward Max Domi is out.; Depth players Dakota Joshua and William Villeneuve are out.",
-      "blurb": "The model identifies a strong edge for the Senators, with a 69.3% probability, driven primarily by the nhl_matchup model which assigns an 89.4% probability. Qualitatively, the Senators benefit from an elite starting goalie in Linus Ullmark, while the Maple Leafs are missing key forward Max Domi and are starting a backup goalie. This qualitative advantage aligns with the model's strong lean towards the Senators.",
-      "model_vs_market": "The model's 69.3% probability for the Senators indicates a substantial edge over the implied market probability, which is not provided but is clearly lower given the model's pick.",
-      "key_risk": "The primary risk is that the Maple Leafs' offense performs exceptionally well against Ullmark, or that Stolarz has an unexpectedly strong performance.",
+      "qualitative_summary": "Qualitative (H:-5 A:-1): agreed. Max Domi (Out): Solid top-9 forward.; Anthony Stolarz (Expected Goalie): Backup starting against an elite goalie.",
+      "blurb": "The model identifies a strong edge on the Senators, driven primarily by the nhl_matchup model (89.4%) and supported by the elo model (70.1%). This pick is further bolstered by a significant qualitative advantage for the Senators, mainly due to the elite goaltending of Linus Ullmark facing Toronto's backup Anthony Stolarz, alongside multiple key injuries for the Maple Leafs. The market is likely underpricing the combined impact of these factors.",
+      "model_vs_market": "The model projects the Senators to win at 69.3%, which represents a substantial edge over the implied probability of the market's current line.",
+      "key_risk": "The primary risk is that Anthony Stolarz has an unexpectedly strong performance, or the Maple Leafs' remaining offensive talent overcomes their injuries and the Senators' strong goaltending.",
       "ai_confidence_label": "strong",
-      "run_id": "daily-20260923T101457523937Z",
+      "run_id": "daily-20260923T155516496314Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-23T10:14:57Z",
-      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T101457523937Z.json"
+      "snapshot_timestamp": "2026-09-23T15:55:16Z",
+      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T155516496314Z.json"
     },
     {
       "home_team": "Stars",
@@ -373,8 +408,8 @@
       "home_goalie_status": "expected",
       "away_goalie_status": "confirmed",
       "home_injury_profile": {
-        "injury_burden": 3.35,
-        "uncertainty_burden": 0.35,
+        "injury_burden": 4.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -403,17 +438,17 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.513,
+      "model_prob": 0.5125,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
-      "confidence_score": 24.7,
+      "confidence_score": 24.6,
       "confidence_stars": 1,
       "american_odds": null,
       "model_probs": {
-        "home": 0.513,
-        "away": 0.487
+        "home": 0.5125,
+        "away": 0.4875
       },
       "individual_models": {
         "elo": {
@@ -431,8 +466,8 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.513,
-          "raw_model_prob": 0.513,
+          "model_prob": 0.5125,
+          "raw_model_prob": 0.5125,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -441,7 +476,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 24.7,
+          "confidence_score": 24.6,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -449,8 +484,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.487,
-          "raw_model_prob": 0.487,
+          "model_prob": 0.4875,
+          "raw_model_prob": 0.4875,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -459,7 +494,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 18.9,
+          "confidence_score": 19.0,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -478,28 +513,28 @@
         "individual_factors": [
           {
             "team": "Wild",
-            "description": "Starting goaltender Filip Gustavsson is out, forcing backup Jesper Wallstedt to start.",
+            "description": "Starting goalie Filip Gustavsson is out, leading to backup Jesper Wallstedt starting.",
             "direction": "negative",
             "magnitude": 3,
             "confidence": 1
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Minnesota Wild face a significant qualitative disadvantage with their starting goaltender, Filip Gustavsson, out and backup Jesper Wallstedt confirmed to start. The Dallas Stars have no significant qualitative concerns.",
-        "pick_rationale": "The model favors the Stars with a 50.7% probability, driven by the Elo and results_features models which show a stronger lean than the nhl_matchup model. Qualitatively, the Stars receive a significant boost as the Wild will be without their starting goaltender, Filip Gustavsson, forcing backup Jesper Wallstedt into the net. This goalie change provides a clear advantage to the home team.",
-        "model_vs_market": "The current line is not available, so a direct comparison to the book's implied probability cannot be made.",
-        "key_risk": "The primary risk is that Jesper Wallstedt performs exceptionally well in relief, or the Stars' offense struggles to capitalize on the backup goalie.",
+        "summary": "The Minnesota Wild are significantly impacted by the absence of their starting goalie, Filip Gustavsson, with backup Jesper Wallstedt confirmed to start. The Dallas Stars have no significant qualitative factors affecting them, with their expected starter Jake Oettinger in net.",
+        "pick_rationale": "The model projects the Stars to win with a 50.6% probability, with the results_features model showing a stronger conviction. Qualitatively, the Stars benefit significantly from the Wild's starting goalie Filip Gustavsson being out, forcing backup Jesper Wallstedt into the net. This goalie change provides a notable advantage to the home team.",
+        "model_vs_market": "The model projects the Stars to win at 50.6% probability, indicating a slight edge over a neutral market price.",
+        "key_risk": "The primary risk is that backup goalie Jesper Wallstedt performs exceptionally well, or the Stars' offense fails to capitalize on the goalie change.",
         "confidence_label": "thin"
       },
-      "qualitative_summary": "Qualitative (H:0 A:-3): agreed. Starting goaltender Filip Gustavsson is out, forcing backup Jesper Wallstedt to start.",
-      "blurb": "The model favors the Stars with a 50.7% probability, driven by the Elo and results_features models which show a stronger lean than the nhl_matchup model. Qualitatively, the Stars receive a significant boost as the Wild will be without their starting goaltender, Filip Gustavsson, forcing backup Jesper Wallstedt into the net. This goalie change provides a clear advantage to the home team.",
-      "model_vs_market": "The current line is not available, so a direct comparison to the book's implied probability cannot be made.",
-      "key_risk": "The primary risk is that Jesper Wallstedt performs exceptionally well in relief, or the Stars' offense struggles to capitalize on the backup goalie.",
+      "qualitative_summary": "Qualitative (H:0 A:-3): agreed. Starting goalie Filip Gustavsson is out, leading to backup Jesper Wallstedt starting.",
+      "blurb": "The model projects the Stars to win with a 50.6% probability, with the results_features model showing a stronger conviction. Qualitatively, the Stars benefit significantly from the Wild's starting goalie Filip Gustavsson being out, forcing backup Jesper Wallstedt into the net. This goalie change provides a notable advantage to the home team.",
+      "model_vs_market": "The model projects the Stars to win at 50.6% probability, indicating a slight edge over a neutral market price.",
+      "key_risk": "The primary risk is that backup goalie Jesper Wallstedt performs exceptionally well, or the Stars' offense fails to capitalize on the goalie change.",
       "ai_confidence_label": "thin",
-      "run_id": "daily-20260923T101457523937Z",
+      "run_id": "daily-20260923T155516496314Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-23T10:14:57Z",
-      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T101457523937Z.json"
+      "snapshot_timestamp": "2026-09-23T15:55:16Z",
+      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T155516496314Z.json"
     },
     {
       "home_team": "Ducks",
@@ -546,17 +581,17 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.592,
+      "model_prob": 0.594,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
-      "confidence_score": 27.4,
+      "confidence_score": 27.9,
       "confidence_stars": 1,
       "american_odds": null,
       "model_probs": {
-        "home": 0.592,
-        "away": 0.408
+        "home": 0.594,
+        "away": 0.406
       },
       "individual_models": {
         "elo": {
@@ -574,8 +609,8 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.592,
-          "raw_model_prob": 0.592,
+          "model_prob": 0.594,
+          "raw_model_prob": 0.594,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -584,7 +619,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 27.4,
+          "confidence_score": 27.9,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -592,8 +627,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.408,
-          "raw_model_prob": 0.408,
+          "model_prob": 0.406,
+          "raw_model_prob": 0.406,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -616,68 +651,68 @@
         "sport": "nhl",
         "home_team": "Ducks",
         "away_team": "Kings",
-        "home_impact": -4,
+        "home_impact": -3,
         "away_impact": -5,
         "individual_factors": [
           {
             "team": "Ducks",
-            "description": "Troy Terry (Key Forward) is out, significantly impacting the team's offensive production.",
+            "description": "Troy Terry (Out): Key forward and significant scorer.",
             "direction": "negative",
             "magnitude": 3,
             "confidence": 1
           },
           {
             "team": "Ducks",
-            "description": "Drew Helleson, A.J. Greer, and Ian Moore (depth players) are out, creating minor depth issues.",
+            "description": "Drew Helleson (Out), A.J. Greer (Out), Ian Moore (Out): Depth players.",
             "direction": "negative",
             "magnitude": 1,
             "confidence": 0.8
           },
           {
             "team": "Kings",
-            "description": "Mats Zuccarello (Key Forward) is out, a significant blow to their top-line offense.",
+            "description": "Mats Zuccarello (Out): Key forward, significant playmaker and scorer.",
             "direction": "negative",
             "magnitude": 3,
             "confidence": 1
           },
           {
             "team": "Kings",
-            "description": "Kevin Fiala (Key Forward) is on Injured Reserve, representing another major loss to their offensive firepower.",
+            "description": "Kevin Fiala (Injured Reserve): Key forward, significant playmaker and scorer.",
             "direction": "negative",
             "magnitude": 3,
             "confidence": 1
           },
           {
             "team": "Kings",
-            "description": "Corey Perry (Veteran Forward) is out, impacting leadership and secondary scoring.",
+            "description": "Corey Perry (Out): Veteran forward, important role player.",
             "direction": "negative",
             "magnitude": 2,
-            "confidence": 0.9
+            "confidence": 1
           },
           {
             "team": "Kings",
-            "description": "Jan Jenik (depth forward) is out, a minor depth concern.",
+            "description": "Jan Jenik (Out): Depth forward.",
             "direction": "negative",
             "magnitude": 1,
-            "confidence": 0.7
+            "confidence": 0.8
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Kings are facing extreme negative qualitative impact due to multiple key offensive players (Zuccarello, Fiala, Perry) being out. The Ducks also have a significant negative impact with Troy Terry out, but their overall impact is less severe than the Kings'.",
-        "pick_rationale": "The model favors the Ducks, primarily driven by the nhl_matchup model's strong conviction. While both teams face significant injuries, the Kings are more severely impacted with multiple key offensive players (Zuccarello, Fiala, Perry) out compared to the Ducks' loss of Troy Terry. This qualitative disadvantage for the Kings likely contributes to the model's lean towards the home team.",
-        "model_vs_market": "The model projects the Ducks to win at 59.0%, indicating a significant edge over what would typically be implied by a neutral market line.",
-        "key_risk": "The primary risk is that the Ducks' own significant injury to Troy Terry could hinder their offense more than anticipated, or the Kings' remaining players step up despite their absences.",
-        "confidence_label": "moderate"
+        "summary": "The Ducks are missing key scorer Troy Terry, which is a significant blow to their offense. However, the Kings are far more impacted, missing multiple key offensive players in Mats Zuccarello and Kevin Fiala, along with veteran Corey Perry, severely weakening their attack.",
+        "pick_rationale": "The model identifies value on the Ducks, with the elo and nhl_matchup models strongly favoring them. While the Ducks are missing key scorer Troy Terry, the Kings are significantly more hampered by injuries, notably the absence of key offensive playmakers Mats Zuccarello and Kevin Fiala, which creates a substantial qualitative advantage for the home team.",
+        "model_vs_market": "The model projects the Ducks to win at 59.0%, identifying them as the favored side.",
+        "key_risk": "The primary risk is that the Ducks' offense struggles without Troy Terry, or the Kings' remaining players step up to mitigate their significant absences.",
+        "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-4 A:-5): agreed. Troy Terry (Key Forward) is out, significantly impacting the team's offensive production.; Drew Helleson, A.J. Greer, and Ian Moore (depth players) are out, creating minor depth issues.",
-      "blurb": "The model favors the Ducks, primarily driven by the nhl_matchup model's strong conviction. While both teams face significant injuries, the Kings are more severely impacted with multiple key offensive players (Zuccarello, Fiala, Perry) out compared to the Ducks' loss of Troy Terry. This qualitative disadvantage for the Kings likely contributes to the model's lean towards the home team.",
-      "model_vs_market": "The model projects the Ducks to win at 59.0%, indicating a significant edge over what would typically be implied by a neutral market line.",
-      "key_risk": "The primary risk is that the Ducks' own significant injury to Troy Terry could hinder their offense more than anticipated, or the Kings' remaining players step up despite their absences.",
-      "ai_confidence_label": "moderate",
-      "run_id": "daily-20260923T101457523937Z",
+      "qualitative_summary": "Qualitative (H:-3 A:-5): agreed. Troy Terry (Out): Key forward and significant scorer.; Drew Helleson (Out), A.J. Greer (Out), Ian Moore (Out): Depth players.",
+      "blurb": "The model identifies value on the Ducks, with the elo and nhl_matchup models strongly favoring them. While the Ducks are missing key scorer Troy Terry, the Kings are significantly more hampered by injuries, notably the absence of key offensive playmakers Mats Zuccarello and Kevin Fiala, which creates a substantial qualitative advantage for the home team.",
+      "model_vs_market": "The model projects the Ducks to win at 59.0%, identifying them as the favored side.",
+      "key_risk": "The primary risk is that the Ducks' offense struggles without Troy Terry, or the Kings' remaining players step up to mitigate their significant absences.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20260923T155516496314Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-23T10:14:57Z",
-      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T101457523937Z.json"
+      "snapshot_timestamp": "2026-09-23T15:55:16Z",
+      "snapshot_path": "tracking/snapshots/2026-09-23/nhl/daily-20260923T155516496314Z.json"
     }
   ],
   "totals_matches": [],
