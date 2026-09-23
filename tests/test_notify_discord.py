@@ -490,3 +490,110 @@ def test_build_payload_handles_empty_day(monkeypatch, tmp_path):
 
     assert payload["embeds"] == []
     assert "No picks qualified today" in payload["content"]
+
+
+# ---------------------------------------------------------------------------
+# Discord size limits
+# ---------------------------------------------------------------------------
+
+def _embed_chars(embed):
+    """Count characters the way Discord does when enforcing its 6000 cap."""
+    total = len(embed.get("title", "")) + len(embed.get("description", ""))
+    total += len((embed.get("footer") or {}).get("text", ""))
+    total += len((embed.get("author") or {}).get("name", ""))
+    for field in embed.get("fields", []):
+        total += len(field.get("name", "")) + len(field.get("value", ""))
+    return total
+
+
+def _payload_chars(payload):
+    return sum(_embed_chars(e) for e in payload.get("embeds", []))
+
+
+def _fat_lock(i, blurb_len=600):
+    """A pick carrying a long AI rationale, as the Gemini layer now produces."""
+    return {
+        "home_team": f"Home{i}", "away_team": f"Away{i}",
+        "date": "2026-03-28", "start_time": "2026-03-28T23:00:00Z",
+        "pick": "home", "model_prob": 0.62, "edge": 0.061,
+        "confidence_score": 74, "american_odds": 115, "implied_prob": 0.559,
+        "expected_value": 0.17, "fractional_kelly": 0.04,
+        "qualitative_summary": "Q" * 240,
+        "blurb": "B" * blurb_len,
+        "model_vs_market": "M" * 120,
+        "key_risk": "R" * 120,
+    }
+
+
+def _stuff_every_section(monkeypatch, tmp_path, n=6, blurb_len=600,
+                        sports=("nfl", "ncaaf", "mlb", "nba")):
+    for sport in sports:
+        _write_predictions(tmp_path, sport, {
+            "generated_at": "2026-03-28T12:00:00Z",
+            "slop_locks": [_fat_lock(i, blurb_len) for i in range(n)],
+            "slimegrinder": [_fat_lock(100 + i, blurb_len) for i in range(n)],
+            "matches": [_fat_lock(200 + i, blurb_len) for i in range(n)],
+            "diagnostics": {"matches_modeled": 12, "fixtures_with_odds": 12,
+                            "matches_with_positive_ev": 8, "lock_eligible_matches": 4,
+                            "slop_locks_posted": 2},
+            "publication_guard": {"allow_moneyline": True, "allow_totals": True},
+        })
+    _write_dashboard(tmp_path, {"recommended_actions": [
+        {"title": "T" * 100, "priority": "high", "detail": "D" * 300} for _ in range(3)
+    ]})
+    monkeypatch.setattr(notify_discord, "DATA_DIR", tmp_path)
+
+
+def test_payload_stays_within_discord_total_embed_limit(monkeypatch, tmp_path):
+    """Discord rejects the whole message if all embeds exceed 6000 chars.
+
+    Each field was already capped at the 1024 per-field limit, but nothing
+    capped the total, so a busy slate with AI rationales returned a 400.
+    """
+    _stuff_every_section(monkeypatch, tmp_path)
+    payload = notify_discord.build_payload()
+    assert _payload_chars(payload) <= 6000
+
+
+def test_oversized_payload_keeps_the_official_picks(monkeypatch, tmp_path):
+    """Trimming must degrade the least important sections first."""
+    _stuff_every_section(monkeypatch, tmp_path)
+    payload = notify_discord.build_payload()
+
+    titles = [e.get("title", "") for e in payload["embeds"]]
+    assert any("TOP PICKS" in t for t in titles)
+    top = next(e for e in payload["embeds"] if "TOP PICKS" in e.get("title", ""))
+    assert len(top["fields"]) >= 1
+
+
+def test_every_field_still_respects_the_per_field_limit(monkeypatch, tmp_path):
+    _stuff_every_section(monkeypatch, tmp_path)
+    payload = notify_discord.build_payload()
+    for embed in payload["embeds"]:
+        for field in embed.get("fields", []):
+            assert len(field["value"]) <= 1024
+            assert len(field["name"]) <= 256
+
+
+def test_no_private_keys_leak_into_the_payload(monkeypatch, tmp_path):
+    """Internal bookkeeping must not be sent to Discord."""
+    _stuff_every_section(monkeypatch, tmp_path)
+    payload = notify_discord.build_payload()
+    for embed in payload["embeds"]:
+        for field in embed.get("fields", []):
+            assert set(field) <= {"name", "value", "inline"}
+
+
+def test_small_slate_is_left_alone(monkeypatch, tmp_path):
+    """A payload that already fits keeps its AI prose intact."""
+    _stuff_every_section(monkeypatch, tmp_path, n=1, blurb_len=200, sports=("nfl",))
+    payload = notify_discord.build_payload()
+    assert _payload_chars(payload) <= 6000
+    values = [f["value"] for e in payload["embeds"] for f in e.get("fields", [])]
+    assert any("B" * 200 in v for v in values), "short slate should keep full blurbs"
+
+
+def test_embed_count_never_exceeds_ten(monkeypatch, tmp_path):
+    _stuff_every_section(monkeypatch, tmp_path)
+    payload = notify_discord.build_payload()
+    assert len(payload["embeds"]) <= 10

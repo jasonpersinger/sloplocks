@@ -40,6 +40,15 @@ MAX_SLIME_FIELDS = 4
 MAX_RADAR_FIELDS = 3
 MAX_DIAGNOSTIC_FIELDS = 4
 
+# Discord rejects the whole message if the combined length of every embed
+# exceeds 6000 characters, and separately caps one field value at 1024.
+# The per-field cap was always enforced; the message-level one was not, which
+# turned a busy slate into an intermittent 400 once picks carried AI prose.
+DISCORD_FIELD_VALUE_LIMIT = 1024
+DISCORD_FIELD_NAME_LIMIT = 256
+DISCORD_TOTAL_EMBED_LIMIT = 6000
+DISCORD_TOTAL_EMBED_BUDGET = 5800  # headroom for the odd wide character
+
 _ET_OFFSET_SPORTS = {"nba", "wnba", "ncaam"}
 
 
@@ -400,17 +409,86 @@ def _lock_field(item: dict, sport_key: str, show_ai: bool = True) -> dict:
     if pitcher_note:
         value += pitcher_note
     
+    # Optional prose is held separately so `_fit_embeds_to_limit` can shed it
+    # when the message would otherwise blow Discord's 6000-character budget.
+    # Ordered least-expendable first.
+    extras = []
     if show_ai and item.get("qualitative_summary"):
-        # Truncate summary if too long for one field
-        summary = item['qualitative_summary']
+        summary = item["qualitative_summary"]
         if len(summary) > 200:
             summary = summary[:197] + "..."
-        value += f"\n**AI Sense:** {summary}"
+        extras.append(f"\n**AI Sense:** {summary}")
 
     if item.get("blurb"):
-        value += f"\n> {item['blurb']}"
+        extras.append(f"\n> {item['blurb']}")
 
-    return {"name": name, "value": value[:1024], "inline": False}
+    return {
+        "name": name[:DISCORD_FIELD_NAME_LIMIT],
+        "value": value,
+        "inline": False,
+        "_extras": extras,
+    }
+
+
+def _field_value(field: dict) -> str:
+    """Compose a field's rendered value from its core text plus any extras."""
+    return (field["value"] + "".join(field.get("_extras", [])))[:DISCORD_FIELD_VALUE_LIMIT]
+
+
+def _embed_chars(embed: dict) -> int:
+    """Count an embed the way Discord does when enforcing its total limit."""
+    total = len(embed.get("title", "")) + len(embed.get("description", ""))
+    total += len((embed.get("footer") or {}).get("text", ""))
+    total += len((embed.get("author") or {}).get("name", ""))
+    for field in embed.get("fields", []):
+        total += len(field.get("name", "")) + len(_field_value(field))
+    return total
+
+
+def _payload_chars(embeds: list[dict]) -> int:
+    return sum(_embed_chars(embed) for embed in embeds)
+
+
+def _fit_embeds_to_limit(embeds: list[dict], budget: int = DISCORD_TOTAL_EMBED_BUDGET) -> list[dict]:
+    """Shrink embeds until the message fits Discord's total-size cap.
+
+    Degrades in reverse priority order, so the official picks are the last
+    thing to lose detail: optional AI prose goes first (it is both the most
+    expendable and by far the biggest contributor), then whole fields, then
+    empty sections. ``embeds`` is assumed to be ordered most-important first.
+    """
+    # 1. Shed optional prose, starting with the least important section.
+    for embed in reversed(embeds):
+        for field in reversed(embed.get("fields", [])):
+            while field.get("_extras") and _payload_chars(embeds) > budget:
+                field["_extras"].pop()
+            if _payload_chars(embeds) <= budget:
+                return embeds
+
+    # 2. Still too big: drop trailing fields from the least important section.
+    for embed in reversed(embeds):
+        fields = embed.get("fields", [])
+        while fields and _payload_chars(embeds) > budget:
+            fields.pop()
+        if _payload_chars(embeds) <= budget:
+            break
+
+    # 3. Drop any section left with nothing to say.
+    return [embed for embed in embeds if embed.get("fields")]
+
+
+def _finalize_embeds(embeds: list[dict]) -> list[dict]:
+    """Render field values and strip internal bookkeeping before sending."""
+    for embed in embeds:
+        embed["fields"] = [
+            {
+                "name": field.get("name", "")[:DISCORD_FIELD_NAME_LIMIT],
+                "value": _field_value(field) or "\u200b",
+                "inline": field.get("inline", False),
+            }
+            for field in embed.get("fields", [])
+        ]
+    return embeds
 
 
 def build_payload() -> dict:
@@ -490,10 +568,12 @@ def build_payload() -> dict:
     if not summary_parts:
         summary_parts.append("No picks qualified today")
 
+    embeds = _finalize_embeds(_fit_embeds_to_limit(embeds[:10]))
+
     return {
         "username": "BIG SLIME",
         "content": f"🎯  **SLOP LOCKS  ·  {header_date}**\n" + " · ".join(summary_parts),
-        "embeds": embeds[:10],
+        "embeds": embeds,
     }
 
 
