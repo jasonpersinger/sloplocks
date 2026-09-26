@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-25T16:19:07Z",
-  "run_id": "daily-20260925T161813637130Z",
+  "generated_at": "2026-09-26T15:32:16Z",
+  "run_id": "daily-20260926T152929236470Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-09-25T16:18:13Z",
-  "snapshot_path": "tracking/snapshots/2026-09-25/nhl/daily-20260925T161813637130Z.json",
+  "snapshot_timestamp": "2026-09-26T15:29:29Z",
+  "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json",
   "sport": "nhl",
   "sport_name": "NHL",
   "outcomes": [
@@ -11,34 +11,111 @@
     "away"
   ],
   "full_slate": false,
-  "slop_locks": [],
+  "slop_locks": [
+    {
+      "home_team": "Blackhawks",
+      "away_team": "Blues",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "pick": "away",
+      "model_prob": 0.6321,
+      "implied_prob": 0.5105,
+      "market_implied_prob": 0.5348,
+      "edge": 0.1216,
+      "expected_value": 0.182,
+      "american_odds": -115,
+      "decimal_odds": 1.87,
+      "kelly_fraction": 0.2092,
+      "fractional_kelly": 0.0418,
+      "confidence_score": 62.6,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Blackhawks",
+        "away_team": "Blues",
+        "home_impact": -5,
+        "away_impact": -1,
+        "individual_factors": [
+          {
+            "team": "Blackhawks",
+            "description": "Connor Bedard (Out) - Superstar player, major offensive loss.",
+            "direction": "negative",
+            "magnitude": 4,
+            "confidence": 1
+          },
+          {
+            "team": "Blackhawks",
+            "description": "Jordan Greenway (Out) - Regular forward, moderate offensive loss.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Blues",
+            "description": "Tyler Tucker (Out) - Depth defenseman, minor impact.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Blackhawks are significantly impacted by the absence of superstar Connor Bedard and regular forward Jordan Greenway. The Blues have a minor injury to a depth defenseman. The expected goalie matchup is relatively even, with Spencer Knight for Chicago and Joel Hofer for St. Louis.",
+        "pick_rationale": "The model identifies a significant edge for the Blues, projecting a 62.4% win probability compared to the market's 51.0%. This strong disagreement is supported by all three component models, particularly Elo and nhl_matchup. Qualitatively, the Blackhawks are severely hampered by the absence of superstar Connor Bedard and regular forward Jordan Greenway, which significantly weakens their offensive capabilities.",
+        "model_vs_market": "The model projects the Blues to win at 62.4%, which is an 11.4% edge over the market's implied probability of 51.0%.",
+        "key_risk": "The key risk is that the Blues' offense underperforms against Spencer Knight, or that the Blackhawks' remaining players step up unexpectedly despite key injuries.",
+        "confidence_label": "strong"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-1): agreed. Connor Bedard (Out) - Superstar player, major offensive loss.; Jordan Greenway (Out) - Regular forward, moderate offensive loss.",
+      "blurb": "The model identifies a significant edge for the Blues, projecting a 62.4% win probability compared to the market's 51.0%. This strong disagreement is supported by all three component models, particularly Elo and nhl_matchup. Qualitatively, the Blackhawks are severely hampered by the absence of superstar Connor Bedard and regular forward Jordan Greenway, which significantly weakens their offensive capabilities.",
+      "model_vs_market": "The model projects the Blues to win at 62.4%, which is an 11.4% edge over the market's implied probability of 51.0%.",
+      "key_risk": "The key risk is that the Blues' offense underperforms against Spencer Knight, or that the Blackhawks' remaining players step up unexpectedly despite key injuries.",
+      "ai_confidence_label": "strong",
+      "selection_lane": "core",
+      "tier": "STRONG",
+      "market_type": "moneyline",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    }
+  ],
   "totals_locks": [],
   "slimegrinder": [],
   "longslop": null,
   "matches": [
     {
-      "home_team": "Capitals",
-      "away_team": "Bruins",
-      "date": "2026-09-25",
-      "start_time": "2026-09-25T23:00Z",
+      "home_team": "Sabres",
+      "away_team": "Penguins",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T19:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Logan Thompson",
-      "away_goalie": "Jeremy Swayman",
-      "home_goalie_status": "confirmed",
+      "home_goalie": "Ukko-Pekka Luukkonen",
+      "away_goalie": "Arturs Silovs",
+      "home_goalie_status": "expected",
       "away_goalie_status": "expected",
       "home_injury_profile": {
-        "injury_burden": 2.0,
+        "injury_burden": 5.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 1.0,
+        "injury_burden": 5.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -61,36 +138,36 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.508,
+      "model_prob": 0.6034,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
-      "confidence_score": 6.3,
-      "confidence_stars": 1,
+      "confidence_score": 36.9,
+      "confidence_stars": 2,
       "american_odds": null,
       "model_probs": {
-        "home": 0.508,
-        "away": 0.492
+        "home": 0.6034,
+        "away": 0.3966
       },
       "individual_models": {
         "elo": {
-          "home": 0.5892,
-          "away": 0.4108
+          "home": 0.6805,
+          "away": 0.3195
         },
         "results_features": {
-          "home": 0.5898,
-          "away": 0.4102
+          "home": 0.4861,
+          "away": 0.5139
         },
         "nhl_matchup": {
-          "home": 0.3037,
-          "away": 0.6963
+          "home": 0.638,
+          "away": 0.362
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.508,
-          "raw_model_prob": 0.508,
+          "model_prob": 0.6034,
+          "raw_model_prob": 0.6034,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -99,7 +176,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 6.3,
+          "confidence_score": 36.9,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -107,8 +184,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.492,
-          "raw_model_prob": 0.492,
+          "model_prob": 0.3966,
+          "raw_model_prob": 0.3966,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -117,7 +194,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 2.7,
+          "confidence_score": 6.9,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -129,81 +206,416 @@
       "market_snapshot": null,
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Capitals",
-        "away_team": "Bruins",
-        "home_impact": -5,
-        "away_impact": -4,
+        "home_team": "Sabres",
+        "away_team": "Penguins",
+        "home_impact": -3,
+        "away_impact": -5,
         "individual_factors": [
           {
-            "team": "Capitals",
-            "description": "Alex Ovechkin (Out): Superstar forward, major offensive loss.",
+            "team": "Sabres",
+            "description": "Mattias Samuelsson (Defenseman) is out, impacting defensive depth.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Sabres",
+            "description": "Jason Zucker (Forward) is out, affecting offensive production.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Sabres",
+            "description": "Jiri Kulich (Forward) and Olen Zellweger (Defenseman) are out, reducing depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Sabres",
+            "description": "Alex Lyon (Backup Goalie) is out, but primary starter Ukko-Pekka Luukkonen is expected to play.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 0.9
+          },
+          {
+            "team": "Penguins",
+            "description": "Ryan Graves (Defenseman) is out, weakening the defensive corps.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Penguins",
+            "description": "Arturs Silovs (expected starting goalie) is a significant downgrade, indicating a major issue in net for the Penguins.",
             "direction": "negative",
             "magnitude": 4,
             "confidence": 1
           },
           {
-            "team": "Capitals",
-            "description": "Patrick Thomas (Out): Depth player absence.",
+            "team": "Penguins",
+            "description": "Justin Brazeau (Forward) and other prospects on IR are out, impacting depth.",
             "direction": "negative",
             "magnitude": 1,
-            "confidence": 0.8
-          },
-          {
-            "team": "Bruins",
-            "description": "Matthew Poitras (Out): Depth player absence.",
-            "direction": "negative",
-            "magnitude": 1,
-            "confidence": 0.8
-          },
-          {
-            "team": "Bruins",
-            "description": "Charlie McAvoy (Suspension): Key defenseman out.",
-            "direction": "negative",
-            "magnitude": 3,
-            "confidence": 1
+            "confidence": 0.7
           }
         ],
-        "net_qualitative_edge": "away",
-        "summary": "The Capitals are significantly hampered by the absence of superstar Alex Ovechkin and a depth player. The Bruins are missing key defenseman Charlie McAvoy due to suspension and a depth player. Both teams face significant qualitative disadvantages, with the Capitals' impact being slightly more severe due to Ovechkin's absence, which actively contradicts the model's pick.",
-        "pick_rationale": "The model picks the Capitals with a thin 51.0% probability, indicating a slight edge over the market. While the Elo and results_features models strongly favor the Capitals, the nhl_matchup model significantly disagrees. Qualitatively, the Capitals are severely impacted by the absence of superstar Alex Ovechkin, which is a greater loss than the Bruins' missing key defenseman Charlie McAvoy.",
-        "model_vs_market": "The model's 51.0% probability for the Capitals implies a slight edge over a typical market price, which would likely be closer to 50% for a pick'em or slightly favoring the Bruins given the injuries.",
-        "key_risk": "The primary risk for this pick is the absence of Alex Ovechkin, whose offensive production is extremely difficult for the Capitals to replace.",
-        "confidence_label": "avoid"
+        "net_qualitative_edge": "home",
+        "summary": "The Penguins face a significant qualitative disadvantage primarily due to their expected starting goalie, Arturs Silovs, who represents a major downgrade, compounded by the absence of defenseman Ryan Graves. The Sabres also have notable injuries to Mattias Samuelsson and Jason Zucker, but their overall impact is less severe than Pittsburgh's goalie situation.",
+        "pick_rationale": "The model favors the Sabres, driven by strong signals from the ELO and nhl_matchup models. A significant qualitative edge for the Sabres emerges due to the Penguins' expected starting goalie, Arturs Silovs, who is a major downgrade, compounded by the absence of defenseman Ryan Graves. While the Sabres also have injuries to Mattias Samuelsson and Jason Zucker, the Penguins' goalie situation presents a more severe disadvantage.",
+        "model_vs_market": "The model projects the Sabres to win at 59.9%, indicating a substantial edge over what the market would typically price for this matchup, especially given the qualitative factors.",
+        "key_risk": "The primary risk is that Arturs Silovs performs exceptionally well despite being an unexpected starter, or that the Sabres' own injuries prove more impactful than anticipated.",
+        "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-5 A:-4): disagreed. Alex Ovechkin (Out): Superstar forward, major offensive loss.; Patrick Thomas (Out): Depth player absence.",
-      "blurb": "The model picks the Capitals with a thin 51.0% probability, indicating a slight edge over the market. While the Elo and results_features models strongly favor the Capitals, the nhl_matchup model significantly disagrees. Qualitatively, the Capitals are severely impacted by the absence of superstar Alex Ovechkin, which is a greater loss than the Bruins' missing key defenseman Charlie McAvoy.",
-      "model_vs_market": "The model's 51.0% probability for the Capitals implies a slight edge over a typical market price, which would likely be closer to 50% for a pick'em or slightly favoring the Bruins given the injuries.",
-      "key_risk": "The primary risk for this pick is the absence of Alex Ovechkin, whose offensive production is extremely difficult for the Capitals to replace.",
-      "ai_confidence_label": "avoid",
-      "run_id": "daily-20260925T161813637130Z",
+      "qualitative_summary": "Qualitative (H:-3 A:-5): agreed. Mattias Samuelsson (Defenseman) is out, impacting defensive depth.; Jason Zucker (Forward) is out, affecting offensive production.",
+      "blurb": "The model favors the Sabres, driven by strong signals from the ELO and nhl_matchup models. A significant qualitative edge for the Sabres emerges due to the Penguins' expected starting goalie, Arturs Silovs, who is a major downgrade, compounded by the absence of defenseman Ryan Graves. While the Sabres also have injuries to Mattias Samuelsson and Jason Zucker, the Penguins' goalie situation presents a more severe disadvantage.",
+      "model_vs_market": "The model projects the Sabres to win at 59.9%, indicating a substantial edge over what the market would typically price for this matchup, especially given the qualitative factors.",
+      "key_risk": "The primary risk is that Arturs Silovs performs exceptionally well despite being an unexpected starter, or that the Sabres' own injuries prove more impactful than anticipated.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20260926T152929236470Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-25T16:18:13Z",
-      "snapshot_path": "tracking/snapshots/2026-09-25/nhl/daily-20260925T161813637130Z.json"
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
     },
     {
-      "home_team": "Islanders",
-      "away_team": "Rangers",
-      "date": "2026-09-25",
-      "start_time": "2026-09-25T23:30Z",
+      "home_team": "Predators",
+      "away_team": "Hurricanes",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T19:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Semyon Varlamov",
-      "away_goalie": "Igor Shesterkin",
-      "home_goalie_status": "confirmed",
+      "home_goalie": "Juuse Saros",
+      "away_goalie": "Brandon Bussi",
+      "home_goalie_status": "expected",
       "away_goalie_status": "expected",
       "home_injury_profile": {
-        "injury_burden": 2.0,
+        "injury_burden": 0.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6689,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 42.5,
+      "confidence_stars": 2,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.3311,
+        "away": 0.6689
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.2271,
+          "away": 0.7729
+        },
+        "results_features": {
+          "home": 0.6172,
+          "away": 0.3828
+        },
+        "nhl_matchup": {
+          "home": 0.0616,
+          "away": 0.9384
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3311,
+          "raw_model_prob": 0.3311,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.6689,
+          "raw_model_prob": 0.6689,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 42.5,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Predators",
+        "away_team": "Hurricanes",
+        "home_impact": 3,
+        "away_impact": -5,
+        "individual_factors": [
+          {
+            "team": "Hurricanes",
+            "description": "Seth Jarvis (Out): Key forward, top-6 player.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Hurricanes",
+            "description": "Alexander Nikishin (Out): Depth defenseman.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Hurricanes",
+            "description": "Brandon Bussi (Expected Goalie): Backup goalie starting.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Predators",
+            "description": "Juuse Saros (Expected Goalie): Elite starting goalie.",
+            "direction": "positive",
+            "magnitude": 3,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Predators benefit significantly from having their elite starting goalie, Juuse Saros. The Hurricanes are severely hampered by injuries to key forward Seth Jarvis and defenseman Alexander Nikishin, compounded by starting backup goalie Brandon Bussi.",
+        "pick_rationale": "The model picks the Hurricanes with a 68.5% probability, driven strongly by the nhl_matchup model (93.8%) and elo (77.3%), despite the results_features model being much lower. However, qualitative factors significantly favor the Predators, with their elite starting goalie and the Hurricanes missing key players and starting a backup. This qualitative context actively contradicts the model's strong lean towards the Hurricanes.",
+        "model_vs_market": "Without a current line, it is impossible to quantify the model's edge over the market's implied probability.",
+        "key_risk": "The primary risk for the Hurricanes pick is the significant qualitative disadvantage, particularly starting a backup goalie and missing key offensive talent.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:3 A:-5): disagreed. Seth Jarvis (Out): Key forward, top-6 player.; Alexander Nikishin (Out): Depth defenseman.",
+      "blurb": "The model picks the Hurricanes with a 68.5% probability, driven strongly by the nhl_matchup model (93.8%) and elo (77.3%), despite the results_features model being much lower. However, qualitative factors significantly favor the Predators, with their elite starting goalie and the Hurricanes missing key players and starting a backup. This qualitative context actively contradicts the model's strong lean towards the Hurricanes.",
+      "model_vs_market": "Without a current line, it is impossible to quantify the model's edge over the market's implied probability.",
+      "key_risk": "The primary risk for the Hurricanes pick is the significant qualitative disadvantage, particularly starting a backup goalie and missing key offensive talent.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Kings",
+      "away_team": "Ducks",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T20:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Darcy Kuemper",
+      "away_goalie": "Lukas Dostal",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 3.7,
+        "uncertainty_burden": 0.7,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 4.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6052,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 28.2,
+      "confidence_stars": 2,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.3948,
+        "away": 0.6052
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4663,
+          "away": 0.5337
+        },
+        "results_features": {
+          "home": 0.5846,
+          "away": 0.4154
+        },
+        "nhl_matchup": {
+          "home": 0.0855,
+          "away": 0.9145
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3948,
+          "raw_model_prob": 0.3948,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.6052,
+          "raw_model_prob": 0.6052,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 28.2,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Kings",
+        "away_team": "Ducks",
+        "home_impact": 0,
+        "away_impact": -4,
+        "individual_factors": [
+          {
+            "team": "Ducks",
+            "description": "Troy Terry (Out) is a key offensive player whose absence significantly weakens the team's scoring potential.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Ducks",
+            "description": "A.J. Greer (Out) is a depth forward whose absence creates a minor negative impact on forward rotation.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Kings have no significant qualitative impacts. The Ducks are significantly impacted by the absence of key offensive player Troy Terry and depth forward A.J. Greer, resulting in a net negative impact of -4.",
+        "pick_rationale": "The model projects the Ducks to win with a 61.3% probability, primarily driven by the nhl_matchup model which assigns a 91.5% chance. However, the qualitative analysis indicates a substantial negative impact for the Ducks due to key injuries, which actively contradicts the model's strong lean. The Kings face no significant qualitative disadvantages.",
+        "model_vs_market": "The model projects the Ducks to win with a 61.3% probability, indicating a significant edge for the away team.",
+        "key_risk": "The Ducks' significant injuries, particularly the absence of key offensive player Troy Terry, pose a major risk to their ability to perform as projected by the model.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:0 A:-4): disagreed. Troy Terry (Out) is a key offensive player whose absence significantly weakens the team's scoring potential.; A.J. Greer (Out) is a depth forward whose absence creates a minor negative impact on forward rotation.",
+      "blurb": "The model projects the Ducks to win with a 61.3% probability, primarily driven by the nhl_matchup model which assigns a 91.5% chance. However, the qualitative analysis indicates a substantial negative impact for the Ducks due to key injuries, which actively contradicts the model's strong lean. The Kings face no significant qualitative disadvantages.",
+      "model_vs_market": "The model projects the Ducks to win with a 61.3% probability, indicating a significant edge for the away team.",
+      "key_risk": "The Ducks' significant injuries, particularly the absence of key offensive player Troy Terry, pose a major risk to their ability to perform as projected by the model.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Flyers",
+      "away_team": "Capitals",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T21:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Aleksei Kolosov",
+      "away_goalie": "Charlie Lindgren",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "confirmed",
+      "home_injury_profile": {
         "injury_burden": 2.35,
         "uncertainty_burden": 0.35,
+        "key_absence_score": 0.35,
+        "leader_absence_burden": 0.297,
+        "leader_uncertainty_burden": 0.297
+      },
+      "away_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -225,26 +637,26 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.6397,
+      "model_prob": 0.6274,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
       "fractional_kelly": 0.0,
-      "confidence_score": 35.9,
+      "confidence_score": 33.2,
       "confidence_stars": 2,
       "american_odds": null,
       "model_probs": {
-        "home": 0.6397,
-        "away": 0.3603
+        "home": 0.6274,
+        "away": 0.3726
       },
       "individual_models": {
         "elo": {
-          "home": 0.5058,
-          "away": 0.4942
+          "home": 0.4875,
+          "away": 0.5125
         },
         "results_features": {
-          "home": 0.477,
-          "away": 0.523
+          "home": 0.4153,
+          "away": 0.5847
         },
         "nhl_matchup": {
           "home": 1.0,
@@ -253,8 +665,8 @@
       },
       "edges": {
         "home": {
-          "model_prob": 0.6397,
-          "raw_model_prob": 0.6397,
+          "model_prob": 0.6274,
+          "raw_model_prob": 0.6274,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -263,7 +675,7 @@
           "american_odds": null,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 35.9,
+          "confidence_score": 33.2,
           "is_value": false,
           "unrealistic_flag": false,
           "hold": null,
@@ -271,8 +683,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.3603,
-          "raw_model_prob": 0.3603,
+          "model_prob": 0.3726,
+          "raw_model_prob": 0.3726,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -293,59 +705,223 @@
       "market_snapshot": null,
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Islanders",
-        "away_team": "Rangers",
-        "home_impact": -3,
-        "away_impact": 0,
+        "home_team": "Flyers",
+        "away_team": "Capitals",
+        "home_impact": -2,
+        "away_impact": -4,
         "individual_factors": [
           {
-            "team": "Islanders",
-            "description": "Mathew Barzal (Out) - Key playmaker and top-line center.",
+            "team": "Flyers",
+            "description": "Starting goalie Dan Vladar is out, leading to Aleksei Kolosov, a less experienced option, starting in net.",
             "direction": "negative",
-            "magnitude": 3,
-            "confidence": 1
+            "magnitude": 2,
+            "confidence": 0.9
+          },
+          {
+            "team": "Capitals",
+            "description": "Superstar forward Alex Ovechkin is out, significantly weakening the team's offense and overall playmaking ability.",
+            "direction": "negative",
+            "magnitude": 4,
+            "confidence": 1.0
           }
         ],
-        "net_qualitative_edge": "away",
-        "summary": "The Islanders are significantly impacted by the absence of key playmaker Mathew Barzal. The Rangers have no major qualitative concerns, with their minor injuries being to depth or prospect players.",
-        "pick_rationale": "The model projects the Islanders with a 64.6% probability, indicating a substantial edge over the market. However, there is significant disagreement among component models, with nhl_matchup at 100% while elo and results_features are near 50%. Furthermore, the Islanders are significantly hampered by the absence of key playmaker Mathew Barzal, which contradicts the model's strong lean.",
-        "model_vs_market": "The model's 64.6% probability for the Islanders is a significant edge compared to typical market implied probabilities for such a matchup.",
-        "key_risk": "The most significant risk to the Islanders pick is the absence of Mathew Barzal, a key offensive contributor.",
-        "confidence_label": "avoid"
+        "net_qualitative_edge": "home",
+        "summary": "The Capitals are severely impacted by the absence of superstar Alex Ovechkin, which is a major blow to their offensive capabilities. The Flyers also face a moderate negative impact with a less experienced goalie, Aleksei Kolosov, starting due to Dan Vladar's injury. However, Washington's disadvantage is more pronounced.",
+        "pick_rationale": "The model identifies a strong edge for the Flyers, with a 62.3% probability, primarily driven by the nhl_matchup model's 100% conviction. This pick is strongly supported by the significant qualitative disadvantage for the Capitals, who will be without superstar Alex Ovechkin. While the Flyers have a moderate negative impact from their goalie situation, it is outweighed by Washington's major injury.",
+        "model_vs_market": "The model's 62.3% probability for the Flyers suggests a significant edge over typical market pricing for a home team in a competitive NHL game.",
+        "key_risk": "The primary risk is that Aleksei Kolosov struggles significantly in net for the Flyers, or that the Capitals' offense performs better than expected without Ovechkin.",
+        "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-3 A:0): disagreed. Mathew Barzal (Out) - Key playmaker and top-line center.",
-      "blurb": "The model projects the Islanders with a 64.6% probability, indicating a substantial edge over the market. However, there is significant disagreement among component models, with nhl_matchup at 100% while elo and results_features are near 50%. Furthermore, the Islanders are significantly hampered by the absence of key playmaker Mathew Barzal, which contradicts the model's strong lean.",
-      "model_vs_market": "The model's 64.6% probability for the Islanders is a significant edge compared to typical market implied probabilities for such a matchup.",
-      "key_risk": "The most significant risk to the Islanders pick is the absence of Mathew Barzal, a key offensive contributor.",
-      "ai_confidence_label": "avoid",
-      "run_id": "daily-20260925T161813637130Z",
+      "qualitative_summary": "Qualitative (H:-2 A:-4): agreed. Starting goalie Dan Vladar is out, leading to Aleksei Kolosov, a less experienced option, starting in net.; Superstar forward Alex Ovechkin is out, significantly weakening the team's offense and overall playmaking ability.",
+      "blurb": "The model identifies a strong edge for the Flyers, with a 62.3% probability, primarily driven by the nhl_matchup model's 100% conviction. This pick is strongly supported by the significant qualitative disadvantage for the Capitals, who will be without superstar Alex Ovechkin. While the Flyers have a moderate negative impact from their goalie situation, it is outweighed by Washington's major injury.",
+      "model_vs_market": "The model's 62.3% probability for the Flyers suggests a significant edge over typical market pricing for a home team in a competitive NHL game.",
+      "key_risk": "The primary risk is that Aleksei Kolosov struggles significantly in net for the Flyers, or that the Capitals' offense performs better than expected without Ovechkin.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20260926T152929236470Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-25T16:18:13Z",
-      "snapshot_path": "tracking/snapshots/2026-09-25/nhl/daily-20260925T161813637130Z.json"
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
     },
     {
-      "home_team": "Wild",
-      "away_team": "Stars",
-      "date": "2026-09-25",
-      "start_time": "2026-09-26T00:00Z",
+      "home_team": "Mammoth",
+      "away_team": "Avalanche",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T21:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Jesper Wallstedt",
-      "away_goalie": "Casey DeSmith",
-      "home_goalie_status": "confirmed",
-      "away_goalie_status": "confirmed",
+      "home_goalie": "Karel Vejmelka",
+      "away_goalie": "Scott Wedgewood",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
       "home_injury_profile": {
+        "injury_burden": 1.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
         "injury_burden": 1.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6048,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 30.8,
+      "confidence_stars": 2,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.3952,
+        "away": 0.6048
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4023,
+          "away": 0.5977
+        },
+        "results_features": {
+          "home": 0.5316,
+          "away": 0.4684
+        },
+        "nhl_matchup": {
+          "home": 0.2648,
+          "away": 0.7352
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3952,
+          "raw_model_prob": 0.3952,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 2.1,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.6048,
+          "raw_model_prob": 0.6048,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 30.8,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Mammoth",
+        "away_team": "Avalanche",
+        "home_impact": -2,
+        "away_impact": -2,
+        "individual_factors": [
+          {
+            "team": "Mammoth",
+            "description": "Michael Carcone (Day-To-Day) is a depth forward. If he is out, it represents a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.5
+          },
+          {
+            "team": "Mammoth",
+            "description": "Maveric Lamoureux (Out) is a prospect defenseman. His absence is a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Avalanche",
+            "description": "Scott Wedgewood (expected) is a backup goalie starting. This is a moderate negative impact for the Avalanche.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "none",
+        "summary": "The Mammoth face minor negative impacts from two injuries to a depth forward and a prospect defenseman. The Avalanche also face a moderate negative impact with their backup goalie, Scott Wedgewood, expected to start. Overall, the qualitative factors are neutral for both teams.",
+        "pick_rationale": "The model favors the Avalanche with a 60.5% probability, primarily driven by the nhl_matchup model which shows a strong lean towards Colorado. However, the results_features model leans towards the Mammoth, and the qualitative factors are neutral, indicating no clear advantage from injuries or scheduling.",
+        "model_vs_market": "The model projects the Avalanche to win with a 60.5% probability; market implied probability is not provided for comparison.",
+        "key_risk": "The Avalanche's backup goalie, Scott Wedgewood, could underperform, negating the model's projected edge.",
+        "confidence_label": "thin"
+      },
+      "qualitative_summary": "Qualitative (H:-2 A:-2): no effect. Michael Carcone (Day-To-Day) is a depth forward. If he is out, it represents a minor negative impact.; Maveric Lamoureux (Out) is a prospect defenseman. His absence is a minor negative impact.",
+      "blurb": "The model favors the Avalanche with a 60.5% probability, primarily driven by the nhl_matchup model which shows a strong lean towards Colorado. However, the results_features model leans towards the Mammoth, and the qualitative factors are neutral, indicating no clear advantage from injuries or scheduling.",
+      "model_vs_market": "The model projects the Avalanche to win with a 60.5% probability; market implied probability is not provided for comparison.",
+      "key_risk": "The Avalanche's backup goalie, Scott Wedgewood, could underperform, negating the model's projected edge.",
+      "ai_confidence_label": "thin",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Panthers",
+      "away_team": "Lightning",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T22:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Akira Schmid",
+      "away_goalie": "Andrei Vasilevskiy",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 3.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
       "away_injury_profile": {
-        "injury_burden": 5.0,
+        "injury_burden": 2.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -382,16 +958,16 @@
       },
       "individual_models": {
         "elo": {
-          "home": 0.5542,
-          "away": 0.4458
+          "home": 0.4227,
+          "away": 0.5773
         },
         "results_features": {
-          "home": 0.4785,
-          "away": 0.5215
+          "home": 0.5534,
+          "away": 0.4466
         },
         "nhl_matchup": {
-          "home": 0.8654,
-          "away": 0.1346
+          "home": 1.0,
+          "away": 0.0
         }
       },
       "edges": {
@@ -436,63 +1012,611 @@
       "market_snapshot": null,
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Wild",
-        "away_team": "Stars",
-        "home_impact": -3,
-        "away_impact": -5,
+        "home_team": "Panthers",
+        "away_team": "Lightning",
+        "home_impact": -4,
+        "away_impact": -2,
         "individual_factors": [
           {
-            "team": "Wild",
-            "description": "Starting goalie Filip Gustavsson is out, leading to backup Jesper Wallstedt starting.",
+            "team": "Panthers",
+            "description": "Brady Tkachuk (Out) - Key forward absence.",
             "direction": "negative",
             "magnitude": 3,
-            "confidence": 1
+            "confidence": 1.0
           },
           {
-            "team": "Stars",
-            "description": "Starting goalie Jake Oettinger is out, leading to backup Casey DeSmith starting.",
+            "team": "Panthers",
+            "description": "Brad Marchand (Injured Reserve) - Key forward absence.",
             "direction": "negative",
             "magnitude": 3,
-            "confidence": 1
+            "confidence": 1.0
           },
           {
-            "team": "Stars",
-            "description": "Key forward Matt Duchene is out.",
+            "team": "Panthers",
+            "description": "Jonah Gadjovich (Injured Reserve) - Depth player absence.",
             "direction": "negative",
-            "magnitude": 3,
-            "confidence": 1
+            "magnitude": 1,
+            "confidence": 1.0
+          },
+          {
+            "team": "Lightning",
+            "description": "Yanni Gourde (Out) - Solid middle-six forward absence.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1.0
+          },
+          {
+            "team": "Lightning",
+            "description": "Dominic James (Out) - Depth player absence.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1.0
+          },
+          {
+            "team": "Lightning",
+            "description": "Andrei Vasilevskiy (expected) - Elite starting goalie.",
+            "direction": "positive",
+            "magnitude": 1,
+            "confidence": 1.0
           }
         ],
-        "net_qualitative_edge": "home",
-        "summary": "The Wild are negatively impacted by their starting goalie being out, but the Stars face a more severe disadvantage with both their starting goalie and a key forward sidelined, giving the Wild a net qualitative edge.",
-        "pick_rationale": "The model favors the Wild with a significant 63.3% probability, primarily driven by the nhl_matchup model's strong conviction at 86.5%. This statistical backing is reinforced by qualitative factors, as the Stars are more severely impacted by key injuries to their starting goalie and a top forward compared to the Wild's absence of their starting netminder.",
-        "model_vs_market": "The model's 63.3% probability for the Wild indicates a strong conviction, though a direct comparison to market implied probability is not possible as the current line is N/A.",
-        "key_risk": "The Wild's backup goalie, Jesper Wallstedt, could underperform, negating the Stars' injury disadvantages.",
-        "confidence_label": "strong"
+        "net_qualitative_edge": "away",
+        "summary": "The Panthers are significantly hampered by the absence of star forwards Brady Tkachuk and Brad Marchand, along with depth player Jonah Gadjovich. The Lightning are missing solid forward Yanni Gourde and depth player Dominic James, but benefit from having elite goalie Andrei Vasilevskiy in net. Overall, the qualitative factors favor the Lightning.",
+        "pick_rationale": "The model picks the Panthers at 64.1%, but the qualitative analysis suggests a significant disadvantage for the home team due to key injuries. The nhl_matchup model strongly favors the Panthers at 100%, while the Elo model is much lower at 42.3%, indicating a strong disagreement among component models. The absence of star forwards Brady Tkachuk and Brad Marchand for the Panthers creates a substantial negative impact that is not reflected in the overall model probability for the home team.",
+        "model_vs_market": "The model's 64.1% probability for the Panthers is likely a significant overestimation given the qualitative factors, creating a potential negative edge against the market.",
+        "key_risk": "The primary risk for this pick is the significant injury list for the Panthers, particularly the absence of two star forwards, which could severely hamper their offensive output.",
+        "confidence_label": "avoid"
       },
-      "qualitative_summary": "Qualitative (H:-3 A:-5): agreed. Starting goalie Filip Gustavsson is out, leading to backup Jesper Wallstedt starting.; Starting goalie Jake Oettinger is out, leading to backup Casey DeSmith starting.",
-      "blurb": "The model favors the Wild with a significant 63.3% probability, primarily driven by the nhl_matchup model's strong conviction at 86.5%. This statistical backing is reinforced by qualitative factors, as the Stars are more severely impacted by key injuries to their starting goalie and a top forward compared to the Wild's absence of their starting netminder.",
-      "model_vs_market": "The model's 63.3% probability for the Wild indicates a strong conviction, though a direct comparison to market implied probability is not possible as the current line is N/A.",
-      "key_risk": "The Wild's backup goalie, Jesper Wallstedt, could underperform, negating the Stars' injury disadvantages.",
-      "ai_confidence_label": "strong",
-      "run_id": "daily-20260925T161813637130Z",
+      "qualitative_summary": "Qualitative (H:-4 A:-2): disagreed. Brady Tkachuk (Out) - Key forward absence.; Brad Marchand (Injured Reserve) - Key forward absence.",
+      "blurb": "The model picks the Panthers at 64.1%, but the qualitative analysis suggests a significant disadvantage for the home team due to key injuries. The nhl_matchup model strongly favors the Panthers at 100%, while the Elo model is much lower at 42.3%, indicating a strong disagreement among component models. The absence of star forwards Brady Tkachuk and Brad Marchand for the Panthers creates a substantial negative impact that is not reflected in the overall model probability for the home team.",
+      "model_vs_market": "The model's 64.1% probability for the Panthers is likely a significant overestimation given the qualitative factors, creating a potential negative edge against the market.",
+      "key_risk": "The primary risk for this pick is the significant injury list for the Panthers, particularly the absence of two star forwards, which could severely hamper their offensive output.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-25T16:18:13Z",
-      "snapshot_path": "tracking/snapshots/2026-09-25/nhl/daily-20260925T161813637130Z.json"
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
     },
     {
-      "home_team": "Avalanche",
-      "away_team": "Jets",
-      "date": "2026-09-25",
-      "start_time": "2026-09-26T00:30Z",
+      "home_team": "Red Wings",
+      "away_team": "Blue Jackets",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Mackenzie Blackwood",
-      "away_goalie": "Stuart Skinner",
-      "home_goalie_status": "confirmed",
+      "home_goalie": "John Gibson",
+      "away_goalie": "Jet Greaves",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "confirmed",
+      "home_injury_profile": {
+        "injury_burden": 3.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.5634,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 46.0,
+      "confidence_stars": 1,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.4366,
+        "away": 0.5634
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4714,
+          "away": 0.5286
+        },
+        "results_features": {
+          "home": 0.4971,
+          "away": 0.5029
+        },
+        "nhl_matchup": {
+          "home": 0.4907,
+          "away": 0.5093
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.4366,
+          "raw_model_prob": 0.4366,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 24.5,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.5634,
+          "raw_model_prob": 0.5634,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 46.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Red Wings",
+        "away_team": "Blue Jackets",
+        "home_impact": -5,
+        "away_impact": -3,
+        "individual_factors": [
+          {
+            "team": "Red Wings",
+            "description": "Dylan Larkin (Out): Key forward and offensive leader is out.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Red Wings",
+            "description": "Jacob Bernard-Docker (Out): Regular defenseman is out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Red Wings",
+            "description": "Carter Bear (Out): Depth player is out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Blue Jackets",
+            "description": "Elvis Merzlikins (Injured Reserve): Starting goalie is out.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Blue Jackets",
+            "description": "Jet Greaves (confirmed): Backup goalie starting due to Merzlikins' injury.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Red Wings are severely hampered by multiple key injuries, most notably their captain Dylan Larkin. The Blue Jackets are missing their starting goaltender, Elvis Merzlikins, and will start a backup. The overall impact of injuries is more detrimental to the Red Wings.",
+        "pick_rationale": "The model favors the Blue Jackets with a 55.9% probability, indicating a notable edge over the market. All three component models (elo, results_features, nhl_matchup) lean towards the Blue Jackets. Qualitatively, the Red Wings are significantly impacted by the absence of key players like Dylan Larkin, which outweighs the Blue Jackets' loss of starting goalie Elvis Merzlikins.",
+        "model_vs_market": "The model's 55.9% probability for the Blue Jackets suggests a 5.9% edge over a hypothetical 50% implied market probability.",
+        "key_risk": "The Blue Jackets' backup goalie, Jet Greaves, could struggle significantly, negating their qualitative advantage.",
+        "confidence_label": "strong"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-3): agreed. Dylan Larkin (Out): Key forward and offensive leader is out.; Jacob Bernard-Docker (Out): Regular defenseman is out.",
+      "blurb": "The model favors the Blue Jackets with a 55.9% probability, indicating a notable edge over the market. All three component models (elo, results_features, nhl_matchup) lean towards the Blue Jackets. Qualitatively, the Red Wings are significantly impacted by the absence of key players like Dylan Larkin, which outweighs the Blue Jackets' loss of starting goalie Elvis Merzlikins.",
+      "model_vs_market": "The model's 55.9% probability for the Blue Jackets suggests a 5.9% edge over a hypothetical 50% implied market probability.",
+      "key_risk": "The Blue Jackets' backup goalie, Jet Greaves, could struggle significantly, negating their qualitative advantage.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Senators",
+      "away_team": "Canadiens",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Linus Ullmark",
+      "away_goalie": "Jakub Dobes",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 3.7,
+        "uncertainty_burden": 0.7,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 1.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.5163,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 13.7,
+      "confidence_stars": 1,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.5163,
+        "away": 0.4837
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4837,
+          "away": 0.5163
+        },
+        "results_features": {
+          "home": 0.6532,
+          "away": 0.3468
+        },
+        "nhl_matchup": {
+          "home": 0.4215,
+          "away": 0.5785
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.5163,
+          "raw_model_prob": 0.5163,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 13.7,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.4837,
+          "raw_model_prob": 0.4837,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 6.4,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Senators",
+        "away_team": "Canadiens",
+        "home_impact": -5,
+        "away_impact": -5,
+        "individual_factors": [
+          {
+            "team": "Senators",
+            "description": "Jake Sanderson (Out): Key top-pair defenseman is out, significantly weakening the defensive corps.",
+            "direction": "negative",
+            "magnitude": 4,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Artem Zub (Out): Top-four defenseman is out, further depleting the team's defensive depth.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Linus Ullmark (Expected Starter): A high-quality, established starting goalie provides a significant boost, especially with defensive injuries.",
+            "direction": "positive",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Warren Foegele (Out): Bottom-six forward is out, impacting forward depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Shane Pinto (Day-To-Day): Middle-six forward's potential absence further impacts forward depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.7
+          },
+          {
+            "team": "Canadiens",
+            "description": "Kaiden Guhle (Out): Top-four defenseman is out, a significant loss for their blueline.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Canadiens",
+            "description": "Jakub Dobes (Expected Starter): A backup goalie starting is a significant downgrade from a typical NHL starter.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Canadiens",
+            "description": "Ivan Demidov (Day-To-Day): Prospect/depth forward's potential absence impacts forward depth.",
+            "direction": "negative",
+            "magnitude": 0.5,
+            "confidence": 0.7
+          }
+        ],
+        "net_qualitative_edge": "none",
+        "summary": "Both teams face extreme negative qualitative impacts. The Senators are severely hampered by the absence of two key defensemen (Sanderson and Zub), though mitigated by the presence of elite goalie Linus Ullmark. The Canadiens are also significantly impacted by the loss of defenseman Kaiden Guhle and the expected start of backup goalie Jakub Dobes.",
+        "pick_rationale": "The model's pick for the Senators at 51.6% is primarily driven by the results_features model, which assigns a 65.3% probability. However, the elo and nhl_matchup models lean towards the Canadiens. Qualitatively, both teams face extreme negative impacts due to significant injuries and goalie situations, resulting in a neutral net qualitative edge.",
+        "model_vs_market": "The market line is not available, so a direct comparison of the model's probability to the book's implied probability cannot be made.",
+        "key_risk": "The primary risk for the Senators pick is their severely depleted defensive corps, which could struggle to contain the Canadiens' offense despite Ullmark's presence.",
+        "confidence_label": "thin"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-5): no effect. Jake Sanderson (Out): Key top-pair defenseman is out, significantly weakening the defensive corps.; Artem Zub (Out): Top-four defenseman is out, further depleting the team's defensive depth.",
+      "blurb": "The model's pick for the Senators at 51.6% is primarily driven by the results_features model, which assigns a 65.3% probability. However, the elo and nhl_matchup models lean towards the Canadiens. Qualitatively, both teams face extreme negative impacts due to significant injuries and goalie situations, resulting in a neutral net qualitative edge.",
+      "model_vs_market": "The market line is not available, so a direct comparison of the model's probability to the book's implied probability cannot be made.",
+      "key_risk": "The primary risk for the Senators pick is their severely depleted defensive corps, which could struggle to contain the Canadiens' offense despite Ullmark's presence.",
+      "ai_confidence_label": "thin",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Canucks",
+      "away_team": "Kraken",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Kevin Lankinen",
+      "away_goalie": "Joey Daccord",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 2.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 0.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.5264,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 14.7,
+      "confidence_stars": 1,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.5264,
+        "away": 0.4736
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4623,
+          "away": 0.5377
+        },
+        "results_features": {
+          "home": 0.503,
+          "away": 0.497
+        },
+        "nhl_matchup": {
+          "home": 0.698,
+          "away": 0.302
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.5264,
+          "raw_model_prob": 0.5264,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 14.7,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.4736,
+          "raw_model_prob": 0.4736,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 4.3,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Canucks",
+        "away_team": "Kraken",
+        "home_impact": -5,
+        "away_impact": -1,
+        "individual_factors": [
+          {
+            "team": "Canucks",
+            "description": "Starting goalie Thatcher Demko is on Injured Reserve, leading to backup Kevin Lankinen starting.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Canucks",
+            "description": "Forward Filip Chytil is on Injured Reserve.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Canucks",
+            "description": "Forward Mackenzie MacEachern is day-to-day.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.7
+          },
+          {
+            "team": "Kraken",
+            "description": "Forward Jake O'Brien is day-to-day.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.7
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Canucks face significant qualitative headwinds with their starting goalie Thatcher Demko out and two depth forwards injured. The Kraken have a minor injury to a depth player. This creates a strong net qualitative advantage for the Kraken.",
+        "pick_rationale": "The model picks the Canucks to win at 53.4%, primarily driven by the nhl_matchup model which sees a strong edge for Vancouver. However, the qualitative factors present a significant challenge for the Canucks, with starting goalie Thatcher Demko out and two additional forwards injured. The elo model also disagrees with the pick, favoring the Kraken.",
+        "model_vs_market": "The model projects the Canucks to win at 53.4%, suggesting a slight edge over what the market might imply, especially given the qualitative disadvantages for the home team.",
+        "key_risk": "The primary risk to this pick is the significant downgrade in goaltending for the Canucks with backup Kevin Lankinen starting in place of the injured Thatcher Demko.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-1): disagreed. Starting goalie Thatcher Demko is on Injured Reserve, leading to backup Kevin Lankinen starting.; Forward Filip Chytil is on Injured Reserve.",
+      "blurb": "The model picks the Canucks to win at 53.4%, primarily driven by the nhl_matchup model which sees a strong edge for Vancouver. However, the qualitative factors present a significant challenge for the Canucks, with starting goalie Thatcher Demko out and two additional forwards injured. The elo model also disagrees with the pick, favoring the Kraken.",
+      "model_vs_market": "The model projects the Canucks to win at 53.4%, suggesting a slight edge over what the market might imply, especially given the qualitative disadvantages for the home team.",
+      "key_risk": "The primary risk to this pick is the significant downgrade in goaltending for the Canucks with backup Kevin Lankinen starting in place of the injured Thatcher Demko.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Canadiens",
+      "away_team": "Senators",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Jakub Dobes",
+      "away_goalie": "Linus Ullmark",
+      "home_goalie_status": "expected",
       "away_goalie_status": "expected",
       "home_injury_profile": {
         "injury_burden": 1.35,
@@ -502,7 +1626,641 @@
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
+        "injury_burden": 3.7,
+        "uncertainty_burden": 0.7,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.526,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 14.6,
+      "confidence_stars": 1,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.526,
+        "away": 0.474
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.5957,
+          "away": 0.4043
+        },
+        "results_features": {
+          "home": 0.3814,
+          "away": 0.6186
+        },
+        "nhl_matchup": {
+          "home": 0.6044,
+          "away": 0.3956
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.526,
+          "raw_model_prob": 0.526,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 14.6,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.474,
+          "raw_model_prob": 0.474,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 4.2,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Canadiens",
+        "away_team": "Senators",
+        "home_impact": -5,
+        "away_impact": -4,
+        "individual_factors": [
+          {
+            "team": "Canadiens",
+            "description": "Key defenseman Kaiden Guhle is out, impacting defensive strength.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Canadiens",
+            "description": "Prospect Jakub Dobes is expected to start in net, a significant downgrade from a typical starter.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Middle-six forward Shane Pinto is day-to-day, potentially weakening offensive depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Senators",
+            "description": "Bottom-six forward Warren Foegele is out, reducing forward depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Top-4 defenseman Artem Zub is out, weakening the defensive corps.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Top-pair defenseman Jake Sanderson is out, a major loss for the blue line.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Senators",
+            "description": "Elite starting goalie Linus Ullmark is expected to start, providing a strong advantage in net.",
+            "direction": "positive",
+            "magnitude": 3,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Canadiens face significant challenges with top-4 defenseman Kaiden Guhle out and prospect Jakub Dobes starting in goal. The Senators are dealing with multiple key defensive injuries to Artem Zub and Jake Sanderson, along with forward absences, but are significantly bolstered by elite goalie Linus Ullmark starting.",
+        "pick_rationale": "The model projects the Canadiens to win at 52.8% probability, with strong support from the Elo (59.6%) and nhl_matchup (60.4%) component models. However, qualitative factors indicate a slight advantage for the Senators, as elite goalie Linus Ullmark's presence significantly mitigates their defensive injuries, while the Canadiens are negatively impacted by a prospect goalie start and a key defensive absence.",
+        "model_vs_market": "Without a current market line, the model's projected probability of 52.8% for the Canadiens cannot be compared to an implied market probability.",
+        "key_risk": "The primary risk for this pick is that the qualitative factors, particularly the Canadiens' goalie situation and the Senators' elite netminder, could outweigh the model's underlying statistical advantage for Montreal.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-4): disagreed. Key defenseman Kaiden Guhle is out, impacting defensive strength.; Prospect Jakub Dobes is expected to start in net, a significant downgrade from a typical starter.",
+      "blurb": "The model projects the Canadiens to win at 52.8% probability, with strong support from the Elo (59.6%) and nhl_matchup (60.4%) component models. However, qualitative factors indicate a slight advantage for the Senators, as elite goalie Linus Ullmark's presence significantly mitigates their defensive injuries, while the Canadiens are negatively impacted by a prospect goalie start and a key defensive absence.",
+      "model_vs_market": "Without a current market line, the model's projected probability of 52.8% for the Canadiens cannot be compared to an implied market probability.",
+      "key_risk": "The primary risk for this pick is that the qualitative factors, particularly the Canadiens' goalie situation and the Senators' elite netminder, could outweigh the model's underlying statistical advantage for Montreal.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Blackhawks",
+      "away_team": "Blues",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Spencer Knight",
+      "away_goalie": "Joel Hofer",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6321,
+      "edge": 0.1216,
+      "expected_value": 0.182,
+      "kelly_fraction": 0.2092,
+      "fractional_kelly": 0.0418,
+      "confidence_score": 62.6,
+      "confidence_stars": 4,
+      "american_odds": -115,
+      "model_probs": {
+        "home": 0.3679,
+        "away": 0.6321
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.2866,
+          "away": 0.7134
+        },
+        "results_features": {
+          "home": 0.4635,
+          "away": 0.5365
+        },
+        "nhl_matchup": {
+          "home": 0.371,
+          "away": 0.629
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3679,
+          "raw_model_prob": 0.3679,
+          "implied_prob": 0.4895,
+          "market_implied_prob": 0.5128,
+          "edge": -0.1216,
+          "expected_value": -0.2825,
+          "decimal_odds": 1.95,
+          "american_odds": -105,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 7.9,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0476,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 1
+        },
+        "away": {
+          "model_prob": 0.6321,
+          "raw_model_prob": 0.6321,
+          "implied_prob": 0.5105,
+          "market_implied_prob": 0.5348,
+          "edge": 0.1216,
+          "expected_value": 0.182,
+          "decimal_odds": 1.87,
+          "american_odds": -115,
+          "kelly_fraction": 0.2092,
+          "fractional_kelly": 0.0418,
+          "confidence_score": 62.6,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0476,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 1
+        }
+      },
+      "best_odds": {
+        "home": -105,
+        "away": -115
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.95,
+          "away": 1.87
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.5105,
+            "home": 0.4895
+          },
+          "raw_probs": {
+            "away": 0.5348,
+            "home": 0.5128
+          },
+          "hold": 0.0476,
+          "books_tracked": 1,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-09-26T15:29:10Z",
+            "outcomes": {
+              "home": 1.95,
+              "away": 1.87
+            },
+            "raw_probs": {
+              "home": 0.5128,
+              "away": 0.5348
+            },
+            "fair_probs": {
+              "home": 0.4895,
+              "away": 0.5105
+            },
+            "hold": 0.0476
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Blackhawks",
+        "away_team": "Blues",
+        "home_impact": -5,
+        "away_impact": -1,
+        "individual_factors": [
+          {
+            "team": "Blackhawks",
+            "description": "Connor Bedard (Out) - Superstar player, major offensive loss.",
+            "direction": "negative",
+            "magnitude": 4,
+            "confidence": 1
+          },
+          {
+            "team": "Blackhawks",
+            "description": "Jordan Greenway (Out) - Regular forward, moderate offensive loss.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Blues",
+            "description": "Tyler Tucker (Out) - Depth defenseman, minor impact.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Blackhawks are significantly impacted by the absence of superstar Connor Bedard and regular forward Jordan Greenway. The Blues have a minor injury to a depth defenseman. The expected goalie matchup is relatively even, with Spencer Knight for Chicago and Joel Hofer for St. Louis.",
+        "pick_rationale": "The model identifies a significant edge for the Blues, projecting a 62.4% win probability compared to the market's 51.0%. This strong disagreement is supported by all three component models, particularly Elo and nhl_matchup. Qualitatively, the Blackhawks are severely hampered by the absence of superstar Connor Bedard and regular forward Jordan Greenway, which significantly weakens their offensive capabilities.",
+        "model_vs_market": "The model projects the Blues to win at 62.4%, which is an 11.4% edge over the market's implied probability of 51.0%.",
+        "key_risk": "The key risk is that the Blues' offense underperforms against Spencer Knight, or that the Blackhawks' remaining players step up unexpectedly despite key injuries.",
+        "confidence_label": "strong"
+      },
+      "qualitative_summary": "Qualitative (H:-5 A:-1): agreed. Connor Bedard (Out) - Superstar player, major offensive loss.; Jordan Greenway (Out) - Regular forward, moderate offensive loss.",
+      "blurb": "The model identifies a significant edge for the Blues, projecting a 62.4% win probability compared to the market's 51.0%. This strong disagreement is supported by all three component models, particularly Elo and nhl_matchup. Qualitatively, the Blackhawks are severely hampered by the absence of superstar Connor Bedard and regular forward Jordan Greenway, which significantly weakens their offensive capabilities.",
+      "model_vs_market": "The model projects the Blues to win at 62.4%, which is an 11.4% edge over the market's implied probability of 51.0%.",
+      "key_risk": "The key risk is that the Blues' offense underperforms against Spencer Knight, or that the Blackhawks' remaining players step up unexpectedly despite key injuries.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Islanders",
+      "away_team": "Devils",
+      "date": "2026-09-26",
+      "start_time": "2026-09-26T23:30Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Ilya Sorokin",
+      "away_goalie": "Jake Allen",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "confirmed",
+      "home_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.561,
+      "edge": 0.05,
+      "expected_value": 0.0791,
+      "kelly_fraction": 0.0791,
+      "fractional_kelly": 0.0158,
+      "confidence_score": 45.9,
+      "confidence_stars": 2,
+      "american_odds": 100,
+      "model_probs": {
+        "home": 0.439,
+        "away": 0.561
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4759,
+          "away": 0.5241
+        },
+        "results_features": {
+          "home": 0.5204,
+          "away": 0.4796
+        },
+        "nhl_matchup": {
+          "home": 0.3789,
+          "away": 0.6211
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.4605,
+          "raw_model_prob": 0.439,
+          "implied_prob": 0.5105,
+          "market_implied_prob": 0.5348,
+          "edge": -0.05,
+          "expected_value": -0.1205,
+          "decimal_odds": 1.91,
+          "american_odds": -110,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 15.2,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 3
+        },
+        "away": {
+          "model_prob": 0.5395,
+          "raw_model_prob": 0.561,
+          "implied_prob": 0.4895,
+          "market_implied_prob": 0.5128,
+          "edge": 0.05,
+          "expected_value": 0.0791,
+          "decimal_odds": 2.0,
+          "american_odds": 100,
+          "kelly_fraction": 0.0791,
+          "fractional_kelly": 0.0158,
+          "confidence_score": 45.9,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 3
+        }
+      },
+      "best_odds": {
+        "home": -110,
+        "away": 100
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.91,
+          "away": 2.0
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.4895,
+            "home": 0.5105
+          },
+          "raw_probs": {
+            "away": 0.5128,
+            "home": 0.5348
+          },
+          "hold": 0.0471,
+          "books_tracked": 3,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-09-26T15:29:10Z",
+            "outcomes": {
+              "home": 1.83,
+              "away": 2.0
+            },
+            "raw_probs": {
+              "home": 0.5464,
+              "away": 0.5
+            },
+            "fair_probs": {
+              "home": 0.5222,
+              "away": 0.4778
+            },
+            "hold": 0.0464
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-09-26T15:28:39Z",
+            "outcomes": {
+              "home": 1.87,
+              "away": 1.95
+            },
+            "raw_probs": {
+              "home": 0.5348,
+              "away": 0.5128
+            },
+            "fair_probs": {
+              "home": 0.5105,
+              "away": 0.4895
+            },
+            "hold": 0.0476
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-09-26T15:29:09Z",
+            "outcomes": {
+              "home": 1.91,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5236,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5,
+              "away": 0.5
+            },
+            "hold": 0.0471
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Islanders",
+        "away_team": "Devils",
+        "home_impact": 0,
+        "away_impact": -4,
+        "individual_factors": [
+          {
+            "team": "Islanders",
+            "description": "Mathew Barzal (Out): Key playmaker out.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Islanders",
+            "description": "Quinn Finley (Out): Minor player out.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Islanders",
+            "description": "Ilya Sorokin (Confirmed Goalie): Elite starting goalie confirmed.",
+            "direction": "positive",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Devils",
+            "description": "Seamus Casey (Out): Minor player out.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Devils",
+            "description": "Nick Bjugstad (Out): Depth forward out.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 1
+          },
+          {
+            "team": "Devils",
+            "description": "Jake Allen (Confirmed Goalie): Backup goalie starting.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Islanders are negatively impacted by the absence of key playmaker Mathew Barzal, but this is offset by their elite starting goalie, Ilya Sorokin. The Devils face a significant negative impact with backup goalie Jake Allen starting and a depth forward Nick Bjugstad out.",
+        "pick_rationale": "The model identifies a significant edge on the Devils, driven primarily by the nhl_matchup component model which assigns a 62.1% probability to their win. However, the qualitative factors strongly contradict this pick, with the Devils facing a net negative impact of -4 compared to the Islanders' neutral impact. The model's edge is present despite the Devils' qualitative disadvantages.",
+        "model_vs_market": "The model's probability of 56.9% for the Devils is 7.9% higher than the market's implied probability of 48.9%.",
+        "key_risk": "The primary risk is the Devils' backup goalie Jake Allen starting, which significantly degrades their chances, especially when the qualitative factors suggest the Islanders are in a better spot.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:0 A:-4): disagreed. Mathew Barzal (Out): Key playmaker out.; Quinn Finley (Out): Minor player out.",
+      "blurb": "The model identifies a significant edge on the Devils, driven primarily by the nhl_matchup component model which assigns a 62.1% probability to their win. However, the qualitative factors strongly contradict this pick, with the Devils facing a net negative impact of -4 compared to the Islanders' neutral impact. The model's edge is present despite the Devils' qualitative disadvantages.",
+      "model_vs_market": "The model's probability of 56.9% for the Devils is 7.9% higher than the market's implied probability of 48.9%.",
+      "key_risk": "The primary risk is the Devils' backup goalie Jake Allen starting, which significantly degrades their chances, especially when the qualitative factors suggest the Islanders are in a better spot.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Oilers",
+      "away_team": "Flames",
+      "date": "2026-09-26",
+      "start_time": "2026-09-27T01:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Devon Levi",
+      "away_goalie": "Dustin Wolf",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
         "injury_burden": 3.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 2.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -525,7 +2283,7 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.6979,
+      "model_prob": 0.7015,
       "edge": 0.0,
       "expected_value": 0.0,
       "kelly_fraction": 0.0,
@@ -534,27 +2292,27 @@
       "confidence_stars": 2,
       "american_odds": null,
       "model_probs": {
-        "home": 0.6979,
-        "away": 0.3021
+        "home": 0.7015,
+        "away": 0.2985
       },
       "individual_models": {
         "elo": {
-          "home": 0.7404,
-          "away": 0.2596
+          "home": 0.6045,
+          "away": 0.3955
         },
         "results_features": {
-          "home": 0.4691,
-          "away": 0.5309
+          "home": 0.5066,
+          "away": 0.4934
         },
         "nhl_matchup": {
-          "home": 0.828,
-          "away": 0.172
+          "home": 1.0,
+          "away": 0.0
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.6979,
-          "raw_model_prob": 0.6979,
+          "model_prob": 0.7015,
+          "raw_model_prob": 0.7015,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -571,8 +2329,8 @@
           "market_books": 0
         },
         "away": {
-          "model_prob": 0.3021,
-          "raw_model_prob": 0.3021,
+          "model_prob": 0.2985,
+          "raw_model_prob": 0.2985,
           "implied_prob": null,
           "market_implied_prob": null,
           "edge": 0.0,
@@ -593,42 +2351,184 @@
       "market_snapshot": null,
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Avalanche",
-        "away_team": "Jets",
+        "home_team": "Oilers",
+        "away_team": "Flames",
         "home_impact": -1,
         "away_impact": -3,
         "individual_factors": [
           {
-            "team": "Avalanche",
-            "description": "Cale Makar (Day-To-Day) creates uncertainty for a superstar defenseman's availability.",
+            "team": "Oilers",
+            "description": "Jason Dickinson (Out), Mattias Janmark (Injured Reserve), and Alec Regula (Out) are depth players, creating a minor negative impact on team depth.",
             "direction": "negative",
             "magnitude": 1,
             "confidence": 0.8
           },
           {
-            "team": "Jets",
-            "description": "Connor Hellebuyck (Suspension) means the Jets will be without their elite starting goaltender, a significant downgrade to Stuart Skinner.",
+            "team": "Flames",
+            "description": "Jonathan Huberdeau (Injured Reserve) is a significant offensive player whose absence creates a notable negative impact.",
             "direction": "negative",
             "magnitude": 3,
-            "confidence": 1.0
+            "confidence": 0.9
+          },
+          {
+            "team": "Flames",
+            "description": "Henry Mews (Out) is likely a depth or prospect player, resulting in a minor negative impact.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 0.7
           }
         ],
         "net_qualitative_edge": "home",
-        "summary": "The Jets face a significant qualitative disadvantage due to the suspension of their elite starting goaltender, Connor Hellebuyck, forcing Stuart Skinner into the net. The Avalanche have minor uncertainty with Cale Makar's day-to-day status, but the impact is less severe.",
-        "pick_rationale": "The model identifies a strong edge for the Avalanche, with a 69.4% probability of winning, driven by the nhl_matchup and elo models. Qualitatively, the Jets are severely hampered by the confirmed absence of their elite starting goalie, Connor Hellebuyck, due to suspension. While the Avalanche have Cale Makar listed as day-to-day, the Jets' goalie situation presents a more substantial negative impact.",
-        "model_vs_market": "The market line is currently unavailable, so a direct comparison to the book's implied probability cannot be quantified.",
-        "key_risk": "The primary risk for the Avalanche is if Cale Makar is ultimately ruled out, which would significantly impact their defensive strength.",
+        "summary": "The Calgary Flames are significantly hampered by the absence of key offensive player Jonathan Huberdeau. The Edmonton Oilers also have some depth injuries, but these are less impactful than Huberdeau's absence for the Flames.",
+        "pick_rationale": "The model shows a strong conviction for the Oilers at 69.7% probability, driven by the nhl_matchup model at 100% and supported by elo at 60.5%. Qualitatively, the Flames are at a significant disadvantage with key offensive player Jonathan Huberdeau on injured reserve, which is a more substantial loss than the Oilers' depth injuries. This qualitative edge further reinforces the model's strong lean towards the home team.",
+        "model_vs_market": "The current line is not available, so a direct comparison to the market implied probability cannot be made, but the model's internal probability is high.",
+        "key_risk": "The primary risk for this pick is that the Flames' remaining offensive players overperform in Huberdeau's absence, or the Oilers' depth injuries prove more disruptive than anticipated.",
         "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-1 A:-3): agreed. Cale Makar (Day-To-Day) creates uncertainty for a superstar defenseman's availability.; Connor Hellebuyck (Suspension) means the Jets will be without their elite starting goaltender, a significant downgrade to Stuart Skinner.",
-      "blurb": "The model identifies a strong edge for the Avalanche, with a 69.4% probability of winning, driven by the nhl_matchup and elo models. Qualitatively, the Jets are severely hampered by the confirmed absence of their elite starting goalie, Connor Hellebuyck, due to suspension. While the Avalanche have Cale Makar listed as day-to-day, the Jets' goalie situation presents a more substantial negative impact.",
-      "model_vs_market": "The market line is currently unavailable, so a direct comparison to the book's implied probability cannot be quantified.",
-      "key_risk": "The primary risk for the Avalanche is if Cale Makar is ultimately ruled out, which would significantly impact their defensive strength.",
+      "qualitative_summary": "Qualitative (H:-1 A:-3): agreed. Jason Dickinson (Out), Mattias Janmark (Injured Reserve), and Alec Regula (Out) are depth players, creating a minor negative impact on team depth.; Jonathan Huberdeau (Injured Reserve) is a significant offensive player whose absence creates a notable negative impact.",
+      "blurb": "The model shows a strong conviction for the Oilers at 69.7% probability, driven by the nhl_matchup model at 100% and supported by elo at 60.5%. Qualitatively, the Flames are at a significant disadvantage with key offensive player Jonathan Huberdeau on injured reserve, which is a more substantial loss than the Oilers' depth injuries. This qualitative edge further reinforces the model's strong lean towards the home team.",
+      "model_vs_market": "The current line is not available, so a direct comparison to the market implied probability cannot be made, but the model's internal probability is high.",
+      "key_risk": "The primary risk for this pick is that the Flames' remaining offensive players overperform in Huberdeau's absence, or the Oilers' depth injuries prove more disruptive than anticipated.",
       "ai_confidence_label": "strong",
-      "run_id": "daily-20260925T161813637130Z",
+      "run_id": "daily-20260926T152929236470Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-25T16:18:13Z",
-      "snapshot_path": "tracking/snapshots/2026-09-25/nhl/daily-20260925T161813637130Z.json"
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
+    },
+    {
+      "home_team": "Golden Knights",
+      "away_team": "Sharks",
+      "date": "2026-09-26",
+      "start_time": "2026-09-27T02:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Carter Hart",
+      "away_goalie": "Yaroslav Askarov",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 1.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 3.05,
+        "uncertainty_burden": 1.05,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.6953,
+      "edge": 0.0,
+      "expected_value": 0.0,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 45.0,
+      "confidence_stars": 2,
+      "american_odds": null,
+      "model_probs": {
+        "home": 0.6953,
+        "away": 0.3047
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.7383,
+          "away": 0.2617
+        },
+        "results_features": {
+          "home": 0.3877,
+          "away": 0.6123
+        },
+        "nhl_matchup": {
+          "home": 0.9361,
+          "away": 0.0639
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.6953,
+          "raw_model_prob": 0.6953,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 45.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        },
+        "away": {
+          "model_prob": 0.3047,
+          "raw_model_prob": 0.3047,
+          "implied_prob": null,
+          "market_implied_prob": null,
+          "edge": 0.0,
+          "expected_value": 0.0,
+          "decimal_odds": null,
+          "american_odds": null,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": null,
+          "market_source": "none",
+          "market_books": 0
+        }
+      },
+      "best_odds": {},
+      "market_snapshot": null,
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Golden Knights",
+        "away_team": "Sharks",
+        "home_impact": 0,
+        "away_impact": 0,
+        "individual_factors": [],
+        "net_qualitative_edge": "none",
+        "summary": "There are no significant qualitative factors impacting this game. Both teams have minor injuries to depth players, which are not expected to affect the outcome. The expected starting goalies, Carter Hart for the Golden Knights and Yaroslav Askarov for the Sharks, are both considered standard starters for their respective teams.",
+        "pick_rationale": "The model strongly favors the Golden Knights, driven by the high conviction of the nhl_matchup model (93.6%) and supported by the elo model (73.8%). These models likely reflect a significant talent disparity between the two teams. There are no significant qualitative factors, such as key injuries or goalie changes, that would contradict this statistical advantage.",
+        "model_vs_market": "Without a current market line, the model's 69.5% probability indicates a strong statistical lean towards the Golden Knights as heavy favorites.",
+        "key_risk": "The primary risk is that the Sharks' expected starting goalie, Yaroslav Askarov, performs exceptionally well, or the Golden Knights have an unexpectedly poor offensive outing.",
+        "confidence_label": "moderate"
+      },
+      "qualitative_summary": "Qualitative (H:0 A:0): no effect. ",
+      "blurb": "The model strongly favors the Golden Knights, driven by the high conviction of the nhl_matchup model (93.6%) and supported by the elo model (73.8%). These models likely reflect a significant talent disparity between the two teams. There are no significant qualitative factors, such as key injuries or goalie changes, that would contradict this statistical advantage.",
+      "model_vs_market": "Without a current market line, the model's 69.5% probability indicates a strong statistical lean towards the Golden Knights as heavy favorites.",
+      "key_risk": "The primary risk is that the Sharks' expected starting goalie, Yaroslav Askarov, performs exceptionally well, or the Golden Knights have an unexpectedly poor offensive outing.",
+      "ai_confidence_label": "moderate",
+      "run_id": "daily-20260926T152929236470Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-09-26T15:29:29Z",
+      "snapshot_path": "tracking/snapshots/2026-09-26/nhl/daily-20260926T152929236470Z.json"
     }
   ],
   "totals_matches": [],
@@ -646,12 +2546,12 @@
   },
   "pick_stats": {
     "slop_lock": {
-      "total": 92,
+      "total": 93,
       "evaluated": 90,
       "wins": 47,
       "losses": 43,
       "pushes": 0,
-      "pending": 2,
+      "pending": 3,
       "hit_rate": 0.522,
       "roi": -0.103
     },
@@ -676,12 +2576,12 @@
       "roi": null
     },
     "all": {
-      "total": 92,
+      "total": 93,
       "evaluated": 90,
       "wins": 47,
       "losses": 43,
       "pushes": 0,
-      "pending": 2,
+      "pending": 3,
       "hit_rate": 0.522,
       "roi": -0.103
     }
@@ -1714,27 +3614,27 @@
   "validation_issues": [],
   "diagnostics": {
     "historical_matches": 1422,
-    "fixtures_fetched": 4,
-    "fixtures_in_window": 4,
+    "fixtures_fetched": 14,
+    "fixtures_in_window": 14,
     "fixtures_completed": 0,
-    "fixtures_pending": 4,
+    "fixtures_pending": 14,
     "odds_events_fetched": 33,
-    "fixtures_with_odds": 0,
-    "fixtures_without_odds": 4,
+    "fixtures_with_odds": 2,
+    "fixtures_without_odds": 12,
     "coverage_gap_examples": [
-      "Bruins @ Capitals",
-      "Rangers @ Islanders",
-      "Stars @ Wild"
+      "Penguins @ Sabres",
+      "Hurricanes @ Predators",
+      "Ducks @ Kings"
     ],
-    "matches_modeled": 4,
-    "matches_with_market": 4,
-    "matches_with_positive_ev": 0,
-    "matches_with_qualitative": 4,
-    "lock_eligible_matches": 0,
-    "lock_eligible_outcomes": 0,
+    "matches_modeled": 14,
+    "matches_with_market": 14,
+    "matches_with_positive_ev": 2,
+    "matches_with_qualitative": 14,
+    "lock_eligible_matches": 2,
+    "lock_eligible_outcomes": 2,
     "gate_failures": {
-      "missing_odds": 8,
-      "negative_expected_value": 0,
+      "missing_odds": 24,
+      "negative_expected_value": 2,
       "below_edge_floor": 0,
       "below_probability_floor": 0
     },
@@ -1748,7 +3648,7 @@
         "eligible_matches": 0
       }
     },
-    "slop_locks_posted": 0,
+    "slop_locks_posted": 1,
     "longslop_posted": 0,
     "slimegrinders_posted": 0,
     "publication_guard": {
@@ -2047,6 +3947,6 @@
     },
     "validation_issues": [],
     "validation_issues_count": 0,
-    "summary": "modeled=4 | odds=0/4 | +ev=0 | sense=4 | eligible=0 | locks=0 | totals disabled by config"
+    "summary": "modeled=14 | odds=2/14 | +ev=2 | sense=14 | eligible=2 | locks=1 | totals disabled by config"
   }
 }
