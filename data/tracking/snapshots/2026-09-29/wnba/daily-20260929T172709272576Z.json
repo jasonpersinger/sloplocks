@@ -1,0 +1,3842 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-09-29T17:28:36Z",
+  "sport": "wnba",
+  "sport_name": "WNBA",
+  "run_id": "daily-20260929T172709272576Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-09-29T17:27:09Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "reject_unrealistic_divergence": true,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.52,
+      "additional_confidence_floor": 52,
+      "confidence_dropoff": 7,
+      "max_picks": 3,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 1
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 2
+        }
+      }
+    },
+    "longslop": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 54
+    },
+    "slimegrinder": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 52
+    },
+    "totals_locks": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54.0,
+      "max_picks": 0
+    }
+  },
+  "publication_guard": {
+    "enforced": true,
+    "allow_moneyline": true,
+    "allow_totals": false,
+    "allow_longslop": false,
+    "allow_slimegrinder": false,
+    "moneyline_publish_cap": 1,
+    "totals_publish_cap": null,
+    "evaluated_picks": 55,
+    "evaluated_totals_picks": 0,
+    "min_evaluated_picks": 15,
+    "min_evaluated_totals_picks": 0,
+    "status": "partial",
+    "reason": "totals disabled by config",
+    "lane_guards": {
+      "moneyline": {
+        "market_type": "moneyline",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 56,
+          "evaluated": 55,
+          "pending": 1,
+          "hit_rate": 0.5818,
+          "roi": -0.058,
+          "push_rate": 0.0,
+          "wins": 32,
+          "losses": 23,
+          "pushes": 0,
+          "avg_confidence": 65.4786,
+          "avg_expected_value": 0.0728,
+          "clv": {
+            "tracked": 23,
+            "avg_clv": -0.0278,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.0,
+            "moneyline_tracked": 23,
+            "moneyline_avg_clv": -0.0278,
+            "moneyline_positive_rate": 0.0,
+            "moneyline_non_negative_rate": 0.0,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.625,
+          "roi": -0.0013,
+          "push_rate": 0.0,
+          "wins": 5,
+          "losses": 3,
+          "pushes": 0,
+          "avg_confidence": 63.5875,
+          "avg_expected_value": 0.0349,
+          "clv": {
+            "tracked": 4,
+            "avg_clv": -0.0256,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.0,
+            "moneyline_tracked": 4,
+            "moneyline_avg_clv": -0.0256,
+            "moneyline_positive_rate": 0.0,
+            "moneyline_non_negative_rate": 0.0,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.6559,
+          "actual_win_rate": 0.625,
+          "calibration_gap": 0.0309,
+          "overconfidence_gap": 0.0309
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent moneylines CLV -0.0256 is below -0.0050"
+        ],
+        "health_score": 0.8571
+      },
+      "totals": {
+        "market_type": "total",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "totals disabled by config"
+        ],
+        "health_score": 0.8571
+      },
+      "longslop": {
+        "market_type": null,
+        "pick_type": "longslop",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "longslop disabled by config",
+          "need more settled longslop picks (0/5)",
+          "need more recent settled longslop picks (0/3)",
+          "need more tracked longslop CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "slimegrinder": {
+        "market_type": null,
+        "pick_type": "slimegrinder",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "slimegrinder disabled by config",
+          "need more settled slimegrinder picks (0/5)",
+          "need more recent settled slimegrinder picks (0/3)",
+          "need more tracked slimegrinder CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "totals_enabled": false
+    }
+  },
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [
+      {
+        "home_team": "Fever",
+        "away_team": "Aces",
+        "date": "2026-09-29",
+        "start_time": "2026-09-29T22:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 13,
+          "injured_players": 1,
+          "questionable_players": 1,
+          "doubtful_players": 0,
+          "injury_burden": 0.35,
+          "uncertainty_burden": 0.35,
+          "key_absence_score": 0.35,
+          "leader_absence_burden": 0.49,
+          "leader_uncertainty_burden": 0.49,
+          "available_core_players": 12,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.7,
+          "event_leader_absence_burden": 0.717,
+          "event_leader_uncertainty_burden": 0.717
+        },
+        "away_availability_profile": {
+          "active_players": 12,
+          "injured_players": 1,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 11,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "5",
+              "uid": "s:40~l:59~t:5",
+              "displayName": "Indiana Fever",
+              "abbreviation": "IND",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/ind/indiana-fever",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/ind",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/ind.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/ind.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/ind.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Day-To-Day",
+                "date": "2026-09-28T21:11Z",
+                "athlete": {
+                  "id": "4432831",
+                  "uid": "s:40~l:59~a:4432831",
+                  "guid": "bcc663d0-9e0f-34d5-8298-d1922f84e7d2",
+                  "lastName": "Boston",
+                  "fullName": "Aliyah Boston",
+                  "displayName": "Aliyah Boston",
+                  "shortName": "A. Boston",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4432831/aliyah-boston",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4432831.png",
+                    "alt": "Aliyah Boston"
+                  },
+                  "jersey": "7",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4432831?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Lower Leg",
+                  "side": "Right",
+                  "returnDate": "2026-09-29"
+                }
+              },
+              {
+                "status": "Day-To-Day",
+                "date": "2026-09-28T21:08Z",
+                "athlete": {
+                  "id": "4433403",
+                  "uid": "s:40~l:59~a:4433403",
+                  "guid": "5ec40e1c-3104-322e-b80f-f358ea26aad4",
+                  "lastName": "Clark",
+                  "fullName": "Caitlin Clark",
+                  "displayName": "Caitlin Clark",
+                  "shortName": "C. Clark",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4433403/caitlin-clark",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4433403.png",
+                    "alt": "Caitlin Clark"
+                  },
+                  "jersey": "22",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4433403?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Back",
+                  "returnDate": "2026-09-29"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-26T19:21Z",
+                "athlete": {
+                  "id": "4065760",
+                  "uid": "s:40~l:59~a:4065760",
+                  "guid": "11eae5c8-81e8-7eae-957e-2ab3ffbe7a86",
+                  "lastName": "Harris",
+                  "fullName": "Tyasha Harris",
+                  "displayName": "Tyasha Harris",
+                  "shortName": "T. Harris",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4065760/tyasha-harris",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4065760.png",
+                    "alt": "Tyasha Harris"
+                  },
+                  "jersey": "52",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4065760?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Leg",
+                  "detail": "Not Specified",
+                  "side": "Left",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "17",
+              "uid": "s:40~l:59~t:17",
+              "displayName": "Las Vegas Aces",
+              "abbreviation": "LV",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/lv/las-vegas-aces",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/lv",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/lv.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/lv.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-05-01T20:55Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/lv.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-05-01T20:55Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-28T21:07Z",
+                "athlete": {
+                  "id": "4281190",
+                  "uid": "s:40~l:59~a:4281190",
+                  "guid": "051ae3bd-c8ea-eb8a-372b-9cd1cb336b9d",
+                  "lastName": "Evans",
+                  "fullName": "Dana Evans",
+                  "displayName": "Dana Evans",
+                  "shortName": "D. Evans",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4281190/dana-evans",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4281190.png",
+                    "alt": "Dana Evans"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4281190?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Knee",
+                  "returnDate": "2026-10-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-08-27T19:29Z",
+                "athlete": {
+                  "id": "4398776",
+                  "uid": "s:40~l:59~a:4398776",
+                  "guid": "92bac4f9-e4db-67c6-0354-24c06720f754",
+                  "lastName": "Smith",
+                  "fullName": "NaLyssa Smith",
+                  "displayName": "NaLyssa Smith",
+                  "shortName": "N. Smith",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4398776/nalyssa-smith",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4398776.png",
+                    "alt": "NaLyssa Smith"
+                  },
+                  "jersey": "3",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4398776?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Leg",
+                  "side": "Left",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Liberty",
+        "away_team": "Lynx",
+        "date": "2026-09-29",
+        "start_time": "2026-09-30T00:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 15,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 12,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 14,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 10,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "9",
+              "uid": "s:40~l:59~t:9",
+              "displayName": "New York Liberty",
+              "abbreviation": "NY",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/ny/new-york-liberty",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/ny",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/ny.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/ny.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/ny.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-29T17:00Z",
+                "athlete": {
+                  "id": "4281929",
+                  "uid": "s:40~l:59~a:4281929",
+                  "guid": "d4c403bb-a2c8-ed6b-aeaa-c290d8afea9b",
+                  "lastName": "Sabally",
+                  "fullName": "Satou Sabally",
+                  "displayName": "Satou Sabally",
+                  "shortName": "S. Sabally",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4281929/satou-sabally",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4281929.png",
+                    "alt": "Satou Sabally"
+                  },
+                  "jersey": "0",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4281929?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Concussion",
+                  "returnDate": "2027-05-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-22T21:05Z",
+                "athlete": {
+                  "id": "4398589",
+                  "uid": "s:40~l:59~a:4398589",
+                  "guid": "8a364843-20a4-5368-d670-b78467d95c60",
+                  "lastName": "Balogun",
+                  "fullName": "Elizabeth Balogun",
+                  "displayName": "Elizabeth Balogun",
+                  "shortName": "E. Balogun",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4398589/elizabeth-balogun",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4398589.png",
+                    "alt": "Elizabeth Balogun"
+                  },
+                  "jersey": "5",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4398589?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Not Injury Related",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "8",
+              "uid": "s:40~l:59~t:8",
+              "displayName": "Minnesota Lynx",
+              "abbreviation": "MIN",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/min/minnesota-lynx",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/min",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/min.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-28T21:13Z",
+                "athlete": {
+                  "id": "5278237",
+                  "uid": "s:40~l:59~a:5278237",
+                  "guid": "076a085a-42e0-3781-a609-9f19e7b6859f",
+                  "lastName": "Kosu",
+                  "fullName": "Anastasiia Olairi Kosu",
+                  "displayName": "Anastasiia Olairi Kosu",
+                  "shortName": "A. Kosu",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/5278237/anastasiia-olairi-kosu",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/5278237.png",
+                    "alt": "Anastasiia Olairi Kosu"
+                  },
+                  "jersey": "7",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Foot",
+                  "detail": "Not Specified",
+                  "side": "Right",
+                  "returnDate": "2026-10-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-24T23:30Z",
+                "athlete": {
+                  "id": "5208984",
+                  "uid": "s:40~l:59~a:5208984",
+                  "guid": "0188ccea-f8c3-3fb2-bf8c-f8f23dcf1b95",
+                  "lastName": "Buenavida",
+                  "fullName": "Elena Buenavida",
+                  "displayName": "Elena Buenavida",
+                  "shortName": "E. Buenavida",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/5208984/elena-buenavida",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Coach's Decision",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "fixtures_in_window": [
+      {
+        "home_team": "Fever",
+        "away_team": "Aces",
+        "date": "2026-09-29",
+        "start_time": "2026-09-29T22:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 13,
+          "injured_players": 1,
+          "questionable_players": 1,
+          "doubtful_players": 0,
+          "injury_burden": 0.35,
+          "uncertainty_burden": 0.35,
+          "key_absence_score": 0.35,
+          "leader_absence_burden": 0.49,
+          "leader_uncertainty_burden": 0.49,
+          "available_core_players": 12,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.7,
+          "event_leader_absence_burden": 0.717,
+          "event_leader_uncertainty_burden": 0.717
+        },
+        "away_availability_profile": {
+          "active_players": 12,
+          "injured_players": 1,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 11,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "5",
+              "uid": "s:40~l:59~t:5",
+              "displayName": "Indiana Fever",
+              "abbreviation": "IND",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/ind/indiana-fever",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/ind",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/ind.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/ind.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/ind.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Day-To-Day",
+                "date": "2026-09-28T21:11Z",
+                "athlete": {
+                  "id": "4432831",
+                  "uid": "s:40~l:59~a:4432831",
+                  "guid": "bcc663d0-9e0f-34d5-8298-d1922f84e7d2",
+                  "lastName": "Boston",
+                  "fullName": "Aliyah Boston",
+                  "displayName": "Aliyah Boston",
+                  "shortName": "A. Boston",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4432831/aliyah-boston",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4432831.png",
+                    "alt": "Aliyah Boston"
+                  },
+                  "jersey": "7",
+                  "position": {
+                    "name": "Center",
+                    "displayName": "Center",
+                    "abbreviation": "C"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4432831?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Lower Leg",
+                  "side": "Right",
+                  "returnDate": "2026-09-29"
+                }
+              },
+              {
+                "status": "Day-To-Day",
+                "date": "2026-09-28T21:08Z",
+                "athlete": {
+                  "id": "4433403",
+                  "uid": "s:40~l:59~a:4433403",
+                  "guid": "5ec40e1c-3104-322e-b80f-f358ea26aad4",
+                  "lastName": "Clark",
+                  "fullName": "Caitlin Clark",
+                  "displayName": "Caitlin Clark",
+                  "shortName": "C. Clark",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4433403/caitlin-clark",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4433403.png",
+                    "alt": "Caitlin Clark"
+                  },
+                  "jersey": "22",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4433403?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "6",
+                  "name": "INJURY_STATUS_DAYTODAY",
+                  "description": "day-to-day",
+                  "abbreviation": "DD"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "GTD",
+                    "abbreviation": "GTD",
+                    "displayDescription": "GTD"
+                  },
+                  "type": "Back",
+                  "returnDate": "2026-09-29"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-26T19:21Z",
+                "athlete": {
+                  "id": "4065760",
+                  "uid": "s:40~l:59~a:4065760",
+                  "guid": "11eae5c8-81e8-7eae-957e-2ab3ffbe7a86",
+                  "lastName": "Harris",
+                  "fullName": "Tyasha Harris",
+                  "displayName": "Tyasha Harris",
+                  "shortName": "T. Harris",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4065760/tyasha-harris",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4065760.png",
+                    "alt": "Tyasha Harris"
+                  },
+                  "jersey": "52",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4065760?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Leg",
+                  "detail": "Not Specified",
+                  "side": "Left",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "17",
+              "uid": "s:40~l:59~t:17",
+              "displayName": "Las Vegas Aces",
+              "abbreviation": "LV",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/lv/las-vegas-aces",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/lv",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/lv.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/lv.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-05-01T20:55Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/lv.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-05-01T20:55Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-28T21:07Z",
+                "athlete": {
+                  "id": "4281190",
+                  "uid": "s:40~l:59~a:4281190",
+                  "guid": "051ae3bd-c8ea-eb8a-372b-9cd1cb336b9d",
+                  "lastName": "Evans",
+                  "fullName": "Dana Evans",
+                  "displayName": "Dana Evans",
+                  "shortName": "D. Evans",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4281190/dana-evans",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4281190.png",
+                    "alt": "Dana Evans"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4281190?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Knee",
+                  "returnDate": "2026-10-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-08-27T19:29Z",
+                "athlete": {
+                  "id": "4398776",
+                  "uid": "s:40~l:59~a:4398776",
+                  "guid": "92bac4f9-e4db-67c6-0354-24c06720f754",
+                  "lastName": "Smith",
+                  "fullName": "NaLyssa Smith",
+                  "displayName": "NaLyssa Smith",
+                  "shortName": "N. Smith",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4398776/nalyssa-smith",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4398776.png",
+                    "alt": "NaLyssa Smith"
+                  },
+                  "jersey": "3",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4398776?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Leg",
+                  "side": "Left",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "home_team": "Liberty",
+        "away_team": "Lynx",
+        "date": "2026-09-29",
+        "start_time": "2026-09-30T00:30Z",
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 15,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 12,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 14,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 10,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "9",
+              "uid": "s:40~l:59~t:9",
+              "displayName": "New York Liberty",
+              "abbreviation": "NY",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/ny/new-york-liberty",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/ny",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/ny.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/ny.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/ny.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-29T17:00Z",
+                "athlete": {
+                  "id": "4281929",
+                  "uid": "s:40~l:59~a:4281929",
+                  "guid": "d4c403bb-a2c8-ed6b-aeaa-c290d8afea9b",
+                  "lastName": "Sabally",
+                  "fullName": "Satou Sabally",
+                  "displayName": "Satou Sabally",
+                  "shortName": "S. Sabally",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4281929/satou-sabally",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4281929.png",
+                    "alt": "Satou Sabally"
+                  },
+                  "jersey": "0",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4281929?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OFS",
+                    "abbreviation": "OFS",
+                    "displayDescription": "OFS"
+                  },
+                  "type": "Concussion",
+                  "returnDate": "2027-05-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-22T21:05Z",
+                "athlete": {
+                  "id": "4398589",
+                  "uid": "s:40~l:59~a:4398589",
+                  "guid": "8a364843-20a4-5368-d670-b78467d95c60",
+                  "lastName": "Balogun",
+                  "fullName": "Elizabeth Balogun",
+                  "displayName": "Elizabeth Balogun",
+                  "shortName": "E. Balogun",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/4398589/elizabeth-balogun",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/4398589.png",
+                    "alt": "Elizabeth Balogun"
+                  },
+                  "jersey": "5",
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "collegeAthlete": {
+                    "$ref": "http://sports.core.api.espn.pvt/v2/sports/basketball/leagues/womens-college-basketball/athletes/4398589?lang=en&region=us"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Not Injury Related",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "8",
+              "uid": "s:40~l:59~t:8",
+              "displayName": "Minnesota Lynx",
+              "abbreviation": "MIN",
+              "links": [
+                {
+                  "href": "https://www.espn.com/wnba/team/_/name/min/minnesota-lynx",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/wnba/team/schedule/_/name/min",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/wnba/500/min.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-05-10T21:43Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/wnba/500-dark/min.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-05-10T21:45Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "Out",
+                "date": "2026-09-28T21:13Z",
+                "athlete": {
+                  "id": "5278237",
+                  "uid": "s:40~l:59~a:5278237",
+                  "guid": "076a085a-42e0-3781-a609-9f19e7b6859f",
+                  "lastName": "Kosu",
+                  "fullName": "Anastasiia Olairi Kosu",
+                  "displayName": "Anastasiia Olairi Kosu",
+                  "shortName": "A. Kosu",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/5278237/anastasiia-olairi-kosu",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/wnba/players/full/5278237.png",
+                    "alt": "Anastasiia Olairi Kosu"
+                  },
+                  "jersey": "7",
+                  "position": {
+                    "name": "Forward",
+                    "displayName": "Forward",
+                    "abbreviation": "F"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Foot",
+                  "detail": "Not Specified",
+                  "side": "Right",
+                  "returnDate": "2026-10-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-24T23:30Z",
+                "athlete": {
+                  "id": "5208984",
+                  "uid": "s:40~l:59~a:5208984",
+                  "guid": "0188ccea-f8c3-3fb2-bf8c-f8f23dcf1b95",
+                  "lastName": "Buenavida",
+                  "fullName": "Elena Buenavida",
+                  "displayName": "Elena Buenavida",
+                  "shortName": "E. Buenavida",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/wnba/player/_/id/5208984/elena-buenavida",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "position": {
+                    "name": "Guard",
+                    "displayName": "Guard",
+                    "abbreviation": "G"
+                  },
+                  "status": {
+                    "id": "1",
+                    "name": "Active",
+                    "type": "active",
+                    "abbreviation": "Active"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Coach's Decision",
+                  "returnDate": "2027-05-01"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "odds": [
+      {
+        "home_team": "Fever",
+        "away_team": "Aces",
+        "commence_time": "2026-09-29T22:40:00Z",
+        "home_odds": 1.89,
+        "draw_odds": 0.0,
+        "away_odds": 2.0,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4836,
+            "home": 0.5164
+          },
+          "raw_probs": {
+            "away": 0.5076,
+            "home": 0.5435
+          },
+          "hold": 0.0468,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.89,
+            "away": 2.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4836,
+              "home": 0.5164
+            },
+            "raw_probs": {
+              "away": 0.5076,
+              "home": 0.5435
+            },
+            "hold": 0.0468,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 1.89,
+                "away": 1.93
+              },
+              "raw_probs": {
+                "home": 0.5291,
+                "away": 0.5181
+              },
+              "fair_probs": {
+                "home": 0.5052,
+                "away": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 1.88,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5319,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5117,
+                "away": 0.4883
+              },
+              "hold": 0.0395
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.85,
+                "away": 1.96
+              },
+              "raw_probs": {
+                "home": 0.5405,
+                "away": 0.5102
+              },
+              "fair_probs": {
+                "home": 0.5144,
+                "away": 0.4856
+              },
+              "hold": 0.0507
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5184,
+                "away": 0.4816
+              },
+              "hold": 0.0541
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Liberty",
+        "away_team": "Lynx",
+        "commence_time": "2026-09-30T00:40:00Z",
+        "home_odds": 2.45,
+        "draw_odds": 0.0,
+        "away_odds": 1.64,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.595,
+            "home": 0.405
+          },
+          "raw_probs": {
+            "away": 0.6173,
+            "home": 0.4202
+          },
+          "hold": 0.0391,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.45,
+            "away": 1.64
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.595,
+              "home": 0.405
+            },
+            "raw_probs": {
+              "away": 0.6173,
+              "home": 0.4202
+            },
+            "hold": 0.0391,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.3,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4348,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.4133,
+                "away": 0.5867
+              },
+              "hold": 0.0521
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.25,
+                "away": 1.64
+              },
+              "raw_probs": {
+                "home": 0.4444,
+                "away": 0.6098
+              },
+              "fair_probs": {
+                "home": 0.4216,
+                "away": 0.5784
+              },
+              "hold": 0.0542
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3936,
+                "away": 0.6064
+              },
+              "hold": 0.0371
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Mystics",
+        "away_team": "Dream",
+        "commence_time": "2026-09-30T23:10:00Z",
+        "home_odds": 2.6,
+        "draw_odds": 0.0,
+        "away_odds": 1.59,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6188,
+            "home": 0.3812
+          },
+          "raw_probs": {
+            "away": 0.6494,
+            "home": 0.4
+          },
+          "hold": 0.0431,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.6,
+            "away": 1.59
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6188,
+              "home": 0.3812
+            },
+            "raw_probs": {
+              "away": 0.6494,
+              "home": 0.4
+            },
+            "hold": 0.0431,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 2.54,
+                "away": 1.54
+              },
+              "raw_probs": {
+                "home": 0.3937,
+                "away": 0.6494
+              },
+              "fair_probs": {
+                "home": 0.3775,
+                "away": 0.6225
+              },
+              "hold": 0.0431
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.54,
+                "away": 1.52
+              },
+              "raw_probs": {
+                "home": 0.3937,
+                "away": 0.6579
+              },
+              "fair_probs": {
+                "home": 0.3744,
+                "away": 0.6256
+              },
+              "hold": 0.0516
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 2.42,
+                "away": 1.57
+              },
+              "raw_probs": {
+                "home": 0.4132,
+                "away": 0.6369
+              },
+              "fair_probs": {
+                "home": 0.3935,
+                "away": 0.6065
+              },
+              "hold": 0.0502
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.49,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4016,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3897,
+                "away": 0.6103
+              },
+              "hold": 0.0305
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.49,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4016,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3897,
+                "away": 0.6103
+              },
+              "hold": 0.0305
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.5,
+                "away": 1.54
+              },
+              "raw_probs": {
+                "home": 0.4,
+                "away": 0.6494
+              },
+              "fair_probs": {
+                "home": 0.3812,
+                "away": 0.6188
+              },
+              "hold": 0.0494
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-09-29T17:27:39Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.57
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6369
+              },
+              "fair_probs": {
+                "home": 0.3905,
+                "away": 0.6095
+              },
+              "hold": 0.0451
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 2.6,
+                "away": 1.54
+              },
+              "raw_probs": {
+                "home": 0.3846,
+                "away": 0.6494
+              },
+              "fair_probs": {
+                "home": 0.372,
+                "away": 0.628
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.6,
+                "away": 1.54
+              },
+              "raw_probs": {
+                "home": 0.3846,
+                "away": 0.6494
+              },
+              "fair_probs": {
+                "home": 0.372,
+                "away": 0.628
+              },
+              "hold": 0.034
+            }
+          ]
+        }
+      },
+      {
+        "home_team": "Wings",
+        "away_team": "Valkyries",
+        "commence_time": "2026-10-01T01:00:00Z",
+        "home_odds": 2.6,
+        "draw_odds": 0.0,
+        "away_odds": 1.6,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.6204,
+            "home": 0.3796
+          },
+          "raw_probs": {
+            "away": 0.641,
+            "home": 0.3922
+          },
+          "hold": 0.0417,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 2.6,
+            "away": 1.6
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.6204,
+              "home": 0.3796
+            },
+            "raw_probs": {
+              "away": 0.641,
+              "home": 0.3922
+            },
+            "hold": 0.0417,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.6
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.625
+              },
+              "fair_probs": {
+                "home": 0.404,
+                "away": 0.596
+              },
+              "hold": 0.0487
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.6
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.625
+              },
+              "fair_probs": {
+                "home": 0.4,
+                "away": 0.6
+              },
+              "hold": 0.0417
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 2.42,
+                "away": 1.57
+              },
+              "raw_probs": {
+                "home": 0.4132,
+                "away": 0.6369
+              },
+              "fair_probs": {
+                "home": 0.3935,
+                "away": 0.6065
+              },
+              "hold": 0.0502
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-09-29T17:27:39Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.57
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6369
+              },
+              "fair_probs": {
+                "home": 0.3905,
+                "away": 0.6095
+              },
+              "hold": 0.0451
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.57,
+                "away": 1.56
+              },
+              "raw_probs": {
+                "home": 0.3891,
+                "away": 0.641
+              },
+              "fair_probs": {
+                "home": 0.3777,
+                "away": 0.6223
+              },
+              "hold": 0.0301
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.57,
+                "away": 1.56
+              },
+              "raw_probs": {
+                "home": 0.3891,
+                "away": 0.641
+              },
+              "fair_probs": {
+                "home": 0.3777,
+                "away": 0.6223
+              },
+              "hold": 0.0301
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 2.6,
+                "away": 1.54
+              },
+              "raw_probs": {
+                "home": 0.3846,
+                "away": 0.6494
+              },
+              "fair_probs": {
+                "home": 0.372,
+                "away": 0.628
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.55,
+                "away": 1.51
+              },
+              "raw_probs": {
+                "home": 0.3922,
+                "away": 0.6623
+              },
+              "fair_probs": {
+                "home": 0.3719,
+                "away": 0.6281
+              },
+              "hold": 0.0544
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.55,
+                "away": 1.56
+              },
+              "raw_probs": {
+                "home": 0.3922,
+                "away": 0.641
+              },
+              "fair_probs": {
+                "home": 0.3796,
+                "away": 0.6204
+              },
+              "hold": 0.0332
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.3399,
+      "results_features": 0.3402,
+      "recent_boxscore": 0.3199
+    },
+    "models": [
+      "elo",
+      "results_features",
+      "recent_boxscore"
+    ],
+    "model_health": {
+      "ensemble": {
+        "sample_size": 30,
+        "accuracy": 0.8,
+        "avg_log_loss": 0.4775
+      },
+      "models": {
+        "elo": {
+          "sample_size": 30,
+          "accuracy": 0.8,
+          "avg_log_loss": 0.5104,
+          "weight": 0.3399,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 30,
+          "accuracy": 0.8,
+          "avg_log_loss": 0.508,
+          "weight": 0.3402,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "recent_boxscore": {
+          "sample_size": 30,
+          "accuracy": 0.7333,
+          "avg_log_loss": 0.5244,
+          "weight": 0.3199,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        }
+      },
+      "disable_candidates": [],
+      "disabled_by_config": [],
+      "active_models": [
+        "elo",
+        "results_features",
+        "recent_boxscore"
+      ]
+    },
+    "calibration_sample_size": 280
+  },
+  "records": {
+    "matches": [
+      {
+        "home_team": "Fever",
+        "away_team": "Aces",
+        "date": "2026-09-29",
+        "start_time": "2026-09-29T22:30Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 13,
+          "injured_players": 1,
+          "questionable_players": 1,
+          "doubtful_players": 0,
+          "injury_burden": 0.35,
+          "uncertainty_burden": 0.35,
+          "key_absence_score": 0.35,
+          "leader_absence_burden": 0.49,
+          "leader_uncertainty_burden": 0.49,
+          "available_core_players": 12,
+          "event_injury_burden": 1.7,
+          "event_uncertainty_burden": 0.7,
+          "event_key_absence_score": 0.7,
+          "event_leader_absence_burden": 0.717,
+          "event_leader_uncertainty_burden": 0.717
+        },
+        "away_availability_profile": {
+          "active_players": 12,
+          "injured_players": 1,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 1.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 11,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "home_goalie": null,
+        "away_goalie": null,
+        "home_goalie_status": null,
+        "away_goalie_status": null,
+        "home_injury_profile": null,
+        "away_injury_profile": null,
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "home_pitcher_source": null,
+        "home_pitcher_last_checked": null,
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "away_pitcher_source": null,
+        "away_pitcher_last_checked": null,
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "away",
+        "model_prob": 0.5605,
+        "edge": 0.0538,
+        "expected_value": 0.0749,
+        "kelly_fraction": 0.0749,
+        "fractional_kelly": 0.015,
+        "confidence_score": 56.7,
+        "confidence_stars": 2,
+        "american_odds": 100,
+        "model_probs": {
+          "home": 0.4395,
+          "away": 0.5605
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.4364,
+            "away": 0.5636
+          },
+          "results_features": {
+            "home": 0.3993,
+            "away": 0.6007
+          },
+          "recent_boxscore": {
+            "home": 0.413,
+            "away": 0.587
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.4626,
+            "raw_model_prob": 0.4395,
+            "implied_prob": 0.5164,
+            "market_implied_prob": 0.5435,
+            "edge": -0.0538,
+            "expected_value": -0.1258,
+            "decimal_odds": 1.89,
+            "american_odds": -112,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 26.2,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0468,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          },
+          "away": {
+            "model_prob": 0.5374,
+            "raw_model_prob": 0.5605,
+            "implied_prob": 0.4836,
+            "market_implied_prob": 0.5076,
+            "edge": 0.0538,
+            "expected_value": 0.0749,
+            "decimal_odds": 2.0,
+            "american_odds": 100,
+            "kelly_fraction": 0.0749,
+            "fractional_kelly": 0.015,
+            "confidence_score": 56.7,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0468,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          }
+        },
+        "best_odds": {
+          "home": -112,
+          "away": 100
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.89,
+            "away": 2.0
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4836,
+              "home": 0.5164
+            },
+            "raw_probs": {
+              "away": 0.5076,
+              "home": 0.5435
+            },
+            "hold": 0.0468,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 1.89,
+                "away": 1.93
+              },
+              "raw_probs": {
+                "home": 0.5291,
+                "away": 0.5181
+              },
+              "fair_probs": {
+                "home": 0.5052,
+                "away": 0.4948
+              },
+              "hold": 0.0472
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 1.88,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5319,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5117,
+                "away": 0.4883
+              },
+              "hold": 0.0395
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.85,
+                "away": 1.96
+              },
+              "raw_probs": {
+                "home": 0.5405,
+                "away": 0.5102
+              },
+              "fair_probs": {
+                "home": 0.5144,
+                "away": 0.4856
+              },
+              "hold": 0.0507
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5184,
+                "away": 0.4816
+              },
+              "hold": 0.0541
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 1.87,
+                "away": 1.95
+              },
+              "raw_probs": {
+                "home": 0.5348,
+                "away": 0.5128
+              },
+              "fair_probs": {
+                "home": 0.5105,
+                "away": 0.4895
+              },
+              "hold": 0.0476
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "wnba",
+          "home_team": "Fever",
+          "away_team": "Aces",
+          "home_impact": -2,
+          "away_impact": -3,
+          "individual_factors": [
+            {
+              "team": "Fever",
+              "description": "Tyasha Harris (Out): Solid guard, often a starter or key bench player.",
+              "direction": "negative",
+              "magnitude": 2,
+              "confidence": 1
+            },
+            {
+              "team": "Aces",
+              "description": "Dana Evans (Out): Bench guard.",
+              "direction": "negative",
+              "magnitude": 1,
+              "confidence": 1
+            },
+            {
+              "team": "Aces",
+              "description": "NaLyssa Smith (Out): Key forward, often a starter.",
+              "direction": "negative",
+              "magnitude": 2,
+              "confidence": 1
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Indiana Fever are without solid guard Tyasha Harris. The Las Vegas Aces are missing bench guard Dana Evans and key forward NaLyssa Smith. The Day-to-Day status of Aliyah Boston and Caitlin Clark for the Fever introduces significant uncertainty, but without confirmation of their absence, their impact is not factored into the score. Based on confirmed injuries, the Aces face a slightly greater qualitative disadvantage.",
+          "pick_rationale": "The model shows a significant 7.9% edge for the Aces over the market's implied probability. This pick is strongly supported by all three component models (elo, results_features, recent_boxscore), each indicating a probability above 56%. While the Aces are dealing with injuries to Dana Evans and NaLyssa Smith, the model still favors them, suggesting their overall strength outweighs these absences.",
+          "model_vs_market": "The model's probability of 56.3% for the Aces is 7.9% higher than the market's implied probability of 48.4%.",
+          "key_risk": "The primary risk for this pick is if Aliyah Boston or Caitlin Clark for the Fever are unexpectedly active and play at a high level, or if the Aces' confirmed injuries prove more impactful than anticipated.",
+          "confidence_label": "strong"
+        },
+        "qualitative_summary": "Qualitative (H:-2 A:-3): disagreed. Tyasha Harris (Out): Solid guard, often a starter or key bench player.; Dana Evans (Out): Bench guard.",
+        "blurb": "The model shows a significant 7.9% edge for the Aces over the market's implied probability. This pick is strongly supported by all three component models (elo, results_features, recent_boxscore), each indicating a probability above 56%. While the Aces are dealing with injuries to Dana Evans and NaLyssa Smith, the model still favors them, suggesting their overall strength outweighs these absences.",
+        "model_vs_market": "The model's probability of 56.3% for the Aces is 7.9% higher than the market's implied probability of 48.4%.",
+        "key_risk": "The primary risk for this pick is if Aliyah Boston or Caitlin Clark for the Fever are unexpectedly active and play at a high level, or if the Aces' confirmed injuries prove more impactful than anticipated.",
+        "ai_confidence_label": "strong",
+        "run_id": "daily-20260929T172709272576Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-09-29T17:27:09Z",
+        "snapshot_path": "tracking/snapshots/2026-09-29/wnba/daily-20260929T172709272576Z.json"
+      },
+      {
+        "home_team": "Liberty",
+        "away_team": "Lynx",
+        "date": "2026-09-29",
+        "start_time": "2026-09-30T00:30Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": {
+          "active_players": 15,
+          "injured_players": 3,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 3.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 12,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "away_availability_profile": {
+          "active_players": 14,
+          "injured_players": 4,
+          "questionable_players": 0,
+          "doubtful_players": 0,
+          "injury_burden": 4.0,
+          "uncertainty_burden": 0.0,
+          "key_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "leader_uncertainty_burden": 0.0,
+          "available_core_players": 10,
+          "event_injury_burden": 2.0,
+          "event_uncertainty_burden": 0.0,
+          "event_key_absence_score": 0.0,
+          "event_leader_absence_burden": 0.0,
+          "event_leader_uncertainty_burden": 0.0
+        },
+        "home_goalie": null,
+        "away_goalie": null,
+        "home_goalie_status": null,
+        "away_goalie_status": null,
+        "home_injury_profile": null,
+        "away_injury_profile": null,
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "home_pitcher_source": null,
+        "home_pitcher_last_checked": null,
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "away_pitcher_source": null,
+        "away_pitcher_last_checked": null,
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": null,
+        "away_lineup_profile": null,
+        "home_bullpen_tax": null,
+        "away_bullpen_tax": null,
+        "weather": null,
+        "pick": "home",
+        "model_prob": 0.5902,
+        "edge": 0.1297,
+        "expected_value": 0.3099,
+        "kelly_fraction": 0.2137,
+        "fractional_kelly": 0.0427,
+        "confidence_score": 55.3,
+        "confidence_stars": 3,
+        "american_odds": 145,
+        "model_probs": {
+          "home": 0.5902,
+          "away": 0.4098
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.5887,
+            "away": 0.4113
+          },
+          "results_features": {
+            "home": 0.5534,
+            "away": 0.4466
+          },
+          "recent_boxscore": {
+            "home": 0.5483,
+            "away": 0.4517
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.5347,
+            "raw_model_prob": 0.5902,
+            "implied_prob": 0.405,
+            "market_implied_prob": 0.4202,
+            "edge": 0.1297,
+            "expected_value": 0.3099,
+            "decimal_odds": 2.45,
+            "american_odds": 145,
+            "kelly_fraction": 0.2137,
+            "fractional_kelly": 0.0427,
+            "confidence_score": 55.3,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0391,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          },
+          "away": {
+            "model_prob": 0.4653,
+            "raw_model_prob": 0.4098,
+            "implied_prob": 0.595,
+            "market_implied_prob": 0.6173,
+            "edge": -0.1297,
+            "expected_value": -0.2368,
+            "decimal_odds": 1.64,
+            "american_odds": -156,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 22.5,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0391,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 8
+          }
+        },
+        "best_odds": {
+          "home": 145,
+          "away": -156
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 2.45,
+            "away": 1.64
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.595,
+              "home": 0.405
+            },
+            "raw_probs": {
+              "away": 0.6173,
+              "home": 0.4202
+            },
+            "hold": 0.0391,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-09-29T17:28:10Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "FanDuel",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.3,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4348,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.4133,
+                "away": 0.5867
+              },
+              "hold": 0.0521
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-09-29T17:28:09Z",
+              "outcomes": {
+                "home": 2.36,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4237,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.407,
+                "away": 0.593
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-09-29T17:27:55Z",
+              "outcomes": {
+                "home": 2.25,
+                "away": 1.64
+              },
+              "raw_probs": {
+                "home": 0.4444,
+                "away": 0.6098
+              },
+              "fair_probs": {
+                "home": 0.4216,
+                "away": 0.5784
+              },
+              "hold": 0.0542
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-09-29T17:27:40Z",
+              "outcomes": {
+                "home": 2.4,
+                "away": 1.62
+              },
+              "raw_probs": {
+                "home": 0.4167,
+                "away": 0.6173
+              },
+              "fair_probs": {
+                "home": 0.403,
+                "away": 0.597
+              },
+              "hold": 0.034
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-09-29T17:25:00Z",
+              "outcomes": {
+                "home": 2.45,
+                "away": 1.59
+              },
+              "raw_probs": {
+                "home": 0.4082,
+                "away": 0.6289
+              },
+              "fair_probs": {
+                "home": 0.3936,
+                "away": 0.6064
+              },
+              "hold": 0.0371
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "wnba",
+          "home_team": "Liberty",
+          "away_team": "Lynx",
+          "home_impact": -5,
+          "away_impact": -2,
+          "individual_factors": [
+            {
+              "team": "Liberty",
+              "description": "Satou Sabally (Out): All-Star forward, a major offensive and defensive presence.",
+              "direction": "negative",
+              "magnitude": 4,
+              "confidence": 1
+            },
+            {
+              "team": "Liberty",
+              "description": "Elizabeth Balogun (Out): Bench player, minor impact.",
+              "direction": "negative",
+              "magnitude": 1,
+              "confidence": 1
+            },
+            {
+              "team": "Lynx",
+              "description": "Anastasiia Olairi Kosu (Out): Presumed bench player, minor impact.",
+              "direction": "negative",
+              "magnitude": 1,
+              "confidence": 0.8
+            },
+            {
+              "team": "Lynx",
+              "description": "Elena Buenavida (Out): Presumed bench player, minor impact.",
+              "direction": "negative",
+              "magnitude": 1,
+              "confidence": 0.8
+            }
+          ],
+          "net_qualitative_edge": "away",
+          "summary": "The New York Liberty are severely hampered by the absence of All-Star Satou Sabally, alongside bench player Elizabeth Balogun. The Minnesota Lynx are missing two presumed bench players, resulting in a minor negative impact.",
+          "pick_rationale": "The model identifies a significant 19.1% edge for the Liberty over the market, with all component models favoring the home team. However, the qualitative analysis indicates a substantial negative impact on the Liberty due to the absence of All-Star Satou Sabally, which directly contradicts the model's strong lean. This qualitative factor suggests the market might be more accurately pricing the game given the key injury.",
+          "model_vs_market": "The model's probability of 59.6% for the Liberty is 19.1% higher than the market's implied probability of 40.5%.",
+          "key_risk": "The primary risk is that the market has correctly adjusted for Satou Sabally's absence, making the model's perceived edge an overestimation.",
+          "confidence_label": "avoid"
+        },
+        "qualitative_summary": "Qualitative (H:-5 A:-2): disagreed. Satou Sabally (Out): All-Star forward, a major offensive and defensive presence.; Elizabeth Balogun (Out): Bench player, minor impact.",
+        "blurb": "The model identifies a significant 19.1% edge for the Liberty over the market, with all component models favoring the home team. However, the qualitative analysis indicates a substantial negative impact on the Liberty due to the absence of All-Star Satou Sabally, which directly contradicts the model's strong lean. This qualitative factor suggests the market might be more accurately pricing the game given the key injury.",
+        "model_vs_market": "The model's probability of 59.6% for the Liberty is 19.1% higher than the market's implied probability of 40.5%.",
+        "key_risk": "The primary risk is that the market has correctly adjusted for Satou Sabally's absence, making the model's perceived edge an overestimation.",
+        "ai_confidence_label": "avoid",
+        "run_id": "daily-20260929T172709272576Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-09-29T17:27:09Z",
+        "snapshot_path": "tracking/snapshots/2026-09-29/wnba/daily-20260929T172709272576Z.json"
+      }
+    ],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [
+      {
+        "home_team": "Fever",
+        "away_team": "Aces",
+        "date": "2026-09-29",
+        "start_time": "2026-09-29T22:30Z",
+        "home_pitcher": null,
+        "home_pitcher_hand": null,
+        "home_pitcher_source": null,
+        "home_pitcher_last_checked": null,
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": null,
+        "away_pitcher_hand": null,
+        "away_pitcher_source": null,
+        "away_pitcher_last_checked": null,
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "pick": "away",
+        "model_prob": 0.5374,
+        "implied_prob": 0.4836,
+        "market_implied_prob": 0.5076,
+        "edge": 0.0538,
+        "expected_value": 0.0749,
+        "american_odds": 100,
+        "decimal_odds": 2.0,
+        "kelly_fraction": 0.0749,
+        "fractional_kelly": 0.015,
+        "confidence_score": 56.7,
+        "qualitative_analysis": {
+          "sport": "wnba",
+          "home_team": "Fever",
+          "away_team": "Aces",
+          "home_impact": -2,
+          "away_impact": -3,
+          "individual_factors": [
+            {
+              "team": "Fever",
+              "description": "Tyasha Harris (Out): Solid guard, often a starter or key bench player.",
+              "direction": "negative",
+              "magnitude": 2,
+              "confidence": 1
+            },
+            {
+              "team": "Aces",
+              "description": "Dana Evans (Out): Bench guard.",
+              "direction": "negative",
+              "magnitude": 1,
+              "confidence": 1
+            },
+            {
+              "team": "Aces",
+              "description": "NaLyssa Smith (Out): Key forward, often a starter.",
+              "direction": "negative",
+              "magnitude": 2,
+              "confidence": 1
+            }
+          ],
+          "net_qualitative_edge": "home",
+          "summary": "The Indiana Fever are without solid guard Tyasha Harris. The Las Vegas Aces are missing bench guard Dana Evans and key forward NaLyssa Smith. The Day-to-Day status of Aliyah Boston and Caitlin Clark for the Fever introduces significant uncertainty, but without confirmation of their absence, their impact is not factored into the score. Based on confirmed injuries, the Aces face a slightly greater qualitative disadvantage.",
+          "pick_rationale": "The model shows a significant 7.9% edge for the Aces over the market's implied probability. This pick is strongly supported by all three component models (elo, results_features, recent_boxscore), each indicating a probability above 56%. While the Aces are dealing with injuries to Dana Evans and NaLyssa Smith, the model still favors them, suggesting their overall strength outweighs these absences.",
+          "model_vs_market": "The model's probability of 56.3% for the Aces is 7.9% higher than the market's implied probability of 48.4%.",
+          "key_risk": "The primary risk for this pick is if Aliyah Boston or Caitlin Clark for the Fever are unexpectedly active and play at a high level, or if the Aces' confirmed injuries prove more impactful than anticipated.",
+          "confidence_label": "strong"
+        },
+        "qualitative_summary": "Qualitative (H:-2 A:-3): disagreed. Tyasha Harris (Out): Solid guard, often a starter or key bench player.; Dana Evans (Out): Bench guard.",
+        "blurb": "The model shows a significant 7.9% edge for the Aces over the market's implied probability. This pick is strongly supported by all three component models (elo, results_features, recent_boxscore), each indicating a probability above 56%. While the Aces are dealing with injuries to Dana Evans and NaLyssa Smith, the model still favors them, suggesting their overall strength outweighs these absences.",
+        "model_vs_market": "The model's probability of 56.3% for the Aces is 7.9% higher than the market's implied probability of 48.4%.",
+        "key_risk": "The primary risk for this pick is if Aliyah Boston or Caitlin Clark for the Fever are unexpectedly active and play at a high level, or if the Aces' confirmed injuries prove more impactful than anticipated.",
+        "ai_confidence_label": "strong",
+        "selection_lane": "core",
+        "tier": "LEAN",
+        "market_type": "moneyline",
+        "run_id": "daily-20260929T172709272576Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-09-29T17:27:09Z",
+        "snapshot_path": "tracking/snapshots/2026-09-29/wnba/daily-20260929T172709272576Z.json"
+      }
+    ],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 354,
+    "fixtures_fetched": 2,
+    "fixtures_in_window": 2,
+    "fixtures_completed": 0,
+    "fixtures_pending": 2,
+    "odds_events_fetched": 4,
+    "fixtures_with_odds": 2,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 2,
+    "matches_with_market": 2,
+    "matches_with_positive_ev": 2,
+    "matches_with_qualitative": 2,
+    "lock_eligible_matches": 2,
+    "lock_eligible_outcomes": 2,
+    "gate_failures": {
+      "missing_odds": 0,
+      "negative_expected_value": 2,
+      "below_edge_floor": 0,
+      "below_probability_floor": 0
+    },
+    "candidate_lanes": {
+      "value_dog": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      },
+      "near_favorite": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      }
+    },
+    "slop_locks_posted": 1,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": true,
+      "allow_totals": false,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "moneyline_publish_cap": 1,
+      "totals_publish_cap": null,
+      "evaluated_picks": 55,
+      "evaluated_totals_picks": 0,
+      "min_evaluated_picks": 15,
+      "min_evaluated_totals_picks": 0,
+      "status": "partial",
+      "reason": "totals disabled by config",
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 56,
+            "evaluated": 55,
+            "pending": 1,
+            "hit_rate": 0.5818,
+            "roi": -0.058,
+            "push_rate": 0.0,
+            "wins": 32,
+            "losses": 23,
+            "pushes": 0,
+            "avg_confidence": 65.4786,
+            "avg_expected_value": 0.0728,
+            "clv": {
+              "tracked": 23,
+              "avg_clv": -0.0278,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.0,
+              "moneyline_tracked": 23,
+              "moneyline_avg_clv": -0.0278,
+              "moneyline_positive_rate": 0.0,
+              "moneyline_non_negative_rate": 0.0,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.625,
+            "roi": -0.0013,
+            "push_rate": 0.0,
+            "wins": 5,
+            "losses": 3,
+            "pushes": 0,
+            "avg_confidence": 63.5875,
+            "avg_expected_value": 0.0349,
+            "clv": {
+              "tracked": 4,
+              "avg_clv": -0.0256,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.0,
+              "moneyline_tracked": 4,
+              "moneyline_avg_clv": -0.0256,
+              "moneyline_positive_rate": 0.0,
+              "moneyline_non_negative_rate": 0.0,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.6559,
+            "actual_win_rate": 0.625,
+            "calibration_gap": 0.0309,
+            "overconfidence_gap": 0.0309
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneylines CLV -0.0256 is below -0.0050"
+          ],
+          "health_score": 0.8571
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "totals disabled by config"
+          ],
+          "health_score": 0.8571
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": false
+      }
+    },
+    "validation_issues": [],
+    "validation_issues_count": 0,
+    "summary": "modeled=2 | odds=2/2 | +ev=2 | sense=2 | eligible=2 | locks=1 | totals disabled by config"
+  }
+}
