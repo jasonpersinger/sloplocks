@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-09-30T17:26:05Z",
-  "run_id": "daily-20260930T172509621700Z",
+  "generated_at": "2026-10-01T17:53:01Z",
+  "run_id": "daily-20261001T175114089772Z",
   "run_type": "daily",
-  "snapshot_timestamp": "2026-09-30T17:25:09Z",
-  "snapshot_path": "tracking/snapshots/2026-09-30/nhl/daily-20260930T172509621700Z.json",
+  "snapshot_timestamp": "2026-10-01T17:51:14Z",
+  "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json",
   "sport": "nhl",
   "sport_name": "NHL",
   "outcomes": [
@@ -13,10 +13,10 @@
   "full_slate": false,
   "slop_locks": [
     {
-      "home_team": "Avalanche",
-      "away_team": "Kings",
-      "date": "2026-09-30",
-      "start_time": "2026-10-01T02:00Z",
+      "home_team": "Flames",
+      "away_team": "Kraken",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T01:00Z",
       "home_pitcher": null,
       "home_pitcher_hand": null,
       "home_pitcher_source": null,
@@ -29,57 +29,71 @@
       "away_pitcher_cache_stale": false,
       "pitcher_warnings": [],
       "pick": "home",
-      "model_prob": 0.6838,
-      "implied_prob": 0.6348,
-      "market_implied_prob": 0.6536,
-      "edge": 0.049,
-      "expected_value": 0.0462,
-      "american_odds": -189,
-      "decimal_odds": 1.53,
-      "kelly_fraction": 0.0872,
-      "fractional_kelly": 0.0174,
-      "confidence_score": 58.8,
+      "model_prob": 0.5889,
+      "implied_prob": 0.5013,
+      "market_implied_prob": 0.5236,
+      "edge": 0.0876,
+      "expected_value": 0.1425,
+      "american_odds": -106,
+      "decimal_odds": 1.94,
+      "kelly_fraction": 0.1516,
+      "fractional_kelly": 0.0303,
+      "confidence_score": 53.7,
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Avalanche",
-        "away_team": "Kings",
-        "home_impact": -1,
+        "home_team": "Flames",
+        "away_team": "Kraken",
+        "home_impact": -3,
         "away_impact": 0,
         "individual_factors": [
           {
-            "team": "Avalanche",
-            "description": "Logan O'Connor (Injured Reserve) is a regular bottom-six forward whose absence is a minor negative.",
+            "team": "Flames",
+            "description": "Jonathan Huberdeau (Injured Reserve) is a key offensive player whose absence will significantly impact the team's scoring ability.",
             "direction": "negative",
-            "magnitude": 1,
+            "magnitude": 3,
             "confidence": 1
           },
           {
-            "team": "Kings",
-            "description": "Corey Perry (Day-To-Day) and Joel Edmundson (Day-To-Day) are veteran players whose status is uncertain; their potential absence is not confirmed.",
+            "team": "Flames",
+            "description": "Henry Mews (Out) is a prospect and not a regular contributor, so his absence has no material impact.",
             "direction": "negative",
             "magnitude": 0,
-            "confidence": 0.5
+            "confidence": 1
+          },
+          {
+            "team": "Kraken",
+            "description": "Jake O'Brien (Injured Reserve) is a prospect and not a regular contributor, so his absence has no material impact.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Kraken",
+            "description": "Mackie Samoskevich (Injured Reserve) is a prospect and not a regular contributor, so his absence has no material impact.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
           }
         ],
         "net_qualitative_edge": "away",
-        "summary": "The Avalanche are missing a regular forward in Logan O'Connor due to injury. The Kings have two veteran players listed as day-to-day, but their absence is not confirmed. The probable goalie matchup features two starting-caliber goalies, Mackenzie Blackwood for the Avalanche and Darcy Kuemper for the Kings, resulting in no significant qualitative edge there.",
-        "pick_rationale": "The model identifies a strong 9.0% edge on the Avalanche, significantly higher than the market's implied probability. This pick is heavily supported by the Elo and nhl_matchup models, which both show a substantial advantage for the Avalanche. While the Avalanche are missing Logan O'Connor, this minor qualitative negative is not enough to outweigh the strong statistical backing from the core models.",
-        "model_vs_market": "The model's probability of 72.4% for the Avalanche is 9.0% higher than the market's implied probability of 63.5%.",
-        "key_risk": "The results_features model, which is closer to a coin flip, suggests some underlying factors or recent performance trends that could contradict the stronger Elo and nhl_matchup models.",
-        "confidence_label": "strong"
+        "summary": "The Flames are significantly impacted by the absence of key offensive player Jonathan Huberdeau. The Kraken have no significant qualitative factors affecting their performance.",
+        "pick_rationale": "The model identifies a substantial 13.1% edge for the Flames over the market's implied probability, driven primarily by the nhl_matchup model which assigns a 77.0% chance. Despite the Flames facing a significant qualitative negative due to Jonathan Huberdeau's absence, the model's quantitative assessment still favors them. The results_features model is less confident at 52.2%, indicating some disagreement among component models.",
+        "model_vs_market": "The model's 63.2% probability for the Flames represents a 13.1% edge over the market's implied 50.1%.",
+        "key_risk": "The most likely way this pick loses is if the Flames' offense struggles significantly without Jonathan Huberdeau, who is a key contributor.",
+        "confidence_label": "moderate"
       },
-      "qualitative_summary": "Qualitative (H:-1 A:0): disagreed. Logan O'Connor (Injured Reserve) is a regular bottom-six forward whose absence is a minor negative.; Corey Perry (Day-To-Day) and Joel Edmundson (Day-To-Day) are veteran players whose status is uncertain; their potential absence is not confirmed.",
-      "blurb": "The model identifies a strong 9.0% edge on the Avalanche, significantly higher than the market's implied probability. This pick is heavily supported by the Elo and nhl_matchup models, which both show a substantial advantage for the Avalanche. While the Avalanche are missing Logan O'Connor, this minor qualitative negative is not enough to outweigh the strong statistical backing from the core models.",
-      "model_vs_market": "The model's probability of 72.4% for the Avalanche is 9.0% higher than the market's implied probability of 63.5%.",
-      "key_risk": "The results_features model, which is closer to a coin flip, suggests some underlying factors or recent performance trends that could contradict the stronger Elo and nhl_matchup models.",
-      "ai_confidence_label": "strong",
+      "qualitative_summary": "Qualitative (H:-3 A:0): disagreed. Jonathan Huberdeau (Injured Reserve) is a key offensive player whose absence will significantly impact the team's scoring ability.; Henry Mews (Out) is a prospect and not a regular contributor, so his absence has no material impact.",
+      "blurb": "The model identifies a substantial 13.1% edge for the Flames over the market's implied probability, driven primarily by the nhl_matchup model which assigns a 77.0% chance. Despite the Flames facing a significant qualitative negative due to Jonathan Huberdeau's absence, the model's quantitative assessment still favors them. The results_features model is less confident at 52.2%, indicating some disagreement among component models.",
+      "model_vs_market": "The model's 63.2% probability for the Flames represents a 13.1% edge over the market's implied 50.1%.",
+      "key_risk": "The most likely way this pick loses is if the Flames' offense struggles significantly without Jonathan Huberdeau, who is a key contributor.",
+      "ai_confidence_label": "moderate",
       "selection_lane": "core",
-      "tier": "LEAN",
+      "tier": "WATCHLIST",
       "market_type": "moneyline",
-      "run_id": "daily-20260930T172509621700Z",
+      "run_id": "daily-20261001T175114089772Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-30T17:25:09Z",
-      "snapshot_path": "tracking/snapshots/2026-09-30/nhl/daily-20260930T172509621700Z.json"
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
     }
   ],
   "totals_locks": [],
@@ -87,28 +101,354 @@
   "longslop": null,
   "matches": [
     {
-      "home_team": "Flyers",
-      "away_team": "Penguins",
-      "date": "2026-09-30",
-      "start_time": "2026-09-30T23:30Z",
+      "home_team": "Blue Jackets",
+      "away_team": "Sabres",
+      "date": "2026-10-01",
+      "start_time": "2026-10-01T23:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Dan Vladar",
-      "away_goalie": "Arturs Silovs",
+      "home_goalie": "Jet Greaves",
+      "away_goalie": "Ukko-Pekka Luukkonen",
       "home_goalie_status": "confirmed",
       "away_goalie_status": "confirmed",
       "home_injury_profile": {
-        "injury_burden": 3.0,
+        "injury_burden": 0.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 5.0,
+        "injury_burden": 4.35,
+        "uncertainty_burden": 0.35,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6033,
+      "edge": 0.066,
+      "expected_value": 0.0983,
+      "kelly_fraction": 0.1081,
+      "fractional_kelly": 0.0216,
+      "confidence_score": 43.6,
+      "confidence_stars": 3,
+      "american_odds": -110,
+      "model_probs": {
+        "home": 0.3967,
+        "away": 0.6033
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.3881,
+          "away": 0.6119
+        },
+        "results_features": {
+          "home": 0.5927,
+          "away": 0.4073
+        },
+        "nhl_matchup": {
+          "home": 0.2119,
+          "away": 0.7881
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.425,
+          "raw_model_prob": 0.3967,
+          "implied_prob": 0.491,
+          "market_implied_prob": 0.5128,
+          "edge": -0.066,
+          "expected_value": -0.1628,
+          "decimal_odds": 1.97,
+          "american_odds": -103,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0472,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        },
+        "away": {
+          "model_prob": 0.575,
+          "raw_model_prob": 0.6033,
+          "implied_prob": 0.509,
+          "market_implied_prob": 0.5319,
+          "edge": 0.066,
+          "expected_value": 0.0983,
+          "decimal_odds": 1.91,
+          "american_odds": -110,
+          "kelly_fraction": 0.1081,
+          "fractional_kelly": 0.0216,
+          "confidence_score": 43.6,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0472,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        }
+      },
+      "best_odds": {
+        "home": -103,
+        "away": -110
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.97,
+          "away": 1.91
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.509,
+            "home": 0.491
+          },
+          "raw_probs": {
+            "away": 0.5319,
+            "home": 0.5128
+          },
+          "hold": 0.0472,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-10-01T17:51:00Z",
+            "outcomes": {
+              "home": 1.93,
+              "away": 1.89
+            },
+            "raw_probs": {
+              "home": 0.5181,
+              "away": 0.5291
+            },
+            "fair_probs": {
+              "home": 0.4948,
+              "away": 0.5052
+            },
+            "hold": 0.0472
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-10-01T17:50:59Z",
+            "outcomes": {
+              "home": 1.93,
+              "away": 1.88
+            },
+            "raw_probs": {
+              "home": 0.5181,
+              "away": 0.5319
+            },
+            "fair_probs": {
+              "home": 0.4934,
+              "away": 0.5066
+            },
+            "hold": 0.05
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 1.97,
+              "away": 1.85
+            },
+            "raw_probs": {
+              "home": 0.5076,
+              "away": 0.5405
+            },
+            "fair_probs": {
+              "home": 0.4843,
+              "away": 0.5157
+            },
+            "hold": 0.0482
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 1.95,
+              "away": 1.87
+            },
+            "raw_probs": {
+              "home": 0.5128,
+              "away": 0.5348
+            },
+            "fair_probs": {
+              "home": 0.4895,
+              "away": 0.5105
+            },
+            "hold": 0.0476
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.97,
+              "away": 1.9
+            },
+            "raw_probs": {
+              "home": 0.5076,
+              "away": 0.5263
+            },
+            "fair_probs": {
+              "home": 0.491,
+              "away": 0.509
+            },
+            "hold": 0.0339
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.97,
+              "away": 1.9
+            },
+            "raw_probs": {
+              "home": 0.5076,
+              "away": 0.5263
+            },
+            "fair_probs": {
+              "home": 0.491,
+              "away": 0.509
+            },
+            "hold": 0.0339
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.96,
+              "away": 1.85
+            },
+            "raw_probs": {
+              "home": 0.5102,
+              "away": 0.5405
+            },
+            "fair_probs": {
+              "home": 0.4856,
+              "away": 0.5144
+            },
+            "hold": 0.0507
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 1.95,
+              "away": 1.88
+            },
+            "raw_probs": {
+              "home": 0.5128,
+              "away": 0.5319
+            },
+            "fair_probs": {
+              "home": 0.4909,
+              "away": 0.5091
+            },
+            "hold": 0.0447
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.91,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5236,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5,
+              "away": 0.5
+            },
+            "hold": 0.0471
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Blue Jackets",
+        "away_team": "Sabres",
+        "home_impact": -3,
+        "away_impact": -1,
+        "individual_factors": [
+          {
+            "team": "Blue Jackets",
+            "description": "Starting goalie Jet Greaves is a backup, which is a significant downgrade from a typical starter.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Sabres",
+            "description": "Multiple depth defensemen (Zellweger, Timmins, Rathbone) are on Injured Reserve, slightly impacting defensive depth.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Blue Jackets face a significant negative impact with their backup goalie starting, while the Sabres have minor depth defensive injuries. This creates a net qualitative edge for the Sabres.",
+        "pick_rationale": "The model identifies a substantial 9.0% edge on the Sabres, driven primarily by the Elo and nhl_matchup component models which both favor Buffalo strongly. This statistical advantage is further reinforced by the qualitative factor of the Blue Jackets starting a backup goalie, Jet Greaves, against the Sabres' primary starter. The goalie mismatch provides a clear situational advantage for the away team.",
+        "model_vs_market": "The model's probability of 59.9% for the Sabres is 9.0% higher than the market's implied probability of 50.9%.",
+        "key_risk": "The primary risk is that Jet Greaves performs exceptionally well, or the Sabres' offense struggles to convert opportunities.",
+        "confidence_label": "strong"
+      },
+      "qualitative_summary": "Qualitative (H:-3 A:-1): agreed. Starting goalie Jet Greaves is a backup, which is a significant downgrade from a typical starter.; Multiple depth defensemen (Zellweger, Timmins, Rathbone) are on Injured Reserve, slightly impacting defensive depth.",
+      "blurb": "The model identifies a substantial 9.0% edge on the Sabres, driven primarily by the Elo and nhl_matchup component models which both favor Buffalo strongly. This statistical advantage is further reinforced by the qualitative factor of the Blue Jackets starting a backup goalie, Jet Greaves, against the Sabres' primary starter. The goalie mismatch provides a clear situational advantage for the away team.",
+      "model_vs_market": "The model's probability of 59.9% for the Sabres is 9.0% higher than the market's implied probability of 50.9%.",
+      "key_risk": "The primary risk is that Jet Greaves performs exceptionally well, or the Sabres' offense struggles to convert opportunities.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20261001T175114089772Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
+    },
+    {
+      "home_team": "Devils",
+      "away_team": "Flyers",
+      "date": "2026-10-01",
+      "start_time": "2026-10-01T23:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Jake Allen",
+      "away_goalie": "Joseph Woll",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 4.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 3.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -131,352 +471,310 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.5386,
-      "edge": -0.02,
-      "expected_value": -0.0644,
-      "kelly_fraction": 0.0,
-      "fractional_kelly": 0.0,
-      "confidence_score": 36.0,
-      "confidence_stars": 1,
-      "american_odds": -141,
+      "model_prob": 0.6458,
+      "edge": 0.0276,
+      "expected_value": 0.0208,
+      "kelly_fraction": 0.034,
+      "fractional_kelly": 0.0068,
+      "confidence_score": 41.9,
+      "confidence_stars": 2,
+      "american_odds": -164,
       "model_probs": {
-        "home": 0.5386,
-        "away": 0.4614
+        "home": 0.6458,
+        "away": 0.3542
       },
       "individual_models": {
         "elo": {
-          "home": 0.5778,
-          "away": 0.4222
+          "home": 0.4962,
+          "away": 0.5038
         },
         "results_features": {
-          "home": 0.489,
-          "away": 0.511
+          "home": 0.5842,
+          "away": 0.4158
         },
         "nhl_matchup": {
-          "home": 0.53,
-          "away": 0.47
+          "home": 0.9099,
+          "away": 0.0901
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.5471,
-          "raw_model_prob": 0.5386,
-          "implied_prob": 0.5671,
-          "market_implied_prob": 0.5882,
-          "edge": -0.02,
-          "expected_value": -0.0644,
-          "decimal_odds": 1.71,
-          "american_odds": -141,
-          "kelly_fraction": 0.0,
-          "fractional_kelly": 0.0,
-          "confidence_score": 36.0,
+          "model_prob": 0.634,
+          "raw_model_prob": 0.6458,
+          "implied_prob": 0.6064,
+          "market_implied_prob": 0.6289,
+          "edge": 0.0276,
+          "expected_value": 0.0208,
+          "decimal_odds": 1.61,
+          "american_odds": -164,
+          "kelly_fraction": 0.034,
+          "fractional_kelly": 0.0068,
+          "confidence_score": 41.9,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0422,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.4529,
-          "raw_model_prob": 0.4614,
-          "implied_prob": 0.4329,
-          "market_implied_prob": 0.4505,
-          "edge": 0.02,
-          "expected_value": 0.028,
-          "decimal_odds": 2.27,
-          "american_odds": 127,
-          "kelly_fraction": 0.022,
-          "fractional_kelly": 0.0044,
-          "confidence_score": 27.5,
+          "model_prob": 0.366,
+          "raw_model_prob": 0.3542,
+          "implied_prob": 0.3936,
+          "market_implied_prob": 0.4082,
+          "edge": -0.0276,
+          "expected_value": -0.085,
+          "decimal_odds": 2.5,
+          "american_odds": 150,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0417,
+          "hold": 0.0422,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": -141,
-        "away": 127
+        "home": -164,
+        "away": 150
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 1.71,
-          "away": 2.27
+          "home": 1.61,
+          "away": 2.5
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.4329,
-            "home": 0.5671
+            "away": 0.3936,
+            "home": 0.6064
           },
           "raw_probs": {
-            "away": 0.4505,
-            "home": 0.5882
+            "away": 0.4082,
+            "home": 0.6289
           },
-          "hold": 0.0417,
+          "hold": 0.0422,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "DraftKings",
-            "last_update": "2026-09-30T17:23:41Z",
+            "last_update": "2026-10-01T17:51:00Z",
             "outcomes": {
-              "home": 1.68,
-              "away": 2.24
+              "home": 1.59,
+              "away": 2.42
             },
             "raw_probs": {
-              "home": 0.5952,
-              "away": 0.4464
+              "home": 0.6289,
+              "away": 0.4132
             },
             "fair_probs": {
-              "home": 0.5714,
-              "away": 0.4286
+              "home": 0.6035,
+              "away": 0.3965
             },
-            "hold": 0.0417
+            "hold": 0.0422
           },
           {
             "book": "MyBookie.ag",
-            "last_update": "2026-09-30T17:25:03Z",
+            "last_update": "2026-10-01T17:50:59Z",
             "outcomes": {
-              "home": 1.69,
-              "away": 2.18
+              "home": 1.59,
+              "away": 2.38
             },
             "raw_probs": {
-              "home": 0.5917,
-              "away": 0.4587
+              "home": 0.6289,
+              "away": 0.4202
             },
             "fair_probs": {
-              "home": 0.5633,
-              "away": 0.4367
+              "home": 0.5995,
+              "away": 0.4005
             },
-            "hold": 0.0504
-          },
-          {
-            "book": "BetRivers",
-            "last_update": "2026-09-30T17:24:15Z",
-            "outcomes": {
-              "home": 1.7,
-              "away": 2.18
-            },
-            "raw_probs": {
-              "home": 0.5882,
-              "away": 0.4587
-            },
-            "fair_probs": {
-              "home": 0.5619,
-              "away": 0.4381
-            },
-            "hold": 0.047
+            "hold": 0.0491
           },
           {
             "book": "Bovada",
-            "last_update": "2026-09-30T17:24:22Z",
+            "last_update": "2026-10-01T17:50:26Z",
             "outcomes": {
-              "home": 1.68,
-              "away": 2.27
+              "home": 1.59,
+              "away": 2.45
             },
             "raw_probs": {
-              "home": 0.5952,
-              "away": 0.4405
+              "home": 0.6289,
+              "away": 0.4082
             },
             "fair_probs": {
-              "home": 0.5747,
-              "away": 0.4253
+              "home": 0.6064,
+              "away": 0.3936
             },
-            "hold": 0.0358
-          },
-          {
-            "book": "LowVig.ag",
-            "last_update": "2026-09-30T17:25:03Z",
-            "outcomes": {
-              "home": 1.71,
-              "away": 2.24
-            },
-            "raw_probs": {
-              "home": 0.5848,
-              "away": 0.4464
-            },
-            "fair_probs": {
-              "home": 0.5671,
-              "away": 0.4329
-            },
-            "hold": 0.0312
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-09-30T17:24:49Z",
-            "outcomes": {
-              "home": 1.71,
-              "away": 2.24
-            },
-            "raw_probs": {
-              "home": 0.5848,
-              "away": 0.4464
-            },
-            "fair_probs": {
-              "home": 0.5671,
-              "away": 0.4329
-            },
-            "hold": 0.0312
+            "hold": 0.0371
           },
           {
             "book": "BetMGM",
-            "last_update": "2026-09-30T17:25:03Z",
+            "last_update": "2026-10-01T17:51:16Z",
             "outcomes": {
-              "home": 1.71,
-              "away": 2.18
+              "home": 1.57,
+              "away": 2.45
             },
             "raw_probs": {
-              "home": 0.5848,
-              "away": 0.4587
+              "home": 0.6369,
+              "away": 0.4082
             },
             "fair_probs": {
-              "home": 0.5604,
-              "away": 0.4396
+              "home": 0.6095,
+              "away": 0.3905
             },
-            "hold": 0.0435
-          },
-          {
-            "book": "BetUS",
-            "last_update": "2026-09-30T17:25:01Z",
-            "outcomes": {
-              "home": 1.71,
-              "away": 2.2
-            },
-            "raw_probs": {
-              "home": 0.5848,
-              "away": 0.4545
-            },
-            "fair_probs": {
-              "home": 0.5627,
-              "away": 0.4373
-            },
-            "hold": 0.0393
+            "hold": 0.0451
           },
           {
             "book": "FanDuel",
-            "last_update": "2026-09-30T17:24:48Z",
+            "last_update": "2026-10-01T17:51:17Z",
             "outcomes": {
-              "home": 1.68,
-              "away": 2.22
+              "home": 1.55,
+              "away": 2.5
             },
             "raw_probs": {
-              "home": 0.5952,
-              "away": 0.4505
+              "home": 0.6452,
+              "away": 0.4
             },
             "fair_probs": {
-              "home": 0.5692,
-              "away": 0.4308
+              "home": 0.6173,
+              "away": 0.3827
             },
-            "hold": 0.0457
+            "hold": 0.0452
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.57,
+              "away": 2.43
+            },
+            "raw_probs": {
+              "home": 0.6369,
+              "away": 0.4115
+            },
+            "fair_probs": {
+              "home": 0.6075,
+              "away": 0.3925
+            },
+            "hold": 0.0485
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.61,
+              "away": 2.45
+            },
+            "raw_probs": {
+              "home": 0.6211,
+              "away": 0.4082
+            },
+            "fair_probs": {
+              "home": 0.6034,
+              "away": 0.3966
+            },
+            "hold": 0.0293
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.61,
+              "away": 2.45
+            },
+            "raw_probs": {
+              "home": 0.6211,
+              "away": 0.4082
+            },
+            "fair_probs": {
+              "home": 0.6034,
+              "away": 0.3966
+            },
+            "hold": 0.0293
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.59,
+              "away": 2.46
+            },
+            "raw_probs": {
+              "home": 0.6289,
+              "away": 0.4065
+            },
+            "fair_probs": {
+              "home": 0.6074,
+              "away": 0.3926
+            },
+            "hold": 0.0354
           }
         ]
       },
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Flyers",
-        "away_team": "Penguins",
+        "home_team": "Devils",
+        "away_team": "Flyers",
         "home_impact": -1,
-        "away_impact": -5,
+        "away_impact": -1,
         "individual_factors": [
           {
-            "team": "Flyers",
-            "description": "Nikita Grebenkin (Out) is a minor absence, likely a depth player.",
+            "team": "Devils",
+            "description": "Multiple depth players and prospects (Connor Brown, Johnathan Kovacevic, Nick Bjugstad, Seamus Casey) are out due to injury.",
             "direction": "negative",
             "magnitude": 1,
-            "confidence": 0.8
+            "confidence": 1
           },
           {
-            "team": "Penguins",
-            "description": "Bryan Rust (Injured Reserve) is a significant loss as a key top-6 forward.",
-            "direction": "negative",
-            "magnitude": 3,
-            "confidence": 0.9
-          },
-          {
-            "team": "Penguins",
-            "description": "Andrei Kuzmenko (Injured Reserve) is a moderate loss as a solid scoring forward.",
-            "direction": "negative",
-            "magnitude": 2,
-            "confidence": 0.8
-          },
-          {
-            "team": "Penguins",
-            "description": "Blake Lizotte (Injured Reserve) is a minor loss as a depth forward.",
+            "team": "Flyers",
+            "description": "Multiple depth players and prospects (Nikita Grebenkin, Helge Grans, Denver Barkey) are out due to injury.",
             "direction": "negative",
             "magnitude": 1,
-            "confidence": 0.7
-          },
-          {
-            "team": "Flyers",
-            "description": "Helge Grans and Denver Barkey (Injured Reserve) are likely prospects with minimal impact.",
-            "direction": "negative",
-            "magnitude": 0,
-            "confidence": 0.9
-          },
-          {
-            "team": "Penguins",
-            "description": "Tristan Broz and Ben Kindel (Injured Reserve) are likely prospects with minimal impact.",
-            "direction": "negative",
-            "magnitude": 0,
-            "confidence": 0.9
-          },
-          {
-            "team": "Flyers",
-            "description": "Starting backup goalie Dan Vladar is confirmed.",
-            "direction": "negative",
-            "magnitude": 0,
-            "confidence": 0.9
-          },
-          {
-            "team": "Penguins",
-            "description": "Starting backup goalie Arturs Silovs is confirmed.",
-            "direction": "negative",
-            "magnitude": 0,
-            "confidence": 0.9
+            "confidence": 1
           }
         ],
-        "net_qualitative_edge": "home",
-        "summary": "The Penguins are significantly impacted by injuries to key forwards Bryan Rust and Andrei Kuzmenko, along with depth player Blake Lizotte. The Flyers have a minor injury to Nikita Grebenkin. Both teams are starting backup goalies, which is a neutral factor in terms of relative impact.",
-        "pick_rationale": "The model predicts the Flyers to win, primarily supported by its Elo and NHL matchup components which assign probabilities of 57.8% and 53.0% respectively. This prediction is further bolstered by significant qualitative advantages for the Flyers, as the Penguins are dealing with multiple key injuries. Despite the model predicting a Flyers win, the market has priced them even higher, resulting in a negative edge at the current line.",
-        "model_vs_market": "The model's probability of 53.1% for the Flyers is 3.6 percentage points lower than the market's implied probability of 56.7%, indicating the market is overvaluing the Flyers at the current line.",
-        "key_risk": "The primary risk for this pick is that the market's higher valuation of the Flyers is accurate, or that the Penguins' depth players step up despite the injuries.",
-        "confidence_label": "avoid"
+        "net_qualitative_edge": "none",
+        "summary": "Both teams are dealing with minor injuries to depth players or prospects, which largely cancel each other out. The confirmed starting goalies, Jake Allen for the Devils and Joseph Woll for the Flyers, are both capable and do not present a significant qualitative advantage or disadvantage based on the provided context.",
+        "pick_rationale": "The model identifies a 3.9% edge on the Devils, driven primarily by the nhl_matchup model which assigns a 91.0% probability to the home team. While the Elo model slightly favors the Flyers, the results_features model also leans towards the Devils. Qualitative factors, including minor depth injuries for both teams and standard starting goalies, are largely neutral and do not significantly influence the pick.",
+        "model_vs_market": "The model's probability of 64.6% for the Devils is 3.9% higher than the market's implied probability of 60.6%.",
+        "key_risk": "The primary risk is that the nhl_matchup model's strong conviction is an outlier compared to the other component models, or that Joseph Woll outperforms Jake Allen in goal.",
+        "confidence_label": "moderate"
       },
-      "qualitative_summary": "Qualitative (H:-1 A:-5): agreed. Nikita Grebenkin (Out) is a minor absence, likely a depth player.; Bryan Rust (Injured Reserve) is a significant loss as a key top-6 forward.",
-      "blurb": "The model predicts the Flyers to win, primarily supported by its Elo and NHL matchup components which assign probabilities of 57.8% and 53.0% respectively. This prediction is further bolstered by significant qualitative advantages for the Flyers, as the Penguins are dealing with multiple key injuries. Despite the model predicting a Flyers win, the market has priced them even higher, resulting in a negative edge at the current line.",
-      "model_vs_market": "The model's probability of 53.1% for the Flyers is 3.6 percentage points lower than the market's implied probability of 56.7%, indicating the market is overvaluing the Flyers at the current line.",
-      "key_risk": "The primary risk for this pick is that the market's higher valuation of the Flyers is accurate, or that the Penguins' depth players step up despite the injuries.",
-      "ai_confidence_label": "avoid",
-      "run_id": "daily-20260930T172509621700Z",
+      "qualitative_summary": "Qualitative (H:-1 A:-1): no effect. Multiple depth players and prospects (Connor Brown, Johnathan Kovacevic, Nick Bjugstad, Seamus Casey) are out due to injury.; Multiple depth players and prospects (Nikita Grebenkin, Helge Grans, Denver Barkey) are out due to injury.",
+      "blurb": "The model identifies a 3.9% edge on the Devils, driven primarily by the nhl_matchup model which assigns a 91.0% probability to the home team. While the Elo model slightly favors the Flyers, the results_features model also leans towards the Devils. Qualitative factors, including minor depth injuries for both teams and standard starting goalies, are largely neutral and do not significantly influence the pick.",
+      "model_vs_market": "The model's probability of 64.6% for the Devils is 3.9% higher than the market's implied probability of 60.6%.",
+      "key_risk": "The primary risk is that the nhl_matchup model's strong conviction is an outlier compared to the other component models, or that Joseph Woll outperforms Jake Allen in goal.",
+      "ai_confidence_label": "moderate",
+      "run_id": "daily-20261001T175114089772Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-30T17:25:09Z",
-      "snapshot_path": "tracking/snapshots/2026-09-30/nhl/daily-20260930T172509621700Z.json"
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
     },
     {
-      "home_team": "Maple Leafs",
-      "away_team": "Islanders",
-      "date": "2026-09-30",
-      "start_time": "2026-09-30T23:30Z",
+      "home_team": "Rangers",
+      "away_team": "Lightning",
+      "date": "2026-10-01",
+      "start_time": "2026-10-01T23:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Anthony Stolarz",
-      "away_goalie": "Ilya Sorokin",
+      "home_goalie": "Igor Shesterkin",
+      "away_goalie": "Andrei Vasilevskiy",
       "home_goalie_status": "confirmed",
       "away_goalie_status": "confirmed",
       "home_injury_profile": {
-        "injury_burden": 5.0,
+        "injury_burden": 3.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 1.0,
+        "injury_burden": 2.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
@@ -499,325 +797,339 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "away",
-      "model_prob": 0.6286,
-      "edge": 0.1198,
-      "expected_value": 0.2353,
-      "kelly_fraction": 0.2064,
-      "fractional_kelly": 0.0413,
-      "confidence_score": 47.2,
-      "confidence_stars": 4,
-      "american_odds": 114,
+      "model_prob": 0.5798,
+      "edge": 0.0059,
+      "expected_value": -0.0186,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 23.6,
+      "confidence_stars": 1,
+      "american_odds": -143,
       "model_probs": {
-        "home": 0.3714,
-        "away": 0.6286
+        "home": 0.4202,
+        "away": 0.5798
       },
       "individual_models": {
         "elo": {
-          "home": 0.4158,
-          "away": 0.5842
+          "home": 0.4225,
+          "away": 0.5775
         },
         "results_features": {
-          "home": 0.4902,
-          "away": 0.5098
+          "home": 0.5863,
+          "away": 0.4137
         },
         "nhl_matchup": {
-          "home": 0.2095,
-          "away": 0.7905
+          "home": 0.2992,
+          "away": 0.7008
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.4228,
-          "raw_model_prob": 0.3714,
-          "implied_prob": 0.5426,
-          "market_implied_prob": 0.565,
-          "edge": -0.1198,
-          "expected_value": -0.2475,
-          "decimal_odds": 1.78,
-          "american_odds": -128,
+          "model_prob": 0.4227,
+          "raw_model_prob": 0.4202,
+          "implied_prob": 0.4286,
+          "market_implied_prob": 0.4444,
+          "edge": -0.0059,
+          "expected_value": -0.032,
+          "decimal_odds": 2.29,
+          "american_odds": 129,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 0.3,
+          "confidence_score": 0.5,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0412,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.5772,
-          "raw_model_prob": 0.6286,
-          "implied_prob": 0.4574,
-          "market_implied_prob": 0.4762,
-          "edge": 0.1198,
-          "expected_value": 0.2353,
-          "decimal_odds": 2.14,
-          "american_odds": 114,
-          "kelly_fraction": 0.2064,
-          "fractional_kelly": 0.0413,
-          "confidence_score": 47.2,
+          "model_prob": 0.5773,
+          "raw_model_prob": 0.5798,
+          "implied_prob": 0.5714,
+          "market_implied_prob": 0.5952,
+          "edge": 0.0059,
+          "expected_value": -0.0186,
+          "decimal_odds": 1.7,
+          "american_odds": -143,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 23.6,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0412,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": -128,
-        "away": 114
+        "home": 129,
+        "away": -143
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 1.78,
-          "away": 2.14
+          "home": 2.29,
+          "away": 1.7
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.4574,
-            "home": 0.5426
+            "away": 0.5714,
+            "home": 0.4286
           },
           "raw_probs": {
-            "away": 0.4762,
-            "home": 0.565
+            "away": 0.5952,
+            "home": 0.4444
           },
-          "hold": 0.0412,
+          "hold": 0.0417,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "DraftKings",
-            "last_update": "2026-09-30T17:23:41Z",
+            "last_update": "2026-10-01T17:51:00Z",
             "outcomes": {
-              "home": 1.77,
-              "away": 2.1
+              "home": 2.24,
+              "away": 1.68
             },
             "raw_probs": {
-              "home": 0.565,
-              "away": 0.4762
+              "home": 0.4464,
+              "away": 0.5952
             },
             "fair_probs": {
-              "home": 0.5426,
-              "away": 0.4574
+              "home": 0.4286,
+              "away": 0.5714
             },
-            "hold": 0.0412
-          },
-          {
-            "book": "BetMGM",
-            "last_update": "2026-09-30T17:25:03Z",
-            "outcomes": {
-              "home": 1.77,
-              "away": 2.1
-            },
-            "raw_probs": {
-              "home": 0.565,
-              "away": 0.4762
-            },
-            "fair_probs": {
-              "home": 0.5426,
-              "away": 0.4574
-            },
-            "hold": 0.0412
-          },
-          {
-            "book": "BetRivers",
-            "last_update": "2026-09-30T17:24:15Z",
-            "outcomes": {
-              "home": 1.75,
-              "away": 2.1
-            },
-            "raw_probs": {
-              "home": 0.5714,
-              "away": 0.4762
-            },
-            "fair_probs": {
-              "home": 0.5455,
-              "away": 0.4545
-            },
-            "hold": 0.0476
-          },
-          {
-            "book": "FanDuel",
-            "last_update": "2026-09-30T17:24:48Z",
-            "outcomes": {
-              "home": 1.77,
-              "away": 2.08
-            },
-            "raw_probs": {
-              "home": 0.565,
-              "away": 0.4808
-            },
-            "fair_probs": {
-              "home": 0.5403,
-              "away": 0.4597
-            },
-            "hold": 0.0457
-          },
-          {
-            "book": "Bovada",
-            "last_update": "2026-09-30T17:24:22Z",
-            "outcomes": {
-              "home": 1.77,
-              "away": 2.1
-            },
-            "raw_probs": {
-              "home": 0.565,
-              "away": 0.4762
-            },
-            "fair_probs": {
-              "home": 0.5426,
-              "away": 0.4574
-            },
-            "hold": 0.0412
-          },
-          {
-            "book": "LowVig.ag",
-            "last_update": "2026-09-30T17:25:03Z",
-            "outcomes": {
-              "home": 1.78,
-              "away": 2.14
-            },
-            "raw_probs": {
-              "home": 0.5618,
-              "away": 0.4673
-            },
-            "fair_probs": {
-              "home": 0.5459,
-              "away": 0.4541
-            },
-            "hold": 0.0291
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-09-30T17:24:49Z",
-            "outcomes": {
-              "home": 1.78,
-              "away": 2.14
-            },
-            "raw_probs": {
-              "home": 0.5618,
-              "away": 0.4673
-            },
-            "fair_probs": {
-              "home": 0.5459,
-              "away": 0.4541
-            },
-            "hold": 0.0291
-          },
-          {
-            "book": "BetUS",
-            "last_update": "2026-09-30T17:25:01Z",
-            "outcomes": {
-              "home": 1.77,
-              "away": 2.1
-            },
-            "raw_probs": {
-              "home": 0.565,
-              "away": 0.4762
-            },
-            "fair_probs": {
-              "home": 0.5426,
-              "away": 0.4574
-            },
-            "hold": 0.0412
+            "hold": 0.0417
           },
           {
             "book": "MyBookie.ag",
-            "last_update": "2026-09-30T17:25:03Z",
+            "last_update": "2026-10-01T17:50:59Z",
             "outcomes": {
-              "home": 1.77,
-              "away": 2.06
+              "home": 2.18,
+              "away": 1.69
             },
             "raw_probs": {
-              "home": 0.565,
-              "away": 0.4854
+              "home": 0.4587,
+              "away": 0.5917
             },
             "fair_probs": {
-              "home": 0.5379,
-              "away": 0.4621
+              "home": 0.4367,
+              "away": 0.5633
             },
             "hold": 0.0504
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 2.27,
+              "away": 1.68
+            },
+            "raw_probs": {
+              "home": 0.4405,
+              "away": 0.5952
+            },
+            "fair_probs": {
+              "home": 0.4253,
+              "away": 0.5747
+            },
+            "hold": 0.0358
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.67
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5988
+            },
+            "fair_probs": {
+              "home": 0.426,
+              "away": 0.574
+            },
+            "hold": 0.0432
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.29,
+              "away": 1.68
+            },
+            "raw_probs": {
+              "home": 0.4367,
+              "away": 0.5952
+            },
+            "fair_probs": {
+              "home": 0.4232,
+              "away": 0.5768
+            },
+            "hold": 0.0319
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.29,
+              "away": 1.68
+            },
+            "raw_probs": {
+              "home": 0.4367,
+              "away": 0.5952
+            },
+            "fair_probs": {
+              "home": 0.4232,
+              "away": 0.5768
+            },
+            "hold": 0.0319
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.17,
+              "away": 1.7
+            },
+            "raw_probs": {
+              "home": 0.4608,
+              "away": 0.5882
+            },
+            "fair_probs": {
+              "home": 0.4393,
+              "away": 0.5607
+            },
+            "hold": 0.0491
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 2.2,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4545,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4344,
+              "away": 0.5656
+            },
+            "hold": 0.0463
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4289,
+              "away": 0.5711
+            },
+            "hold": 0.0362
           }
         ]
       },
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Maple Leafs",
-        "away_team": "Islanders",
-        "home_impact": -5,
-        "away_impact": -3,
+        "home_team": "Rangers",
+        "away_team": "Lightning",
+        "home_impact": 0,
+        "away_impact": -2,
         "individual_factors": [
           {
-            "team": "Maple Leafs",
-            "description": "Backup goalie Anthony Stolarz starting against elite Ilya Sorokin, a significant downgrade for Toronto.",
+            "team": "Rangers",
+            "description": "Joonas Korpisalo (backup goalie) on Injured Reserve, but starting goalie Igor Shesterkin is confirmed.",
             "direction": "negative",
-            "magnitude": 3,
-            "confidence": 1.0
+            "magnitude": 0,
+            "confidence": 1
           },
           {
-            "team": "Maple Leafs",
-            "description": "Key forward Max Domi is on Injured Reserve, impacting offensive depth.",
+            "team": "Rangers",
+            "description": "Aidan Thompson and Adam Sykora (minor players) on Injured Reserve.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Lightning",
+            "description": "Yanni Gourde (solid middle-six forward) on Injured Reserve.",
             "direction": "negative",
             "magnitude": 2,
-            "confidence": 1.0
+            "confidence": 1
           },
           {
-            "team": "Maple Leafs",
-            "description": "Multiple depth players (Cade Webber, William Villeneuve, Dakota Joshua) are on Injured Reserve.",
+            "team": "Lightning",
+            "description": "Dominic James (minor player) on Injured Reserve.",
             "direction": "negative",
-            "magnitude": 1,
-            "confidence": 1.0
+            "magnitude": 0,
+            "confidence": 1
           },
           {
-            "team": "Islanders",
-            "description": "Key offensive player Mathew Barzal is on Injured Reserve, a significant loss for their attack.",
-            "direction": "negative",
-            "magnitude": 3,
-            "confidence": 1.0
+            "team": "Rangers",
+            "description": "Igor Shesterkin confirmed as starting goalie.",
+            "direction": "positive",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Lightning",
+            "description": "Andrei Vasilevskiy confirmed as starting goalie.",
+            "direction": "positive",
+            "magnitude": 0,
+            "confidence": 1
           }
         ],
-        "net_qualitative_edge": "away",
-        "summary": "The Maple Leafs face significant qualitative disadvantages with their backup goalie Anthony Stolarz starting against the Islanders' elite Ilya Sorokin, compounded by key forward Max Domi's absence. The Islanders are also missing a key offensive player in Mathew Barzal, but their goalie advantage provides a net qualitative edge.",
-        "pick_rationale": "The model identifies a substantial 16.7% edge on the Islanders, driven primarily by the nhl_matchup model which assigns a 79.0% probability. This strong statistical backing is further supported by qualitative factors, as the Maple Leafs are starting a backup goalie against an elite opponent while also missing a key forward, giving the Islanders a net qualitative advantage despite their own injury to Mathew Barzal.",
-        "model_vs_market": "The model's probability of 62.5% for the Islanders is significantly higher than the market's implied probability of 45.7%, representing a 16.7% edge.",
-        "key_risk": "The primary risk for this pick is that Anthony Stolarz performs exceptionally well, or Ilya Sorokin has an uncharacteristically poor outing.",
-        "confidence_label": "strong"
+        "net_qualitative_edge": "home",
+        "summary": "The Rangers have no significant qualitative impacts, with their starting goalie confirmed despite backup injuries. The Lightning are moderately negatively impacted by the absence of solid middle-six forward Yanni Gourde.",
+        "pick_rationale": "The model identifies a thin edge on the Lightning despite a moderate negative qualitative factor due to Yanni Gourde's absence. The nhl_matchup model strongly favors the Lightning, while the elo model also leans their way, suggesting underlying strength not fully captured by the market. The results_features model, however, shows less conviction.",
+        "model_vs_market": "The model's probability of 58.4% for the Lightning is slightly higher than the market's implied probability of 57.1%, creating a 1.2% edge.",
+        "key_risk": "The primary risk is that Yanni Gourde's absence impacts the Lightning's offensive depth more than anticipated, or that the Rangers' elite goaltending performance at home overcomes the model's projection.",
+        "confidence_label": "thin"
       },
-      "qualitative_summary": "Qualitative (H:-5 A:-3): agreed. Backup goalie Anthony Stolarz starting against elite Ilya Sorokin, a significant downgrade for Toronto.; Key forward Max Domi is on Injured Reserve, impacting offensive depth.",
-      "blurb": "The model identifies a substantial 16.7% edge on the Islanders, driven primarily by the nhl_matchup model which assigns a 79.0% probability. This strong statistical backing is further supported by qualitative factors, as the Maple Leafs are starting a backup goalie against an elite opponent while also missing a key forward, giving the Islanders a net qualitative advantage despite their own injury to Mathew Barzal.",
-      "model_vs_market": "The model's probability of 62.5% for the Islanders is significantly higher than the market's implied probability of 45.7%, representing a 16.7% edge.",
-      "key_risk": "The primary risk for this pick is that Anthony Stolarz performs exceptionally well, or Ilya Sorokin has an uncharacteristically poor outing.",
-      "ai_confidence_label": "strong",
-      "run_id": "daily-20260930T172509621700Z",
+      "qualitative_summary": "Qualitative (H:0 A:-2): disagreed. Joonas Korpisalo (backup goalie) on Injured Reserve, but starting goalie Igor Shesterkin is confirmed.; Aidan Thompson and Adam Sykora (minor players) on Injured Reserve.",
+      "blurb": "The model identifies a thin edge on the Lightning despite a moderate negative qualitative factor due to Yanni Gourde's absence. The nhl_matchup model strongly favors the Lightning, while the elo model also leans their way, suggesting underlying strength not fully captured by the market. The results_features model, however, shows less conviction.",
+      "model_vs_market": "The model's probability of 58.4% for the Lightning is slightly higher than the market's implied probability of 57.1%, creating a 1.2% edge.",
+      "key_risk": "The primary risk is that Yanni Gourde's absence impacts the Lightning's offensive depth more than anticipated, or that the Rangers' elite goaltending performance at home overcomes the model's projection.",
+      "ai_confidence_label": "thin",
+      "run_id": "daily-20261001T175114089772Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-30T17:25:09Z",
-      "snapshot_path": "tracking/snapshots/2026-09-30/nhl/daily-20260930T172509621700Z.json"
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
     },
     {
-      "home_team": "Avalanche",
-      "away_team": "Kings",
-      "date": "2026-09-30",
-      "start_time": "2026-10-01T02:00Z",
+      "home_team": "Predators",
+      "away_team": "Wild",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T00:00Z",
       "matchday": null,
       "completed": false,
       "neutral": false,
       "home_availability_profile": null,
       "away_availability_profile": null,
-      "home_goalie": "Mackenzie Blackwood",
-      "away_goalie": "Darcy Kuemper",
+      "home_goalie": "Juuse Saros",
+      "away_goalie": "Jesper Wallstedt",
       "home_goalie_status": "confirmed",
       "away_goalie_status": "expected",
       "home_injury_profile": {
-        "injury_burden": 5.0,
+        "injury_burden": 0.0,
         "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
       },
       "away_injury_profile": {
-        "injury_burden": 3.7,
-        "uncertainty_burden": 0.7,
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
         "key_absence_score": 0.0,
         "leader_absence_burden": 0.0,
         "leader_uncertainty_burden": 0.0
@@ -839,286 +1151,1618 @@
       "away_bullpen_tax": null,
       "weather": null,
       "pick": "home",
-      "model_prob": 0.7224,
-      "edge": 0.049,
-      "expected_value": 0.0462,
-      "kelly_fraction": 0.0872,
-      "fractional_kelly": 0.0174,
-      "confidence_score": 58.8,
+      "model_prob": 0.51,
+      "edge": 0.0557,
+      "expected_value": 0.0937,
+      "kelly_fraction": 0.075,
+      "fractional_kelly": 0.015,
+      "confidence_score": 28.3,
       "confidence_stars": 2,
-      "american_odds": -189,
+      "american_odds": 125,
       "model_probs": {
-        "home": 0.7224,
-        "away": 0.2776
+        "home": 0.51,
+        "away": 0.49
       },
       "individual_models": {
         "elo": {
-          "home": 0.76,
-          "away": 0.24
+          "home": 0.4461,
+          "away": 0.5539
         },
         "results_features": {
-          "home": 0.494,
-          "away": 0.506
+          "home": 0.5928,
+          "away": 0.4072
         },
         "nhl_matchup": {
-          "home": 0.9585,
-          "away": 0.0415
+          "home": 0.3721,
+          "away": 0.6279
         }
       },
       "edges": {
         "home": {
-          "model_prob": 0.6838,
-          "raw_model_prob": 0.7224,
-          "implied_prob": 0.6348,
-          "market_implied_prob": 0.6536,
-          "edge": 0.049,
-          "expected_value": 0.0462,
-          "decimal_odds": 1.53,
-          "american_odds": -189,
-          "kelly_fraction": 0.0872,
-          "fractional_kelly": 0.0174,
-          "confidence_score": 58.8,
+          "model_prob": 0.4861,
+          "raw_model_prob": 0.51,
+          "implied_prob": 0.4304,
+          "market_implied_prob": 0.4444,
+          "edge": 0.0557,
+          "expected_value": 0.0937,
+          "decimal_odds": 2.25,
+          "american_odds": 125,
+          "kelly_fraction": 0.075,
+          "fractional_kelly": 0.015,
+          "confidence_score": 28.3,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0425,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         },
         "away": {
-          "model_prob": 0.3162,
-          "raw_model_prob": 0.2776,
-          "implied_prob": 0.3652,
-          "market_implied_prob": 0.3788,
-          "edge": -0.049,
-          "expected_value": -0.1526,
-          "decimal_odds": 2.68,
-          "american_odds": 168,
+          "model_prob": 0.5139,
+          "raw_model_prob": 0.49,
+          "implied_prob": 0.5696,
+          "market_implied_prob": 0.5917,
+          "edge": -0.0557,
+          "expected_value": -0.1212,
+          "decimal_odds": 1.71,
+          "american_odds": -141,
           "kelly_fraction": 0.0,
           "fractional_kelly": 0.0,
-          "confidence_score": 0.0,
+          "confidence_score": 14.7,
           "is_value": false,
           "unrealistic_flag": false,
-          "hold": 0.0425,
+          "hold": 0.0417,
           "market_source": "median_complete_book_no_vig",
           "market_books": 9
         }
       },
       "best_odds": {
-        "home": -189,
-        "away": 168
+        "home": 125,
+        "away": -141
       },
       "market_snapshot": {
         "execution_prices": {
-          "home": 1.53,
-          "away": 2.68
+          "home": 2.25,
+          "away": 1.71
         },
         "benchmark": {
           "fair_probs": {
-            "away": 0.3652,
-            "home": 0.6348
+            "away": 0.5696,
+            "home": 0.4304
           },
           "raw_probs": {
-            "away": 0.3788,
-            "home": 0.6536
+            "away": 0.5917,
+            "home": 0.4444
           },
-          "hold": 0.0425,
+          "hold": 0.0417,
           "books_tracked": 9,
           "source": "median_complete_book_no_vig"
         },
         "books": [
           {
             "book": "DraftKings",
-            "last_update": "2026-09-30T17:23:41Z",
+            "last_update": "2026-10-01T17:51:00Z",
             "outcomes": {
-              "home": 1.52,
-              "away": 2.6
+              "home": 2.24,
+              "away": 1.68
             },
             "raw_probs": {
-              "home": 0.6579,
-              "away": 0.3846
+              "home": 0.4464,
+              "away": 0.5952
             },
             "fair_probs": {
-              "home": 0.6311,
-              "away": 0.3689
+              "home": 0.4286,
+              "away": 0.5714
             },
-            "hold": 0.0425
+            "hold": 0.0417
           },
           {
             "book": "MyBookie.ag",
-            "last_update": "2026-09-30T17:25:03Z",
+            "last_update": "2026-10-01T17:50:59Z",
             "outcomes": {
-              "home": 1.53,
-              "away": 2.53
+              "home": 2.17,
+              "away": 1.69
             },
             "raw_probs": {
-              "home": 0.6536,
-              "away": 0.3953
+              "home": 0.4608,
+              "away": 0.5917
             },
             "fair_probs": {
-              "home": 0.6232,
-              "away": 0.3768
+              "home": 0.4378,
+              "away": 0.5622
             },
-            "hold": 0.0489
-          },
-          {
-            "book": "BetRivers",
-            "last_update": "2026-09-30T17:24:15Z",
-            "outcomes": {
-              "home": 1.5,
-              "away": 2.65
-            },
-            "raw_probs": {
-              "home": 0.6667,
-              "away": 0.3774
-            },
-            "fair_probs": {
-              "home": 0.6386,
-              "away": 0.3614
-            },
-            "hold": 0.044
+            "hold": 0.0525
           },
           {
             "book": "Bovada",
-            "last_update": "2026-09-30T17:24:22Z",
+            "last_update": "2026-10-01T17:50:26Z",
             "outcomes": {
-              "home": 1.51,
-              "away": 2.68
+              "home": 2.25,
+              "away": 1.69
             },
             "raw_probs": {
-              "home": 0.6623,
-              "away": 0.3731
+              "home": 0.4444,
+              "away": 0.5917
             },
             "fair_probs": {
-              "home": 0.6396,
-              "away": 0.3604
+              "home": 0.4289,
+              "away": 0.5711
             },
-            "hold": 0.0354
-          },
-          {
-            "book": "LowVig.ag",
-            "last_update": "2026-09-30T17:25:03Z",
-            "outcomes": {
-              "home": 1.53,
-              "away": 2.66
-            },
-            "raw_probs": {
-              "home": 0.6536,
-              "away": 0.3759
-            },
-            "fair_probs": {
-              "home": 0.6348,
-              "away": 0.3652
-            },
-            "hold": 0.0295
-          },
-          {
-            "book": "BetOnline.ag",
-            "last_update": "2026-09-30T17:24:49Z",
-            "outcomes": {
-              "home": 1.53,
-              "away": 2.66
-            },
-            "raw_probs": {
-              "home": 0.6536,
-              "away": 0.3759
-            },
-            "fair_probs": {
-              "home": 0.6348,
-              "away": 0.3652
-            },
-            "hold": 0.0295
+            "hold": 0.0362
           },
           {
             "book": "BetMGM",
-            "last_update": "2026-09-30T17:25:03Z",
+            "last_update": "2026-10-01T17:51:16Z",
             "outcomes": {
-              "home": 1.53,
-              "away": 2.55
+              "home": 2.25,
+              "away": 1.67
             },
             "raw_probs": {
-              "home": 0.6536,
-              "away": 0.3922
+              "home": 0.4444,
+              "away": 0.5988
             },
             "fair_probs": {
-              "home": 0.625,
-              "away": 0.375
+              "home": 0.426,
+              "away": 0.574
             },
-            "hold": 0.0458
+            "hold": 0.0432
           },
           {
-            "book": "BetUS",
-            "last_update": "2026-09-30T17:25:01Z",
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
             "outcomes": {
-              "home": 1.53,
-              "away": 2.63
+              "home": 2.25,
+              "away": 1.7
             },
             "raw_probs": {
-              "home": 0.6536,
-              "away": 0.3802
+              "home": 0.4444,
+              "away": 0.5882
             },
             "fair_probs": {
-              "home": 0.6322,
-              "away": 0.3678
+              "home": 0.4304,
+              "away": 0.5696
             },
-            "hold": 0.0338
+            "hold": 0.0327
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.7
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5882
+            },
+            "fair_probs": {
+              "home": 0.4304,
+              "away": 0.5696
+            },
+            "hold": 0.0327
           },
           {
             "book": "FanDuel",
-            "last_update": "2026-09-30T17:24:48Z",
+            "last_update": "2026-10-01T17:51:17Z",
             "outcomes": {
-              "home": 1.5,
-              "away": 2.64
+              "home": 2.22,
+              "away": 1.68
             },
             "raw_probs": {
-              "home": 0.6667,
-              "away": 0.3788
+              "home": 0.4505,
+              "away": 0.5952
             },
             "fair_probs": {
-              "home": 0.6377,
-              "away": 0.3623
+              "home": 0.4308,
+              "away": 0.5692
             },
-            "hold": 0.0455
+            "hold": 0.0457
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.16,
+              "away": 1.71
+            },
+            "raw_probs": {
+              "home": 0.463,
+              "away": 0.5848
+            },
+            "fair_probs": {
+              "home": 0.4419,
+              "away": 0.5581
+            },
+            "hold": 0.0478
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4289,
+              "away": 0.5711
+            },
+            "hold": 0.0362
           }
         ]
       },
       "qualitative_analysis": {
         "sport": "nhl",
-        "home_team": "Avalanche",
-        "away_team": "Kings",
-        "home_impact": -1,
-        "away_impact": 0,
+        "home_team": "Predators",
+        "away_team": "Wild",
+        "home_impact": 2,
+        "away_impact": -5,
         "individual_factors": [
           {
-            "team": "Avalanche",
-            "description": "Logan O'Connor (Injured Reserve) is a regular bottom-six forward whose absence is a minor negative.",
-            "direction": "negative",
-            "magnitude": 1,
+            "team": "Predators",
+            "description": "Juuse Saros (G) confirmed as starter",
+            "direction": "positive",
+            "magnitude": 2,
             "confidence": 1
           },
           {
-            "team": "Kings",
-            "description": "Corey Perry (Day-To-Day) and Joel Edmundson (Day-To-Day) are veteran players whose status is uncertain; their potential absence is not confirmed.",
+            "team": "Wild",
+            "description": "Brock Faber (D) out on Injured Reserve",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          },
+          {
+            "team": "Wild",
+            "description": "Filip Gustavsson (G) out on Injured Reserve, leading to Jesper Wallstedt (G) starting",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Predators benefit from their top goalie, Juuse Saros, starting. The Wild are significantly hampered by injuries to key defenseman Brock Faber and regular goalie Filip Gustavsson, forcing less experienced Jesper Wallstedt into the starting role.",
+        "pick_rationale": "The model identifies a significant edge on the Wild despite their qualitative disadvantages. The Elo model and nhl_matchup model both strongly favor the Wild, suggesting their underlying team strength is being undervalued by the market, even with the injuries and goalie downgrade. The model believes the Wild's overall talent and matchup advantages are enough to overcome the absence of Faber and the less experienced Wallstedt in net.",
+        "model_vs_market": "The model assigns the Wild a 50.4% chance of winning, which is 8.88% higher than the market's implied probability of 41.52% based on the Predators' 1.71 line.",
+        "key_risk": "The primary risk for this pick is the significant downgrade in net for the Wild with Jesper Wallstedt starting against the Predators' strong offense and Juuse Saros.",
+        "confidence_label": "avoid"
+      },
+      "qualitative_summary": "Qualitative (H:2 A:-5): disagreed. Juuse Saros (G) confirmed as starter; Brock Faber (D) out on Injured Reserve",
+      "blurb": "The model identifies a significant edge on the Wild despite their qualitative disadvantages. The Elo model and nhl_matchup model both strongly favor the Wild, suggesting their underlying team strength is being undervalued by the market, even with the injuries and goalie downgrade. The model believes the Wild's overall talent and matchup advantages are enough to overcome the absence of Faber and the less experienced Wallstedt in net.",
+      "model_vs_market": "The model assigns the Wild a 50.4% chance of winning, which is 8.88% higher than the market's implied probability of 41.52% based on the Predators' 1.71 line.",
+      "key_risk": "The primary risk for this pick is the significant downgrade in net for the Wild with Jesper Wallstedt starting against the Predators' strong offense and Juuse Saros.",
+      "ai_confidence_label": "avoid",
+      "run_id": "daily-20261001T175114089772Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
+    },
+    {
+      "home_team": "Flames",
+      "away_team": "Kraken",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T01:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Dustin Wolf",
+      "away_goalie": "Joey Daccord",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.6265,
+      "edge": 0.0876,
+      "expected_value": 0.1425,
+      "kelly_fraction": 0.1516,
+      "fractional_kelly": 0.0303,
+      "confidence_score": 53.7,
+      "confidence_stars": 3,
+      "american_odds": -106,
+      "model_probs": {
+        "home": 0.6265,
+        "away": 0.3735
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.6046,
+          "away": 0.3954
+        },
+        "results_features": {
+          "home": 0.5221,
+          "away": 0.4779
+        },
+        "nhl_matchup": {
+          "home": 0.77,
+          "away": 0.23
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.5889,
+          "raw_model_prob": 0.6265,
+          "implied_prob": 0.5013,
+          "market_implied_prob": 0.5236,
+          "edge": 0.0876,
+          "expected_value": 0.1425,
+          "decimal_odds": 1.94,
+          "american_odds": -106,
+          "kelly_fraction": 0.1516,
+          "fractional_kelly": 0.0303,
+          "confidence_score": 53.7,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        },
+        "away": {
+          "model_prob": 0.4111,
+          "raw_model_prob": 0.3735,
+          "implied_prob": 0.4987,
+          "market_implied_prob": 0.5236,
+          "edge": -0.0876,
+          "expected_value": -0.2025,
+          "decimal_odds": 1.94,
+          "american_odds": -106,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 3.8,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0471,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        }
+      },
+      "best_odds": {
+        "home": -106,
+        "away": -106
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.94,
+          "away": 1.94
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.4987,
+            "home": 0.5013
+          },
+          "raw_probs": {
+            "away": 0.5236,
+            "home": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-10-01T17:51:00Z",
+            "outcomes": {
+              "home": 1.89,
+              "away": 1.93
+            },
+            "raw_probs": {
+              "home": 0.5291,
+              "away": 0.5181
+            },
+            "fair_probs": {
+              "home": 0.5052,
+              "away": 0.4948
+            },
+            "hold": 0.0472
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-10-01T17:50:59Z",
+            "outcomes": {
+              "home": 1.9,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5263,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5013,
+              "away": 0.4987
+            },
+            "hold": 0.0499
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 1.91,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5236,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5,
+              "away": 0.5
+            },
+            "hold": 0.0471
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 1.91,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5236,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5,
+              "away": 0.5
+            },
+            "hold": 0.0471
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.93,
+              "away": 1.94
+            },
+            "raw_probs": {
+              "home": 0.5181,
+              "away": 0.5155
+            },
+            "fair_probs": {
+              "home": 0.5013,
+              "away": 0.4987
+            },
+            "hold": 0.0336
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.93,
+              "away": 1.94
+            },
+            "raw_probs": {
+              "home": 0.5181,
+              "away": 0.5155
+            },
+            "fair_probs": {
+              "home": 0.5013,
+              "away": 0.4987
+            },
+            "hold": 0.0336
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 1.94,
+              "away": 1.88
+            },
+            "raw_probs": {
+              "home": 0.5155,
+              "away": 0.5319
+            },
+            "fair_probs": {
+              "home": 0.4921,
+              "away": 0.5079
+            },
+            "hold": 0.0474
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.88,
+              "away": 1.93
+            },
+            "raw_probs": {
+              "home": 0.5319,
+              "away": 0.5181
+            },
+            "fair_probs": {
+              "home": 0.5066,
+              "away": 0.4934
+            },
+            "hold": 0.05
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.91,
+              "away": 1.91
+            },
+            "raw_probs": {
+              "home": 0.5236,
+              "away": 0.5236
+            },
+            "fair_probs": {
+              "home": 0.5,
+              "away": 0.5
+            },
+            "hold": 0.0471
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Flames",
+        "away_team": "Kraken",
+        "home_impact": -3,
+        "away_impact": 0,
+        "individual_factors": [
+          {
+            "team": "Flames",
+            "description": "Jonathan Huberdeau (Injured Reserve) is a key offensive player whose absence will significantly impact the team's scoring ability.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Flames",
+            "description": "Henry Mews (Out) is a prospect and not a regular contributor, so his absence has no material impact.",
             "direction": "negative",
             "magnitude": 0,
-            "confidence": 0.5
+            "confidence": 1
+          },
+          {
+            "team": "Kraken",
+            "description": "Jake O'Brien (Injured Reserve) is a prospect and not a regular contributor, so his absence has no material impact.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
+          },
+          {
+            "team": "Kraken",
+            "description": "Mackie Samoskevich (Injured Reserve) is a prospect and not a regular contributor, so his absence has no material impact.",
+            "direction": "negative",
+            "magnitude": 0,
+            "confidence": 1
           }
         ],
         "net_qualitative_edge": "away",
-        "summary": "The Avalanche are missing a regular forward in Logan O'Connor due to injury. The Kings have two veteran players listed as day-to-day, but their absence is not confirmed. The probable goalie matchup features two starting-caliber goalies, Mackenzie Blackwood for the Avalanche and Darcy Kuemper for the Kings, resulting in no significant qualitative edge there.",
-        "pick_rationale": "The model identifies a strong 9.0% edge on the Avalanche, significantly higher than the market's implied probability. This pick is heavily supported by the Elo and nhl_matchup models, which both show a substantial advantage for the Avalanche. While the Avalanche are missing Logan O'Connor, this minor qualitative negative is not enough to outweigh the strong statistical backing from the core models.",
-        "model_vs_market": "The model's probability of 72.4% for the Avalanche is 9.0% higher than the market's implied probability of 63.5%.",
-        "key_risk": "The results_features model, which is closer to a coin flip, suggests some underlying factors or recent performance trends that could contradict the stronger Elo and nhl_matchup models.",
+        "summary": "The Flames are significantly impacted by the absence of key offensive player Jonathan Huberdeau. The Kraken have no significant qualitative factors affecting their performance.",
+        "pick_rationale": "The model identifies a substantial 13.1% edge for the Flames over the market's implied probability, driven primarily by the nhl_matchup model which assigns a 77.0% chance. Despite the Flames facing a significant qualitative negative due to Jonathan Huberdeau's absence, the model's quantitative assessment still favors them. The results_features model is less confident at 52.2%, indicating some disagreement among component models.",
+        "model_vs_market": "The model's 63.2% probability for the Flames represents a 13.1% edge over the market's implied 50.1%.",
+        "key_risk": "The most likely way this pick loses is if the Flames' offense struggles significantly without Jonathan Huberdeau, who is a key contributor.",
+        "confidence_label": "moderate"
+      },
+      "qualitative_summary": "Qualitative (H:-3 A:0): disagreed. Jonathan Huberdeau (Injured Reserve) is a key offensive player whose absence will significantly impact the team's scoring ability.; Henry Mews (Out) is a prospect and not a regular contributor, so his absence has no material impact.",
+      "blurb": "The model identifies a substantial 13.1% edge for the Flames over the market's implied probability, driven primarily by the nhl_matchup model which assigns a 77.0% chance. Despite the Flames facing a significant qualitative negative due to Jonathan Huberdeau's absence, the model's quantitative assessment still favors them. The results_features model is less confident at 52.2%, indicating some disagreement among component models.",
+      "model_vs_market": "The model's 63.2% probability for the Flames represents a 13.1% edge over the market's implied 50.1%.",
+      "key_risk": "The most likely way this pick loses is if the Flames' offense struggles significantly without Jonathan Huberdeau, who is a key contributor.",
+      "ai_confidence_label": "moderate",
+      "run_id": "daily-20261001T175114089772Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
+    },
+    {
+      "home_team": "Mammoth",
+      "away_team": "Blackhawks",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T01:30Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Karel Vejmelka",
+      "away_goalie": "Spencer Knight",
+      "home_goalie_status": "confirmed",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 1.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 2.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "home",
+      "model_prob": 0.6547,
+      "edge": -0.0037,
+      "expected_value": -0.037,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 44.3,
+      "confidence_stars": 2,
+      "american_odds": -213,
+      "model_probs": {
+        "home": 0.6547,
+        "away": 0.3453
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.71,
+          "away": 0.29
+        },
+        "results_features": {
+          "home": 0.5085,
+          "away": 0.4915
+        },
+        "nhl_matchup": {
+          "home": 0.731,
+          "away": 0.269
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.6551,
+          "raw_model_prob": 0.6547,
+          "implied_prob": 0.6588,
+          "market_implied_prob": 0.6897,
+          "edge": -0.0037,
+          "expected_value": -0.037,
+          "decimal_odds": 1.47,
+          "american_odds": -213,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 44.3,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0441,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        },
+        "away": {
+          "model_prob": 0.3449,
+          "raw_model_prob": 0.3453,
+          "implied_prob": 0.3412,
+          "market_implied_prob": 0.3534,
+          "edge": 0.0037,
+          "expected_value": 0.0003,
+          "decimal_odds": 2.9,
+          "american_odds": 190,
+          "kelly_fraction": 0.0002,
+          "fractional_kelly": 0.0,
+          "confidence_score": 4.2,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0441,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        }
+      },
+      "best_odds": {
+        "home": -213,
+        "away": 190
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 1.47,
+          "away": 2.9
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.3412,
+            "home": 0.6588
+          },
+          "raw_probs": {
+            "away": 0.3534,
+            "home": 0.6897
+          },
+          "hold": 0.0441,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-10-01T17:51:00Z",
+            "outcomes": {
+              "home": 1.46,
+              "away": 2.8
+            },
+            "raw_probs": {
+              "home": 0.6849,
+              "away": 0.3571
+            },
+            "fair_probs": {
+              "home": 0.6573,
+              "away": 0.3427
+            },
+            "hold": 0.0421
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-10-01T17:50:59Z",
+            "outcomes": {
+              "home": 1.45,
+              "away": 2.79
+            },
+            "raw_probs": {
+              "home": 0.6897,
+              "away": 0.3584
+            },
+            "fair_probs": {
+              "home": 0.658,
+              "away": 0.342
+            },
+            "hold": 0.0481
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 1.43,
+              "away": 2.9
+            },
+            "raw_probs": {
+              "home": 0.6993,
+              "away": 0.3448
+            },
+            "fair_probs": {
+              "home": 0.6697,
+              "away": 0.3303
+            },
+            "hold": 0.0441
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 1.45,
+              "away": 2.8
+            },
+            "raw_probs": {
+              "home": 0.6897,
+              "away": 0.3571
+            },
+            "fair_probs": {
+              "home": 0.6588,
+              "away": 0.3412
+            },
+            "hold": 0.0468
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.47,
+              "away": 2.87
+            },
+            "raw_probs": {
+              "home": 0.6803,
+              "away": 0.3484
+            },
+            "fair_probs": {
+              "home": 0.6613,
+              "away": 0.3387
+            },
+            "hold": 0.0287
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.47,
+              "away": 2.87
+            },
+            "raw_probs": {
+              "home": 0.6803,
+              "away": 0.3484
+            },
+            "fair_probs": {
+              "home": 0.6613,
+              "away": 0.3387
+            },
+            "hold": 0.0287
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 1.45,
+              "away": 2.8
+            },
+            "raw_probs": {
+              "home": 0.6897,
+              "away": 0.3571
+            },
+            "fair_probs": {
+              "home": 0.6588,
+              "away": 0.3412
+            },
+            "hold": 0.0468
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 1.43,
+              "away": 2.85
+            },
+            "raw_probs": {
+              "home": 0.6993,
+              "away": 0.3509
+            },
+            "fair_probs": {
+              "home": 0.6659,
+              "away": 0.3341
+            },
+            "hold": 0.0502
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 1.47,
+              "away": 2.83
+            },
+            "raw_probs": {
+              "home": 0.6803,
+              "away": 0.3534
+            },
+            "fair_probs": {
+              "home": 0.6581,
+              "away": 0.3419
+            },
+            "hold": 0.0336
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Mammoth",
+        "away_team": "Blackhawks",
+        "home_impact": -1,
+        "away_impact": -5,
+        "individual_factors": [
+          {
+            "team": "Mammoth",
+            "description": "Maveric Lamoureux (Injured Reserve)",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.8
+          },
+          {
+            "team": "Blackhawks",
+            "description": "Andrew Mangiapane (Out)",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 0.9
+          },
+          {
+            "team": "Blackhawks",
+            "description": "Connor Bedard (Injured Reserve)",
+            "direction": "negative",
+            "magnitude": 4,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "home",
+        "summary": "The Blackhawks are severely impacted by the absence of superstar Connor Bedard and solid starter Andrew Mangiapane. The Mammoth have a minor injury to Maveric Lamoureux. This creates a significant qualitative advantage for the Mammoth.",
+        "pick_rationale": "The model pick is Mammoth, despite the market slightly overvaluing them compared to the model's probability. The Elo and NHL Matchup models strongly favor the Mammoth, while the results_features model sees this as a much closer contest. The Blackhawks are significantly hampered by the absence of superstar Connor Bedard and Andrew Mangiapane, which provides a strong qualitative edge to the Mammoth.",
+        "model_vs_market": "The model's probability of 64.7% for the Mammoth is 1.2% lower than the market's implied probability of 65.9%.",
+        "key_risk": "The primary risk is that the results_features model, which sees this game as nearly a toss-up, proves more accurate, or that the Blackhawks' remaining players overperform despite key injuries.",
+        "confidence_label": "thin"
+      },
+      "qualitative_summary": "Qualitative (H:-1 A:-5): agreed. Maveric Lamoureux (Injured Reserve); Andrew Mangiapane (Out)",
+      "blurb": "The model pick is Mammoth, despite the market slightly overvaluing them compared to the model's probability. The Elo and NHL Matchup models strongly favor the Mammoth, while the results_features model sees this as a much closer contest. The Blackhawks are significantly hampered by the absence of superstar Connor Bedard and Andrew Mangiapane, which provides a strong qualitative edge to the Mammoth.",
+      "model_vs_market": "The model's probability of 64.7% for the Mammoth is 1.2% lower than the market's implied probability of 65.9%.",
+      "key_risk": "The primary risk is that the results_features model, which sees this game as nearly a toss-up, proves more accurate, or that the Blackhawks' remaining players overperform despite key injuries.",
+      "ai_confidence_label": "thin",
+      "run_id": "daily-20261001T175114089772Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
+    },
+    {
+      "home_team": "Sharks",
+      "away_team": "Panthers",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T02:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Yaroslav Askarov",
+      "away_goalie": "Akira Schmid",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 5.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 3.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.6578,
+      "edge": 0.06,
+      "expected_value": 0.0729,
+      "kelly_fraction": 0.1042,
+      "fractional_kelly": 0.0208,
+      "confidence_score": 52.6,
+      "confidence_stars": 3,
+      "american_odds": -143,
+      "model_probs": {
+        "home": 0.3422,
+        "away": 0.6578
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.4881,
+          "away": 0.5119
+        },
+        "results_features": {
+          "home": 0.4935,
+          "away": 0.5065
+        },
+        "nhl_matchup": {
+          "home": 0.0,
+          "away": 1.0
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3689,
+          "raw_model_prob": 0.3422,
+          "implied_prob": 0.4289,
+          "market_implied_prob": 0.4444,
+          "edge": -0.06,
+          "expected_value": -0.1516,
+          "decimal_odds": 2.3,
+          "american_odds": 130,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 0.0,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0417,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        },
+        "away": {
+          "model_prob": 0.6311,
+          "raw_model_prob": 0.6578,
+          "implied_prob": 0.5711,
+          "market_implied_prob": 0.5917,
+          "edge": 0.06,
+          "expected_value": 0.0729,
+          "decimal_odds": 1.7,
+          "american_odds": -143,
+          "kelly_fraction": 0.1042,
+          "fractional_kelly": 0.0208,
+          "confidence_score": 52.6,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.0417,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        }
+      },
+      "best_odds": {
+        "home": 130,
+        "away": -143
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 2.3,
+          "away": 1.7
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.5711,
+            "home": 0.4289
+          },
+          "raw_probs": {
+            "away": 0.5917,
+            "home": 0.4444
+          },
+          "hold": 0.0417,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-10-01T17:51:00Z",
+            "outcomes": {
+              "home": 2.24,
+              "away": 1.68
+            },
+            "raw_probs": {
+              "home": 0.4464,
+              "away": 0.5952
+            },
+            "fair_probs": {
+              "home": 0.4286,
+              "away": 0.5714
+            },
+            "hold": 0.0417
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-10-01T17:50:59Z",
+            "outcomes": {
+              "home": 2.22,
+              "away": 1.67
+            },
+            "raw_probs": {
+              "home": 0.4505,
+              "away": 0.5988
+            },
+            "fair_probs": {
+              "home": 0.4293,
+              "away": 0.5707
+            },
+            "hold": 0.0493
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4289,
+              "away": 0.5711
+            },
+            "hold": 0.0362
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 2.2,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4545,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4344,
+              "away": 0.5656
+            },
+            "hold": 0.0463
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.26,
+              "away": 1.7
+            },
+            "raw_probs": {
+              "home": 0.4425,
+              "away": 0.5882
+            },
+            "fair_probs": {
+              "home": 0.4293,
+              "away": 0.5707
+            },
+            "hold": 0.0307
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.26,
+              "away": 1.7
+            },
+            "raw_probs": {
+              "home": 0.4425,
+              "away": 0.5882
+            },
+            "fair_probs": {
+              "home": 0.4293,
+              "away": 0.5707
+            },
+            "hold": 0.0307
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 2.26,
+              "away": 1.66
+            },
+            "raw_probs": {
+              "home": 0.4425,
+              "away": 0.6024
+            },
+            "fair_probs": {
+              "home": 0.4235,
+              "away": 0.5765
+            },
+            "hold": 0.0449
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.3,
+              "away": 1.63
+            },
+            "raw_probs": {
+              "home": 0.4348,
+              "away": 0.6135
+            },
+            "fair_probs": {
+              "home": 0.4148,
+              "away": 0.5852
+            },
+            "hold": 0.0483
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.25,
+              "away": 1.69
+            },
+            "raw_probs": {
+              "home": 0.4444,
+              "away": 0.5917
+            },
+            "fair_probs": {
+              "home": 0.4289,
+              "away": 0.5711
+            },
+            "hold": 0.0362
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Sharks",
+        "away_team": "Panthers",
+        "home_impact": -1,
+        "away_impact": -1,
+        "individual_factors": [
+          {
+            "team": "Sharks",
+            "description": "Minor injuries to depth players (Adam Gaudette, Alex Barre-Boulet, Quentin Musty, Cam Lund, Kyle Keyser) on Injured Reserve.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.9
+          },
+          {
+            "team": "Panthers",
+            "description": "Minor injuries to depth players (MacKenzie Entwistle, Jonah Gadjovich) on Injured Reserve.",
+            "direction": "negative",
+            "magnitude": 1,
+            "confidence": 0.9
+          }
+        ],
+        "net_qualitative_edge": "none",
+        "summary": "Both teams are dealing with minor injuries to depth players, which have a negligible impact on the game's outcome. The expected goalie matchup features two developing netminders, Yaroslav Askarov for the Sharks and Akira Schmid for the Panthers, resulting in a neutral qualitative assessment for this aspect.",
+        "pick_rationale": "The model identifies a strong edge for the Panthers, with its probability of 65.8% significantly exceeding the market's implied 57.1%. This discrepancy is primarily driven by the nhl_matchup model, which assigns a 100% probability to the Panthers, indicating a perceived strong fundamental advantage. While qualitative factors show minor depth injuries for both sides, these are largely balanced and do not significantly alter the model's quantitative assessment of the Panthers' superiority.",
+        "model_vs_market": "The model's probability for the Panthers is 65.8%, representing an 8.7% edge over the market's implied probability of 57.1%.",
+        "key_risk": "The primary risk is that the Sharks' expected goalie, Yaroslav Askarov, performs exceptionally well and steals the game, or that the Panthers' offense underperforms against him.",
         "confidence_label": "strong"
       },
-      "qualitative_summary": "Qualitative (H:-1 A:0): disagreed. Logan O'Connor (Injured Reserve) is a regular bottom-six forward whose absence is a minor negative.; Corey Perry (Day-To-Day) and Joel Edmundson (Day-To-Day) are veteran players whose status is uncertain; their potential absence is not confirmed.",
-      "blurb": "The model identifies a strong 9.0% edge on the Avalanche, significantly higher than the market's implied probability. This pick is heavily supported by the Elo and nhl_matchup models, which both show a substantial advantage for the Avalanche. While the Avalanche are missing Logan O'Connor, this minor qualitative negative is not enough to outweigh the strong statistical backing from the core models.",
-      "model_vs_market": "The model's probability of 72.4% for the Avalanche is 9.0% higher than the market's implied probability of 63.5%.",
-      "key_risk": "The results_features model, which is closer to a coin flip, suggests some underlying factors or recent performance trends that could contradict the stronger Elo and nhl_matchup models.",
+      "qualitative_summary": "Qualitative (H:-1 A:-1): no effect. Minor injuries to depth players (Adam Gaudette, Alex Barre-Boulet, Quentin Musty, Cam Lund, Kyle Keyser) on Injured Reserve.; Minor injuries to depth players (MacKenzie Entwistle, Jonah Gadjovich) on Injured Reserve.",
+      "blurb": "The model identifies a strong edge for the Panthers, with its probability of 65.8% significantly exceeding the market's implied 57.1%. This discrepancy is primarily driven by the nhl_matchup model, which assigns a 100% probability to the Panthers, indicating a perceived strong fundamental advantage. While qualitative factors show minor depth injuries for both sides, these are largely balanced and do not significantly alter the model's quantitative assessment of the Panthers' superiority.",
+      "model_vs_market": "The model's probability for the Panthers is 65.8%, representing an 8.7% edge over the market's implied probability of 57.1%.",
+      "key_risk": "The primary risk is that the Sharks' expected goalie, Yaroslav Askarov, performs exceptionally well and steals the game, or that the Panthers' offense underperforms against him.",
       "ai_confidence_label": "strong",
-      "run_id": "daily-20260930T172509621700Z",
+      "run_id": "daily-20261001T175114089772Z",
       "run_type": "daily",
-      "snapshot_timestamp": "2026-09-30T17:25:09Z",
-      "snapshot_path": "tracking/snapshots/2026-09-30/nhl/daily-20260930T172509621700Z.json"
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
+    },
+    {
+      "home_team": "Canucks",
+      "away_team": "Oilers",
+      "date": "2026-10-01",
+      "start_time": "2026-10-02T02:00Z",
+      "matchday": null,
+      "completed": false,
+      "neutral": false,
+      "home_availability_profile": null,
+      "away_availability_profile": null,
+      "home_goalie": "Kevin Lankinen",
+      "away_goalie": "Tristan Jarry",
+      "home_goalie_status": "expected",
+      "away_goalie_status": "expected",
+      "home_injury_profile": {
+        "injury_burden": 5.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "away_injury_profile": {
+        "injury_burden": 5.0,
+        "uncertainty_burden": 0.0,
+        "key_absence_score": 0.0,
+        "leader_absence_burden": 0.0,
+        "leader_uncertainty_burden": 0.0
+      },
+      "home_pitcher": null,
+      "home_pitcher_hand": null,
+      "home_pitcher_source": null,
+      "home_pitcher_last_checked": null,
+      "home_pitcher_cache_stale": false,
+      "away_pitcher": null,
+      "away_pitcher_hand": null,
+      "away_pitcher_source": null,
+      "away_pitcher_last_checked": null,
+      "away_pitcher_cache_stale": false,
+      "pitcher_warnings": [],
+      "home_lineup_profile": null,
+      "away_lineup_profile": null,
+      "home_bullpen_tax": null,
+      "away_bullpen_tax": null,
+      "weather": null,
+      "pick": "away",
+      "model_prob": 0.5956,
+      "edge": -0.0427,
+      "expected_value": -0.0914,
+      "kelly_fraction": 0.0,
+      "fractional_kelly": 0.0,
+      "confidence_score": 42.3,
+      "confidence_stars": 1,
+      "american_odds": -208,
+      "model_probs": {
+        "home": 0.4044,
+        "away": 0.5956
+      },
+      "individual_models": {
+        "elo": {
+          "home": 0.3367,
+          "away": 0.6633
+        },
+        "results_features": {
+          "home": 0.5117,
+          "away": 0.4883
+        },
+        "nhl_matchup": {
+          "home": 0.4184,
+          "away": 0.5816
+        }
+      },
+      "edges": {
+        "home": {
+          "model_prob": 0.3861,
+          "raw_model_prob": 0.4044,
+          "implied_prob": 0.3434,
+          "market_implied_prob": 0.3571,
+          "edge": 0.0427,
+          "expected_value": 0.0964,
+          "decimal_odds": 2.84,
+          "american_odds": 184,
+          "kelly_fraction": 0.0524,
+          "fractional_kelly": 0.0105,
+          "confidence_score": 22.3,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.046,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        },
+        "away": {
+          "model_prob": 0.6139,
+          "raw_model_prob": 0.5956,
+          "implied_prob": 0.6566,
+          "market_implied_prob": 0.6849,
+          "edge": -0.0427,
+          "expected_value": -0.0914,
+          "decimal_odds": 1.48,
+          "american_odds": -208,
+          "kelly_fraction": 0.0,
+          "fractional_kelly": 0.0,
+          "confidence_score": 42.3,
+          "is_value": false,
+          "unrealistic_flag": false,
+          "hold": 0.046,
+          "market_source": "median_complete_book_no_vig",
+          "market_books": 9
+        }
+      },
+      "best_odds": {
+        "home": 184,
+        "away": -208
+      },
+      "market_snapshot": {
+        "execution_prices": {
+          "home": 2.84,
+          "away": 1.48
+        },
+        "benchmark": {
+          "fair_probs": {
+            "away": 0.6566,
+            "home": 0.3434
+          },
+          "raw_probs": {
+            "away": 0.6849,
+            "home": 0.3571
+          },
+          "hold": 0.046,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "books": [
+          {
+            "book": "DraftKings",
+            "last_update": "2026-10-01T17:51:00Z",
+            "outcomes": {
+              "home": 2.8,
+              "away": 1.46
+            },
+            "raw_probs": {
+              "home": 0.3571,
+              "away": 0.6849
+            },
+            "fair_probs": {
+              "home": 0.3427,
+              "away": 0.6573
+            },
+            "hold": 0.0421
+          },
+          {
+            "book": "MyBookie.ag",
+            "last_update": "2026-10-01T17:50:59Z",
+            "outcomes": {
+              "home": 2.74,
+              "away": 1.46
+            },
+            "raw_probs": {
+              "home": 0.365,
+              "away": 0.6849
+            },
+            "fair_probs": {
+              "home": 0.3476,
+              "away": 0.6524
+            },
+            "hold": 0.0499
+          },
+          {
+            "book": "Bovada",
+            "last_update": "2026-10-01T17:50:26Z",
+            "outcomes": {
+              "home": 2.8,
+              "away": 1.45
+            },
+            "raw_probs": {
+              "home": 0.3571,
+              "away": 0.6897
+            },
+            "fair_probs": {
+              "home": 0.3412,
+              "away": 0.6588
+            },
+            "hold": 0.0468
+          },
+          {
+            "book": "BetMGM",
+            "last_update": "2026-10-01T17:51:16Z",
+            "outcomes": {
+              "home": 2.8,
+              "away": 1.45
+            },
+            "raw_probs": {
+              "home": 0.3571,
+              "away": 0.6897
+            },
+            "fair_probs": {
+              "home": 0.3412,
+              "away": 0.6588
+            },
+            "hold": 0.0468
+          },
+          {
+            "book": "BetOnline.ag",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.83,
+              "away": 1.48
+            },
+            "raw_probs": {
+              "home": 0.3534,
+              "away": 0.6757
+            },
+            "fair_probs": {
+              "home": 0.3434,
+              "away": 0.6566
+            },
+            "hold": 0.029
+          },
+          {
+            "book": "LowVig.ag",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.83,
+              "away": 1.48
+            },
+            "raw_probs": {
+              "home": 0.3534,
+              "away": 0.6757
+            },
+            "fair_probs": {
+              "home": 0.3434,
+              "away": 0.6566
+            },
+            "hold": 0.029
+          },
+          {
+            "book": "FanDuel",
+            "last_update": "2026-10-01T17:51:17Z",
+            "outcomes": {
+              "home": 2.84,
+              "away": 1.44
+            },
+            "raw_probs": {
+              "home": 0.3521,
+              "away": 0.6944
+            },
+            "fair_probs": {
+              "home": 0.3364,
+              "away": 0.6636
+            },
+            "hold": 0.0466
+          },
+          {
+            "book": "BetRivers",
+            "last_update": "2026-10-01T17:50:58Z",
+            "outcomes": {
+              "home": 2.7,
+              "away": 1.48
+            },
+            "raw_probs": {
+              "home": 0.3704,
+              "away": 0.6757
+            },
+            "fair_probs": {
+              "home": 0.3541,
+              "away": 0.6459
+            },
+            "hold": 0.046
+          },
+          {
+            "book": "BetUS",
+            "last_update": "2026-10-01T17:50:24Z",
+            "outcomes": {
+              "home": 2.8,
+              "away": 1.48
+            },
+            "raw_probs": {
+              "home": 0.3571,
+              "away": 0.6757
+            },
+            "fair_probs": {
+              "home": 0.3458,
+              "away": 0.6542
+            },
+            "hold": 0.0328
+          }
+        ]
+      },
+      "qualitative_analysis": {
+        "sport": "nhl",
+        "home_team": "Canucks",
+        "away_team": "Oilers",
+        "home_impact": -3,
+        "away_impact": -2,
+        "individual_factors": [
+          {
+            "team": "Canucks",
+            "description": "Starting goaltender Thatcher Demko is on Injured Reserve, forcing backup Kevin Lankinen into the net against a high-powered Oilers offense.",
+            "direction": "negative",
+            "magnitude": 3,
+            "confidence": 1
+          },
+          {
+            "team": "Oilers",
+            "description": "Key forward Ryan Nugent-Hopkins is on Injured Reserve, impacting the team's offensive depth and playmaking.",
+            "direction": "negative",
+            "magnitude": 2,
+            "confidence": 1
+          }
+        ],
+        "net_qualitative_edge": "away",
+        "summary": "The Canucks are severely hampered by the absence of their starting goaltender, Thatcher Demko, forcing a backup into action. The Oilers are missing key forward Ryan Nugent-Hopkins, which is a notable but less severe blow.",
+        "pick_rationale": "The model identifies a significant edge for the Oilers, with the ELO and nhl_matchup component models strongly supporting this pick. Qualitatively, the Canucks are severely hampered by the absence of their starting goaltender, Thatcher Demko, forcing a backup into action against a potent Oilers offense. This qualitative disadvantage for the Canucks further strengthens the model's conviction on the Oilers.",
+        "model_vs_market": "The model projects the Oilers to win 59.4% of the time, which is significantly higher than the market's implied probability of 32.4% (derived from the Canucks' line of 1.48).",
+        "key_risk": "The primary risk is that Kevin Lankinen performs exceptionally well in net for the Canucks, or the Oilers' offense struggles without Ryan Nugent-Hopkins.",
+        "confidence_label": "strong"
+      },
+      "qualitative_summary": "Qualitative (H:-3 A:-2): agreed. Starting goaltender Thatcher Demko is on Injured Reserve, forcing backup Kevin Lankinen into the net against a high-powered Oilers offense.; Key forward Ryan Nugent-Hopkins is on Injured Reserve, impacting the team's offensive depth and playmaking.",
+      "blurb": "The model identifies a significant edge for the Oilers, with the ELO and nhl_matchup component models strongly supporting this pick. Qualitatively, the Canucks are severely hampered by the absence of their starting goaltender, Thatcher Demko, forcing a backup into action against a potent Oilers offense. This qualitative disadvantage for the Canucks further strengthens the model's conviction on the Oilers.",
+      "model_vs_market": "The model projects the Oilers to win 59.4% of the time, which is significantly higher than the market's implied probability of 32.4% (derived from the Canucks' line of 1.48).",
+      "key_risk": "The primary risk is that Kevin Lankinen performs exceptionally well in net for the Canucks, or the Oilers' offense struggles without Ryan Nugent-Hopkins.",
+      "ai_confidence_label": "strong",
+      "run_id": "daily-20261001T175114089772Z",
+      "run_type": "daily",
+      "snapshot_timestamp": "2026-10-01T17:51:14Z",
+      "snapshot_path": "tracking/snapshots/2026-10-01/nhl/daily-20261001T175114089772Z.json"
     }
   ],
   "totals_matches": [],
@@ -1136,12 +2780,12 @@
   },
   "pick_stats": {
     "slop_lock": {
-      "total": 95,
+      "total": 96,
       "evaluated": 90,
       "wins": 47,
       "losses": 43,
       "pushes": 0,
-      "pending": 5,
+      "pending": 6,
       "hit_rate": 0.522,
       "roi": -0.103
     },
@@ -1166,12 +2810,12 @@
       "roi": null
     },
     "all": {
-      "total": 95,
+      "total": 96,
       "evaluated": 90,
       "wins": 47,
       "losses": 43,
       "pushes": 0,
-      "pending": 5,
+      "pending": 6,
       "hit_rate": 0.522,
       "roi": -0.103
     }
@@ -1547,17 +3191,17 @@
         "market_type": "moneyline",
         "pick_type": null,
         "overall": {
-          "total_picks": 96,
+          "total_picks": 97,
           "evaluated": 90,
-          "pending": 6,
+          "pending": 7,
           "hit_rate": 0.5222,
           "roi": -0.1026,
           "push_rate": 0.0,
           "wins": 47,
           "losses": 43,
           "pushes": 0,
-          "avg_confidence": 48.0021,
-          "avg_expected_value": 0.2109,
+          "avg_confidence": 48.1134,
+          "avg_expected_value": 0.2093,
           "clv": {
             "tracked": 48,
             "avg_clv": 0.0042,
@@ -1827,17 +3471,17 @@
       "market_type": "moneyline",
       "pick_type": null,
       "overall": {
-        "total_picks": 96,
+        "total_picks": 97,
         "evaluated": 90,
-        "pending": 6,
+        "pending": 7,
         "hit_rate": 0.5222,
         "roi": -0.1026,
         "push_rate": 0.0,
         "wins": 47,
         "losses": 43,
         "pushes": 0,
-        "avg_confidence": 48.0021,
-        "avg_expected_value": 0.2109,
+        "avg_confidence": 48.1134,
+        "avg_expected_value": 0.2093,
         "clv": {
           "tracked": 48,
           "avg_clv": 0.0042,
@@ -2204,30 +3848,30 @@
   "validation_issues": [],
   "diagnostics": {
     "historical_matches": 1422,
-    "fixtures_fetched": 3,
-    "fixtures_in_window": 3,
+    "fixtures_fetched": 8,
+    "fixtures_in_window": 8,
     "fixtures_completed": 0,
-    "fixtures_pending": 3,
-    "odds_events_fetched": 28,
-    "fixtures_with_odds": 3,
+    "fixtures_pending": 8,
+    "odds_events_fetched": 27,
+    "fixtures_with_odds": 8,
     "fixtures_without_odds": 0,
     "coverage_gap_examples": [],
-    "matches_modeled": 3,
-    "matches_with_market": 3,
-    "matches_with_positive_ev": 3,
-    "matches_with_qualitative": 3,
-    "lock_eligible_matches": 2,
-    "lock_eligible_outcomes": 2,
+    "matches_modeled": 8,
+    "matches_with_market": 8,
+    "matches_with_positive_ev": 7,
+    "matches_with_qualitative": 8,
+    "lock_eligible_matches": 6,
+    "lock_eligible_outcomes": 6,
     "gate_failures": {
       "missing_odds": 0,
-      "negative_expected_value": 3,
-      "below_edge_floor": 0,
-      "below_probability_floor": 1
+      "negative_expected_value": 9,
+      "below_edge_floor": 1,
+      "below_probability_floor": 2
     },
     "candidate_lanes": {
       "value_dog": {
-        "eligible_outcomes": 0,
-        "eligible_matches": 0
+        "eligible_outcomes": 2,
+        "eligible_matches": 2
       },
       "near_favorite": {
         "eligible_outcomes": 0,
@@ -2256,17 +3900,17 @@
           "market_type": "moneyline",
           "pick_type": null,
           "overall": {
-            "total_picks": 96,
+            "total_picks": 97,
             "evaluated": 90,
-            "pending": 6,
+            "pending": 7,
             "hit_rate": 0.5222,
             "roi": -0.1026,
             "push_rate": 0.0,
             "wins": 47,
             "losses": 43,
             "pushes": 0,
-            "avg_confidence": 48.0021,
-            "avg_expected_value": 0.2109,
+            "avg_confidence": 48.1134,
+            "avg_expected_value": 0.2093,
             "clv": {
               "tracked": 48,
               "avg_clv": 0.0042,
@@ -2533,6 +4177,6 @@
     },
     "validation_issues": [],
     "validation_issues_count": 0,
-    "summary": "modeled=3 | odds=3/3 | +ev=3 | sense=3 | eligible=2 | locks=1 | totals disabled by config"
+    "summary": "modeled=8 | odds=8/8 | +ev=7 | sense=8 | eligible=6 | locks=1 | totals disabled by config"
   }
 }
