@@ -1,0 +1,3278 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-10-19T18:09:04Z",
+  "sport": "mlb",
+  "sport_name": "MLB",
+  "run_id": "daily-20261019T180833062686Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-10-19T18:08:33Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "reject_unrealistic_divergence": true,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.025,
+      "probability_floor": 0.55,
+      "additional_confidence_floor": 56,
+      "confidence_dropoff": 4,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
+    },
+    "longslop": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 50
+    },
+    "slimegrinder": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 50
+    },
+    "totals_locks": {
+      "reject_unrealistic_divergence": true,
+      "enabled": true,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 3
+    }
+  },
+  "publication_guard": {
+    "enforced": true,
+    "allow_moneyline": true,
+    "allow_totals": true,
+    "allow_longslop": false,
+    "allow_slimegrinder": false,
+    "moneyline_publish_cap": 1,
+    "totals_publish_cap": 2,
+    "evaluated_picks": 280,
+    "evaluated_totals_picks": 331,
+    "min_evaluated_picks": 20,
+    "min_evaluated_totals_picks": 10,
+    "status": "live",
+    "reason": null,
+    "lane_guards": {
+      "moneyline": {
+        "market_type": "moneyline",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 280,
+          "evaluated": 280,
+          "pending": 0,
+          "hit_rate": 0.525,
+          "roi": 0.0197,
+          "push_rate": 0.0,
+          "wins": 147,
+          "losses": 133,
+          "pushes": 0,
+          "avg_confidence": 51.5318,
+          "avg_expected_value": 0.0759,
+          "clv": {
+            "tracked": 245,
+            "avg_clv": -0.0228,
+            "positive_rate": 0.1143,
+            "non_negative_rate": 0.1143,
+            "moneyline_tracked": 245,
+            "moneyline_avg_clv": -0.0228,
+            "moneyline_positive_rate": 0.1143,
+            "moneyline_non_negative_rate": 0.1143,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.25,
+          "roi": -0.4938,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 6,
+          "pushes": 0,
+          "avg_confidence": 60.1875,
+          "avg_expected_value": 0.0974,
+          "clv": {
+            "tracked": 7,
+            "avg_clv": -0.0147,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.0,
+            "moneyline_tracked": 7,
+            "moneyline_avg_clv": -0.0147,
+            "moneyline_positive_rate": 0.0,
+            "moneyline_non_negative_rate": 0.0,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5481,
+          "actual_win_rate": 0.25,
+          "calibration_gap": 0.2981,
+          "overconfidence_gap": 0.2981
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent moneylines ROI -0.4938 is below -0.2500",
+          "recent moneylines overconfidence gap 0.2981 exceeds 0.2500"
+        ],
+        "health_score": 0.7143
+      },
+      "totals": {
+        "market_type": "total",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 332,
+          "evaluated": 331,
+          "pending": 1,
+          "hit_rate": 0.5257,
+          "roi": 0.0481,
+          "push_rate": 0.0363,
+          "wins": 174,
+          "losses": 145,
+          "pushes": 12,
+          "avg_confidence": 71.9096,
+          "avg_expected_value": 0.15,
+          "clv": {
+            "tracked": 286,
+            "avg_clv": 0.0245,
+            "positive_rate": 0.0769,
+            "non_negative_rate": 0.9266,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 286,
+            "totals_avg_clv": 0.0245,
+            "totals_positive_rate": 0.0769,
+            "totals_non_negative_rate": 0.9266
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.625,
+          "roi": 0.225,
+          "push_rate": 0.0,
+          "wins": 5,
+          "losses": 3,
+          "pushes": 0,
+          "avg_confidence": 68.75,
+          "avg_expected_value": 0.1308,
+          "clv": {
+            "tracked": 5,
+            "avg_clv": -0.1,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.8,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 5,
+            "totals_avg_clv": -0.1,
+            "totals_positive_rate": 0.0,
+            "totals_non_negative_rate": 0.8
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5845,
+          "actual_win_rate": 0.625,
+          "calibration_gap": -0.0405,
+          "overconfidence_gap": 0.0
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent totals CLV -0.1000 is below -0.0200"
+        ],
+        "health_score": 0.8571
+      },
+      "longslop": {
+        "market_type": null,
+        "pick_type": "longslop",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "longslop disabled by config",
+          "need more settled longslop picks (0/5)",
+          "need more recent settled longslop picks (0/3)",
+          "need more tracked longslop CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "slimegrinder": {
+        "market_type": null,
+        "pick_type": "slimegrinder",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "slimegrinder disabled by config",
+          "need more settled slimegrinder picks (0/5)",
+          "need more recent settled slimegrinder picks (0/3)",
+          "need more tracked slimegrinder CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "totals_enabled": true
+    }
+  },
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [
+      {
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "date": "2026-10-19",
+        "start_time": "2026-10-20T00:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_pitcher": "Freddy Peralta",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": "Shawn Armstrong",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 5,
+          "right_handed_batters": 7,
+          "switch_hitters": 0,
+          "lefty_share": 0.4167,
+          "righty_share": 0.5833,
+          "switch_share": 0.0
+        },
+        "away_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 6,
+          "right_handed_batters": 6,
+          "switch_hitters": 0,
+          "lefty_share": 0.5,
+          "righty_share": 0.5,
+          "switch_share": 0.0
+        },
+        "weather": {
+          "weather_exposed": false,
+          "temperature_f": null,
+          "wind_mph": null,
+          "precipitation_probability": null
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "30",
+              "uid": "s:1~l:10~t:30",
+              "displayName": "Tampa Bay Rays",
+              "abbreviation": "TB",
+              "links": [
+                {
+                  "href": "https://www.espn.com/mlb/team/_/name/tb/tampa-bay-rays",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/mlb/team/schedule/_/name/tb",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/mlb/500/tb.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-08-15T19:27Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-15T19:26Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2023-08-15T19:27Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-15T19:26Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "60-Day-IL",
+                "date": "2026-09-11T21:41Z",
+                "athlete": {
+                  "id": "40423",
+                  "uid": "s:1~l:10~a:40423",
+                  "guid": "1203bbaf-c0c9-1f1c-68d0-f3f7924e2b47",
+                  "lastName": "Lux",
+                  "fullName": "Gavin Lux",
+                  "displayName": "Gavin Lux",
+                  "shortName": "G. Lux",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/40423",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/40423.png",
+                    "alt": "Gavin Lux"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Left Field",
+                    "displayName": "Left Fielder",
+                    "abbreviation": "LF"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Shoulder",
+                  "detail": "Inflammation",
+                  "side": "Left",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-08-15T02:52Z",
+                "athlete": {
+                  "id": "41308",
+                  "uid": "s:1~l:10~a:41308",
+                  "guid": "283b38c9-618e-0e7b-8655-2590bd6661f0",
+                  "lastName": "Uceta",
+                  "fullName": "Edwin Uceta",
+                  "displayName": "Edwin Uceta",
+                  "shortName": "E. Uceta",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/41308",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/41308.png",
+                    "alt": "Edwin Uceta"
+                  },
+                  "jersey": "63",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Shoulder",
+                  "detail": "Strain",
+                  "side": "Right",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-06-08T18:24Z",
+                "athlete": {
+                  "id": "4179560",
+                  "uid": "s:1~l:10~a:4179560",
+                  "guid": "86393c6d-ebfe-350f-8915-1be6e7ff2a5a",
+                  "lastName": "Heasley",
+                  "fullName": "Jonathan Heasley",
+                  "displayName": "Jonathan Heasley",
+                  "shortName": "J. Heasley",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4179560",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4179560.png",
+                    "alt": "Jonathan Heasley"
+                  },
+                  "jersey": "68",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Elbow",
+                  "detail": "Fracture",
+                  "side": "Right",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-10-11T17:45Z",
+                "athlete": {
+                  "id": "41199",
+                  "uid": "s:1~l:10~a:41199",
+                  "guid": "55168fbe-35ba-1b6f-26b1-474f3fa29dd7",
+                  "lastName": "McClanahan",
+                  "fullName": "Shane McClanahan",
+                  "displayName": "Shane McClanahan",
+                  "shortName": "S. McClanahan",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/41199",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/41199.png",
+                    "alt": "Shane McClanahan"
+                  },
+                  "jersey": "18",
+                  "position": {
+                    "name": "Starting Pitcher",
+                    "displayName": "Starting Pitcher",
+                    "abbreviation": "SP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "LEFT",
+                    "abbreviation": "L",
+                    "displayValue": "Left"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Forearm",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2027-02-01"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-09-15T18:08Z",
+                "athlete": {
+                  "id": "4635337",
+                  "uid": "s:1~l:10~a:4635337",
+                  "guid": "8d16f250-8981-3a36-af0f-d73311925be0",
+                  "lastName": "Melton",
+                  "fullName": "Jacob Melton",
+                  "displayName": "Jacob Melton",
+                  "shortName": "J. Melton",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4635337",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4635337.png",
+                    "alt": "Jacob Melton"
+                  },
+                  "jersey": "29",
+                  "position": {
+                    "name": "Left Field",
+                    "displayName": "Left Fielder",
+                    "abbreviation": "LF"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "LEFT",
+                    "abbreviation": "L",
+                    "displayValue": "Left"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Hamstring",
+                  "detail": "Strain",
+                  "side": "Right",
+                  "returnDate": "2027-02-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "5",
+              "uid": "s:1~l:10~t:5",
+              "displayName": "Cleveland Guardians",
+              "abbreviation": "CLE",
+              "links": [
+                {
+                  "href": "https://www.espn.com/mlb/team/_/name/cle/cleveland-guardians",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/mlb/team/schedule/_/name/cle",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/mlb/500/cle.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-01T17:48Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-01T17:49Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-01T17:48Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-01T17:49Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "10-Day-IL",
+                "date": "2026-09-12T12:07Z",
+                "athlete": {
+                  "id": "35291",
+                  "uid": "s:1~l:10~a:35291",
+                  "guid": "1dba173d-0862-2b5a-0122-667043c961a4",
+                  "lastName": "Hoskins",
+                  "fullName": "Rhys Hoskins",
+                  "displayName": "Rhys Hoskins",
+                  "shortName": "R. Hoskins",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/35291",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/35291.png",
+                    "alt": "Rhys Hoskins"
+                  },
+                  "jersey": "8",
+                  "position": {
+                    "name": "First Base",
+                    "displayName": "First Baseman",
+                    "abbreviation": "1B"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "14",
+                  "name": "INJURY_STATUS_10DAYIL",
+                  "description": "10-day IL",
+                  "abbreviation": "IL10"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "10-Day IL",
+                    "abbreviation": "10-Day IL",
+                    "displayDescription": "10-Day IL"
+                  },
+                  "type": "Back",
+                  "detail": "Inflammation",
+                  "side": "Not Specified",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "15-Day-IL",
+                "date": "2026-10-14T20:05Z",
+                "athlete": {
+                  "id": "4917897",
+                  "uid": "s:1~l:10~a:4917897",
+                  "guid": "9ae1d514-7c7d-3c83-8053-8c29c5865ac6",
+                  "lastName": "Holderman",
+                  "fullName": "Colin Holderman",
+                  "displayName": "Colin Holderman",
+                  "shortName": "C. Holderman",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4917897",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4917897.png",
+                    "alt": "Colin Holderman"
+                  },
+                  "jersey": "35",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "10",
+                  "name": "INJURY_STATUS_15DAYIL",
+                  "description": "15-day IL",
+                  "abbreviation": "IL15"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "15-Day IL",
+                    "abbreviation": "15-Day IL",
+                    "displayDescription": "15-Day IL"
+                  },
+                  "type": "Wrist",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2027-02-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-10T17:03Z",
+                "athlete": {
+                  "id": "5236382",
+                  "uid": "s:1~l:10~a:5236382",
+                  "guid": "31710207-793d-3a2e-b24b-fd3922e7b480",
+                  "lastName": "Walters",
+                  "fullName": "Andrew Walters",
+                  "displayName": "Andrew Walters",
+                  "shortName": "A. Walters",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/5236382",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/5236382.png",
+                    "alt": "Andrew Walters"
+                  },
+                  "jersey": "91",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Elbow",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2028-02-01"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "fixtures_in_window": [
+      {
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "date": "2026-10-19",
+        "start_time": "2026-10-20T00:00Z",
+        "completed": false,
+        "neutral": false,
+        "home_pitcher": "Freddy Peralta",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": "Shawn Armstrong",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 5,
+          "right_handed_batters": 7,
+          "switch_hitters": 0,
+          "lefty_share": 0.4167,
+          "righty_share": 0.5833,
+          "switch_share": 0.0
+        },
+        "away_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 6,
+          "right_handed_batters": 6,
+          "switch_hitters": 0,
+          "lefty_share": 0.5,
+          "righty_share": 0.5,
+          "switch_share": 0.0
+        },
+        "weather": {
+          "weather_exposed": false,
+          "temperature_f": null,
+          "wind_mph": null,
+          "precipitation_probability": null
+        },
+        "summary_injuries": [
+          {
+            "team": {
+              "id": "30",
+              "uid": "s:1~l:10~t:30",
+              "displayName": "Tampa Bay Rays",
+              "abbreviation": "TB",
+              "links": [
+                {
+                  "href": "https://www.espn.com/mlb/team/_/name/tb/tampa-bay-rays",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/mlb/team/schedule/_/name/tb",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/mlb/500/tb.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2023-08-15T19:27Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-15T19:26Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2023-08-15T19:27Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/tb.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2023-08-15T19:26Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "60-Day-IL",
+                "date": "2026-09-11T21:41Z",
+                "athlete": {
+                  "id": "40423",
+                  "uid": "s:1~l:10~a:40423",
+                  "guid": "1203bbaf-c0c9-1f1c-68d0-f3f7924e2b47",
+                  "lastName": "Lux",
+                  "fullName": "Gavin Lux",
+                  "displayName": "Gavin Lux",
+                  "shortName": "G. Lux",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/40423",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/40423.png",
+                    "alt": "Gavin Lux"
+                  },
+                  "jersey": "11",
+                  "position": {
+                    "name": "Left Field",
+                    "displayName": "Left Fielder",
+                    "abbreviation": "LF"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Shoulder",
+                  "detail": "Inflammation",
+                  "side": "Left",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-08-15T02:52Z",
+                "athlete": {
+                  "id": "41308",
+                  "uid": "s:1~l:10~a:41308",
+                  "guid": "283b38c9-618e-0e7b-8655-2590bd6661f0",
+                  "lastName": "Uceta",
+                  "fullName": "Edwin Uceta",
+                  "displayName": "Edwin Uceta",
+                  "shortName": "E. Uceta",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/41308",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/41308.png",
+                    "alt": "Edwin Uceta"
+                  },
+                  "jersey": "63",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Shoulder",
+                  "detail": "Strain",
+                  "side": "Right",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-06-08T18:24Z",
+                "athlete": {
+                  "id": "4179560",
+                  "uid": "s:1~l:10~a:4179560",
+                  "guid": "86393c6d-ebfe-350f-8915-1be6e7ff2a5a",
+                  "lastName": "Heasley",
+                  "fullName": "Jonathan Heasley",
+                  "displayName": "Jonathan Heasley",
+                  "shortName": "J. Heasley",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4179560",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4179560.png",
+                    "alt": "Jonathan Heasley"
+                  },
+                  "jersey": "68",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Elbow",
+                  "detail": "Fracture",
+                  "side": "Right",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-10-11T17:45Z",
+                "athlete": {
+                  "id": "41199",
+                  "uid": "s:1~l:10~a:41199",
+                  "guid": "55168fbe-35ba-1b6f-26b1-474f3fa29dd7",
+                  "lastName": "McClanahan",
+                  "fullName": "Shane McClanahan",
+                  "displayName": "Shane McClanahan",
+                  "shortName": "S. McClanahan",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/41199",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/41199.png",
+                    "alt": "Shane McClanahan"
+                  },
+                  "jersey": "18",
+                  "position": {
+                    "name": "Starting Pitcher",
+                    "displayName": "Starting Pitcher",
+                    "abbreviation": "SP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "LEFT",
+                    "abbreviation": "L",
+                    "displayValue": "Left"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Forearm",
+                  "detail": "Soreness",
+                  "side": "Left",
+                  "returnDate": "2027-02-01"
+                }
+              },
+              {
+                "status": "60-Day-IL",
+                "date": "2026-09-15T18:08Z",
+                "athlete": {
+                  "id": "4635337",
+                  "uid": "s:1~l:10~a:4635337",
+                  "guid": "8d16f250-8981-3a36-af0f-d73311925be0",
+                  "lastName": "Melton",
+                  "fullName": "Jacob Melton",
+                  "displayName": "Jacob Melton",
+                  "shortName": "J. Melton",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4635337",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4635337.png",
+                    "alt": "Jacob Melton"
+                  },
+                  "jersey": "29",
+                  "position": {
+                    "name": "Left Field",
+                    "displayName": "Left Fielder",
+                    "abbreviation": "LF"
+                  },
+                  "status": {
+                    "id": "10",
+                    "name": "Injured/60",
+                    "type": "injured60",
+                    "abbreviation": "IL60"
+                  },
+                  "throws": {
+                    "type": "LEFT",
+                    "abbreviation": "L",
+                    "displayValue": "Left"
+                  }
+                },
+                "type": {
+                  "id": "11",
+                  "name": "INJURY_STATUS_60DAYIL",
+                  "description": "60-day IL",
+                  "abbreviation": "IL60"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "60-Day IL",
+                    "abbreviation": "60-Day IL",
+                    "displayDescription": "60-Day IL"
+                  },
+                  "type": "Hamstring",
+                  "detail": "Strain",
+                  "side": "Right",
+                  "returnDate": "2027-02-01"
+                }
+              }
+            ]
+          },
+          {
+            "team": {
+              "id": "5",
+              "uid": "s:1~l:10~t:5",
+              "displayName": "Cleveland Guardians",
+              "abbreviation": "CLE",
+              "links": [
+                {
+                  "href": "https://www.espn.com/mlb/team/_/name/cle/cleveland-guardians",
+                  "text": "Clubhouse"
+                },
+                {
+                  "href": "https://www.espn.com/mlb/team/schedule/_/name/cle",
+                  "text": "Schedule"
+                }
+              ],
+              "logo": "https://a.espncdn.com/i/teamlogos/mlb/500/cle.png",
+              "logos": [
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "default"
+                  ],
+                  "lastUpdated": "2024-07-01T17:48Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-01T17:49Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500/scoreboard/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard"
+                  ],
+                  "lastUpdated": "2024-07-01T17:48Z"
+                },
+                {
+                  "href": "https://a.espncdn.com/i/teamlogos/mlb/500-dark/scoreboard/cle.png",
+                  "width": 500,
+                  "height": 500,
+                  "alt": "",
+                  "rel": [
+                    "full",
+                    "scoreboard",
+                    "dark"
+                  ],
+                  "lastUpdated": "2024-07-01T17:49Z"
+                }
+              ]
+            },
+            "injuries": [
+              {
+                "status": "10-Day-IL",
+                "date": "2026-09-12T12:07Z",
+                "athlete": {
+                  "id": "35291",
+                  "uid": "s:1~l:10~a:35291",
+                  "guid": "1dba173d-0862-2b5a-0122-667043c961a4",
+                  "lastName": "Hoskins",
+                  "fullName": "Rhys Hoskins",
+                  "displayName": "Rhys Hoskins",
+                  "shortName": "R. Hoskins",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/35291",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/35291.png",
+                    "alt": "Rhys Hoskins"
+                  },
+                  "jersey": "8",
+                  "position": {
+                    "name": "First Base",
+                    "displayName": "First Baseman",
+                    "abbreviation": "1B"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "14",
+                  "name": "INJURY_STATUS_10DAYIL",
+                  "description": "10-day IL",
+                  "abbreviation": "IL10"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "10-Day IL",
+                    "abbreviation": "10-Day IL",
+                    "displayDescription": "10-Day IL"
+                  },
+                  "type": "Back",
+                  "detail": "Inflammation",
+                  "side": "Not Specified",
+                  "returnDate": "2026-10-15"
+                }
+              },
+              {
+                "status": "15-Day-IL",
+                "date": "2026-10-14T20:05Z",
+                "athlete": {
+                  "id": "4917897",
+                  "uid": "s:1~l:10~a:4917897",
+                  "guid": "9ae1d514-7c7d-3c83-8053-8c29c5865ac6",
+                  "lastName": "Holderman",
+                  "fullName": "Colin Holderman",
+                  "displayName": "Colin Holderman",
+                  "shortName": "C. Holderman",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/4917897",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/4917897.png",
+                    "alt": "Colin Holderman"
+                  },
+                  "jersey": "35",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "10",
+                  "name": "INJURY_STATUS_15DAYIL",
+                  "description": "15-day IL",
+                  "abbreviation": "IL15"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "15-Day IL",
+                    "abbreviation": "15-Day IL",
+                    "displayDescription": "15-Day IL"
+                  },
+                  "type": "Wrist",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2027-02-01"
+                }
+              },
+              {
+                "status": "Out",
+                "date": "2026-09-10T17:03Z",
+                "athlete": {
+                  "id": "5236382",
+                  "uid": "s:1~l:10~a:5236382",
+                  "guid": "31710207-793d-3a2e-b24b-fd3922e7b480",
+                  "lastName": "Walters",
+                  "fullName": "Andrew Walters",
+                  "displayName": "Andrew Walters",
+                  "shortName": "A. Walters",
+                  "links": [
+                    {
+                      "rel": [
+                        "playercard",
+                        "desktop",
+                        "athlete"
+                      ],
+                      "href": "https://www.espn.com/mlb/player/_/id/5236382",
+                      "text": "Player Card"
+                    }
+                  ],
+                  "headshot": {
+                    "href": "https://a.espncdn.com/i/headshots/mlb/players/full/5236382.png",
+                    "alt": "Andrew Walters"
+                  },
+                  "jersey": "91",
+                  "position": {
+                    "name": "Relief Pitcher",
+                    "displayName": "Relief Pitcher",
+                    "abbreviation": "RP"
+                  },
+                  "status": {
+                    "id": "28",
+                    "name": "Active 40-Man",
+                    "type": "active-40-man",
+                    "abbreviation": "Active 40-Man"
+                  },
+                  "throws": {
+                    "type": "RIGHT",
+                    "abbreviation": "R",
+                    "displayValue": "Right"
+                  }
+                },
+                "type": {
+                  "id": "4",
+                  "name": "INJURY_STATUS_OUT",
+                  "description": "out",
+                  "abbreviation": "O"
+                },
+                "details": {
+                  "fantasyStatus": {
+                    "description": "OUT",
+                    "abbreviation": "OUT",
+                    "displayDescription": "Out"
+                  },
+                  "type": "Elbow",
+                  "detail": "Surgery",
+                  "side": "Right",
+                  "returnDate": "2028-02-01"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "odds": [
+      {
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "commence_time": "2026-10-20T00:10:00Z",
+        "home_odds": 1.68,
+        "draw_odds": 0.0,
+        "away_odds": 2.36,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4177,
+            "home": 0.5823
+          },
+          "raw_probs": {
+            "away": 0.4348,
+            "home": 0.6024
+          },
+          "hold": 0.0408,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.68,
+            "away": 2.36
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4177,
+              "home": 0.5823
+            },
+            "raw_probs": {
+              "away": 0.4348,
+              "home": 0.6024
+            },
+            "hold": 0.0408,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-10-19T18:08:25Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-19T18:08:44Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.28
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4386
+              },
+              "fair_probs": {
+                "home": 0.5787,
+                "away": 0.4213
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-19T18:08:23Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.28
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4386
+              },
+              "fair_probs": {
+                "home": 0.5787,
+                "away": 0.4213
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-19T18:07:01Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-19T18:06:45Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "home": 1.63,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6135,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5852,
+                "away": 0.4148
+              },
+              "hold": 0.0483
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-19T18:08:04Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.33
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4292
+              },
+              "fair_probs": {
+                "home": 0.581,
+                "away": 0.419
+              },
+              "hold": 0.0244
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-19T18:08:03Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.5856,
+                "away": 0.4144
+              },
+              "hold": 0.0225
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.5856,
+                "away": 0.4144
+              },
+              "hold": 0.0225
+            }
+          ]
+        },
+        "total_line": 6.5,
+        "over_odds": 1.85,
+        "under_odds": 2.05,
+        "totals_benchmark": {
+          "line": 6.5,
+          "fair_probs": {
+            "over": 0.5236,
+            "under": 0.4764
+          },
+          "raw_probs": {
+            "over": 0.5464,
+            "under": 0.5
+          },
+          "hold": 0.0464,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 6.5,
+          "execution_prices": {
+            "over": 1.85,
+            "under": 2.05
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5236,
+              "under": 0.4764
+            },
+            "raw_probs": {
+              "over": 0.5464,
+              "under": 0.5
+            },
+            "hold": 0.0464,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-10-19T18:08:25Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5236,
+                "under": 0.4764
+              },
+              "hold": 0.0495
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-19T18:08:44Z",
+              "outcomes": {
+                "over": 1.85,
+                "under": 1.96
+              },
+              "raw_probs": {
+                "over": 0.5405,
+                "under": 0.5102
+              },
+              "fair_probs": {
+                "over": 0.5144,
+                "under": 0.4856
+              },
+              "hold": 0.0507
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-19T18:08:23Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 1.98
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5051
+              },
+              "fair_probs": {
+                "over": 0.5197,
+                "under": 0.4803
+              },
+              "hold": 0.0515
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-19T18:07:01Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5222,
+                "under": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-19T18:06:45Z",
+              "outcomes": {
+                "over": 1.8,
+                "under": 2.05
+              },
+              "raw_probs": {
+                "over": 0.5556,
+                "under": 0.4878
+              },
+              "fair_probs": {
+                "over": 0.5325,
+                "under": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.02
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.495
+              },
+              "fair_probs": {
+                "over": 0.526,
+                "under": 0.474
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-19T18:08:04Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5222,
+                "under": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-19T18:08:03Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.02
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.495
+              },
+              "fair_probs": {
+                "over": 0.526,
+                "under": 0.474
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.05
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.4878
+              },
+              "fair_probs": {
+                "over": 0.5284,
+                "under": 0.4716
+              },
+              "hold": 0.0343
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.2069,
+      "results_features": 0.2055,
+      "bullpen_features": 0.1996,
+      "run_environment": 0.1995,
+      "handedness_features": 0.1885
+    },
+    "models": [
+      "elo",
+      "results_features",
+      "bullpen_features",
+      "run_environment",
+      "handedness_features"
+    ],
+    "model_health": {
+      "ensemble": {
+        "sample_size": 80,
+        "accuracy": 0.65,
+        "avg_log_loss": 0.6655
+      },
+      "models": {
+        "elo": {
+          "sample_size": 80,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.6428,
+          "weight": 0.1772,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 80,
+          "accuracy": 0.65,
+          "avg_log_loss": 0.671,
+          "weight": 0.176,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "pitcher_features": {
+          "sample_size": 80,
+          "accuracy": 0.4375,
+          "avg_log_loss": 0.9023,
+          "weight": 0.1434,
+          "status": "disable_candidate",
+          "disable_candidate": true,
+          "reasons": [
+            "log loss trails ensemble by 0.237",
+            "accuracy trails floor 0.500 at 0.438"
+          ]
+        },
+        "bullpen_features": {
+          "sample_size": 80,
+          "accuracy": 0.6125,
+          "avg_log_loss": 0.6766,
+          "weight": 0.171,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "run_environment": {
+          "sample_size": 80,
+          "accuracy": 0.6125,
+          "avg_log_loss": 0.6781,
+          "weight": 0.1709,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "handedness_features": {
+          "sample_size": 80,
+          "accuracy": 0.5375,
+          "avg_log_loss": 0.6854,
+          "weight": 0.1615,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        }
+      },
+      "disable_candidates": [
+        "pitcher_features"
+      ],
+      "disabled_by_config": [
+        "pitcher_features"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "bullpen_features",
+        "run_environment",
+        "handedness_features"
+      ]
+    },
+    "calibration_sample_size": 2172
+  },
+  "records": {
+    "matches": [
+      {
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "date": "2026-10-19",
+        "start_time": "2026-10-20T00:00Z",
+        "matchday": null,
+        "completed": false,
+        "neutral": false,
+        "home_availability_profile": null,
+        "away_availability_profile": null,
+        "home_goalie": null,
+        "away_goalie": null,
+        "home_goalie_status": null,
+        "away_goalie_status": null,
+        "home_injury_profile": null,
+        "away_injury_profile": null,
+        "home_pitcher": "Freddy Peralta",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": "Shawn Armstrong",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 5,
+          "right_handed_batters": 7,
+          "switch_hitters": 0,
+          "lefty_share": 0.4167,
+          "righty_share": 0.5833,
+          "switch_share": 0.0
+        },
+        "away_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 6,
+          "right_handed_batters": 6,
+          "switch_hitters": 0,
+          "lefty_share": 0.5,
+          "righty_share": 0.5,
+          "switch_share": 0.0
+        },
+        "home_bullpen_tax": 0.0,
+        "away_bullpen_tax": 1.144,
+        "weather": {
+          "weather_exposed": false,
+          "temperature_f": null,
+          "wind_mph": null,
+          "precipitation_probability": null
+        },
+        "pick": "home",
+        "model_prob": 0.5728,
+        "edge": -0.0067,
+        "expected_value": -0.033,
+        "kelly_fraction": 0.0,
+        "fractional_kelly": 0.0,
+        "confidence_score": 44.7,
+        "confidence_stars": 1,
+        "american_odds": -147,
+        "model_probs": {
+          "home": 0.5728,
+          "away": 0.4272
+        },
+        "individual_models": {
+          "elo": {
+            "home": 0.6019,
+            "away": 0.3981
+          },
+          "results_features": {
+            "home": 0.546,
+            "away": 0.454
+          },
+          "bullpen_features": {
+            "home": 0.5564,
+            "away": 0.4436
+          },
+          "run_environment": {
+            "home": 0.5438,
+            "away": 0.4562
+          },
+          "handedness_features": {
+            "home": 0.5185,
+            "away": 0.4815
+          }
+        },
+        "edges": {
+          "home": {
+            "model_prob": 0.5756,
+            "raw_model_prob": 0.5728,
+            "implied_prob": 0.5823,
+            "market_implied_prob": 0.6024,
+            "edge": -0.0067,
+            "expected_value": -0.033,
+            "decimal_odds": 1.68,
+            "american_odds": -147,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 44.7,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0408,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "away": {
+            "model_prob": 0.4244,
+            "raw_model_prob": 0.4272,
+            "implied_prob": 0.4177,
+            "market_implied_prob": 0.4348,
+            "edge": 0.0067,
+            "expected_value": 0.0015,
+            "decimal_odds": 2.36,
+            "american_odds": 136,
+            "kelly_fraction": 0.0011,
+            "fractional_kelly": 0.0002,
+            "confidence_score": 22.1,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0408,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "best_odds": {
+          "home": -147,
+          "away": 136
+        },
+        "market_snapshot": {
+          "execution_prices": {
+            "home": 1.68,
+            "away": 2.36
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4177,
+              "home": 0.5823
+            },
+            "raw_probs": {
+              "away": 0.4348,
+              "home": 0.6024
+            },
+            "hold": 0.0408,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-10-19T18:08:25Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-19T18:08:44Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.28
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4386
+              },
+              "fair_probs": {
+                "home": 0.5787,
+                "away": 0.4213
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-19T18:08:23Z",
+              "outcomes": {
+                "home": 1.66,
+                "away": 2.28
+              },
+              "raw_probs": {
+                "home": 0.6024,
+                "away": 0.4386
+              },
+              "fair_probs": {
+                "home": 0.5787,
+                "away": 0.4213
+              },
+              "hold": 0.041
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-19T18:07:01Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-19T18:06:45Z",
+              "outcomes": {
+                "home": 1.65,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6061,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5823,
+                "away": 0.4177
+              },
+              "hold": 0.0408
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "home": 1.63,
+                "away": 2.3
+              },
+              "raw_probs": {
+                "home": 0.6135,
+                "away": 0.4348
+              },
+              "fair_probs": {
+                "home": 0.5852,
+                "away": 0.4148
+              },
+              "hold": 0.0483
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-19T18:08:04Z",
+              "outcomes": {
+                "home": 1.68,
+                "away": 2.33
+              },
+              "raw_probs": {
+                "home": 0.5952,
+                "away": 0.4292
+              },
+              "fair_probs": {
+                "home": 0.581,
+                "away": 0.419
+              },
+              "hold": 0.0244
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-19T18:08:03Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.5856,
+                "away": 0.4144
+              },
+              "hold": 0.0225
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "home": 1.67,
+                "away": 2.36
+              },
+              "raw_probs": {
+                "home": 0.5988,
+                "away": 0.4237
+              },
+              "fair_probs": {
+                "home": 0.5856,
+                "away": 0.4144
+              },
+              "hold": 0.0225
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "mlb",
+          "home_team": "Rays",
+          "away_team": "Guardians",
+          "home_impact": 0.0,
+          "away_impact": 0.0,
+          "individual_factors": [],
+          "net_qualitative_edge": "none",
+          "summary": "No significant qualitative factors identified.",
+          "pick_rationale": "",
+          "model_vs_market": "",
+          "key_risk": "",
+          "confidence_label": "moderate"
+        },
+        "qualitative_summary": "Qualitative (H:0.0 A:0.0): no effect. ",
+        "blurb": "",
+        "model_vs_market": "",
+        "key_risk": "",
+        "ai_confidence_label": "moderate",
+        "run_id": "daily-20261019T180833062686Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-10-19T18:08:33Z",
+        "snapshot_path": "tracking/snapshots/2026-10-19/mlb/daily-20261019T180833062686Z.json"
+      }
+    ],
+    "totals_matches": [
+      {
+        "market_type": "total",
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "date": "2026-10-19",
+        "start_time": "2026-10-20T00:00Z",
+        "completed": false,
+        "home_pitcher": "Freddy Peralta",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": "Shawn Armstrong",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "home_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 5,
+          "right_handed_batters": 7,
+          "switch_hitters": 0,
+          "lefty_share": 0.4167,
+          "righty_share": 0.5833,
+          "switch_share": 0.0
+        },
+        "away_lineup_profile": {
+          "active_hitters": 13,
+          "available_hitters": 12,
+          "injured_hitters": 1,
+          "key_bat_absence_score": 0.0,
+          "leader_absence_burden": 0.0,
+          "left_handed_batters": 6,
+          "right_handed_batters": 6,
+          "switch_hitters": 0,
+          "lefty_share": 0.5,
+          "righty_share": 0.5,
+          "switch_share": 0.0
+        },
+        "home_bullpen_tax": 0.0,
+        "away_bullpen_tax": 1.144,
+        "weather": {
+          "weather_exposed": false,
+          "temperature_f": null,
+          "wind_mph": null,
+          "precipitation_probability": null
+        },
+        "total_line": 6.5,
+        "expected_total": 7.792,
+        "total_stddev": 4.596,
+        "pick": "over",
+        "model_prob": 0.6107,
+        "confidence_score": 65.6,
+        "american_odds": -118,
+        "model_probs": {
+          "over": 0.6107,
+          "under": 0.3893
+        },
+        "individual_models": {
+          "totals_model": {
+            "over": 0.6107,
+            "under": 0.3893
+          }
+        },
+        "edges": {
+          "over": {
+            "model_prob": 0.5846,
+            "raw_model_prob": 0.6107,
+            "implied_prob": 0.5236,
+            "market_implied_prob": 0.5464,
+            "edge": 0.061,
+            "expected_value": 0.0814,
+            "decimal_odds": 1.85,
+            "american_odds": -118,
+            "kelly_fraction": 0.0958,
+            "fractional_kelly": 0.0192,
+            "confidence_score": 65.6,
+            "is_value": true,
+            "unrealistic_flag": false,
+            "hold": 0.0464,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          },
+          "under": {
+            "model_prob": 0.4154,
+            "raw_model_prob": 0.3893,
+            "implied_prob": 0.4764,
+            "market_implied_prob": 0.5,
+            "edge": -0.061,
+            "expected_value": -0.1483,
+            "decimal_odds": 2.05,
+            "american_odds": 105,
+            "kelly_fraction": 0.0,
+            "fractional_kelly": 0.0,
+            "confidence_score": 20.2,
+            "is_value": false,
+            "unrealistic_flag": false,
+            "hold": 0.0464,
+            "market_source": "median_complete_book_no_vig",
+            "market_books": 9
+          }
+        },
+        "market_snapshot": {
+          "line": 6.5,
+          "execution_prices": {
+            "over": 1.85,
+            "under": 2.05
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5236,
+              "under": 0.4764
+            },
+            "raw_probs": {
+              "over": 0.5464,
+              "under": 0.5
+            },
+            "hold": 0.0464,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-10-19T18:08:25Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5236,
+                "under": 0.4764
+              },
+              "hold": 0.0495
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-19T18:08:44Z",
+              "outcomes": {
+                "over": 1.85,
+                "under": 1.96
+              },
+              "raw_probs": {
+                "over": 0.5405,
+                "under": 0.5102
+              },
+              "fair_probs": {
+                "over": 0.5144,
+                "under": 0.4856
+              },
+              "hold": 0.0507
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-19T18:08:23Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 1.98
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5051
+              },
+              "fair_probs": {
+                "over": 0.5197,
+                "under": 0.4803
+              },
+              "hold": 0.0515
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-19T18:07:01Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5222,
+                "under": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-19T18:06:45Z",
+              "outcomes": {
+                "over": 1.8,
+                "under": 2.05
+              },
+              "raw_probs": {
+                "over": 0.5556,
+                "under": 0.4878
+              },
+              "fair_probs": {
+                "over": 0.5325,
+                "under": 0.4675
+              },
+              "hold": 0.0434
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.02
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.495
+              },
+              "fair_probs": {
+                "over": 0.526,
+                "under": 0.474
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-19T18:08:04Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.0
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.5
+              },
+              "fair_probs": {
+                "over": 0.5222,
+                "under": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-19T18:08:03Z",
+              "outcomes": {
+                "over": 1.82,
+                "under": 2.02
+              },
+              "raw_probs": {
+                "over": 0.5495,
+                "under": 0.495
+              },
+              "fair_probs": {
+                "over": 0.526,
+                "under": 0.474
+              },
+              "hold": 0.0445
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-19T18:08:24Z",
+              "outcomes": {
+                "over": 1.83,
+                "under": 2.05
+              },
+              "raw_probs": {
+                "over": 0.5464,
+                "under": 0.4878
+              },
+              "fair_probs": {
+                "over": 0.5284,
+                "under": 0.4716
+              },
+              "hold": 0.0343
+            }
+          ]
+        },
+        "qualitative_analysis": {
+          "sport": "mlb",
+          "home_team": "Rays",
+          "away_team": "Guardians",
+          "total_line": 6.5,
+          "total_impact": 0.0,
+          "individual_factors": [],
+          "net_total_edge": "none",
+          "summary": "No significant qualitative factors identified.",
+          "pick_rationale": "",
+          "model_vs_market": "",
+          "key_risk": "",
+          "confidence_label": "moderate"
+        },
+        "qualitative_summary": "No qualitative impact.",
+        "blurb": "",
+        "model_vs_market": "",
+        "key_risk": "",
+        "ai_confidence_label": "moderate",
+        "run_id": "daily-20261019T180833062686Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-10-19T18:08:33Z",
+        "snapshot_path": "tracking/snapshots/2026-10-19/mlb/daily-20261019T180833062686Z.json"
+      }
+    ]
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [
+      {
+        "market_type": "total",
+        "home_team": "Rays",
+        "away_team": "Guardians",
+        "date": "2026-10-19",
+        "start_time": "2026-10-20T00:00Z",
+        "home_pitcher": "Freddy Peralta",
+        "home_pitcher_hand": "R",
+        "home_pitcher_source": "espn",
+        "home_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "home_pitcher_cache_stale": false,
+        "away_pitcher": "Shawn Armstrong",
+        "away_pitcher_hand": "R",
+        "away_pitcher_source": "espn",
+        "away_pitcher_last_checked": "2026-10-19T18:08:58.704563+00:00",
+        "away_pitcher_cache_stale": false,
+        "pitcher_warnings": [],
+        "pick": "over",
+        "total_line": 6.5,
+        "expected_total": 7.792,
+        "weather": {
+          "weather_exposed": false,
+          "temperature_f": null,
+          "wind_mph": null,
+          "precipitation_probability": null
+        },
+        "model_prob": 0.5846,
+        "implied_prob": 0.5236,
+        "market_implied_prob": 0.5464,
+        "edge": 0.061,
+        "expected_value": 0.0814,
+        "american_odds": -118,
+        "decimal_odds": 1.85,
+        "kelly_fraction": 0.0958,
+        "fractional_kelly": 0.0192,
+        "confidence_score": 65.6,
+        "unrealistic_flag": false,
+        "qualitative_analysis": {
+          "sport": "mlb",
+          "home_team": "Rays",
+          "away_team": "Guardians",
+          "total_line": 6.5,
+          "total_impact": 0.0,
+          "individual_factors": [],
+          "net_total_edge": "none",
+          "summary": "No significant qualitative factors identified.",
+          "pick_rationale": "",
+          "model_vs_market": "",
+          "key_risk": "",
+          "confidence_label": "moderate"
+        },
+        "qualitative_summary": "No qualitative impact.",
+        "blurb": "",
+        "model_vs_market": "",
+        "key_risk": "",
+        "ai_confidence_label": "moderate",
+        "run_id": "daily-20261019T180833062686Z",
+        "run_type": "daily",
+        "snapshot_timestamp": "2026-10-19T18:08:33Z",
+        "snapshot_path": "tracking/snapshots/2026-10-19/mlb/daily-20261019T180833062686Z.json"
+      }
+    ],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 2543,
+    "fixtures_fetched": 1,
+    "fixtures_in_window": 1,
+    "fixtures_completed": 0,
+    "fixtures_pending": 1,
+    "odds_events_fetched": 1,
+    "fixtures_with_odds": 1,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 1,
+    "matches_with_market": 1,
+    "matches_with_positive_ev": 1,
+    "matches_with_qualitative": 1,
+    "lock_eligible_matches": 0,
+    "lock_eligible_outcomes": 0,
+    "gate_failures": {
+      "missing_odds": 0,
+      "negative_expected_value": 1,
+      "below_edge_floor": 1,
+      "below_probability_floor": 0
+    },
+    "candidate_lanes": {
+      "value_dog": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      },
+      "near_favorite": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      }
+    },
+    "slop_locks_posted": 0,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": true,
+      "allow_totals": true,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "moneyline_publish_cap": 1,
+      "totals_publish_cap": 2,
+      "evaluated_picks": 280,
+      "evaluated_totals_picks": 331,
+      "min_evaluated_picks": 20,
+      "min_evaluated_totals_picks": 10,
+      "status": "live",
+      "reason": null,
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 280,
+            "evaluated": 280,
+            "pending": 0,
+            "hit_rate": 0.525,
+            "roi": 0.0197,
+            "push_rate": 0.0,
+            "wins": 147,
+            "losses": 133,
+            "pushes": 0,
+            "avg_confidence": 51.5318,
+            "avg_expected_value": 0.0759,
+            "clv": {
+              "tracked": 245,
+              "avg_clv": -0.0228,
+              "positive_rate": 0.1143,
+              "non_negative_rate": 0.1143,
+              "moneyline_tracked": 245,
+              "moneyline_avg_clv": -0.0228,
+              "moneyline_positive_rate": 0.1143,
+              "moneyline_non_negative_rate": 0.1143,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.25,
+            "roi": -0.4938,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 6,
+            "pushes": 0,
+            "avg_confidence": 60.1875,
+            "avg_expected_value": 0.0974,
+            "clv": {
+              "tracked": 7,
+              "avg_clv": -0.0147,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.0,
+              "moneyline_tracked": 7,
+              "moneyline_avg_clv": -0.0147,
+              "moneyline_positive_rate": 0.0,
+              "moneyline_non_negative_rate": 0.0,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5481,
+            "actual_win_rate": 0.25,
+            "calibration_gap": 0.2981,
+            "overconfidence_gap": 0.2981
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneylines ROI -0.4938 is below -0.2500",
+            "recent moneylines overconfidence gap 0.2981 exceeds 0.2500"
+          ],
+          "health_score": 0.7143
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 332,
+            "evaluated": 331,
+            "pending": 1,
+            "hit_rate": 0.5257,
+            "roi": 0.0481,
+            "push_rate": 0.0363,
+            "wins": 174,
+            "losses": 145,
+            "pushes": 12,
+            "avg_confidence": 71.9096,
+            "avg_expected_value": 0.15,
+            "clv": {
+              "tracked": 286,
+              "avg_clv": 0.0245,
+              "positive_rate": 0.0769,
+              "non_negative_rate": 0.9266,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 286,
+              "totals_avg_clv": 0.0245,
+              "totals_positive_rate": 0.0769,
+              "totals_non_negative_rate": 0.9266
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.625,
+            "roi": 0.225,
+            "push_rate": 0.0,
+            "wins": 5,
+            "losses": 3,
+            "pushes": 0,
+            "avg_confidence": 68.75,
+            "avg_expected_value": 0.1308,
+            "clv": {
+              "tracked": 5,
+              "avg_clv": -0.1,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.8,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 5,
+              "totals_avg_clv": -0.1,
+              "totals_positive_rate": 0.0,
+              "totals_non_negative_rate": 0.8
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5845,
+            "actual_win_rate": 0.625,
+            "calibration_gap": -0.0405,
+            "overconfidence_gap": 0.0
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent totals CLV -0.1000 is below -0.0200"
+          ],
+          "health_score": 0.8571
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": true
+      }
+    },
+    "validation_issues": [],
+    "validation_issues_count": 0,
+    "summary": "modeled=1 | odds=1/1 | +ev=1 | sense=1 | eligible=0 | locks=0"
+  }
+}
