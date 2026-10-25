@@ -1,0 +1,1183 @@
+{
+  "snapshot_version": 1,
+  "generated_at": "2026-10-25T15:28:10Z",
+  "sport": "mlb",
+  "sport_name": "MLB",
+  "run_id": "daily-20261025T152330215349Z",
+  "run_type": "daily",
+  "snapshot_timestamp": "2026-10-25T15:23:30Z",
+  "selection_config": {
+    "outcomes": [
+      "home",
+      "away"
+    ],
+    "slop_locks": {
+      "reject_unrealistic_divergence": true,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.025,
+      "probability_floor": 0.55,
+      "additional_confidence_floor": 56,
+      "confidence_dropoff": 4,
+      "max_picks": 5,
+      "lanes": {
+        "value_dog": {
+          "enabled": true,
+          "edge_floor": 0.04,
+          "probability_floor": 0.35,
+          "min_expected_value": 0.05,
+          "american_odds_min": 120,
+          "american_odds_max": 500,
+          "max_picks": 2
+        },
+        "near_favorite": {
+          "enabled": true,
+          "edge_floor": 0.01,
+          "probability_floor": 0.52,
+          "min_expected_value": 0.0,
+          "american_odds_min": -180,
+          "american_odds_max": 120,
+          "max_picks": 3
+        }
+      }
+    },
+    "longslop": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 50
+    },
+    "slimegrinder": {
+      "reject_unrealistic_divergence": true,
+      "enabled": false,
+      "min_expected_value": 0.0,
+      "confidence_floor": 50
+    },
+    "totals_locks": {
+      "reject_unrealistic_divergence": true,
+      "enabled": true,
+      "min_expected_value": 0.0,
+      "edge_floor": 0.02,
+      "probability_floor": 0.53,
+      "confidence_floor": 54,
+      "max_picks": 3
+    }
+  },
+  "publication_guard": {
+    "enforced": true,
+    "allow_moneyline": true,
+    "allow_totals": true,
+    "allow_longslop": false,
+    "allow_slimegrinder": false,
+    "moneyline_publish_cap": 1,
+    "totals_publish_cap": 2,
+    "evaluated_picks": 280,
+    "evaluated_totals_picks": 334,
+    "min_evaluated_picks": 20,
+    "min_evaluated_totals_picks": 10,
+    "status": "live",
+    "reason": null,
+    "lane_guards": {
+      "moneyline": {
+        "market_type": "moneyline",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 280,
+          "evaluated": 280,
+          "pending": 0,
+          "hit_rate": 0.525,
+          "roi": 0.0197,
+          "push_rate": 0.0,
+          "wins": 147,
+          "losses": 133,
+          "pushes": 0,
+          "avg_confidence": 51.5318,
+          "avg_expected_value": 0.0759,
+          "clv": {
+            "tracked": 245,
+            "avg_clv": -0.0228,
+            "positive_rate": 0.1143,
+            "non_negative_rate": 0.1143,
+            "moneyline_tracked": 245,
+            "moneyline_avg_clv": -0.0228,
+            "moneyline_positive_rate": 0.1143,
+            "moneyline_non_negative_rate": 0.1143,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.25,
+          "roi": -0.4938,
+          "push_rate": 0.0,
+          "wins": 2,
+          "losses": 6,
+          "pushes": 0,
+          "avg_confidence": 60.1875,
+          "avg_expected_value": 0.0974,
+          "clv": {
+            "tracked": 7,
+            "avg_clv": -0.0147,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.0,
+            "moneyline_tracked": 7,
+            "moneyline_avg_clv": -0.0147,
+            "moneyline_positive_rate": 0.0,
+            "moneyline_non_negative_rate": 0.0,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5481,
+          "actual_win_rate": 0.25,
+          "calibration_gap": 0.2981,
+          "overconfidence_gap": 0.2981
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent moneylines ROI -0.4938 is below -0.2500",
+          "recent moneylines overconfidence gap 0.2981 exceeds 0.2500"
+        ],
+        "health_score": 0.7143
+      },
+      "totals": {
+        "market_type": "total",
+        "pick_type": null,
+        "overall": {
+          "total_picks": 335,
+          "evaluated": 334,
+          "pending": 1,
+          "hit_rate": 0.524,
+          "roi": 0.0443,
+          "push_rate": 0.0359,
+          "wins": 175,
+          "losses": 147,
+          "pushes": 12,
+          "avg_confidence": 71.9188,
+          "avg_expected_value": 0.15,
+          "clv": {
+            "tracked": 287,
+            "avg_clv": 0.0244,
+            "positive_rate": 0.0767,
+            "non_negative_rate": 0.9268,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 287,
+            "totals_avg_clv": 0.0244,
+            "totals_positive_rate": 0.0767,
+            "totals_non_negative_rate": 0.9268
+          }
+        },
+        "recent": {
+          "total_picks": 8,
+          "evaluated": 8,
+          "pending": 0,
+          "hit_rate": 0.5,
+          "roi": -0.0312,
+          "push_rate": 0.0,
+          "wins": 4,
+          "losses": 4,
+          "pushes": 0,
+          "avg_confidence": 69.4625,
+          "avg_expected_value": 0.1375,
+          "clv": {
+            "tracked": 5,
+            "avg_clv": -0.1,
+            "positive_rate": 0.0,
+            "non_negative_rate": 0.8,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 5,
+            "totals_avg_clv": -0.1,
+            "totals_positive_rate": 0.0,
+            "totals_non_negative_rate": 0.8
+          },
+          "recent_count": 8,
+          "avg_model_prob": 0.5897,
+          "actual_win_rate": 0.5,
+          "calibration_gap": 0.0897,
+          "overconfidence_gap": 0.0897
+        },
+        "allow": false,
+        "status": "hold",
+        "reasons": [
+          "recent totals CLV -0.1000 is below -0.0200"
+        ],
+        "health_score": 0.8571
+      },
+      "longslop": {
+        "market_type": null,
+        "pick_type": "longslop",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "longslop disabled by config",
+          "need more settled longslop picks (0/5)",
+          "need more recent settled longslop picks (0/3)",
+          "need more tracked longslop CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "slimegrinder": {
+        "market_type": null,
+        "pick_type": "slimegrinder",
+        "overall": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          }
+        },
+        "recent": {
+          "total_picks": 0,
+          "evaluated": 0,
+          "pending": 0,
+          "hit_rate": null,
+          "roi": null,
+          "wins": 0,
+          "losses": 0,
+          "pushes": 0,
+          "avg_confidence": null,
+          "avg_expected_value": null,
+          "clv": {
+            "tracked": 0,
+            "avg_clv": null,
+            "positive_rate": null,
+            "non_negative_rate": null,
+            "moneyline_tracked": 0,
+            "moneyline_avg_clv": null,
+            "moneyline_positive_rate": null,
+            "moneyline_non_negative_rate": null,
+            "totals_tracked": 0,
+            "totals_avg_clv": null,
+            "totals_positive_rate": null,
+            "totals_non_negative_rate": null
+          },
+          "recent_count": 5,
+          "avg_model_prob": null,
+          "actual_win_rate": null,
+          "calibration_gap": null,
+          "overconfidence_gap": null
+        },
+        "allow": false,
+        "status": "disabled",
+        "reasons": [
+          "slimegrinder disabled by config",
+          "need more settled slimegrinder picks (0/5)",
+          "need more recent settled slimegrinder picks (0/3)",
+          "need more tracked slimegrinder CLV (0/3)"
+        ],
+        "health_score": 0.4286
+      },
+      "totals_enabled": true
+    }
+  },
+  "validation_issues": [],
+  "outcomes": [
+    "home",
+    "away"
+  ],
+  "inputs": {
+    "fixtures_fetched": [],
+    "fixtures_in_window": [],
+    "odds": [
+      {
+        "home_team": "Rays",
+        "away_team": "Brewers",
+        "commence_time": "2026-10-27T00:10:00Z",
+        "home_odds": 1.88,
+        "draw_odds": 0.0,
+        "away_odds": 2.03,
+        "moneyline_benchmark": {
+          "fair_probs": {
+            "away": 0.4808,
+            "home": 0.5192
+          },
+          "raw_probs": {
+            "away": 0.5,
+            "home": 0.5405
+          },
+          "hold": 0.0456,
+          "books_tracked": 9,
+          "source": "median_complete_book_no_vig"
+        },
+        "moneyline_market_snapshot": {
+          "execution_prices": {
+            "home": 1.88,
+            "away": 2.03
+          },
+          "benchmark": {
+            "fair_probs": {
+              "away": 0.4808,
+              "home": 0.5192
+            },
+            "raw_probs": {
+              "away": 0.5,
+              "home": 0.5405
+            },
+            "hold": 0.0456,
+            "books_tracked": 9,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "FanDuel",
+              "last_update": "2026-10-25T15:28:01Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.02
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.495
+              },
+              "fair_probs": {
+                "home": 0.5247,
+                "away": 0.4753
+              },
+              "hold": 0.0415
+            },
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-25T15:28:01Z",
+              "outcomes": {
+                "home": 1.85,
+                "away": 1.98
+              },
+              "raw_probs": {
+                "home": 0.5405,
+                "away": 0.5051
+              },
+              "fair_probs": {
+                "home": 0.517,
+                "away": 0.483
+              },
+              "hold": 0.0456
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-25T15:28:03Z",
+              "outcomes": {
+                "home": 1.88,
+                "away": 2.03
+              },
+              "raw_probs": {
+                "home": 0.5319,
+                "away": 0.4926
+              },
+              "fair_probs": {
+                "home": 0.5192,
+                "away": 0.4808
+              },
+              "hold": 0.0245
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-25T15:27:18Z",
+              "outcomes": {
+                "home": 1.85,
+                "away": 1.97
+              },
+              "raw_probs": {
+                "home": 0.5405,
+                "away": 0.5076
+              },
+              "fair_probs": {
+                "home": 0.5157,
+                "away": 0.4843
+              },
+              "hold": 0.0482
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-25T15:27:39Z",
+              "outcomes": {
+                "home": 1.88,
+                "away": 2.03
+              },
+              "raw_probs": {
+                "home": 0.5319,
+                "away": 0.4926
+              },
+              "fair_probs": {
+                "home": 0.5192,
+                "away": 0.4808
+              },
+              "hold": 0.0245
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-25T15:28:02Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 2.0
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5
+              },
+              "fair_probs": {
+                "home": 0.5222,
+                "away": 0.4778
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-25T15:26:36Z",
+              "outcomes": {
+                "home": 1.84,
+                "away": 1.99
+              },
+              "raw_probs": {
+                "home": 0.5435,
+                "away": 0.5025
+              },
+              "fair_probs": {
+                "home": 0.5196,
+                "away": 0.4804
+              },
+              "hold": 0.046
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-25T15:28:01Z",
+              "outcomes": {
+                "home": 1.83,
+                "away": 1.98
+              },
+              "raw_probs": {
+                "home": 0.5464,
+                "away": 0.5051
+              },
+              "fair_probs": {
+                "home": 0.5197,
+                "away": 0.4803
+              },
+              "hold": 0.0515
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-25T15:27:40Z",
+              "outcomes": {
+                "home": 1.88,
+                "away": 2.03
+              },
+              "raw_probs": {
+                "home": 0.5319,
+                "away": 0.4926
+              },
+              "fair_probs": {
+                "home": 0.5192,
+                "away": 0.4808
+              },
+              "hold": 0.0245
+            }
+          ]
+        },
+        "total_line": 7.0,
+        "over_odds": 2.0,
+        "under_odds": 1.96,
+        "totals_benchmark": {
+          "line": 7.0,
+          "fair_probs": {
+            "over": 0.5,
+            "under": 0.5
+          },
+          "raw_probs": {
+            "over": 0.5236,
+            "under": 0.5236
+          },
+          "hold": 0.0471,
+          "books_tracked": 8,
+          "source": "median_complete_book_no_vig"
+        },
+        "totals_market_snapshot": {
+          "line": 7.0,
+          "execution_prices": {
+            "over": 2.0,
+            "under": 1.96
+          },
+          "benchmark": {
+            "fair_probs": {
+              "over": 0.5,
+              "under": 0.5
+            },
+            "raw_probs": {
+              "over": 0.5236,
+              "under": 0.5236
+            },
+            "hold": 0.0471,
+            "books_tracked": 8,
+            "source": "median_complete_book_no_vig"
+          },
+          "books": [
+            {
+              "book": "DraftKings",
+              "last_update": "2026-10-25T15:28:01Z",
+              "outcomes": {
+                "over": 1.92,
+                "under": 1.9
+              },
+              "raw_probs": {
+                "over": 0.5208,
+                "under": 0.5263
+              },
+              "fair_probs": {
+                "over": 0.4974,
+                "under": 0.5026
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "LowVig.ag",
+              "last_update": "2026-10-25T15:28:03Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.96
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5102
+              },
+              "fair_probs": {
+                "over": 0.5065,
+                "under": 0.4935
+              },
+              "hold": 0.0338
+            },
+            {
+              "book": "BetRivers",
+              "last_update": "2026-10-25T15:27:18Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.92
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5208
+              },
+              "fair_probs": {
+                "over": 0.5013,
+                "under": 0.4987
+              },
+              "hold": 0.0444
+            },
+            {
+              "book": "BetOnline.ag",
+              "last_update": "2026-10-25T15:27:39Z",
+              "outcomes": {
+                "over": 1.88,
+                "under": 1.93
+              },
+              "raw_probs": {
+                "over": 0.5319,
+                "under": 0.5181
+              },
+              "fair_probs": {
+                "over": 0.5066,
+                "under": 0.4934
+              },
+              "hold": 0.05
+            },
+            {
+              "book": "BetMGM",
+              "last_update": "2026-10-25T15:28:02Z",
+              "outcomes": {
+                "over": 2.0,
+                "under": 1.83
+              },
+              "raw_probs": {
+                "over": 0.5,
+                "under": 0.5464
+              },
+              "fair_probs": {
+                "over": 0.4778,
+                "under": 0.5222
+              },
+              "hold": 0.0464
+            },
+            {
+              "book": "Bovada",
+              "last_update": "2026-10-25T15:26:36Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            },
+            {
+              "book": "MyBookie.ag",
+              "last_update": "2026-10-25T15:28:01Z",
+              "outcomes": {
+                "over": 1.93,
+                "under": 1.88
+              },
+              "raw_probs": {
+                "over": 0.5181,
+                "under": 0.5319
+              },
+              "fair_probs": {
+                "over": 0.4934,
+                "under": 0.5066
+              },
+              "hold": 0.05
+            },
+            {
+              "book": "BetUS",
+              "last_update": "2026-10-25T15:27:40Z",
+              "outcomes": {
+                "over": 1.91,
+                "under": 1.91
+              },
+              "raw_probs": {
+                "over": 0.5236,
+                "under": 0.5236
+              },
+              "fair_probs": {
+                "over": 0.5,
+                "under": 0.5
+              },
+              "hold": 0.0471
+            }
+          ]
+        }
+      }
+    ],
+    "model_weights": {
+      "elo": 0.2081,
+      "results_features": 0.2067,
+      "bullpen_features": 0.1969,
+      "run_environment": 0.1988,
+      "handedness_features": 0.1894
+    },
+    "models": [
+      "elo",
+      "results_features",
+      "bullpen_features",
+      "run_environment",
+      "handedness_features"
+    ],
+    "model_health": {
+      "ensemble": {
+        "sample_size": 80,
+        "accuracy": 0.6625,
+        "avg_log_loss": 0.6631
+      },
+      "models": {
+        "elo": {
+          "sample_size": 80,
+          "accuracy": 0.6625,
+          "avg_log_loss": 0.6382,
+          "weight": 0.1784,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "results_features": {
+          "sample_size": 80,
+          "accuracy": 0.6625,
+          "avg_log_loss": 0.6669,
+          "weight": 0.1772,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "pitcher_features": {
+          "sample_size": 80,
+          "accuracy": 0.4375,
+          "avg_log_loss": 0.9023,
+          "weight": 0.1429,
+          "status": "disable_candidate",
+          "disable_candidate": true,
+          "reasons": [
+            "log loss trails ensemble by 0.239",
+            "accuracy trails floor 0.500 at 0.438"
+          ]
+        },
+        "bullpen_features": {
+          "sample_size": 80,
+          "accuracy": 0.6,
+          "avg_log_loss": 0.6772,
+          "weight": 0.1688,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "run_environment": {
+          "sample_size": 80,
+          "accuracy": 0.6125,
+          "avg_log_loss": 0.6767,
+          "weight": 0.1704,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        },
+        "handedness_features": {
+          "sample_size": 80,
+          "accuracy": 0.55,
+          "avg_log_loss": 0.6854,
+          "weight": 0.1624,
+          "status": "active",
+          "disable_candidate": false,
+          "reasons": []
+        }
+      },
+      "disable_candidates": [
+        "pitcher_features"
+      ],
+      "disabled_by_config": [
+        "pitcher_features"
+      ],
+      "active_models": [
+        "elo",
+        "results_features",
+        "bullpen_features",
+        "run_environment",
+        "handedness_features"
+      ]
+    },
+    "calibration_sample_size": 2099
+  },
+  "records": {
+    "matches": [],
+    "totals_matches": []
+  },
+  "outputs": {
+    "slop_locks": [],
+    "totals_locks": [],
+    "slimegrinder": [],
+    "longslop": null
+  },
+  "diagnostics": {
+    "historical_matches": 2546,
+    "fixtures_fetched": 0,
+    "fixtures_in_window": 0,
+    "fixtures_completed": 0,
+    "fixtures_pending": 0,
+    "odds_events_fetched": 1,
+    "fixtures_with_odds": 0,
+    "fixtures_without_odds": 0,
+    "coverage_gap_examples": [],
+    "matches_modeled": 0,
+    "matches_with_market": 0,
+    "matches_with_positive_ev": 0,
+    "matches_with_qualitative": 0,
+    "lock_eligible_matches": 0,
+    "lock_eligible_outcomes": 0,
+    "gate_failures": {
+      "missing_odds": 0,
+      "negative_expected_value": 0,
+      "below_edge_floor": 0,
+      "below_probability_floor": 0
+    },
+    "candidate_lanes": {
+      "value_dog": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      },
+      "near_favorite": {
+        "eligible_outcomes": 0,
+        "eligible_matches": 0
+      }
+    },
+    "slop_locks_posted": 0,
+    "longslop_posted": 0,
+    "slimegrinders_posted": 0,
+    "publication_guard": {
+      "enforced": true,
+      "allow_moneyline": true,
+      "allow_totals": true,
+      "allow_longslop": false,
+      "allow_slimegrinder": false,
+      "moneyline_publish_cap": 1,
+      "totals_publish_cap": 2,
+      "evaluated_picks": 280,
+      "evaluated_totals_picks": 334,
+      "min_evaluated_picks": 20,
+      "min_evaluated_totals_picks": 10,
+      "status": "live",
+      "reason": null,
+      "lane_guards": {
+        "moneyline": {
+          "market_type": "moneyline",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 280,
+            "evaluated": 280,
+            "pending": 0,
+            "hit_rate": 0.525,
+            "roi": 0.0197,
+            "push_rate": 0.0,
+            "wins": 147,
+            "losses": 133,
+            "pushes": 0,
+            "avg_confidence": 51.5318,
+            "avg_expected_value": 0.0759,
+            "clv": {
+              "tracked": 245,
+              "avg_clv": -0.0228,
+              "positive_rate": 0.1143,
+              "non_negative_rate": 0.1143,
+              "moneyline_tracked": 245,
+              "moneyline_avg_clv": -0.0228,
+              "moneyline_positive_rate": 0.1143,
+              "moneyline_non_negative_rate": 0.1143,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.25,
+            "roi": -0.4938,
+            "push_rate": 0.0,
+            "wins": 2,
+            "losses": 6,
+            "pushes": 0,
+            "avg_confidence": 60.1875,
+            "avg_expected_value": 0.0974,
+            "clv": {
+              "tracked": 7,
+              "avg_clv": -0.0147,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.0,
+              "moneyline_tracked": 7,
+              "moneyline_avg_clv": -0.0147,
+              "moneyline_positive_rate": 0.0,
+              "moneyline_non_negative_rate": 0.0,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5481,
+            "actual_win_rate": 0.25,
+            "calibration_gap": 0.2981,
+            "overconfidence_gap": 0.2981
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent moneylines ROI -0.4938 is below -0.2500",
+            "recent moneylines overconfidence gap 0.2981 exceeds 0.2500"
+          ],
+          "health_score": 0.7143
+        },
+        "totals": {
+          "market_type": "total",
+          "pick_type": null,
+          "overall": {
+            "total_picks": 335,
+            "evaluated": 334,
+            "pending": 1,
+            "hit_rate": 0.524,
+            "roi": 0.0443,
+            "push_rate": 0.0359,
+            "wins": 175,
+            "losses": 147,
+            "pushes": 12,
+            "avg_confidence": 71.9188,
+            "avg_expected_value": 0.15,
+            "clv": {
+              "tracked": 287,
+              "avg_clv": 0.0244,
+              "positive_rate": 0.0767,
+              "non_negative_rate": 0.9268,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 287,
+              "totals_avg_clv": 0.0244,
+              "totals_positive_rate": 0.0767,
+              "totals_non_negative_rate": 0.9268
+            }
+          },
+          "recent": {
+            "total_picks": 8,
+            "evaluated": 8,
+            "pending": 0,
+            "hit_rate": 0.5,
+            "roi": -0.0312,
+            "push_rate": 0.0,
+            "wins": 4,
+            "losses": 4,
+            "pushes": 0,
+            "avg_confidence": 69.4625,
+            "avg_expected_value": 0.1375,
+            "clv": {
+              "tracked": 5,
+              "avg_clv": -0.1,
+              "positive_rate": 0.0,
+              "non_negative_rate": 0.8,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 5,
+              "totals_avg_clv": -0.1,
+              "totals_positive_rate": 0.0,
+              "totals_non_negative_rate": 0.8
+            },
+            "recent_count": 8,
+            "avg_model_prob": 0.5897,
+            "actual_win_rate": 0.5,
+            "calibration_gap": 0.0897,
+            "overconfidence_gap": 0.0897
+          },
+          "allow": false,
+          "status": "hold",
+          "reasons": [
+            "recent totals CLV -0.1000 is below -0.0200"
+          ],
+          "health_score": 0.8571
+        },
+        "longslop": {
+          "market_type": null,
+          "pick_type": "longslop",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "longslop disabled by config",
+            "need more settled longslop picks (0/5)",
+            "need more recent settled longslop picks (0/3)",
+            "need more tracked longslop CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "slimegrinder": {
+          "market_type": null,
+          "pick_type": "slimegrinder",
+          "overall": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            }
+          },
+          "recent": {
+            "total_picks": 0,
+            "evaluated": 0,
+            "pending": 0,
+            "hit_rate": null,
+            "roi": null,
+            "wins": 0,
+            "losses": 0,
+            "pushes": 0,
+            "avg_confidence": null,
+            "avg_expected_value": null,
+            "clv": {
+              "tracked": 0,
+              "avg_clv": null,
+              "positive_rate": null,
+              "non_negative_rate": null,
+              "moneyline_tracked": 0,
+              "moneyline_avg_clv": null,
+              "moneyline_positive_rate": null,
+              "moneyline_non_negative_rate": null,
+              "totals_tracked": 0,
+              "totals_avg_clv": null,
+              "totals_positive_rate": null,
+              "totals_non_negative_rate": null
+            },
+            "recent_count": 5,
+            "avg_model_prob": null,
+            "actual_win_rate": null,
+            "calibration_gap": null,
+            "overconfidence_gap": null
+          },
+          "allow": false,
+          "status": "disabled",
+          "reasons": [
+            "slimegrinder disabled by config",
+            "need more settled slimegrinder picks (0/5)",
+            "need more recent settled slimegrinder picks (0/3)",
+            "need more tracked slimegrinder CLV (0/3)"
+          ],
+          "health_score": 0.4286
+        },
+        "totals_enabled": true
+      }
+    },
+    "validation_issues": [],
+    "validation_issues_count": 0,
+    "summary": "modeled=0 | odds=0/0 | +ev=0 | sense=0 | eligible=0 | locks=0"
+  }
+}
